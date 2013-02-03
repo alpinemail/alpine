@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=iso-8859-1">
+<link type="text/css" rel="stylesheet" href="../css/help.css">
+<title>Settings</title>
+</head>
+<body>
+<div id="header">
+  <div class="logo"> </div>
+  <div class="nav"><a href="topic-list.html">All Help Topics</a> &nbsp;&nbsp;| &nbsp;&nbsp;<a href="alpha-index.html">Index</a> &nbsp;&nbsp;| &nbsp;&nbsp;<a href="javascript:self.close();">Close</a></div>
+</div>
+<div id="content">
+
+<h2>Settings: customizing Alpine</h2>
+
+<ul>
+	<li><a href="#display">Message Display</a></li>
+	<li><a href="#folders">Folders</a></li>
+	<li><a href="#reply">Reply Options</a></li>
+	<li><a href="#forward">Forwarding Options</a></li>
+	<li><a href="#fcc">Sent Message Options</a></li>
+	<li><a href="#personal">Personal Preferences</a></li>
+	<li><a href="#newsweather">News and Weather</a></li>
+	<li><a href="#msglist">Message List</a></li>
+	<li><a href="#msgview">Message View</a></li>
+	<li><a href="#foldernames">Folder Names</a></li>
+	<li><a href="#compose">Compose</a></li>
+	<li><a href="#mailservers">Mail Servers</a></li>
+	<li><a href="#dirservers">Directory Servers</a></li>
+</ul>
+
+
+<p>The settings pages allow you to customize the behavior and appearance of Alpine.</p>
+<p><a name="show" id="show"></a><strong>To display the Settings pages</strong></p>
+<ul><li>In the upper right-corner of the screen, above the menu bar, click <strong>Settings</strong>.</li>
+<br /><br />
+</ul>
+
+<h2><a name="display" id="display"></a>Message Display</h2>
+<ul>
+  <li><strong>Display ___ messages per page.</strong> Controls the number of messages displayed on each page.</li>
+  <li> <strong>Wrap Plain Text message at  ___ characters.</strong> Controls the overall width of the text block in plain text messages.</li>
+<br /><br /></ul>
+<h2><a name="folders" id="folders"></a>Folders</h2>
+<ul>
+  <li><strong>Display ___ recent folders in left column.</strong> Controls how many folders are displayed under <strong>Recent Folders</strong> in the left pane. <strong>Recent Folders</strong> are the folders that you have recently accessed, listed with the most recent at the top.</li>
+<br /><br /></ul>
+<h2><a name="reply" id="reply"></a>Reply Options</h2>
+<ul>
+  <li><strong>Include headers in replies.</strong> Includes the header section of the original message in the reply.</li>
+  <li><strong>Include attachments in replies.</strong> The recipient of the reply gets the attachments as well as the original message.</li>
+  <li><strong>Append signature below reply text.</strong> Adds your signature to the bottom of the reply instead of the top.</li>
+  <li><strong>Strip signatures when replying.</strong> Removes the signature that was in the message being replied to (if it can be identified).</li>
+<br /><br /></ul>
+<h2><a name="forward" id="forward"></a>Forwarding Options</h2>
+<ul>
+  <li> <strong>Forward messages inline.</strong> The recipient gets an ordinary text message.</li>
+  <li><strong>Forward messages as attachments.</strong>  The recipient gets a message with the forwarded message attached.</li>
+<br /><br /></ul>
+<h2><a name="fcc" id="fcc"></a>Sent Message Options</h2>
+<ul>
+  <li><strong>Name of your Sent mail folder.</strong> Save messages you send to this folder (default is sent-mail). To disable the saving of sent mail set this to double double quotes ("").</li>
+  <li><strong>Save sent messages to Sent folder without attachments.</strong> Remove any attachments being sent before saving the message in your Sent mail folder.</li>
+<br /><br /></ul>
+<h2><a name="personal" id="personal"></a>Personal Preferences</h2>
+<ul>
+  <li><strong>Display Name.</strong> This is your full name (e.g., Fred Flintstone). It will be included as part of your From address in outgoing mail.</li>
+  <li><strong>Email Signature.</strong> This signature is automatically included in messages you compose. You will have the opportunity to edit it before sending.</li>
+  <li><strong>Alternate Addresses.</strong> You may enter a list of alternate addresses so that Alpine can tell when an address is you. This will affect the index display (messages will be marked with an icon showing it is to you when it is addressed to one of your addresses), the From address displayed in the index display (when the From address is one of your addresses the To address will be shown instead), and the <strong>Reply All</strong> command (addresses listed here will not be included).</li>
+</ul>
+<p><strong>To add Alternate Addresses</strong></p>
+<ul><li>On the Personal Preferences page find the <strong>Alternate Addresses</strong> option. Type alternate addresses into the text field. The <strong>Add</strong> button can be used to add additional addresses and the <strong>X</strong> buttons can be used to remove addresses. The addresses you enter should be the actual email address part of an address without the fullname or brackets. For example, <strong>user@example.com</strong>. The matching is not sensitive to upper or lower case differences, all will match. For the advanced user, a regular expression may be entered.</li>
+<br /><br />
+</ul>
+<h2><a name="newsweather" id="newsweather"></a>News and Weather</h2>
+<ul>
+  <li><strong>Headline News.</strong> RSS URL for news.</li>
+  <li><strong>Weather Bar.</strong> RSS URL for weather.</li>
+<br /><br /></ul>
+<h2><a name="msglist" id="msglist"></a>Message List</h2>
+<ul>
+  <li><strong>Default Sort Order.</strong> Sets the default sort order for the Message List. By default the sort order is set to <strong>Date/Reverse</strong>. The <strong>/Reverse</strong> part means that the newest messages will be at the top. It is also possible to temporarily change the sort order in the message list screen itself.</li>
+  <li><strong>Start display at.</strong> This just tells Alpine where to start in the index of messages. The message you specify here will be included in the first page of messages you see.</li>
+  <li><strong>Automatically Move Read Messages.</strong> Automatically move read messages to a Read Messages folder.</li>
+<br /><br /></ul>
+
+<h2><a name="msgview" id="msgview"></a>Message View</h2>
+<ul>
+  <li><strong>Display Headers.</strong> Specify which headers are to be displayed in the Message View. If you specify any headers here you must list all of the headers you wish to have displayed, not just the additional headers.</li>
+  <li><strong>Display complete URLs as links.</strong> URLs contained in a message are shown as active links when viewing the message.</li>
+  <li><strong>Display hostnames and incomplete URLs as links.</strong> Hostnames that begin with <strong>www</strong> and incomplete URLs contained in a message are shown as active links when viewing the message.</li>
+  <li><strong>Display email addresses as links.</strong> Email addresses contained in a message are displayed as active links that can be used for sending mail.</li>
+  <li><strong>Rich Text Display.</strong> Turning on this option will cause rich text messages to be shown as plain text.</li>
+  <li><strong>Anti-phishing.</strong> Usually the real hostname is displayed after links to make it easier to see if the link looks suspicious or not. Turning on this option will hide that information and is not recommended.</li>
+<br /><br /></ul>
+<h2><a name="foldernames" id="foldernames"></a>Folder Names</h2>
+<ul>
+  <li><strong>Draft Folder.</strong> Actual name of the folder that is usually referred to in Alpine as the <strong>Drafts</strong> folder. The default is <strong>postponed-msgs</strong>.</li>
+  <li><strong>Trash Folder.</strong> Actual name of the folder that is usually referred to in Alpine as the <strong>Trash</strong> folder. The default is <strong>Trash</strong>.</li>
+<br /><br /></ul>
+<h2><a name="compose" id="compose"></a>Compose</h2>
+<ul>
+  <li><strong>Compose Headers.</strong> You can control which headers you want visible when composing outgoing email using this option. You can specify any of the regular set, any of the Headers you see with More Headers, or any Customized Headers that you have already defined. If you use this setting at all, you must specify all the headers you want to see, you can't just add to the regular header set. The default set is To:, Cc:, and Subject:.</li>
+  <li><strong>Custom Headers.</strong> You may add your own custom headers to outgoing messages. Each header you specify here must include the header tag (Reply-To:, Approved:, etc.) and may optionally include a value for that header. If you want to see these custom headers each time you compose a message, you must add them to your Compose Headers list, otherwise they become part of the rich header set that you only see when you press the More Headers command. (If you are looking for a way to change which headers are displayed when you view a message, take a look at the Display Headers option in the Message View section instead.)</li>
+  <li><strong>Message Encoding.</strong> Send messages using the character encoding you set here.</li>
+  <li><strong>Reply intro string.</strong> This option is used to customize the content of the introduction line that is included when replying to a message and including the original message in the reply. It is not yet described here.</li>
+  <li><strong>Reply prefix.</strong> When a message is replied to and the text of the message is included, the included text usually has the text &quot;> &quot; prepended to each line, to indicate it is quoted text. It is recommended that you leave this option set to that value since that is a standard that other email reading programs will recognize and treat specially.</li>
+  <li><strong>Flowed Text Handling.</strong> Normally, when sending a message, Alpine generates flowed text where possible. The method for generating flowed text is defined in RFC 3676, the benefit of doing so is to send message text that can properly be viewed both on normal width displays and on displays with smaller or larger than normal screen widths. This feature turns off the generation of flowed text, as it might be desired to more tightly control how a message is displayed on the receiving end.</li>
+<br /><br /></ul>
+<h2><a name="mailservers" id="mailservers"></a>Mail Servers</h2>
+<ul>
+  <li><strong>Inbox Server.</strong> Technical name of the folder that is your <strong>INBOX</strong> folder. This will usually have to be set for you. An example is <strong>{example.com}inbox</strong>. The server name comes inside the brackets and the folder name comes after the brackets.</li>
+  <li><strong>SMTP Server.</strong> A list (usually a list of size one) consisting of the names of your SMTP servers. An SMTP server is used for sending mail. This is a domainname such as<strong>smtp.example.com</strong> and it may contain some options after the hostname. The options are introduced with a slash (/) and the name of the option. To use the submit port append <strong>/submit</strong> after the hostname. To use authentication append <strong>/user=username</strong> where <strong>username</strong> is the name you use to authenticate to the server. A more complicated example might look something like <strong>smtp.example.com/submit/user=myusername</strong>.<li>
+<br /><br /></ul>
+<h2><a name="dirservers" id="dirservers"></a>Directory Servers</h2>
+<ul>
+  <li><strong>LDAP Server.</strong> This option is currently too complicated to be set from within Web Alpine. The value it is looking for has the format of a raw ldap-servers config string found in an Alpine pinerc configuration file.</li>
+<br /><br /></ul>
+
+<p>&nbsp;</p>
+</div>
+</body>
+</html>

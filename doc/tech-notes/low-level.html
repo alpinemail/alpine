@@ -1,0 +1,975 @@
+<HTML><HEAD><TITLE>Alpine Technical Notes:  Behind the Scenes</TITLE></HEAD><BODY>
+<H1>Behind the Scenes</H1>
+
+Many people ask how certain <EM>Alpine</EM> features are implemented.  This section 
+outlines some of the details. 
+
+<H2><A NAME="addrbook">Address Books</A></H2>
+
+There are two types of address book storage. There
+are <EM>local</EM> address books, which are the address books that are
+stored in a local file; and there
+are <EM>remote</EM> address books, which are stored on an IMAP server.
+
+<H4><A NAME="remote-abooks">Information About Remote Address Books</A></H4>
+
+<BLOCKQUOTE>
+NOTE: The remote address book capability does not allow you to access an
+existing local address book from a remote system! That is, you can't set
+the remote address book to something like <CODE>{remote.host}.addressbook</CODE>
+and expect to access the existing <CODE>.addressbook</CODE> <EM>file</EM>
+on remote.host. Instead, you need to create a new remote address book in
+a new, previously unused remote mail <EM>folder</EM>. Then you can use the
+<EM>Select</EM> and <EM>Apply Save</EM> commands in the address book screen to
+<EM>Save</EM> all of the entries from an existing local address book to
+the new remote address book.
+</BLOCKQUOTE>
+<P>
+
+A remote address book is stored in a mail folder on an
+IMAP server.
+An <EM>Alpine</EM> remote address book is just like an <EM>Alpine</EM> local address book
+in that it is not interoperable with other email clients.
+The folder is a regular folder containing mail messages but
+those messages are special. The first message must be an alpine remote
+address book header message which contains the header <EM>x-pine-addrbook</EM>.
+The last message in the folder contains the address book data.
+In between the first
+and the last message are old versions of the address book data. The address
+book data is simply stored in the message as it would be on disk, with no MIME
+encoding. When it is used the data from the last message in the folder is
+copied to a local file and then that file is used exactly like a local
+address book file is used. When a change is made the modified local file
+is appended to the remote folder in a new message. In other words, the
+local file is just a cache copy of the data in the remote folder. Each client
+which uses the remote address book will have its own cache copy of the data.
+Whenever a copy is done the entire address book is copied, not just the
+entries which have changed.
+<P>
+
+<EM>Alpine</EM> can tell that the remote data has changed
+by one of several methods.
+If the date contained in the Date header of the last message has changed then
+it knows it has changed. If the UID of the last message has changed, or the
+number of messages in the folder has changed, it knows that it has changed.
+When <EM>Alpine</EM> discovers the folder has changed it gets
+a new copy and puts it in the local cache file.
+<P>
+
+There is a configuration file variable for remote address books called
+<A HREF="config.html#remote-abook-metafile"><EM>remote-abook-metafile</EM></A>.
+The variable is the name of a file in which
+information about remote address books is stored. There is one line in the
+metafile for each remote address book. The information stored there is the
+name of the cache file and information to help figure out when the remote
+folder was last changed. If the metafile or any of the cache files is deleted
+then <EM>Alpine</EM> will rebuild them the next time it runs.
+<P>
+
+Remote address books have names that look just like regular
+<A HREF="config-notes.html#remote-folders">remote mail folder</A> names.
+For example:
+
+<BLOCKQUOTE>
+          {host.domain}foldername<BR>
+</BLOCKQUOTE>
+
+<EM>Alpine</EM> decides whether or not an address book is remote simply by
+looking at the first character of the address book name and comparing
+it to '{'.
+
+<H4>Information About All Address Books</H4>
+
+The address book is named, by default, <CODE>.addressbook</CODE> in the
+user's Unix home directory, or in the case of <EM>PC-Alpine</EM>,
+<CODE>ADDRBOOK</CODE>, in the same directory as the <CODE>PINERC</CODE> file.
+There may be more than
+one address book, and the default name can be overridden via an entry in
+any of the <EM>Alpine</EM> configuration files. The two configuration variables
+<A HREF="config.html#pers-abook"><EM>address-book</EM></A>
+and <A HREF="config.html#glob-abook"><EM>global-address-book</EM></A>
+are used to specify the names of the address books.
+Each of these variables is a list
+variable. The total set of address books for a user is the combination of
+all the address books specified in these two lists. Each entry in the
+list is an optional nickname followed by an address book name. The nickname is
+everything up to the last space before the file name. The
+<EM>global-address-book</EM> list will typically be configured in the
+system-wide configuration file, though a user may override it like most
+other variables. Address books which are listed in the
+<EM>global-address-book</EM> variable are forced read-only, and are
+typically shared among multiple users. <P>
+
+Local address books (or local cache files for remote address books) are
+simple text files with lines in the format: 
+
+<BLOCKQUOTE>
+          &lt;nickname&gt;TAB&lt;fullname&gt;TAB&lt;address&gt;TAB&lt;fcc&gt;TAB&lt;comments&gt;<BR>
+</BLOCKQUOTE>
+
+The last two fields are optional. A "line" may be made up of multiple
+actual lines in the file by using continuation lines, which are lines
+beginning with SPACE characters. The line breaks may be after TABs or in
+between addresses in a distribution list.
+Each <EM>actual</EM> line in the file must
+be less than 1000 characters in length.
+<P>
+
+Nicknames (the first field) are short names that the user types instead of
+typing in the full address. There are several characters which aren't
+allowed in nicknames in order to avoid ambiguity when parsing the address
+(SPACE, COMMA, @, ", ;, :, (, ), [, ], <, >, \).
+Nicknames aren't required. In fact,
+none of the fields is required. <P>
+
+The <EM>fullname</EM> field is usually stored as Last_name, First_name, in order
+that a sort on the fullname field comes out sorted by Last_name.
+If there is an unquoted comma in the fullname,
+<EM>Alpine</EM> will flip the first and last name around and get rid of
+the comma when using the entry in a composition. It isn't required that
+there be a comma, that's only useful if the user wants the entries to sort
+on last names. <P>
+
+The <EM>address</EM> field takes one
+of two forms, depending on whether the entry
+is a single (simple) address or a distribution list. For a simple entry,
+the address field is an RFC 2822 address. This could be either the
+email-address part of the address, i.e., the part that goes inside the
+brackets (&lt;&gt;), or it could be a full RFC 2822 address. The phrase part
+of the address (the fullname) is used unless there is a fullname present
+in the fullname field of the address book entry. In that case, the fullname
+of the address book entry replaces the fullname of the address. For a
+distribution list, the &lt;address&gt; is in the format: 
+
+<BLOCKQUOTE>
+          "(" &lt;address&gt;, &lt;address&gt;, &lt;address&gt;, ... ")"<BR>
+</BLOCKQUOTE>
+<P>
+
+The only purpose for the parentheses around the list of addresses is to
+make it easier for the parsing routines to tell that it is a simple entry
+instead of a list. The two are displayed differently and treated slightly
+differently in some cases, though most of the distinction has disappeared.
+Each of the addresses in a list can be a full RFC 2822 address with
+fullname included, or it may be just the simple email-address part of the
+address. This allows the user to have a list which includes the fullnames
+of all the list members. In both the simple and list cases,
+addresses may also be other nicknames which appear in this address book or
+in one of the other address books. (Those nicknames are searched for by
+looking through the address books in the order they appear in the address
+book screen, with the first match winning.) Lists may be nested. If
+addresses refer to each other in a loop (for example, list A includes
+list B which includes list A again) this is detected and flagged. In that
+case, the address will be changed to "**** address loop ****". <P>
+
+The optional <EM>fcc</EM> field is a folder name, just like the fcc field in the
+composer headers. If the first address in the To field of a composition
+comes from an address book entry with an fcc field, then that fcc is
+placed in the fcc header in the composer. <P>
+
+The <EM>comments</EM> field is just a free
+text field for storing comments about an
+entry. By default, neither the fcc nor the comments field is shown on the
+screen in the address book screen. You may make those fields visible by
+configuring the variable
+<A HREF="config.html#abook-formats"><EM>addressbook-formats</EM></A>.
+They are also searched when you use the <EM>WhereIs</EM>
+command in the address book screen and are visible when you
+<EM>View</EM> or <EM>Update</EM> an entry. <P>
+
+The address book is displayed in the order that it is stored. 
+When the user chooses a different sorting criterion, the data is actually
+sorted and stored, as opposed to showing a sorted view of the data. <P>
+
+When the address book is written out, it is first written to a temporary
+file and if that write is successful it is renamed. This guards
+against errors writing the file that might destroy the whole address book. 
+The address book is re-written after each change. If the address book
+is a remote address book, the file is then appended to the remote mail
+folder using IMAP. <P>
+
+The end-of-line character(s) in the address book file are those native to
+the system writing it. So it is &lt;LF&gt; on Unix and
+&lt;CR&gt;&lt;LF&gt; on PC's. However, both Unix and PC versions of <EM>Alpine</EM>
+can read either format, so it should be possible to share a read-only
+address book among the two populations (using NFS, for example).
+<P>
+
+<HR>
+
+<H3><A NAME="addrbook-lu">Address Book Lookup File</A></H3>
+
+<EM>Pine</EM> used an additional file for each address book, called
+the LookUp file. It had the same name as the address book file
+with the suffix ".lu" appended.
+<EM>Alpine</EM> no longer uses a lookup file.
+<P>
+
+<H4>Validity Checking of Address Books</H4>
+
+There is no file locking done on <EM>Alpine</EM> address books, however, there
+is considerable validity checking done to make sure that the address book
+hasn't changed unexpectedly. Whenever the address book is about to be changed,
+a check is made to see if the file is newer than when we read it or the
+remote address book folder has changed since we last copied it. If either
+of these is true, the change is aborted.
+<P>
+
+There is an automatic, behind-the-scene check that happens every so often,
+also. For example, if someone else changes one of the address books that
+you have configured, your <EM>Alpine</EM>'s copy of the address book will usually
+be updated automatically without you noticing. This checking happens at the
+same time as new mail checking takes place, unless you are actively using
+the address book, in which case it happens more frequently.
+<P>
+
+<HR>
+
+<H2><A NAME="remote-config">Remote Configuration</A></H2>
+
+Configuration information may be stored remotely.
+Remote configuration information is stored in a folder on an IMAP server.
+This should be a folder which is used only for storing the configuration
+information.
+In other words, it should be a folder which didn't exist before.
+<P>
+Remote configuration folders are very similar to remote address book folders.
+They both consist of a header message, which serves to identify the type
+of folder; the last message, which contains the data; and intermediate
+messages, which contain old versions of the data.
+The first message must contain the header <EM>x-pine-pinerc</EM>.
+<P>
+When a remote configuration is being used, the folder is checked to make
+sure it is a remote configuration folder, then the data contained in the
+last message is copied to a temporary file.
+That file is treated just like any regular local configuration file from
+that point on.
+Whenever a configuration change is made, the entire file is copied back
+to the IMAP server and is appended to the folder as a new message.
+<P>
+Because remote configuration folders are so similar to remote address books,
+the configuration variable
+<A HREF="config.html#remote-abook-metafile"><EM>remote-abook-metafile</EM></A>
+is used by both.
+<P>
+Remote configuration folders have names that look just like regular
+<A HREF="config-notes.html#remote-folders">remote mail folder</A> names.
+For example:
+
+<BLOCKQUOTE>
+          {host.domain}mypinerc<BR>
+</BLOCKQUOTE>
+
+<EM>Alpine</EM> decides whether or not a configuration file is remote simply by
+looking at the first character of the name and comparing
+it to '{'.
+<P>
+
+<HR>
+
+<H2><A NAME="checkpoint">Checkpointing</A></H2>
+
+Periodically <EM>Alpine</EM> will save the whole
+mail folder to disk to prevent loss
+of any mail or mail status in the case that it gets interrupted,
+disconnected, or crashes.  The period of time <EM>Alpine</EM> waits to do the
+checkpoint is calculated to be minimally intrusive.  The timing can be
+changed (but usually isn't) at compile time.  Folder checkpointing happens
+for both local folders and those being accessed with IMAP.  The delays are
+divided into three categories:  <P>
+
+<BLOCKQUOTE>
+The exact algorithm given below is no longer correct.
+It has gotten more complicated over time.
+However, this gives the general idea <EM>Alpine</EM> uses
+when deciding whether or not to do a checkpoint.
+</BLOCKQUOTE>
+
+<DL COMPACT>
+
+<DT> Good Time:
+
+<DD> This occurs when <EM>Alpine</EM> has been idle for more than 30 seconds.  In
+this case <EM>Alpine</EM> will checkpoint if 12 changes
+to the file have been made or
+at least one change has been made and a checkpoint hasn't been done for
+five minutes.  <P>
+
+<DT> Bad Time:
+
+<DD> This occurs just after <EM>Alpine</EM> has
+executed some command.  <EM>Alpine</EM> will
+checkpoint if there are 36 outstanding changes to the mail file or at
+least one change and no checkpoint for ten minutes.  <P>
+
+<DT> Very Bad Time:
+
+<DD> Done when composing a message.  In this case, <EM>Alpine</EM> will only
+checkpoint if at least 48 changes have been made or at least one change has been
+made in the last twenty minutes with no checkpoint.  <P>
+
+</DL>
+
+<HR>
+
+<H2><A NAME="debug">Debug Files</A></H2>
+
+If UNIX <EM>Alpine</EM> is compiled with the compiler
+<EM>DEBUG</EM> option on (the default),
+then <EM>Alpine</EM> will produce debugging output to a file.
+This can be disabled at compile-time with the --disable-debug configure option,
+or at run-time with the command line flag -d0.
+The file is
+normally <CODE>.pine-debugX</CODE> in the user's home directory where
+<EM>X</EM> goes from 1 to 4.  Number 1 is always the most recent session
+and 4 the oldest.  Four are saved because often the user has gone in and
+out of <EM>Alpine</EM> a few times after a problem has occurred before the expert
+actually gets to look at it.  The amount of output in the debug files
+varies with the debug level set when <EM>Alpine</EM> is
+compiled and/or as a command
+line flag.  The default is level 2.  This shows very general things and
+records errors.  Level 9 produces copious amounts of output for each
+keystroke.  <P>
+
+Similarly, <EM>PC-Alpine</EM> creates debug files
+named <CODE>pinedebg.txtX</CODE> in the
+same directory as the <CODE>PINERC</CODE> file.  <P>
+
+<HR>
+
+<H2><A NAME="INBOX">INBOX and Special Folders</A></H2>
+
+The <EM>INBOX</EM> folder is treated specially.  It is normally kept open
+constantly so that the arrival of new mail can be detected.  The name
+<EM>INBOX</EM> refers to wherever new mail is retrieved on the system.  If
+the <A HREF="config.html#inbox-path"><EM>inbox-path</EM></A> variable is set,
+then <EM>INBOX</EM> refers to
+that.  IMAP servers understand the concept of <EM>INBOX</EM>, so
+specifying the folder <EM>{imap.u.example.edu}INBOX</EM> is meaningful. 
+The case of the word <EM>INBOX</EM> is not important,
+but <EM>Alpine</EM> tends to display it in all capital letters.  <P>
+
+The folders for <A HREF="config.html#def-fcc">sent mail</A>
+and <A HREF="config.html#def-save">saved messages</A> folders are
+also somewhat special.
+They are automatically created if they are absent and recreated
+if they are deleted.  <P>
+
+<HR>
+
+<H2><A NAME="help">Internal Help Files</A></H2>
+
+The file <CODE>pine.hlp</CODE> in the <CODE>alpine</CODE> subdirectory of the
+distribution contains all the help text for <EM>Alpine</EM>.
+It is compiled right into the <EM>Alpine</EM> binary as strings.
+This is done to simplify installation and configuration.
+The <CODE>pine.hlp</CODE> file is in a
+special format that is documented at the beginning of the file.
+It is divided into sections, each with a name that winds up being referenced as
+a global variable.  This file is processed during the build process and
+turned into a C file that is compiled into <EM>Alpine</EM>.  <P>
+
+<HR>
+
+<H2><A NAME="char-set">International Character Sets</A></H2>
+
+<EM>Alpine</EM> uses Unicode characters internally and 
+it is a goal for <EM>Alpine</EM> to handle email in many different languages.
+<EM>Alpine</EM> will properly display only left-to-right character sets
+in a fixed-width font. Specifically, <EM>Alpine</EM> assumes that a fixed-width
+font is in use, in the sense that
+characters are assumed to take up zero, one, or two character cell
+widths from left to right on the screen. This is true even in <EM>PC-Alpine</EM>.
+<P>
+
+<EM>Alpine</EM> recognizes some local character sets which are right-to-left
+(Arabic, Hebrew, and Thai) or not representable in a fixed-width font
+(Arabic) and properly converts texts in these character sets to/from
+Unicode; however, there are known display bugs with these character
+sets.
+<P>
+
+There are three possible configuration character settings and some
+environment variable settings which can affect how <EM>Alpine</EM>
+handles international characters.
+The first two of these are only available in UNIX <EM>Alpine</EM>.
+The three configuration options are
+<EM>display-character-set</EM>,
+<EM>keyboard-character-set</EM>, and
+<EM>posting-character-set</EM>.
+The <EM>keyboard-character-set</EM> defaults to being the same value
+as the <EM>display-character-set</EM>, and that is usually correct, because
+the keyboard almost always produces characters in the same character set
+as the display displays.
+The <EM>display-character-set</EM> is the character set that <EM>Alpine</EM>
+will attempt to use when sending characters to the display.
+<P>
+Besides those variables there is also
+<A HREF="config.html#use-system-translation"><EM>use-system-translation</EM></A>
+which can be used instead of these.
+That usage is only lightly tested and is not recommended.
+<P>
+
+By default, the <EM>display-character-set</EM> variable is not set and UNIX <EM>Alpine</EM>
+will attempt to get this information from the environment.
+In particular, the <CODE>nl_langinfo(CODESET)</CODE> call is used.
+This usually depends on the setting of the environment variables LANG or LC_CTYPE.
+An explicit configuration setting for <EM>display-character-set</EM> will,
+of course, override any default setting.
+<P>
+For <EM>PC-Alpine</EM> the <EM>display-character-set</EM>
+and the <EM>keyboard-character-set</EM>
+are always equivalent to <CODE>UTF-8</CODE> and this is not settable.
+<P>
+
+It is probably best to use UNIX <EM>Alpine</EM> in a terminal emulator
+capable of displaying UTF-8 characters, since that will allow you to
+view just about any received text that is correctly formatted (note,
+however, the above comments about known index display bugs with certain
+character sets). You'll need to have an emulator which uses a UTF-8 font
+and you'll need to set up your environment to use a UTF-8 charmap. For
+example, on a Linux system you might include
+<P>
+<CENTER> <CODE>setenv LANG en_US.UTF-8</CODE> </CENTER>
+<P>
+
+or something similar in your UNIX startup files.
+You'd also have to select a UTF-8 font in your terminal emulator.
+<P>
+
+The types of values that the character set variables may be set to are
+<CODE>UTF-8</CODE>, <CODE>ISO-8859-1</CODE>, or <CODE>EUC-JP</CODE>.
+The <CODE>ISO-2022</CODE> character sets are not supported for input or
+for display, but as a special case, <CODE>ISO-2022-JP</CODE> is supported
+for use only as a <EM>posting-character-set</EM>.
+In the Setup/Config screen you may choose from a list of all the
+character sets <EM>Alpine</EM> knows about by using the &quot;T&quot; ToCharsets command.
+Here is a list of many of the possible character sets:
+
+<P>
+<TABLE>
+<TR> <TD>UTF-8</TD> <TD>Unicode</TD> </TR>
+<TR> <TD>US-ASCII</TD> <TD>7 bit American English characters</TD> </TR>
+<TR> <TD>ISO-8859-1</TD> <TD>8 bit European "Latin 1" character set</TD> </TR>
+<TR> <TD>ISO-8859-2</TD> <TD>8 bit European "Latin 2" character set</TD> </TR>
+<TR> <TD>ISO-8859-3</TD> <TD>8 bit European "Latin 3" character set</TD> </TR>
+<TR> <TD>ISO-8859-4</TD> <TD>8 bit European "Latin 4" character set</TD> </TR>
+<TR> <TD>ISO-8859-5</TD> <TD>8 bit Latin and Cyrillic</TD> </TR>
+<TR> <TD>ISO-8859-6</TD> <TD>8 bit Latin and Arabic</TD> </TR>
+<TR> <TD>ISO-8859-7</TD> <TD>8 bit Latin and Greek</TD> </TR>
+<TR> <TD>ISO-8859-8</TD> <TD>8 bit Latin and Hebrew</TD> </TR>
+<TR> <TD>ISO-8859-9</TD> <TD>8 bit European "Latin 5" character set</TD> </TR>
+<TR> <TD>ISO-8859-10</TD> <TD>8 bit European "Latin 6" character set</TD> </TR>
+<TR> <TD>ISO-8859-11</TD> <TD>Latin and Thai</TD> </TR>
+<TR> <TD>ISO-8859-12</TD> <TD>Reserved</TD> </TR>
+<TR> <TD>ISO-8859-13</TD> <TD>8 bit European "Latin 7" character set</TD> </TR>
+<TR> <TD>ISO-8859-14</TD> <TD>8 bit European "Latin 8" character set</TD> </TR>
+<TR> <TD>ISO-8859-15</TD> <TD>8 bit European "Latin 9" character set</TD> </TR>
+<TR> <TD>ISO-8859-16</TD> <TD>8 bit European "Latin 10" character set</TD> </TR>
+<TR> <TD>KOI8-R</TD> <TD>8 bit Latin and Russian</TD> </TR>
+<TR> <TD>KOI8-U</TD> <TD>8 bit Latin and Ukranian</TD> </TR>
+<TR> <TD>WINDOWS-1251</TD> <TD>8 bit Latin and Russian</TD> </TR>
+<TR> <TD>TIS-620</TD> <TD>8 bit Latin and Thai</TD> </TR>
+<TR> <TD>VISCII</TD> <TD>8 bit Latin and Vietnamese</TD> </TR>
+<TR> <TD>GBK</TD> <TD>Latin and Chinese Simplified</TD> </TR>
+<TR> <TD>GB2312</TD> <TD>Latin and Chinese Simplified</TD> </TR>
+<TR> <TD>CN-GB</TD> <TD>Latin and Chinese Simplified</TD> </TR>
+<TR> <TD>BIG5</TD> <TD>Latin and Chinese Traditional</TD> </TR>
+<TR> <TD>BIG-5</TD> <TD>Latin and Chinese Traditional</TD> </TR>
+<TR> <TD>EUC-JP</TD> <TD>Latin and Japanese</TD> </TR>
+<TR> <TD>SHIFT-JIS</TD> <TD>Latin and Japanese</TD> </TR>
+<TR> <TD>EUC-KR</TD> <TD>Latin and Korean</TD> </TR>
+<TR> <TD>KSC5601</TD> <TD>Latin and Korean</TD> </TR>
+</TABLE>
+<P>
+
+When reading incoming email, <EM>Alpine</EM> understands many different
+character sets and is able to convert the incoming mail into Unicode.
+The Unicode will be converted to the <EM>display-character-set</EM>
+for display on your terminal.
+Characters typed at the keyboard will be converted from the
+<EM>keyboard-character-set</EM> to Unicode for <EM>Alpine</EM>'s internal
+use.
+You may find that you can read some malformed messages that do not
+contain a character set label by setting the option
+<A HREF="config.html#unknown-character-set"><EM>unknown-character-set</EM></A>.
+<P>
+
+The <EM>posting-character-set</EM> is used when sending messages.
+The default behavior obtained by leaving this variable unset is usually
+what is wanted. In that default case, <EM>Alpine</EM> will attempt
+to label the message with the most specific character set from the
+rather arbitrary set
+<P>
+US-ASCII, ISO-8859-15,
+ISO-8859-1, ISO-8859-2, VISCII, KOI8-R, KOI8-U, ISO-8859-7, ISO-8859-6,
+ISO-8859-8, TIS-620, ISO-2022-JP, GB2312, BIG5, EUC-KR, and UTF-8.
+<P>
+
+For example, if the message is made up of only US-ASCII characters, it
+will be labeled US-ASCII. Otherwise, if it is all ISO-8859-15 characters,
+that will be the label. If that doesn't work the same is tried for the
+remaining members of the list.
+
+<P>
+It might make sense to set <EM>posting-character-set</EM> to an
+explicit value instead.
+For example, if you usually send messages in Greek, setting this
+option to ISO-8859-7 will result in messages being labeled as
+US-ASCII if there are no non-ascii characters, ISO-8859-7 if there
+are only Greek characters, or UTF-8 if there are some characters
+which aren't representable in ISO-8859-7.
+Another possibility is to set this option explicitly to UTF-8.
+In that case
+<EM>Alpine</EM> labels only ascii messages as US-ASCII and all other
+messages as UTF-8.
+<P>
+
+<HR>
+
+<H2><A NAME="interrupt">Interrupted and Postponed Messages</A></H2>
+
+If the user is composing mail and is interrupted by being disconnected
+(SIGHUP, SIGTERM or end of file on the standard input), <EM>Alpine</EM> will save the
+interrupted composition and allow the user to continue it when he or she
+resumes <EM>Alpine</EM>.  As the next <EM>Alpine</EM> session starts, a message will be given
+that an interrupted message can be continued.  To continue the interrupted
+message, simply go into the composer.  To get rid of the interrupted
+message, go into the composer and then cancel the message with
+<EM>^C.</EM> <P>
+
+Composition of half-done messages may be postponed to a later time by
+giving the <EM>^O</EM> command.  Other messages can be composed while
+postponed messages wait.  All of the postponed messages are kept in a
+single folder.  Postponing is a good way to quickly reference other
+messages while composing.  <P>
+
+<HR>
+
+<H2><A NAME="status">Message Status</A></H2>
+
+The c-client library allows for several flags or status marks to be set
+for each message.  <EM>Alpine</EM> uses four of these flags:  UNSEEN, DELETED,
+ANSWERED, and FLAGGED.  The <CODE>N</CODE> in <EM>Alpine</EM>'s
+FOLDER INDEX means that a
+message is unseen-it has not been read from this folder yet.  The <CODE>D</CODE>
+means that a message is marked for deletion.
+Messages marked with <CODE>D</CODE> are
+removed when the user <EM>Expunges</EM> the folder (which usually happens
+when the folder is closed or the user quits <EM>Alpine</EM>).
+The <CODE>A</CODE> in <EM>Alpine</EM>'s
+FOLDER INDEX means that the message has been replied-to.  The <CODE>*</CODE> in
+<EM>Alpine</EM>'s FOLDER INDEX means that the message has been ``flagged'' as
+important.  That is, the user used the <EM>Flag</EM> command to turn the
+FLAGGED flag on.  This flag can mean whatever the user wants it to mean. 
+It is just a way to mark some messages as being different from others.  It
+will usually probably be used to mark a message as somehow being
+``important''. For Berkeley format folders, the message status is written
+into the email folder itself on the header lines marked <CODE>Status:</CODE>
+and <CODE>X-Status</CODE>.
+<P>
+It is also possible for a user to define their own flags in addition to the
+standard system flags above.
+In <EM>Alpine</EM> these user defined flags are called Keywords.
+<P>
+
+<HR>
+
+<H2><A NAME="MIME-read">MIME:  Reading a Message</A></H2>
+
+<EM>Alpine</EM> should be able to handle just about any MIME message.  When a MIME
+message is received, <EM>Alpine</EM> will display a list of all the parts, their
+types and sizes.  It will display the attachments when possible and
+appropriate and allow users to <EM>Save</EM> all other attachments.  <P>
+
+<EM>Alpine</EM> honors the "mailcap"
+configuration system for specifying external programs for handling attachments.
+The mailcap file maps MIME attachment types to the external programs
+loaded on your system which can display and/or print the file.
+A sample mailcap file
+comes bundled with the <EM>Alpine</EM> distribution.  It includes comments which
+explain the syntax you need to use for mailcap.  With the mailcap file,
+any program (mail readers, newsreaders, WWW clients) can use the same
+configuration for handling MIME-encoded data.  <P>
+
+If a <CODE>MAILCAPS</CODE> environment variable is defined,
+<EM>Alpine</EM> will use that to look
+for one or more mailcap files, which are combined.  In the absence of
+<CODE>MAILCAPS</CODE>, Unix <EM>Alpine</EM> will look for
+a personal mailcap file in <CODE>~/.mailcap</CODE>
+and combine that with a system-wide file in <CODE>/etc/mailcap</CODE>.
+<EM>PC-Alpine</EM> will look for a file named <CODE>MAILCAP</CODE> in the
+same directory as the <CODE>PINERC</CODE> file,
+and/or the directory containing the <CODE>ALPINE.EXE</CODE> executable.  <P>
+
+Messages which include <EM>rich text</EM> or <EM>enriched text</EM> in the
+main body will be displayed in a very limited way (it will show bold and
+underlining).  <P>
+
+If <EM>Alpine</EM> sees a MIME message part tagged as type IMAGE,
+and <EM>Alpine</EM>'s
+<A HREF="config.html#image-viewer"><EM>image-viewer</EM></A>
+configuration variable is set, <EM>Alpine</EM> will attempt to
+send that attachment to the named image viewing program.  In the case of
+UNIX <EM>Alpine</EM>, the <CODE>DISPLAY</CODE> environment variable is
+checked to see if an X-terminal is being used (which can handle the images).
+If the <EM>image-viewer</EM> variable is not set,
+<EM>Alpine</EM> uses the <EM>mailcap</EM>
+system to determine what to do with IMAGE types, just as it does for any
+other non-TEXT type, e.g. type APPLICATION.  For MIME's generic "catch
+all" type, APPLICATION/OCTET-STREAM, the <EM>mailcap</EM> file will
+probably not specify any action, but <EM>Alpine</EM> users may always
+<EM>Save</EM> any MIME attachment to a file.  <P>
+
+MIME type "text/plain" is handled a little bit differently than the
+other types.  If you are viewing the main body part in the MESSAGE TEXT
+viewing screen, then <EM>Alpine</EM> will use its internal viewer to display it.
+This happens even if there is a mailcap description which matches this
+particular type.
+However, if you view a part of
+type "text/plain" from the ATTACHMENT INDEX screen, then <EM>Alpine</EM> will check
+the mailcap database for a matching entry and use it in preference to
+its internal viewer.  <P>
+
+Some text attachments, specifically those which are just other email messages
+forwarded as MIME messages, are displayed as part of the main body of the
+message.  This distinction allows easy display when possible (the forward
+as MIME case) and use of an attachment viewer when that is desirable (the
+plain text file attachment case).  <P>
+
+If the parts of a multipart message are alternate versions of the same
+thing <EM>Alpine</EM> will select and display the one best suited.
+For parts of type "message/external-body", the parameters showing the
+retrieval method will be displayed, and the retrieval process is automated.
+Messages of type "message/partial" are not supported.  <P>
+
+<HR>
+
+<H2><A NAME="MIME-send">MIME:  Sending a Message</A></H2>
+
+There are two important factors when trying to include an attachment in a
+message:  encoding and labeling.
+<EM>Alpine</EM> has rules for both of these which
+try to assure that the message goes out in a form that is robust and can
+be handled by other MIME mail readers.  <P>
+
+MIME has two ways of encoding data-Quoted-Printable and Base64. 
+Quoted-Printable leaves the ASCII text alone and only changes 8-bit
+characters to "=" followed by the hex digits.  For example, "=09" is a
+tab.  It has the advantage that it is mostly readable and that it allows
+for end of line conversions between unlike systems.  Base64 encoding is
+similar to <EM>uuencode</EM> or <EM>btoa</EM> and just encodes a raw bit
+stream.  This encoding is designed to get text and binary files through
+even the most improperly implemented and configured gateways intact, even
+those that distort uuencoded data.  <P>
+
+<STRONG>All</STRONG> attachments are encoded using Base64 encoding.  This
+is so that the attachment will arrive at the other end looking exactly
+like it did when it was sent.  Since Base64 is completely unreadable
+except by MIME-capable mailers or programs, there is an obvious tradeoff
+being made here.  We chose to ensure absolutely reliable transport of
+attachments at the cost of requiring a MIME-capable mailer to read them. 
+If the user doesn't want absolute integrity he or she may always
+<EM>include</EM> text (with the <EM>^R</EM> command) in the body of a
+message instead of attaching it.  With this policy, the only time
+quoted-printable encoding is used is when the main body of a message
+includes special foreign language characters.  <P>
+
+When an attachment is to be sent, <EM>Alpine</EM> sniffs through it to try to set the
+right label (content-type and subtype).  An attachment with any lines
+longer than 500 characters in it or more than 10% of the characters are
+8-bit it will be considered binary data.  <EM>Alpine</EM> will recognize (and
+correctly label) a few special types including GIF, JPEG, PostScript, and
+some audio formats. Another method which can be more robust and flexible for
+determining the content-type and subtype is to base it on the file extension.
+This method uses a <A HREF="config-notes.html#mime.types">MIME.Types File</A>.
+<P>
+
+If it is not binary data (has only a small proportion of 8-bit characters
+in it,) the attachment is considered 8-bit text.  8-bit text attachments
+are labeled "text/plain" with charset set to the value of the user's
+<EM>keyboard-character-set</EM> variable.  If an attachment is ASCII (no 8-bit
+characters) and contains no control characters
+then it is considered plain ASCII text.  Such attachments are given the MIME label
+"text/plain;  charset=US-ASCII", regardless of the setting of the user's
+<EM>keyboard-character-set</EM> variable.  <P>
+
+All other attachments are unrecognized and therefore given the generic
+MIME label "application/octet-stream".  <P>
+
+<HR>
+
+<H2><A NAME="new-mail">New Mail Notification</A></H2>
+
+<EM>Alpine</EM> checks for new mail in the <EM>INBOX</EM> and in
+the currently open folder every two and a half minutes by default.
+This default can be changed in the system-wide configuration file or
+at compile-time with the --with-mailcheck-interval=VALUE configuration
+option.
+A user can change it by changing the option
+<A HREF="config.html#mail-check"><EM>mail-check-interval</EM></A>.
+A new mail check can be manually forced by redrawing the screen with a <EM>^L</EM>.  <P>
+
+When there is new mail, the message(s) will appear in the index, the
+screen will beep, and a notice showing the sender and subject will be
+displayed.  If there has been more than one new message since you last
+issued a command to <EM>Alpine</EM>, the notice will show the count of new messages
+and the sender of the most recent one.  <P>
+
+<HR>
+
+<H2><A NAME="NFS">NFS</A></H2>
+
+It is possible to access mail folders on <EM>NFS</EM> mounted volumes with
+<EM>Alpine</EM>, but there are some drawbacks to doing this, especially in the case
+of incoming-message folders that may be concurrently updated by <EM>Alpine</EM> and
+the system's mail delivery agent.  One concern is that <EM>Alpine</EM>'s
+user-contention locks don't work because <EM>/tmp</EM> is usually not
+shared, and even if it was, <EM>flock()</EM> doesn't work across
+<EM>NFS.</EM> <P> The implementation of the standard UNIX ".lock" file
+locking has been modified to work with <EM>NFS</EM> as follows.  Standard
+hitching post locking is used so first a uniquely named file is created,
+usually something like <EM>xxxx.host.time.pid.</EM> Then a link to it is
+created named <EM>xxxx.lock</EM> where the folder being locked is
+<EM>xxxx.</EM> This file constitutes the lock.  This is a standard UNIX
+locking scheme.  After the link returns, a <EM>stat(2)</EM> is done on the
+file.  If the file has two links, it is concluded that the lock succeeded
+and it is safe to proceed.  <P>
+
+In order to minimize the risks of locking failures via <EM>NFS</EM>, we strongly
+recommend using IMAP rather than <EM>NFS</EM> to access remote incoming message
+folders, e.g. your <EM>INBOX</EM>.  However, it is generally safe to access
+personal saved-message folders via <EM>NFS</EM> since it is unlikely that
+more than one process will be updating those folders at any given time. 
+Still, some problems may occur when two <EM>Alpine</EM> sessions try to access the
+same mail folder from different hosts without using IMAP.  Imagine the
+scenario:  <EM>Alpine</EM>-A performs a write that changes the folder.  <EM>Alpine</EM>-B then
+attempts to perform a write on the same folder.  <EM>Alpine</EM>-B will get upset
+that the file has been changed from underneath it and abort operations on
+the folder.  <EM>Alpine</EM>-B will continue to display mail from the folder that it
+has in its internal cache, but it will not read or write any further data. 
+The only thing that will be lost out of the <EM>Alpine</EM>-B session when this
+happens is the last few status changes.  <P>
+
+If other mail readers besides <EM>Alpine</EM> are involved, all bets are off. 
+Typically, mailers don't take any precautions against a user opening a
+mailbox more than once and no special precautions are taken to prevent
+<EM>NFS</EM> problems.  <P>
+
+<HR>
+
+<H2><A NAME="print">Printers and Printing</A></H2>
+
+UNIX <EM>Alpine</EM> can print to the standard UNIX line printers or to generic
+printers attached to ANSI terminals using the escape sequences to turn the
+printer on and off.  The user has a choice of three printers in the
+configuration.  <P>
+
+The first setting, <EM>attached-to-ansi</EM>, makes use of escape
+sequences on ANSI/VT100 terminals.  It uses "&lt;ESC&gt;[5i" to begin
+directing all output sent to the terminal to the printer and then
+"&lt;ESC&gt;[4i" to return to normal.  <EM>Alpine</EM> will send these escape
+sequences if the printer is set to <EM>attached-to-ansi.</EM> This works
+with most ANSI/VT100 emulators on Macs and PCs such as kermit, NCSA
+telnet, VersaTerm Pro, and WinQVT.  Various terminal emulators implement
+the print feature differently.
+There is also a closely
+related method called <EM>attached-to-ansi-no-formfeed</EM> which is
+the same except for the lack of formfeed character at the end of the
+print job.
+<P>
+<EM>Attached-to-wyse</EM> and <EM>attached-to-wyse-no-formfeed</EM> are
+very similar to "attached-to-ansi".
+The only difference is in the control characters sent to turn the printer
+on and off.
+The Wyse version uses Ctrl-R for on, and Ctrl-T for off.
+<P>
+
+The second selection is the standard UNIX print command.  The default is
+<EM>lpr</EM>, but it can be changed on a system basis to anything so
+desired in <CODE>/usr/local/lib/pine.conf</CODE>. <P>
+
+The third selection is
+the user's personal choice for a UNIX print command.  The text to be
+printed is piped into the command.  <EM>Enscript</EM> or <EM>lpr</EM> with
+options are popular choices.  The actual command is retained even if one
+of the other print selections is used for a while.  <P>
+
+Both the second and third sections are actually lists of possible commands
+rather than single commands. <P>
+
+If you have a PostScript printer attached to a PC or Macintosh, then you
+will need to use a utility called <EM>ansiprt</EM> to get printouts on
+your printer.  <EM>Ansiprt</EM> source code and details can be found in
+the <CODE>./contrib</CODE> directory of the <EM>Alpine</EM> distribution.  <P>
+
+<HR>
+
+<H2><A NAME="save">Save and Export</A></H2>
+
+<EM>Alpine</EM> users get two options for moving
+messages in <EM>Alpine</EM>: <EM>Save</EM> and <EM>Export</EM>.
+<EM>Save</EM> is used when the message should remain ``in the
+<EM>Alpine</EM> realm.'' Saved messages include the complete header
+(including header lines normally hidden by <EM>Alpine</EM>),
+are placed in a <EM>Alpine</EM> folder collection and
+accumulate in a standard folder format which <EM>Alpine</EM> can read.
+In contrast, the <EM>Export</EM> command is used to write the contents
+of a message to a file for use outside of <EM>Alpine</EM>.
+Messages which have been exported are
+placed in the user's home directory (unless the feature
+<A HREF="config.html#use-current-dir"><EM>use-current-dir</EM></A> is
+turned on), not in a <EM>Alpine</EM> folder collection. 
+Unless FullHeaderMode is toggled on, all delivery-oriented headers are
+stripped from the message.  Even with <EM>Export</EM>, <EM>Alpine</EM> retains
+message separators so that multiple messages can accumulate in a single
+file and subsequently be accessed as a folder.  On UNIX systems, the
+<EM>Export</EM> command pays attention to the standard <EM>umask</EM> for
+the setting of the file permissions.  <P>
+
+<HR>
+
+<H2><A NAME="sent-mail">Sent Mail</A></H2>
+
+<EM>Alpine</EM>'s default behavior is to keep a copy of each outgoing message in a
+special "sent mail" folder.  This folder is also called the fcc for "file
+carbon copy".  The existence, location and name of the sent mail folder
+are all configurable.  Sent mail archiving can be turned off by setting
+the configuration variable
+<A HREF="config.html#def-fcc"><EM>default-fcc=""</EM></A>.  The sent mail folder
+is assumed to be in the default collection for <EM>Save</EM>s,
+which is the first collection named in
+<A HREF="config.html#fold-coll"><EM>folder-collections</EM></A>.
+The name of the folder
+can be chosen by entering a name in <EM>default-fcc</EM>.
+With <EM>PC-Alpine</EM>,
+this can be a bit complicated.  If the default collection for <EM>Save</EM>s is
+local (DOS), then the <EM>default-fcc</EM> needs to be <CODE>SENTMAIL</CODE>,
+which is syntax for a DOS file.  However, if the default collection
+for <EM>Save</EM>s is
+remote, then the <EM>default-fcc</EM> needs to be <CODE>sent-mail</CODE>
+to match the UNIX syntax.  <P>
+
+The configuration variable
+<A HREF="config.html#fcc-name-rule"><EM>fcc-name-rule</EM></A>
+also plays a role in selecting the folder to save sent mail in. <P>
+
+A danger here is that the sent mail could grow without bound.  For this
+reason, we thought it useful to encourage the users to periodically prune
+their sent mail folder.  The first time <EM>Alpine</EM> is used each month it will
+offer to archive all messages sent from the month before.  <EM>Alpine</EM> also
+offers to delete all the sent mail archive folders which are more than 1
+month old.  If the user or system has disabled sent mail archiving (by
+setting the configuration variable <EM>default-fcc=""</EM>)
+there will be no pruning question. 
+<P>
+
+<HR>
+
+<H2><A NAME="spell">Spell Checker</A></H2>
+
+Both UNIX <EM>Alpine</EM> and <EM>PC-Alpine</EM>
+depend on the system for their spell checking and dictionary.  <EM>Pico</EM>, the
+text editor, uses the same spell checking scheme as <EM>Alpine</EM>.  <P>
+
+Lines beginning with "&gt;" (usually messages included in replies) are not
+checked.  The message text to be checked is on the standard input and the
+incorrect words are expected on the standard output.  <P>
+
+The default spell checker is UNIX <EM>spell</EM>.  You can replace this
+by setting the <A HREF="config.html#speller"><EM>speller</EM></A> configuration
+variable.
+A common choice for a superior replacement is <EM>ispell</EM>.
+
+<P>
+<EM>PC-Alpine</EM> relies on the aspell library being installed.
+Aspell is independent of Alpine.  The Windows version has
+traditionally been available at
+<A HREF="http://aspell.net/win32/">http://aspell.net/win32/</A>.  You'll
+need to download and install both Aspell and a precompiled dictionary.
+Aspell is provided in an installer package.  Dictionaries, to be
+installed after Aspell, are in '.exe' files to download and run.
+<P>
+
+<HR>
+
+<H2><A NAME="terminal">Terminal Emulation and Key Mapping</A></H2>
+
+UNIX <EM>Alpine</EM> has been designed to require as little as possible from the terminal. 
+At the minimum, <EM>Alpine</EM> requires cursor positioning, clear to end of line,
+and inverse video.  Unfortunately, there are terminals that are missing
+some of these such as a vt52.  <EM>Alpine</EM> makes no assumptions as to whether the
+terminal wraps or doesn't wrap.  If the terminal has other capabilities it
+may use some of them.  <EM>Alpine</EM> won't run well on older terminals that require
+a space on the screen to change video attributes, such as the Televideo
+925.  One can get around this on some terminals by using "protected field"
+mode.  The terminal can be made to go into protected mode for reverse
+video, and then reverse video is assigned to protected mode.  <P>
+
+<EM>Alpine</EM> handles screens of most any size and resizing on the fly.  It catches
+SIGWINCH and does the appropriate thing.
+<P>
+
+On the input side of things, <EM>Alpine</EM> uses all the standard keys, most of the
+control keys and (in function-key mode) the function keys.  <EM>Alpine</EM> avoids
+certain control keys, specifically ^S, ^Q, ^H, and <EM>^\</EM>
+because they have other meanings outside of <EM>Alpine</EM> (they control data flow,
+etc.) <EM>^H</EM> is treated the same as the <EM>delete</EM> key, so the
+<EM>backspace</EM> or <EM>delete</EM> keys always work regardless of any
+configuration.  There is a feature <EM>compose-maps-delete-key-to-ctrl-d</EM>
+which makes the delete key behave like ^D rather than ^H (deletes current
+character instead of previous character).  <P>
+
+Sometimes a communications program or communications server in between you
+and the other end will eat certain control characters.  There is a
+work-around when you need it.  If you type two escape characters followed
+by a character that will be interpreted as the character with the control
+key depressed.  For example, <EM>ESC ESC T</EM> is equivalent to
+<EM>^T</EM>.  <P>
+
+When a function key is pressed and <EM>Alpine</EM> is in regular (non-function key)
+mode, <EM>Alpine</EM> traps escape sequences for a number of common function keys so
+users don't get an error message or have an unexpected command executed
+for each character in the function key's escape sequence.  <EM>Alpine</EM> expects
+the following escape sequences from terminals defined as VT100:  <P>
+
+<BLOCKQUOTE>
+        ANSI/VT100<BR>
+F1:     &lt;ESC&gt;OP <BR>
+F2:     &lt;ESC&gt;OQ <BR>
+F3:     &lt;ESC&gt;OR <BR>
+F4:     &lt;ESC&gt;OS <BR>
+F5:     &lt;ESC&gt;Op <BR>
+F6:     &lt;ESC&gt;Oq <BR>
+F7:     &lt;ESC&gt;Or <BR>
+F8:     &lt;ESC&gt;Os <BR>
+F9:     &lt;ESC&gt;Ot <BR>
+F10:    &lt;ESC&gt;Ou <BR>
+F11:    &lt;ESC&gt;Ov <BR>
+</BLOCKQUOTE>
+<P>
+
+Arrow keys are a special case.  <EM>Alpine</EM> has the escape sequences for a number
+of conventions for arrow keys hard coded and does not use <EM>termcap</EM>
+to discover them.  This is because <EM>termcap</EM> is sometimes
+incorrect, and because many users have PC's running terminal emulators
+that don't conform exactly to what they claim to emulate.
+There is a feature called
+<A HREF="config.html#termdef-takes-precedence"><EM>termdef-takes-precedence</EM></A>
+which can be set to cause the <EM>termcap</EM>
+or <EM>terminfo</EM> definitions to be used instead of the built in definitions.
+Some arrow keys on old terminals send single control characters
+like <EM>^K</EM> (one even sends <EM>^\</EM>).
+These arrow keys will not work with <EM>Alpine</EM>.
+The most popular escape sequences for arrow keys are:  <P>
+
+<BLOCKQUOTE>
+Up:	&lt;ESC&gt;[A	&lt;ESC&gt;?x	&lt;ESC&gt;A	&lt;ESC&gt;OA<BR>
+Down:	&lt;ESC&gt;[B	&lt;ESC&gt;?r	&lt;ESC&gt;B	&lt;ESC&gt;OB<BR>
+Right:	&lt;ESC&gt;[C	&lt;ESC&gt;?v	&lt;ESC&gt;C	&lt;ESC&gt;OC<BR>
+Left:	&lt;ESC&gt;[D	&lt;ESC&gt;?t	&lt;ESC&gt;D	&lt;ESC&gt;OD<BR>
+</BLOCKQUOTE>
+<P>
+
+</BODY>
+</HTML>

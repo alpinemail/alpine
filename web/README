@@ -1,0 +1,81 @@
+/* ========================================================================
+ * Copyright 2006-2007 University of Washington
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * ========================================================================
+ */
+
+
+WEB ALPINE
+----------
+
+Web Alpine is the web-based component of the Alpine Mail System.  It
+rests on the same distributed email technology behind Alpine, but is
+accessible from almost any browser on the World Wide Web.
+
+Web Alpine uses TCL to provide the programmatic interface between
+the Alpine-provided message store and the cgi-served web pages.
+
+
+REQUIRED SOFTWARE
+-----------------
+
+  Base system:
+	C compiler
+	Tcl scripting package and development tools
+	OpenSSL
+	Apache web server (though, presumably any CGI supporting
+	                   web server should work)
+
+  Optional:
+	ispell application
+	  Used to support composer spell check functinoality.
+	  Featured not offered if ispell not present.
+
+	openLDAP
+	  Provides LDAP query services to support login
+	  personalization and user-session LDAP query support.
+
+	UW Pubcookie
+	  Provides central web-login management.  Note, additional
+	  configuration and installation steps are required.  See
+	  src/pubcookie/INSTALL for specific instructions.
+
+	Kerberos 5
+	  Required by UW-Pubcookie to provide authentication and
+	  proxy authorization for IMAP server access.  Proxy
+	  authentication only tested under UW imapd.
+
+ 
+
+BUILING AND INSTALLING WEB ALPINE
+---------------------------------
+
+See the INSTALL file for basic instructions.
+
+
+DOCUMENTATION
+-------------
+
+User documentation is contained within the application and is
+reasonably complete.  Technical documentation is extremely rough and
+likely unsatisfying.  It's probably worth reading, but ultimately
+configuration or other questions are best answered by reviewing the
+source (which itself, while working reasonably, is somewhat spotilly
+documented as well).
+
+
+SUPPORT AND FEEDBACK
+--------------------
+
+Send comments and questions to <alpine-contact@cac.washington.edu>.
+
+
+--
+alpine.tar.z web/README
+$Id: README 890 2007-12-21 05:34:43Z hubert@u.washington.edu $

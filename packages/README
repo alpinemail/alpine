@@ -1,0 +1,81 @@
+Last changed: 06 Apr 2007
+
+Building packages for Alpine
+
+Files in this directory:
+  alpine.spec - spec file for building RPMs on RedHat and Fedora.
+		It should also work with Mandrake.
+  debian/*    - files containing instructions for building .deb files
+                for use with dpkg
+  windows/*   - files used to build the Windows Alpine installer. Upon
+		release, we set up directory dist.wnt.d with all of the
+		files to be installed, and we then run the command
+		binstaller wnt 0.98 (or whatever the current version is).
+		These scripts are used with Inno Setup 5.
+  README - this file.
+
+
+Most Linux distributions include a package management system to
+simplify the installing and uninstalling of programs.  There are two
+types of these systems commonly used; RPM is the system used by
+default on RedHat, Fedora, Ubuntu, Mandrake, and SuSE, and dpkg 
+is a system used by default on Debian and Mac OS X's fink.
+
+
+Why build your own packages?
+
+An RPM and a .deb file are already provided on the Alpine Information
+Center (http://www.washington.edu/alpine).  Additionally, many
+distributions roll their own alpine packages.  The files provided here
+will allow people to build their own versions of the same package in
+the event that the provided packages fail to install due to
+compatibility issues, or in the case where one would want to have a
+modified alpine package.  Unlike the alpine packages provided by the
+various distributions, the packages built with these scripts are built
+directly from source, and will be released concurrently with every
+alpine release.  It may be preferable to use the distributions' alpine
+packages, as they do tend to add value which is intended to enhance
+their users' experience.
+
+
+Building RPMs:
+
+For building RPMs, first find the directory where RPMs are built on
+your system.  On Redhat 9, this directory is /usr/src/redhat.  You can
+change this directory by editing your .rpmmacros file.  Also, you need
+not be root to build an rpm.  To build the RPM, place the
+alpine-{version}.tar.gz file in the SOURCES directory, and place the
+alpine.spec file contained here in the SPECS directory.  Then, you need
+only issue the command:
+
+rpmbuild -ba alpine.spec
+
+The RPM file will be placed in the RPMS directory, and a source RPM
+will be placed in the SRPMS directory.  Installing an RPM is done with
+the command:
+
+rpm -ivh alpine-{version}-1.i386.rpm
+
+
+Building .deb files:
+
+For building .deb files, dpkg, the program that builds them, looks in 
+the "debian" directory for various control files and build scripts.  This
+directory should reside in the top level of the alpine directory, in the
+same directory as the "build" file.  This requires copying the
+debian directory contained here to the next level up, which can be
+done via the command:
+
+cp -pr debian ../
+
+Then, from alpine's root directory, you would issue the command:
+
+dpkg-buildpackage
+
+Note that you must be root in order to build .deb packages.  After
+running the above command, the .deb will have been built in the
+directory above the alpine root directory, and it would be of the form
+alpine_{version}_i386.deb.  You can then install this package by
+running the command:
+
+dpkg -i alpine_{version}_i386.deb

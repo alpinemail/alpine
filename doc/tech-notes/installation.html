@@ -1,0 +1,577 @@
+<HTML><HEAD><TITLE>Alpine Technical Notes: Building and Installation</TITLE></HEAD><BODY>
+<H1>Building and Installation</H1>
+
+<H2><A NAME="compile">Compile-time Options</A></H2>
+
+<EM>Alpine</EM>'s UNIX build environment
+is based on Autotools (the GNU Build System).
+Once you've unpacked the source distribution find the file
+<CODE>configure</CODE> in the top-level directory.
+You may look at the many options available by typing
+<P>
+<CENTER><SAMP>
+                ./configure --help
+</SAMP></CENTER>
+
+<P>
+or you could just try building with the command
+<P>
+<CENTER><SAMP>
+                ./configure
+</SAMP></CENTER>
+
+<P>
+
+followed by
+
+<P>
+<CENTER><SAMP>
+                make
+</SAMP></CENTER>
+
+<P>
+
+Note, while the UW IMAP Toolkit (whose c-client
+library <EM>Alpine</EM> uses for mailbox access) build is not based on
+Autotools, <EM>Alpine</EM>'s configure script should set an
+appropriate make target and compilation options for most systems.
+
+<P>
+
+Some of the following can only be set when you build.  Others,
+however, can be overridden by command-line flags to <EM>Alpine</EM> or settings in
+<EM>Alpine</EM>'s user or system configuration files.
+Some of the options which can be set when building: 
+
+<H3><A NAME="ldap-compile">Including LDAP Functionality</A></H3>
+
+By default, the configure script will attempt to find the LDAP library
+support for you.
+If you are having trouble with LDAP take a look at the configure options
+<DL COMPACT>
+<DT> --with-ldap-dir=DIR
+<DD> Specify the root of the LDAP lib/include path.
+<DT> --with-ldap-include-dir=DIR
+<DD> Specify the LDAP include path.
+<DT> --with-ldap-lib-dir=DIR
+<DD> Specify the LDAP library path.
+<DT> --without-ldap
+<DD> Disable LDAP support.
+</DL> <P>
+
+<EM>Alpine</EM> uses LDAPv3 protocol.
+When using the LDAPv3 protocol, the results are assumed to be in the
+UTF-8 character set, which <EM>Alpine</EM> handles well.
+If the LDAP server returns non-ascii data which is not encoded as UTF-8
+you will probably run into problems.
+<P>
+
+<H3><A NAME="krb5-compile">Including Kerberos 5 Functionality</A></H3>
+
+This works analogously to the LDAP build.
+By default, the configure script will attempt to find the Kerberos library
+support for you.
+If you are having trouble with Kerberos take a look at the configure options
+<DL COMPACT>
+<DT> --with-krb5-dir=DIR
+<DD> Specify the root of the Kerberos lib/include path.
+<DT> --with-krb5-include-dir=DIR
+<DD> Specify the Kerberos include path.
+<DT> --with-krb5-lib-dir=DIR
+<DD> Specify the Kerberos library path.
+<DT> --without-krb5
+<DD> Disable Kerberos support.
+</DL> <P>
+
+<H3><A NAME="pine-compile">Other Alpine Compile-time Options</A></H3>
+
+<DL COMPACT>
+
+<DT> --disable-nls
+<DD> Do not use Native Language Support. NLS refers to the use of GNU
+gettext utilities to localize a program, in the sense that English
+is translated to some other language.
+At the time this was written the low-level support for NSL is included
+in <EM>Alpine</EM> but no translations have been done.
+If there is no translation available, that means that disabling NLS
+will make no difference. If you have trouble building which is due
+to gettext or libintl you could try this option, or one of the following.
+
+<DT> --with-libintl-prefix[=DIR]
+<DT> --without-libintl-prefix
+
+<DT> --with-ssl-dir=DIR
+<DD> Specify the root of the SSL lib/include path (OpenSSL).
+<DT> --with-ssl-include-dir=DIR
+<DD> Specify the SSL include path.
+<DT> --with-ssl-lib-dir=DIR
+<DD> Specify the SSL library path.
+<DT> --with-ssl-certs-dir=DIR
+<DD> Specify the path to the SSL certificates directory.
+<DT> --without-ssl
+<DD> Disable SSL support.
+
+<DT> --without-pthread
+<DD> Do not test for nor build with POSIX thread support, which is used
+only for the Busy-Cue in the status line at this time.
+
+<DT> --without-smime
+<DD> Disable S/MIME support.
+
+<DT> --disable-debug
+<DD> Never create debug files.
+
+<DT> --with-smtp-msa=PATH
+<DD> Local Mail Submission Agent (sendmail, by default).
+<DT> --with-smtp-msa-flags=FLAGS
+<DD> MSA flags for SMTP on stdin/stdout (-bs -odb -oem).
+
+</DL> <P>
+
+There are many more options which you can see using the
+<P>
+<CENTER><SAMP>
+                ./configure --help
+</SAMP></CENTER>
+
+<P>
+command.
+<P>
+
+<H3><A NAME="imapd-compile">IMAPd Compile-time Options</A></H3>
+
+There are no options or settings required for the version of <EM>IMAPd</EM>
+distributed with <EM>Alpine</EM>.  If you need to be doing more complex modifications
+to IMAP, then you should pick up the IMAP development package and work
+with that code.  The developer's version of IMAP is available for
+anonymous ftp from <A
+HREF="ftp://ftp.cac.washington.edu"><CODE>ftp.cac.washington.edu</CODE></A>
+in the directory <CODE>mail</CODE>.  The file is called <A
+HREF="ftp://ftp.cac.washington.edu/mail/imap.tar.Z"><CODE>imap.tar.Z</CODE></A>. 
+Unless it has changed since <EM>Alpine</EM> was released, the directory
+<CODE>imap</CODE> in the <EM>Alpine</EM> distribution is the IMAP
+development package.
+<P>
+The c-client library has not been converted to use the
+GNU Build System's autotools.
+The <EM>Alpine</EM> configure script will try to correctly guess
+the arguments needed for the c-client make command and will build
+the library, but if you need to change anything you should take a
+look at <CODE>imap/docs/BUILD</CODE> for more detailed instructions.
+<P>
+
+<HR>
+
+<H2><A NAME="build">Building the Alpine Programs</A></H2>
+
+You may have already compiled <EM>Alpine</EM> and tried it out.  If so, great!  If
+not, you should be able to do it without too much trouble by following
+these step-by-step instructions: <P>
+
+<OL>
+
+<LI> Make sure you're in the root of the <EM>Alpine</EM> source.  When you type
+<CODE>ls</CODE> you should see the following files and directories (or
+something close to it): 
+
+<PRE>
+aclocal.m4    config.sub    imap        Makefile.am    packages  web
+alpine        configure     include     Makefile.in    pico
+build.bat     configure.ac  install-sh  mapi           pith
+build.cmd     contrib       LICENSE     missing        po
+config.guess  depcomp       ltmain.sh   mkinstalldirs  README
+config.rpath  doc           m4          NOTICE         VERSION
+</PRE>
+<P>
+
+<LI> Give the command <CODE>./configure</CODE>
+Configure should grind away for a few minutes.  <P>
+
+<LI> When configure is complete, give the command <CODE>make</CODE>.
+If make stops and asks
+
+<P>
+<CENTER><SAMP>
+  Do you want to build with IPv6 anyway? Type y or n please:
+</SAMP></CENTER>
+
+<P>
+you should answer with a 'y'.
+The compiler should grind away for a few minutes. The <EM>Alpine</EM>
+binary will end up in <CODE>.../alpine/alpine</CODE> and the
+Pico and Pilot binaries in <CODE>.../pico/pico</CODE>
+and <CODE>.../pico/pilot</CODE>. Other binaries you may be interested
+in are <CODE>.../alpine/rpdump</CODE> and <CODE>.../alpine/rpload</CODE>
+and c-client binaries in the directories <CODE>.../imap/imapd</CODE>,
+<CODE>.../imap/ipopd</CODE>, <CODE>.../imap/mailutil</CODE>, and so on.
+<P>
+
+<LI> If you need to try again, make sure you're getting a clean start by giving the command
+<CODE>make clean</CODE>. <P>
+
+</OL>
+<P>
+
+<HR>
+
+<H2><A NAME="install-unix">Installing Alpine and Pico on UNIX Platforms</A></H2>
+
+Installing <EM>Alpine</EM> and <EM>Pico</EM> is simple.  You take the program files
+which you have just transferred or built and you move them to the correct
+directory on your system.  Most often the binaries go in
+<CODE>/usr/local/bin</CODE> though sometimes they are placed in
+<CODE>/usr/bin</CODE>.  All the help text is compiled into <EM>Alpine</EM> so there
+are no <STRONG>required</STRONG> auxiliary files. Instead of copying the
+binaries manually, you may use <CODE>make install</CODE> to install
+them. <P>
+
+There are three optional auxiliary files: 
+<CODE>/usr/local/lib/pine.info</CODE>,
+<CODE>/usr/local/lib/pine.conf</CODE>, and
+<CODE>/usr/local/lib/pine.conf.fixed</CODE>.  The file
+<CODE>pine.info</CODE> contains text on how to get further help on the
+local system.  It is part of the help text for the
+main menu and should probably refer to the local help desk or the system
+administrator.  If this file doesn't exist a generic version which
+suggests ``talking to the computer support staff at your site'' is shown. 
+The file <CODE>pine.conf</CODE> is used to set system-wide default
+configurations for <EM>Alpine</EM>.  The file <CODE>pine.conf.fixed</CODE> is also
+used to set system-wide default configurations for <EM>Alpine</EM>.
+The difference
+between these two files is that configuration variables set in the
+<CODE>pine.conf.fixed</CODE> file may not normally be over-ridden by a
+user.  See the section on <A HREF="config.html"><EM>Alpine</EM> Configuration</A>
+later in this document for details about
+the <CODE>pine.conf</CODE> and <CODE>pine.conf.fixed</CODE> files.  <P>
+
+<HR>
+
+<H2><A NAME="install-pc">Installing PC-Alpine</A></H2>
+
+<P>
+The PC-Alpine distribution comes as a .zip file.  To install, unzip the
+files to a directory where you would like the program to reside.  Modern
+Windows versions come with the capability of unzipping .zip files.  Failing
+that, you can use one of the many .zip file extractors out there.
+Following current Windows conventions, a common directory into which the files
+could be extracted would be <CODE>C:\Program Files\PC-Alpine\</CODE>.
+
+<P>
+Having extracted PC-Alpine's .zip file to the directory of choice, you can
+now run that directory's alpine.exe, which is the actual PC-Alpine program.
+For convenience, you could place shortcuts to it on the task bar, start
+menu, etc.
+
+<P>
+Upon first running PC-Alpine, you may be asked where you would like to
+access your Configuration file (called the <I>pinerc</I>).  This
+is useful in accessing already existing configuration files, and it
+does not matter where this file gets created.  If you are connecting 
+to an IMAP server to access your email, it is also possible to store
+this Configuration data on that server, which facilitates accessing
+the same configuration from multiple machines (in fact, your configuration
+may have already been set up this way for use with other <EM>Alpine</EM> programs).
+
+<P>
+After having established the location of the configuration file, it may be
+necessary to specify a few configuration settings before reading or sending
+mail.  You may be prompted for the following (which may also be edited from
+the (S)etup (C)onfig screen from the Main Menu):
+
+<LI><CODE>Folder to open as inbox</CODE> (or <I>inbox-path</I>) - This can 
+be an inbox residing on an IMAP or POP3 server, or one residing locally. 
+An example of an INBOX for an IMAP server is: 
+<CODE>{server.example.com}INBOX</CODE>.
+
+<LI><CODE>User-id</CODE>, <CODE>Personal name</CODE>, and 
+<CODE>host/domain</CODE>, which are to be used as your email address.
+
+<LI><CODE>SMTP server to forward message</CODE> - You must enter your SMTP
+server before you can send any messages.
+
+<P>
+At this point, you will be able to read and send email messages.  There are,
+however, many more preferences that you can set in the Configuration
+screen.
+<HR>
+
+<H2><A NAME="install-imapd">Installing IMAPd</A></H2>
+
+When the <EM>Alpine</EM> distribution is built on a UNIX system, the IMAP server
+binary, <CODE>imapd</CODE>, is compiled.  Installing <CODE>imapd</CODE>
+requires placing the binary in the appropriate directory, usually
+<CODE>/usr/etc</CODE>, and adding entries to <CODE>/etc/services</CODE>
+and <CODE>/etc/inetd.conf</CODE> or their counterparts.
+<P>
+Instead of including installation instructions here we'll just include
+a pointer to detailed instructions in the c-client distribution.
+Please take a look at the file
+<CODE>imap/docs/BUILD</CODE> in the source tree.
+
+<HR>
+
+<H2><A NAME="files-unix">Support Files and Environment Variables:  UNIX Alpine</A></H2>
+
+This section lists the various files which <EM>Alpine</EM> uses which are not email
+folders.  All of these are the default names of files, they may vary based
+on <EM>Alpine</EM>'s configuration. 
+
+<DL COMPACT>
+
+<DT> /usr/local/lib/pine.conf
+
+<DD> Pine's global configuration file. 
+
+<DT> /usr/local/lib/pine.conf.fixed
+
+<DD> Non-overridable global configuration file. 
+
+<DT> /usr/local/lib/pine.info
+
+<DD> Local pointer to system administrator. 
+
+<DT> ~/.pinerc
+
+<DD> Personal configuration file for each user. 
+
+<DT> ~/.pinercex
+
+<DD> Personal exceptions configuration file for each user. 
+
+<DT> ~/.addressbook
+
+<DD> Personal addressbook
+
+<DT> ~/.newsrc
+
+<DD> Personal USENET subscription list.  This is shared with other
+newsreading programs. 
+
+<DT> ~/.pine-debugX
+
+<DD> The files created for debugging <EM>Alpine</EM> problems.  By default, there are
+4 .pine-debug files kept at any time. 
+
+<DT> ~/.signature
+
+<DD> A signature file which will be included in all outgoing email
+messages. 
+
+<DT> ~/.pine-interrupted-mail
+
+<DD> The text of a message which was interrupted by some unexpected error
+which <EM>Alpine</EM> detected. 
+
+<DT> ~/mail/postponed-msgs
+
+<DD> A folder of messages which the user chose to postpone. 
+
+<DT> /etc/mailcap
+
+<DD> System-wide mail capabilities file.  Only used if
+<CODE>$MAILCAPS</CODE> not set. 
+
+<DT> ~/.mailcap
+
+<DD> Personal mail capabilities file.  Combines with system-wide mailcap. 
+Only used if <CODE>$MAILCAPS</CODE> not set. 
+
+</DL> <P>
+
+The location of the following support files may be controlled by variables
+in the personal or global <EM>Alpine</EM> configuration file: signature, addressbook
+and its index file, postponed messages, and newsrc.  <P>
+
+Unix <EM>Alpine</EM> uses the following environment variables: 
+
+<DL COMPACT>
+
+<DT> TERM
+
+<DD> Tells <EM>Alpine</EM> what kind of terminal is being used. 
+
+<DT> DISPLAY
+
+<DD> Determines if <EM>Alpine</EM> will try to display IMAGE attachments. 
+
+<DT> TMPDIR, TMP, or TEMP
+
+<DD> Specifies location of temporary storage area, first one set wins
+
+<DT> SHELL
+
+<DD> If not set, default is /bin/sh
+
+<DT> MAILCAPS
+
+<DD> A semicolon delimited list of path names to mailcap files.  <P>
+
+</DL>
+
+<HR>
+
+<H2><A NAME="files-pc">Support Files, Environment Variables, and Registry Settings:  PC-Alpine</A></H2>
+
+This section lists the various files which <EM>PC-Alpine</EM> uses which are not
+normal mail folders.  All of these are the default names of files, they
+may vary based on <EM>Alpine</EM>'s configuration.  <P>
+
+<DL COMPACT>
+
+<DT> $PINERC or &lt;PineRC registry value&gt; or $HOME\PINE\PINERC or 
+&lt;PINE.EXE dir&gt;\PINERC
+
+<DD> Path to (required) personal configuration file. 
+
+<DT> $PINERCEX or $HOME\PINE\PINERCEX or &lt;PINE.EXE dir&gt;\PINERCEX
+
+<DD> Path to personal exceptions configuration file. 
+
+<DT> $PINECONF
+
+<DD> Path of optional global configuration file. 
+
+<DT> &lt;PINERC directory&gt;\ADDRBOOK
+
+<DD> Personal addressbook
+
+<DT> &lt;PINERC directory&gt;\PINEDEBG.TXT
+
+<DD> Location of <EM>Alpine</EM> debug file. 
+
+<DT> &lt;PINERC directory&gt;\MAILCAP and/or &lt;PINE.EXE dir&gt;\MAILCAP
+
+<DD> These paths are only used if $MAILCAPS not set. 
+
+<DT> $HOME\NEWSRC or &lt;PINERC directory&gt;\NEWSRC
+
+<DD> Personal USENET subscription list.  This may be shared with other
+newsreading programs. 
+
+<DT> $HOME\MAIL\INTRUPTD
+
+<DD> The text of a message which was interrupted by some unexpected error
+which <EM>Alpine</EM> detected. 
+
+<DT> $HOME\MAIL\POSTPOND
+
+<DD> A folder of messages which the user chose to postpone. 
+
+</DL> <P>
+Registry Values:
+<DL COMPACT>
+
+<DT> HKEY_LOCAL_MACHINE\Software\University of Washington\Alpine\1.0
+
+<DD> <EM>Pinedir</EM>: The directory that contains the <EM>Alpine</EM> executable.
+
+<DD> <EM>PineEXE</EM>: The name of the <EM>Alpine</EM> executable (most commonly 
+"alpine.exe").
+
+<DT> HKEY_CURRENT_USER\Software\University of Washington\Alpine\1.0
+
+<DD> <EM>PineRC</EM>: The path that points to the default pinerc to use.
+
+<DT> HKEY_LOCAL_MACHINE\Software\Clients\Mail\Alpine
+
+<DD> <EM>DLLPath</EM>: The path that points to <EM>Alpine</EM>'s pmapi32.dll.
+
+<DT> HKLM\Software\Clients\Mail\Alpine\shell\open\command
+
+<DD> <EM>(Default)</EM>: When set as the default mailer, this is the 
+command that is run by external programs.
+
+<DT> HKLM\Software\Clients\Mail\Alpine\Protocols\Mailto\DefaultIcon
+
+<DD> <EM>(Default)</EM>: This points to the icon to display in relation to
+<EM>Alpine</EM>'s mailto URL rendering.
+
+<DT> HKLM\Software\Clients\Mail\Alpine\Protocols\Mailto\shell\open\command
+
+<DD> <EM>(Default)</EM>: This value is the command that gets run by external
+programs when a mailto URL is run with <EM>PC-Alpine</EM> set as the
+default mailer.
+
+<DT> HKLM\Software\Clients\News\Alpine\shell\open\command
+
+<DD> <EM>(Default)</EM>: When set as the default newsreader, this is the 
+          command that is run by external programs.
+
+<DT> HKLM\Software\Clients\News\Alpine\Protocols\news\DefaultIcon
+
+<DD> <EM>(Default)</EM>: This points to the icon to display in relation to
+          <EM>Alpine</EM>'s news URL rendering.
+
+<DT> HKLM\Software\Clients\News\Alpine\Protocols\news\shell\open\command
+
+<DD> <EM>(Default)</EM>: This value is the command that gets run by external
+programs when a news URL is run with <EM>Alpine</EM> set as the
+default newsreader.
+
+<DT> HKLM\Software\Clients\News\Alpine\Protocols\nntp\DefaultIcon
+
+<DD> <EM>(Default)</EM>: This points to the icon to display in relation to
+<EM>Alpine</EM>'s nntp URL rendering.
+
+<DT> HKLM\Software\Clients\News\Alpine\Protocols\nntp\shell\open\command
+
+<DD> <EM>(Default)</EM>: This value is the command that gets run by external
+programs when a nntp URL is run with <EM>Alpine</EM> set as the
+default newsreader.
+
+</DL> <P>
+<EM>Alpine</EM>'s personal configuration file
+may be in the same directory as the executable, or if that is inconvenient
+because the executable is on a shared or read-only drive, then it can be
+in a file named by the <CODE>$PINERC</CODE> environment variable, or in
+<CODE>$HOME\ALPINE\PINERC</CODE>, where if not set, <CODE>$HOME</CODE>
+defaults to the root of the current working drive.  <P>
+
+Most of the other support files key off of the location of the
+<CODE>PINERC</CODE> file.  However, in the case of the NEWSRC file, the
+path <CODE>$HOME\NEWSRC</CODE> is checked first.  Also, the postponed
+messages and interrupted message folders are placed in the default folder
+collection, normally in the directory <CODE>$HOME\MAIL</CODE>.  <P>
+
+The location of the following support files may be controlled by variables
+in the personal or global <EM>Alpine</EM> configuration file: signature, addressbook
+(and its index file), postponed messages, and newsrc.  <P>
+
+<EM>PC-Alpine</EM> uses the following environment variables: 
+
+<DL COMPACT>
+
+<DT> PINERC
+
+<DD> Overrides default path to pinerc file. 
+
+<DT> PINERCEX
+
+<DD> Overrides default path to personal exceptions configuration file. 
+
+<DT> PINECONF
+
+<DD> Optional path to global <EM>Alpine</EM> config file. 
+
+<DT> HOME
+
+<DD> If not set, <EM>Alpine</EM> uses the root of the current drive, e.g. C: 
+
+<DT> TMPDIR, TMP, or TEMP
+
+<DD> Specifies location of temporary storage area, first one set wins
+
+<DT> COMSPEC
+
+<DD> Specifies shell for external commands. 
+
+<DT> MAILCAPS
+
+<DD> A semicolon delimited list of path names to mailcap files. 
+
+</DL> <P>
+
+<!-- pnuts -->
+
+</BODY>
+</HTML>
