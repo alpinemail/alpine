@@ -8995,7 +8995,7 @@ void cmd_quota (struct pine *state)
    sargs.proc.tool   = NULL;
    sargs.help.text   = h_quota_command;
    sargs.help.title  = NULL;
-   sargs.keys.menu   = &pine_quota_keymenu;
+   sargs.keys.menu   = NULL;
    setbitmap(sargs.keys.bitmap);
 
    scrolltool(&sargs);

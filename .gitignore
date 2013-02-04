@@ -1,0 +1,12 @@
+*.[ao]
+*~
+Make*
+make*
+alpine
+pico
+rpdump
+rpload
+imapd
+pop3d
+pop2d
+mailutil

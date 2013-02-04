@@ -315,21 +315,6 @@ struct key context_fcc_keys[] =
 	WHEREIS_MENU};
 INST_KEY_MENU(c_fcc_km, context_fcc_keys);
 
-static struct key quota_keys[] =
-	{HELP_MENU,
-	NULL_MENU,
-	{"E","Exit",{MC_EXIT,3,{'e','i',ctrl('C')}},KS_EXITMODE},
-	NULL_MENU,
-	NULL_MENU,
-	NULL_MENU,
-	NULL_MENU,
-	NULL_MENU,
-	NULL_MENU,
-	NULL_MENU,
-	NULL_MENU,
-	NULL_MENU};
-INST_KEY_MENU(pine_quota_keymenu, quota_keys);
-
 struct key folder_keys[] =
        {HELP_MENU,
   	OTHER_MENU,
