@@ -3,8 +3,8 @@
 #        T H E   A L P I N E    M E S S A G E   S Y S T E M
 #
 #/* ========================================================================
-# * Copyright 2006-2008 University of Washington
 # * Copyright 2013 Eduardo Chappa
+# * Copyright 2006-2008 University of Washington
 # *
 # * Licensed under the Apache License, Version 2.0 (the "License");
 # * you may not use this file except in compliance with the License.
@@ -155,8 +155,8 @@ Version <!--#echo var="ALPINE_VERSION"-->(<!--#echo var="ALPINE_REVISION"-->)
 <!--chtml if pinemode="running"-->
 (built <!--#echo var=ALPINE_COMPILE_DATE-->)
 <!--chtml endif-->
-<BR>Copyright 2006-2008 University of Washington
 <BR>Copyright 2013 Eduardo Chappa
+<BR>Copyright 2006-2008 University of Washington
 </DIV>
 
 <P>
@@ -174,6 +174,25 @@ Apache web server.
 
 Version <!--#echo var="ALPINE_VERSION"-->(<!--#echo var="ALPINE_REVISION"-->)
 addresses bugs found in previous releases and has a few additions as well.
+
+<P>
+Additions include:
+<P>
+
+<UL>
+   <LI> Quota command includes subcommands for printing, forwarding, etc.
+</UL>
+
+<P>
+Bugs that have been addressed include:
+<P>
+<UL>
+  <LI> Crash when a non-compliant SMTP server closes a connection without a LOGOUT
+</UL>
+
+<P>
+Version 2.10 addresses bugs found in previous releases and has a few 
+additions as well.
 
 <P>
 Additions include:
@@ -544,8 +563,8 @@ page at
 <CENTER><A HREF="http://www.washington.edu/alpine/credits.html">http://www.washington.edu/alpine/credits</A></CENTER>
 
 <P>
-Alpine Copyright 2006-2008 University of Washington,
-Copyright 2013 Eduardo Chappa.
+Alpine Copyright 2013 Eduardo Chappa,
+Copyright 2006-2008 University of Washington.
 
 <P>
 Additional legal notices can be found <A HREF="h_news_legal">here</A>
@@ -1415,8 +1434,8 @@ Version <!--#echo var="ALPINE_VERSION"-->
 <BR>(built <!--#echo var=ALPINE_COMPILE_DATE-->)
 <!--chtml endif-->
 </DIV>
-<CENTER>Copyright 2006-2008 University of Washington
-<BR> Copyright 2013 Eduardo Chappa
+<CENTER>Copyright 2013 Eduardo Chappa,
+<BR>Copyright 2006-2008 University of Washington.
 </CENTER>
 
 <P>

@@ -420,34 +420,36 @@ SENDSTREAM *smtp_close (SENDSTREAM *stream)
 long smtp_mail (SENDSTREAM *stream,char *type,ENVELOPE *env,BODY *body)
 {
   RFC822BUFFER buf;
-  char tmp[SENDBUFLEN+1];
+  char tmp[SENDBUFLEN+1], smtpserver[SENDBUFLEN+1];
   long error = NIL;
   long retry = NIL;
   buf.f = smtp_soutr;		/* initialize buffer */
   buf.s = stream->netstream;
   buf.end = (buf.beg = buf.cur = tmp) + SENDBUFLEN;
   tmp[SENDBUFLEN] = '\0';	/* must have additional null guard byte */
+  smtpserver[SENDBUFLEN] = '\0';
   if (!(env->to || env->cc || env->bcc)) {
   				/* no recipients in request */
     smtp_seterror (stream,SMTPHARDERROR,"No recipients specified");
     return NIL;
   }
-  do {				/* make sure stream is in good shape */
+  /* get this now in case the rug is pulled from under us */
+  sprintf (smtpserver,"{%.200s/smtp%s}<none>",
+    (long) mail_parameters (NIL,GET_TRUSTDNS,NIL) ?
+    ((long) mail_parameters (NIL,GET_SASLUSESPTRNAME,NIL) ?
+	net_remotehost (stream->netstream) :
+	net_host (stream->netstream)) :
+	   stream->host,
+	   (stream->netstream->dtb ==
+	(NETDRIVER *) mail_parameters (NIL,GET_SSLDRIVER,NIL)) ?
+	   "/ssl" : "");
+  do {
     smtp_send (stream,"RSET",NIL);
     if (retry) {		/* need to retry with authentication? */
       NETMBX mb;
 				/* yes, build remote name for authentication */
-      sprintf (tmp,"{%.200s/smtp%s}<none>",
-	       (long) mail_parameters (NIL,GET_TRUSTDNS,NIL) ?
-	       ((long) mail_parameters (NIL,GET_SASLUSESPTRNAME,NIL) ?
-		net_remotehost (stream->netstream) :
-		net_host (stream->netstream)) :
-	       stream->host,
-	       (stream->netstream->dtb ==
-		(NETDRIVER *) mail_parameters (NIL,GET_SSLDRIVER,NIL)) ?
-	       "/ssl" : "");
-      mail_valid_net_parse (tmp,&mb);
-      if (!smtp_auth (stream,&mb,tmp)) return NIL;
+      mail_valid_net_parse (smtpserver,&mb);
+      if (!smtp_auth (stream,&mb,smtpserver)) return NIL;
       retry = NIL;		/* no retry at this point */
     }
 
