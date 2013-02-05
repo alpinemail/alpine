@@ -24,8 +24,11 @@
 
 
 #define HEADER_WORD "Header "
+#define TOKEN_WORD "Index Token "
 #define KW_COLORS_HDR "KEYWORD COLORS"
+#define HDR_COLORS "HEADER COLORS"
 #define ADDHEADER_COMMENT N_("[ Use the AddHeader command to add colored headers in MESSAGE TEXT screen ]")
+#define ADDINDEXTOKEN_COMMENT N_("[ Use the IndxHdr command to add colored tokens in MESSAGE INDEX screen ]")
 #define EQ_COL 37
 
 #define SPACE_BETWEEN_DOUBLEVARS 3

@@ -176,7 +176,7 @@ void	    gf_set_terminal(gf_io_t);
 char	   *gf_pipe(gf_io_t, gf_io_t);
 long	    gf_bytes_piped(void);
 char	   *gf_filter(char *, char *, STORE_S *, gf_io_t, FILTLIST_S *, int,
-		      void (*)(PIPE_S *, int, void *));
+		      int, void (*)(PIPE_S *, int, void *));
 void	    gf_binary_b64(FILTER_S *, int);
 void	    gf_b64_binary(FILTER_S *, int);
 void	    gf_qp_8bit(FILTER_S *, int);

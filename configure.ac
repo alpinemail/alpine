@@ -1,6 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 
 dnl /* ========================================================================
+dnl  * Copyright 2013 Eduardo Chappa
 dnl  * Copyright 2006-2008 University of Washington
 dnl  *
 dnl  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +15,10 @@ dnl  */
 
 AC_PREREQ([2.57])
 
-AC_REVISION([$Id: configure.ac 1266 2009-07-14 18:39:12Z hubert@u.washington.edu $])
+AC_REVISION([$Id: configure.ac 1266 2013-02-07 18:39:12Z chappa@washington.edu $])
 
 dnl Alpine Version Number is in $srcdir/VERSION
-AC_INIT(alpine, m4_normalize(m4_include([VERSION])), [alpine-contact@u.washington.edu])
+AC_INIT(alpine, m4_normalize(m4_include([VERSION])), [chappa@washington.edu])
 
 AC_CONFIG_SRCDIR([include/system.h])
 AC_CONFIG_HEADERS([include/config.h])

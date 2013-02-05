@@ -374,6 +374,18 @@
 #define GLO_TITLECLOSED_FORE_COLOR   vars[V_TITLECLOSED_FORE_COLOR].global_val.p
 #define VAR_TITLECLOSED_BACK_COLOR   vars[V_TITLECLOSED_BACK_COLOR].current_val.p
 #define GLO_TITLECLOSED_BACK_COLOR   vars[V_TITLECLOSED_BACK_COLOR].global_val.p
+#define VAR_FOLDER_FORE_COLOR	     vars[V_FOLDER_FORE_COLOR].current_val.p
+#define GLO_FOLDER_FORE_COLOR	     vars[V_FOLDER_FORE_COLOR].global_val.p
+#define VAR_FOLDER_BACK_COLOR	     vars[V_FOLDER_BACK_COLOR].current_val.p
+#define GLO_FOLDER_BACK_COLOR	     vars[V_FOLDER_BACK_COLOR].global_val.p
+#define VAR_DIRECTORY_FORE_COLOR     vars[V_DIRECTORY_FORE_COLOR].current_val.p
+#define GLO_DIRECTORY_FORE_COLOR     vars[V_DIRECTORY_FORE_COLOR].global_val.p
+#define VAR_DIRECTORY_BACK_COLOR     vars[V_DIRECTORY_BACK_COLOR].current_val.p
+#define GLO_DIRECTORY_BACK_COLOR     vars[V_DIRECTORY_BACK_COLOR].global_val.p
+#define VAR_FOLDER_LIST_FORE_COLOR   vars[V_FOLDER_LIST_FORE_COLOR].current_val.p
+#define GLO_FOLDER_LIST_FORE_COLOR   vars[V_FOLDER_LIST_FORE_COLOR].global_val.p
+#define VAR_FOLDER_LIST_BACK_COLOR   vars[V_FOLDER_LIST_BACK_COLOR].current_val.p
+#define GLO_FOLDER_LIST_BACK_COLOR   vars[V_FOLDER_LIST_BACK_COLOR].global_val.p
 #define VAR_STATUS_FORE_COLOR	     vars[V_STATUS_FORE_COLOR].current_val.p
 #define VAR_STATUS_BACK_COLOR	     vars[V_STATUS_BACK_COLOR].current_val.p
 #define VAR_HEADER_GENERAL_FORE_COLOR vars[V_HEADER_GENERAL_FORE_COLOR].current_val.p
@@ -447,6 +459,7 @@
 #define VAR_PROMPT_FORE_COLOR	     vars[V_PROMPT_FORE_COLOR].current_val.p
 #define VAR_PROMPT_BACK_COLOR	     vars[V_PROMPT_BACK_COLOR].current_val.p
 #define VAR_VIEW_HDR_COLORS	     vars[V_VIEW_HDR_COLORS].current_val.l
+#define VAR_INDEX_TOKEN_COLORS	     vars[V_INDEX_TOKEN_COLORS].current_val.l
 #ifdef SMIME
 #define VAR_PUBLICCERT_DIR	     vars[V_PUBLICCERT_DIR].current_val.p
 #define GLO_PUBLICCERT_DIR	     vars[V_PUBLICCERT_DIR].global_val.p

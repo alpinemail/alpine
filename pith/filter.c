@@ -1021,7 +1021,7 @@ gf_bytes_piped(void)
  */
 char *
 gf_filter(char *cmd, char *prepend, STORE_S *source_so, gf_io_t pc,
-	  FILTLIST_S *aux_filters, int disable_reset,
+	  FILTLIST_S *aux_filters, int silent, int disable_reset,
 	  void (*pipecb_f)(PIPE_S *, int, void *))
 {
     unsigned char c, obuf[MAX(MB_LEN_MAX,32)];
@@ -1058,8 +1058,9 @@ gf_filter(char *cmd, char *prepend, STORE_S *source_so, gf_io_t pc,
      * Spawn filter feeding it data, and reading what it writes.
      */
     so_seek(source_so, 0L, 0);
-    flags = PIPE_WRITE | PIPE_READ | PIPE_NOSHELL |
-			    (!disable_reset ? PIPE_RESET : 0);
+    flags = PIPE_WRITE | PIPE_READ | PIPE_NOSHELL
+			| (silent ? PIPE_SILENT : 0) 
+			| (!disable_reset ? PIPE_RESET : 0);
 
     if((fpipe = open_system_pipe(cmd, NULL, NULL, flags, 0, pipecb_f, pipe_report_error)) != NULL){
 

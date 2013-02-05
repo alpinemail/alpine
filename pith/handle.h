@@ -40,6 +40,7 @@ typedef	struct handle_s {
     unsigned	     using_is_used:1;	/* bit below is being used     */
     unsigned	     is_used:1;		/* if not, remove it from list */
     unsigned	     color_unseen:1;	/* we're coloring folders with unseen */
+    unsigned	     color_folder:1;	/* and just folders for that matter... */
     unsigned	     is_dual_do_open:1;	/* choosing this handle means open */
     union {
 	struct {			/* URL corresponding to this handle */

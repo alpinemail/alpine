@@ -242,6 +242,7 @@ struct pine {
     char       **feat_list_back_compat;
 
     SPEC_COLOR_S *hdr_colors;		/* list of configed colors for view */
+    SPEC_COLOR_S *index_token_colors;	/* list of configed colors for index */
 
     short	 init_context;
 
@@ -285,6 +286,8 @@ struct pine {
 
     SortOrder    def_sort,	/* Default sort type */
 		 sort_types[22];
+
+    int		 preserve;
 
     int          last_expire_year, last_expire_month;
 

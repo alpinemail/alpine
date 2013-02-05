@@ -931,8 +931,36 @@ confirm_role(long int rflags, ACTION_S **role)
 int
 reply_to_all_query(int *flagp)
 {
-    switch(want_to("Reply to all recipients",
-		   'n', 'x', NO_HELP, WT_SEQ_SENSITIVE)){
+    char prompt[80];
+    ESCKEY_S  ekey[4];
+    char cmd;
+
+    ekey[0].name  = "Y";
+    ekey[0].ch = 'y';
+    ekey[0].rval = 'y';
+    ekey[0].label = N_("Yes");
+    ekey[1].name  = "N";
+    ekey[1].ch = 'n';
+    ekey[1].rval = 'n';
+    ekey[1].label = N_("No");
+    ekey[2].name = "P";
+    ekey[2].ch = 'p';
+    ekey[2].rval = 'p';
+    ekey[3].ch = -1;
+
+    ps_global->preserve = F_ON(F_PRESERVE_ORIGINAL_FIELD, ps_global);
+
+
+loop:
+    ekey[2].label = ps_global->preserve ? N_("Not Preserve") : N_("Preserve");
+    snprintf(prompt, sizeof(prompt), _("Reply to all recipients%s"),
+		ps_global->preserve ? _(" (preserving fields)? ") : "? ");
+
+    prompt[sizeof(prompt)-1] = '\0';
+
+    switch(cmd = radio_buttons(prompt, -FOOTER_ROWS(ps_global), ekey,
+				'n', 'x', h_preserve_field, RB_NORM)){
+
       case 'x' :
 	return(-1);
 
@@ -942,6 +970,11 @@ reply_to_all_query(int *flagp)
 
       case 'n' :		/* clear reply-all bit */
 	(*flagp) &= ~RSF_FORCE_REPLY_ALL;
+	break;
+
+      case 'p' :
+        ps_global->preserve = !ps_global->preserve;
+	goto loop;		/* ugly, but saves me a variable */
 	break;
     }
 

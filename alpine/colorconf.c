@@ -29,18 +29,20 @@ static char rcsid[] = "$Id: colorconf.c 934 2008-02-23 00:44:29Z hubert@u.washin
 #include "../pith/color.h"
 #include "../pith/icache.h"
 #include "../pith/mailcmd.h"
+#include "../pith/mailindx.h"
 #include "../pith/list.h"
 
 
 /*
  * Internal prototypes
  */
+char 	       *colorindexrule(char *);
 char	       *color_setting_text_line(struct pine *, struct variable *);
 void	        revert_to_saved_color_config(struct pine *, SAVED_CONFIG_S *);
 SAVED_CONFIG_S *save_color_config_vars(struct pine *);
 void	        free_saved_color_config(struct pine *, SAVED_CONFIG_S **);
 void	        color_config_init_display(struct pine *, CONF_S **, CONF_S **);
-void	        add_header_color_line(struct pine *, CONF_S **, char *, int);
+void	        add_header_color_line(struct pine *, CONF_S **, char *, int, int);
 int     	is_rgb_color(char *);
 char	       *new_color_line(char *, int, int, int);
 int	        color_text_tool(struct pine *, int, CONF_S **, unsigned);
@@ -142,7 +144,8 @@ sample_text(struct pine *ps, struct variable *v)
     if((v && v->name &&
         srchstr(v->name, "-foreground-color") &&
 	pvalfg && pvalfg[0] && pvalbg && pvalbg[0]) ||
-       (v == &ps->vars[V_VIEW_HDR_COLORS] || v == &ps->vars[V_KW_COLORS]))
+       (v == &ps->vars[V_INDEX_TOKEN_COLORS] ||
+        v == &ps->vars[V_VIEW_HDR_COLORS] || v == &ps->vars[V_KW_COLORS]))
       ret = SAMP1;
 
     return(ret);
@@ -487,6 +490,26 @@ color_config_init_display(struct pine *ps, CONF_S **ctmp, CONF_S **first_line)
     }
 
     /*
+     * custom index tokens colors
+     */
+    vtmp = &ps->vars[V_INDEX_TOKEN_COLORS];
+    lval = LVAL(vtmp, ew);
+
+    if(lval && lval[0] && lval[0][0]){
+	for(i = 0; lval && lval[i]; i++)
+	  add_header_color_line(ps, ctmp, lval[i], i, V_INDEX_TOKEN_COLORS);
+    }
+    else{
+	new_confline(ctmp);		/* Blank line */
+	(*ctmp)->flags |= CF_NOSELECT | CF_B_LINE;
+	new_confline(ctmp);
+	(*ctmp)->help			 = NO_HELP;
+	(*ctmp)->flags			|= CF_NOSELECT;
+	(*ctmp)->value = cpystr(_(ADDINDEXTOKEN_COMMENT));
+	(*ctmp)->valoffset		 = COLOR_INDENT;
+    }
+
+    /*
      * custom header colors
      */
     new_confline(ctmp);		/* Blank line */
@@ -498,7 +521,7 @@ color_config_init_display(struct pine *ps, CONF_S **ctmp, CONF_S **first_line)
     new_confline(ctmp);
     (*ctmp)->help			 = NO_HELP;
     (*ctmp)->flags			|= CF_NOSELECT;
-    (*ctmp)->value = cpystr(_("HEADER COLORS"));
+    (*ctmp)->value = cpystr(_(HDR_COLORS));
     new_confline(ctmp);
     (*ctmp)->help			 = NO_HELP;
     (*ctmp)->flags			|= CF_NOSELECT;
@@ -527,7 +550,7 @@ color_config_init_display(struct pine *ps, CONF_S **ctmp, CONF_S **first_line)
 
     if(lval && lval[0] && lval[0][0]){
 	for(i = 0; lval && lval[i]; i++)
-	  add_header_color_line(ps, ctmp, lval[i], i);
+	  add_header_color_line(ps, ctmp, lval[i], i, V_VIEW_HDR_COLORS);
     }
     else{
 	new_confline(ctmp);		/* Blank line */
@@ -697,6 +720,7 @@ color_parenthetical(struct variable *var)
     char **lval, *ret = "";
 
     if(var == &ps_global->vars[V_VIEW_HDR_COLORS]
+       || var == &ps_global->vars[V_INDEX_TOKEN_COLORS]
        || var == &ps_global->vars[V_KW_COLORS]){
 	norm    = (LVAL(var, Main) != NULL);
 	exc     = (LVAL(var, ps_global->ew_for_except_vars) != NULL);
@@ -723,15 +747,21 @@ color_parenthetical(struct variable *var)
 
 
 void
-add_header_color_line(struct pine *ps, CONF_S **ctmp, char *val, int which)
+add_header_color_line(struct pine *ps, CONF_S **ctmp, char *val, int which, int varnum)
 {
     struct variable *vtmp;
     SPEC_COLOR_S     *hc;
     char	     tmp[100+1];
     int              l;
 
-    vtmp = &ps->vars[V_VIEW_HDR_COLORS];
-    l = strlen(HEADER_WORD);
+    hc = spec_color_from_var(val, 0);
+    if(varnum == V_INDEX_TOKEN_COLORS){
+	if(hc == NULL || hc->spec == NULL 
+		|| itoktype(hc->spec, FOR_INDEX) == NULL)
+	return;
+    }
+    vtmp = &ps->vars[varnum];
+    l = strlen(varnum == V_VIEW_HDR_COLORS ? HEADER_WORD : TOKEN_WORD);
 
     /* Blank line */
     new_confline(ctmp);
@@ -749,7 +779,6 @@ add_header_color_line(struct pine *ps, CONF_S **ctmp, char *val, int which)
     /* which is an index into the variable list */
     (*ctmp)->varmem		 = CFC_SET_COLOR(which, 0);
 
-    hc = spec_color_from_var(val, 0);
     if(hc && hc->inherit)
       (*ctmp)->flags = (CF_NOSELECT | CF_INHERIT);
     else{
@@ -760,7 +789,7 @@ add_header_color_line(struct pine *ps, CONF_S **ctmp, char *val, int which)
 	 * with all this. It probably doesn't happen in real life.
 	 */
 	utf8_snprintf(tmp, sizeof(tmp), "%s%c%.*w Color%*w %s%s",
-		HEADER_WORD,
+		(varnum == V_VIEW_HDR_COLORS ? HEADER_WORD : TOKEN_WORD),
 		(hc && hc->spec) ? (islower((unsigned char)hc->spec[0])
 					    ? toupper((unsigned char)hc->spec[0])
 					    : hc->spec[0]) : '?',
@@ -1140,6 +1169,7 @@ color_holding_var(struct pine *ps, struct variable *var)
       return(var && var->name &&
 	     (srchstr(var->name, "-foreground-color") ||
 	      srchstr(var->name, "-background-color") ||
+	      var == &ps->vars[V_INDEX_TOKEN_COLORS] ||
 	      var == &ps->vars[V_VIEW_HDR_COLORS] ||
 	      var == &ps->vars[V_KW_COLORS]));
 }
@@ -1182,6 +1212,32 @@ offer_none_color_for_var(struct pine *ps, struct variable *var)
     return(color_holding_var(ps, var)
 	   && (!struncmp(var->name, "index-", 6)
 	       || var == &ps->vars[V_KW_COLORS]));
+}
+
+char *colorindexrule(char *s)
+{
+   char *conftext;
+   char ***alval, **t;
+
+   if(!strcmp(s, "SUBJECT") || !strcmp(s, "SUBJECTTEXT")
+	|| !strcmp(s, "SUBJKEYTEXT") || !strcmp(s, "SUBJKEYINITTEXT")
+	|| !strcmp(s, "FROMORTO") || !strcmp(s, "FROM"))
+    return s;
+
+   t = NULL;
+   if((conftext = add_viewerhdr_escapes(s)) != NULL){
+     if((alval = ALVAL(&ps_global->vars[V_INDEX_TOKEN_COLORS], ew)) != NULL){
+	if((t = *alval) && t[0] && !t[0][0] && !(t+1)[0])
+	   free_list_array(alval);
+
+	for(t = *alval; t && t[0]; t++){
+	   if(strstr(*t, conftext) != NULL)
+	     break;
+	}
+     }
+     fs_give((void **)&conftext);
+   }
+   return t && *t ? *t : NULL;
 }
 
 
@@ -1396,6 +1452,7 @@ color_setting_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags)
 	if(hcolors)
 	  free_spec_colors(&hcolors);
 
+	fix_side_effects(ps, (*cl)->var, 0);
 	set_current_color_vals(ps);
 	ClearScreen();
 	rv = ps->mangled_screen = 1;
@@ -1804,6 +1861,7 @@ color_setting_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags)
 	/* get rid of all user set colors */
 	for(v = ps->vars; v->name; v++){
 	    if(!color_holding_var(ps, v)
+	       || v == &ps->vars[V_INDEX_TOKEN_COLORS]
 	       || v == &ps->vars[V_VIEW_HDR_COLORS]
 	       || v == &ps->vars[V_KW_COLORS])
 	      continue;
@@ -1825,6 +1883,44 @@ color_setting_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags)
 	    SPEC_COLOR_S *global_hcolors = NULL, *hcg;
 
 	    v = &ps->vars[V_VIEW_HDR_COLORS];
+	    if(v->global_val.l && v->global_val.l[0])
+	      global_hcolors = spec_colors_from_varlist(v->global_val.l, 0);
+
+	    hcolors = spec_colors_from_varlist(*alval, 0);
+	    for(hc = hcolors; hc; hc = hc->next){
+		if(hc->fg)
+		  fs_give((void **)&hc->fg);
+		if(hc->bg)
+		  fs_give((void **)&hc->bg);
+
+		for(hcg = global_hcolors; hcg; hcg = hcg->next){
+		    if(hc->spec && hcg->spec && !strucmp(hc->spec, hcg->spec)){
+			hc->fg = hcg->fg;
+			hcg->fg = NULL;
+			hc->bg = hcg->bg;
+			hcg->bg = NULL;
+			if(hc->val && !hcg->val)
+			  fs_give((void **) &hc->val);
+		    }
+		}
+
+		if(global_hcolors)
+		  free_spec_colors(&global_hcolors);
+	    }
+
+	    free_list_array(alval);
+	    *alval = varlist_from_spec_colors(hcolors);
+
+	    if(hcolors)
+	      free_spec_colors(&hcolors);
+	}
+
+	/* same for index token colors */
+	alval = ALVAL(&ps->vars[V_INDEX_TOKEN_COLORS], ew);
+	if(alval && *alval){
+	    SPEC_COLOR_S *global_hcolors = NULL, *hcg;
+
+	    v = &ps->vars[V_INDEX_TOKEN_COLORS];
 	    if(v->global_val.l && v->global_val.l[0])
 	      global_hcolors = spec_colors_from_varlist(v->global_val.l, 0);
 
@@ -1899,15 +1995,29 @@ color_setting_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags)
 	rv = 1;
 	break;
 
+      case MC_ADDHEADER:			/* add custom index token color */
       case MC_ADD :				/* add custom header color */
 	/* get header field name */
 	help = NO_HELP;
 	while(1){
 	    i = optionally_enter(sval, -FOOTER_ROWS(ps), 0, sizeof(sval),
-			     _("Enter the name of the header field to be added: "),
+		(cmd == MC_ADD ? _("Enter the name of the header field to be added: ")
+			       : _("Enter the name of the index token to be added: ")),
 				 NULL, help, NULL);
-	    if(i == 0)
+	    if(i == 0){
+	      if(cmd == MC_ADDHEADER){
+		if(itoktype(sval, FOR_INDEX) == NULL){
+		   q_status_message1(SM_ORDER, 1, 3,
+			 _("token \"%s\" not recognized"), sval);
+		   continue;
+	        } else if(colorindexrule(sval) != NULL){
+		   q_status_message1(SM_ORDER, 1, 3,
+			 _("Color rule for token \"%s\" already exists"), sval);
+		   continue;
+		}
+	      }
 	      break;
+	    }
 	    else if(i == 1){
 		cmd_cancelled("Add");
 		cancel = 1;
@@ -1938,7 +2048,7 @@ color_setting_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags)
 	confline = var_from_spec_color(new_hcolor);
 
 	/* add it to end of list */
-	alval = ALVAL(&ps->vars[V_VIEW_HDR_COLORS], ew);
+	alval = ALVAL(&ps->vars[(cmd == MC_ADD ? V_VIEW_HDR_COLORS : V_INDEX_TOKEN_COLORS)], ew);
 	if(alval){
 	    /* get rid of possible empty value first */
 	    if((t = *alval) && t[0] && !t[0][0] && !(t+1)[0])
@@ -1963,7 +2073,7 @@ color_setting_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags)
 	  ;
 
 	/* back up to the KEYWORD COLORS title line */
-	for(; ctmp && (!ctmp->value || strcmp(ctmp->value, KW_COLORS_HDR))
+	for(; ctmp && (!ctmp->value || strcmp(ctmp->value, (cmd == MC_ADD ? KW_COLORS_HDR : HDR_COLORS)))
 	      && ctmp->prev;
 	    ctmp = prev_confline(ctmp))
 	  ;
@@ -2001,7 +2111,8 @@ color_setting_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags)
 	    free_conflines(&beg);
 	}
 
-	add_header_color_line(ps, cl, confline, i);
+	add_header_color_line(ps, cl, confline, i, cmd == MC_ADD 
+					? V_VIEW_HDR_COLORS : V_INDEX_TOKEN_COLORS);
 
 	/* be sure current is on selectable line */
 	for(; *cl && ((*cl)->flags & CF_NOSELECT); *cl = next_confline(*cl))
@@ -2013,13 +2124,16 @@ color_setting_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags)
 	break;
 
       case MC_DELETE :				/* delete custom header color */
-	if((*cl)->var != &ps->vars[V_VIEW_HDR_COLORS]){
+	if((*cl)->var != &ps->vars[V_VIEW_HDR_COLORS]
+		&& (*cl)->var != &ps->vars[V_INDEX_TOKEN_COLORS]){
 	    q_status_message(SM_ORDER, 0, 2,
 			     _("Can't delete this color setting"));
 	    break;
 	}
 
-	if(want_to(_("Really delete header color from config"),
+	if(want_to(((*cl)->var == &ps->vars[V_VIEW_HDR_COLORS]
+		? _("Really delete header color from config")
+		: _("Really delete index token color from config")),
 		   'y', 'n', NO_HELP, WT_NORM) != 'y'){
 	    cmd_cancelled("Delete");
 	    return(rv);
@@ -2055,19 +2169,22 @@ color_setting_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags)
 	another = 0;
 	/* reset current line */
 	if(end && end->next && end->next->next && 
-	   end->next->next->var == &ps->vars[V_VIEW_HDR_COLORS]){
+	   end->next->next->var == &ps->vars[(*cl)->var == &ps->vars[V_VIEW_HDR_COLORS] 
+					? V_VIEW_HDR_COLORS : V_INDEX_TOKEN_COLORS]){
 	    *cl = end->next->next;		/* next Header Color */
 	    another++;
 	}
 	else if(beg && beg->prev &&
-	   beg->prev->var == &ps->vars[V_VIEW_HDR_COLORS]){
+	   beg->prev->var == &ps->vars[(*cl)->var == &ps->vars[V_VIEW_HDR_COLORS]
+					? V_VIEW_HDR_COLORS : V_INDEX_TOKEN_COLORS]){
 	    *cl = beg->prev;			/* prev Header Color */
 	    another++;
 	}
 
 	/* adjust SPEC_COLOR_S index (varmem) values */
 	for(ctmp = end; ctmp; ctmp = next_confline(ctmp))
-	  if(ctmp->var == &ps->vars[V_VIEW_HDR_COLORS])
+	  if(ctmp->var == &ps->vars[(*cl)->var == &ps->vars[V_VIEW_HDR_COLORS] 
+				? V_VIEW_HDR_COLORS : V_INDEX_TOKEN_COLORS])
 	    ctmp->varmem = CFC_ICUST_DEC(ctmp);
 	
 	/*
@@ -2099,7 +2216,8 @@ color_setting_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags)
 
 	    end->flags     = CF_NOSELECT;
 	    end->help      = NO_HELP;
-	    end->value     = cpystr(_(ADDHEADER_COMMENT));
+	    end->value     = cpystr((*cl)->var == &ps->vars[V_VIEW_HDR_COLORS] 
+				? _(ADDHEADER_COMMENT) : _(ADDINDEXTOKEN_COMMENT));
 	    end->valoffset = COLOR_INDENT;
 	    end->varnamep  = NULL;
 	    end->varmem    = 0;
@@ -2557,7 +2675,7 @@ color_edit_screen(struct pine *ps, CONF_S **cl)
     OPT_SCREEN_S     screen, *saved_screen;
     CONF_S          *ctmp = NULL, *first_line = NULL, *ctmpb;
     int              rv, is_index = 0, is_hdrcolor = 0, indent = 12;
-    int              is_general = 0, is_keywordcol = 0;
+    int              is_general = 0, is_keywordcol = 0, is_idxtokcol = 0;
     char             tmp[1200+1], name[1200], *p;
     struct variable *vtmp, v;
     int              i, def;
@@ -2568,6 +2686,8 @@ color_edit_screen(struct pine *ps, CONF_S **cl)
     vtmp = (*cl)->var;
     if(vtmp == &ps->vars[V_VIEW_HDR_COLORS])
       is_hdrcolor++;
+    else if(vtmp == &ps->vars[V_INDEX_TOKEN_COLORS])
+      is_idxtokcol++;
     else if(vtmp == &ps->vars[V_KW_COLORS])
       is_keywordcol++;
     else if(color_holding_var(ps, vtmp)){
@@ -2619,6 +2739,24 @@ color_edit_screen(struct pine *ps, CONF_S **cl)
 	      name[i] = toupper((unsigned char) name[i]);
 	}
     }
+    else if(is_idxtokcol){
+	char **lval;
+	
+	lval = LVAL(vtmp, ew);
+	hcolors = spec_colors_from_varlist(lval, 0);
+
+	for(hc = hcolors, i = 0; hc; hc = hc->next, i++)
+	  if(CFC_ICUST(*cl) == i)
+	    break;
+	
+	if(hc){
+	    snprintf(name, sizeof(name), "%s%s", TOKEN_WORD, hc->spec);
+	    name[sizeof(name)-1] = '\0';
+	    i = sizeof(TOKEN_WORD) - 1;
+	    if(islower((unsigned char) name[i]))
+	      name[i] = toupper((unsigned char) name[i]);
+	}
+    }
     else if(is_keywordcol){
 	char **lval;
 
@@ -2664,7 +2802,7 @@ color_edit_screen(struct pine *ps, CONF_S **cl)
     ctmp->flags			|= (CF_STARTITEM | CF_NOSELECT);
     ctmp->keymenu		 = &color_changing_keymenu;
 
-    if(is_hdrcolor){
+    if(is_hdrcolor || is_idxtokcol){
 	char **apval;
 
 	def = !(hc && hc->fg && hc->fg[0] && hc->bg && hc->bg[0]);

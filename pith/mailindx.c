@@ -573,6 +573,17 @@ static INDEX_PARSE_T itokens[] = {
     {NULL,		iNothing,	FOR_NOTHING}
 };
 
+INDEX_PARSE_T itokensinv[sizeof(itokens)/sizeof(itokens[0])];
+
+void
+inverse_itokens(void)
+{
+    INDEX_PARSE_T *pt;
+    for (pt = itokens; pt->name; pt++)
+        itokensinv[pt->ctype].ctype = pt - itokens; 
+
+}
+
 INDEX_PARSE_T *
 itoken(int i)
 {
@@ -1990,6 +2001,7 @@ format_index_index_line(INDEXDATA_S *idata)
     ICE_S        *ice, **icep;
     IFIELD_S     *ifield;
     IELEM_S      *ielem;
+    COLOR_PAIR	 *color = NULL;
     struct variable *vars = ps_global->vars;
 
     dprint((8, "=== format_index_line(msgno=%ld,rawno=%ld) ===\n",
@@ -2932,6 +2944,14 @@ format_index_index_line(INDEXDATA_S *idata)
 	   */
 	  if(!ifield->ielem){
 	      ielem  = new_ielem(&ifield->ielem);
+
+	      if(color = hdr_color(itokens[itokensinv[cdesc->ctype].ctype].name, NULL, ps_global->index_token_colors)){
+		if(pico_usingcolor()){
+		  ielem->color = new_color_pair(color->fg, color->bg);
+		  ielem->type = eTypeCol;
+		}
+		free_color_pair(&color);
+	      }
 
 	      ielem->freedata = 1;
 	      ielem->data = cpystr(str);

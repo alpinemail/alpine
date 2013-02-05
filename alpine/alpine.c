@@ -196,6 +196,7 @@ main(int argc, char **argv)
 #endif
 
     status_message_lock_init();
+    inverse_itokens();
 
 #if	HAVE_SRANDOM
     /*

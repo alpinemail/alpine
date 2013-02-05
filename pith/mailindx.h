@@ -37,6 +37,7 @@ void	       init_index_format(char *, INDEX_COL_S **);
 void	       free_index_format(INDEX_COL_S **);
 void	       reset_index_format(void);
 INDEX_PARSE_T *itoktype(char *, int);
+void 	       inverse_itokens(void);
 char	      *prepend_keyword_subject(MAILSTREAM *, long, char *, SubjKW, IELEM_S **, char *);
 int	       get_index_line_color(MAILSTREAM *, SEARCHSET *, PAT_STATE **, COLOR_PAIR **);
 void	       setup_for_index_index_screen(void);

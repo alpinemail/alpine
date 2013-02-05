@@ -1155,7 +1155,7 @@ struct key color_pattern_keys[] =
 
 	HELP_MENU,
 	OTHER_MENU,
-	NULL_MENU,
+	{"I", N_("IndxHdr"), {MC_ADDHEADER,1,{'i'}}, KS_NONE},
 	NULL_MENU,
 	NULL_MENU,
 	NULL_MENU,
@@ -2452,7 +2452,7 @@ struct key color_setting_keys[] =
 
 	HELP_MENU,
 	OTHER_MENU,
-	NULL_MENU,
+	{"I", N_("IndxHdr"), {MC_ADDHEADER,1,{'i'}}, KS_NONE},
 	NULL_MENU,
 	NULL_MENU,
 	NULL_MENU,
@@ -2481,7 +2481,7 @@ struct key custom_color_setting_keys[] =
 
         HELP_MENU,
 	OTHER_MENU,
-	NULL_MENU,
+	{"I", N_("IndxHdr"), {MC_ADDHEADER,1,{'i'}}, KS_NONE},
 	NULL_MENU,
 	{"D", N_("DeleteHdr"), {MC_DELETE,1,{'d'}}, KS_NONE},
 	/* TRANSLATORS: shuffle headers (change the order of headers) */
@@ -2527,7 +2527,7 @@ struct key kw_color_setting_keys[] =
 
 	HELP_MENU,
 	OTHER_MENU,
-	NULL_MENU,
+	{"I", N_("IndxHdr"), {MC_ADDHEADER,1,{'i'}}, KS_NONE},
 	NULL_MENU,
 	NULL_MENU,
 	NULL_MENU,

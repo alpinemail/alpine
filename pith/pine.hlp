@@ -141,7 +141,7 @@ reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 
 ============= h_revision =================
-$Id: pine.hlp 1266 2009-07-14 18:39:12Z hubert@u.washington.edu $
+$Id: pine.hlp 1266 2013-02-07 18:39:12Z chappa@washington.edu $
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -180,7 +180,19 @@ Additions include:
 <P>
 
 <UL>
+   <LI> Add ability to <A HREF="h_config_folder_color">color folder names</A>, <A 
+HREF="h_config_directory_color">directory names</A>,
+ and <A HREF="h_config_folder_list_color">text</A> in the FOLDER SCREEN
+   <LI> Add the ability to <A HREF="h_config_indextoken_color">color any token</A>
+used in the display of the INDEX SCREEN.
+   <LI> New option <A HREF="h_config_preserve_field"><!--#echo var="FEAT_preserve-original-fields"--></A>
+that adds the ability to preserve To: and Cc: fields when replying to a 
+message, as specified by original sender.
+   <LI> Add a _SILENT_ token to the 
+<A HREF="h_config_display_filters">list of tokens</A>
+ for a display filter, so that Alpine will not redraw the screen when it is unnecessary.
    <LI> Quota command includes subcommands for printing, forwarding, etc.
+
 </UL>
 
 <P>
@@ -3271,6 +3283,7 @@ There are also additional details on
 <li><a href="h_config_no_fcc_attach">FEATURE: <!--#echo var="FEAT_fcc-without-attachments"--></a>
 <li><a href="h_config_force_arrow">FEATURE: <!--#echo var="FEAT_force-arrow-cursor"--></a>
 <li><a href="h_config_forward_as_attachment">FEATURE: <!--#echo var="FEAT_forward-as-attachment"--></a>
+<li><a href="h_config_preserve_field">FEATURE: <!--#echo var="FEAT_preserve-original-fields"--></a>
 <li><a href="h_config_quell_empty_dirs">FEATURE: <!--#echo var="FEAT_quell-empty-directories"--></a>
 <li><a href="h_config_hide_nntp_path">FEATURE: <!--#echo var="FEAT_hide-nntp-path"--></a>
 <li><a href="h_config_attach_in_reply">FEATURE: <!--#echo var="FEAT_include-attachments-in-reply"--></a>
@@ -22932,6 +22945,13 @@ This number could be used as a session key.  It is sent in this way to
 improve security.  The number is unique to the current Alpine session
 and is only generated once per session.
 </DD>
+
+<DT>_SILENT_</DT>
+<DD>When the filter is executed, this token tells Alpine not to repaint
+the screen while the command is being executed. This can be used with 
+filters that do not interact with the user, and therefore repainting 
+the screen is not necessary. 
+</DD>
 </DL>
 
 <P>
@@ -27766,6 +27786,42 @@ the sender of the forwarded message, or process it as part of a spam report.
 &lt;End of help on this topic&gt;
 </BODY>
 </HTML>
+====== h_config_preserve_field =====
+<HTML>
+<HEAD>
+<TITLE>FEATURE: <!--#echo var="FEAT_preserve-original-fields"--></TITLE>
+</HEAD>
+<BODY>
+<H1>FEATURE: <!--#echo var="FEAT_preserve-original-fields"--></H1>
+
+When you reply to a message that has been sent to several recipients, some of
+them may have been added in different parts of the headers. For example,
+some of the recipients will be listed in the To: header, while others will
+be listed in the Cc: header.
+<P>
+If this feature is disabled, the default behavior of Alpine will be used, 
+and that is, that almost all recipients of the message will be 
+listed in the Cc: field. However, if you enable this feature, then, 
+excepting you, recipients originally listed in the Cc: field will be 
+listed again in the Cc: field, and those listed in the To: field in the 
+original message will be listed in the To: field again. The person in the 
+From: field will be added to the To: field.
+<P>
+Note that this will cause some messages that you send in Alpine to look
+different. In particular, the To: field of a message will not be put in the
+Cc: field, as is normally done. In fact, most people expect this to happen.
+If you find that this is a problem you should disable this feature. You can
+still make Alpine have this behavior on a per message basis. In order to do
+this, you will see a new option in the menu for the &quot;Reply to all
+recipients?&quot; question. In this case, pressing &quot;p&quot; will make
+Alpine toggle its question so you can preserve the To: and Cc: fields for that
+message.
+<UL>   
+<LI><A HREF="h_finding_help">Finding more information and requesting help</A>
+</UL><P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
 ====== h_config_sub_lists =====
 <HTML>
 <HEAD>
@@ -31391,6 +31447,99 @@ to see the available Editing and Navigation commands.
 &lt;End of help on this topic&gt;
 </BODY>
 </HTML>
+====== h_config_folder_color =====
+<HTML>
+<HEAD>
+<TITLE>OPTION: Folder Color</TITLE>
+</HEAD>
+<BODY>
+<H1>OPTION: Folder Color</H1>
+
+Sets the colors Alpine uses for coloring a folder in the FOLDER LIST
+screen. By default, the Folder Color is the normal text color.
+
+<P>
+If you set a color for this feature, other than the normal color
+(the default), or a color for
+<A HREF="h_config_directory_color">Directory Color</A>, then directories
+will be colored according to the color specified in the
+<A HREF="h_config_directory_color">Directory Color</A> option. In this
+case, the color will be the only indication that the colored name
+refers to a directory. The normal behavior is that Alpine
+indicates that a name refers to a directory by appending a
+separator (like &quot;/&quot; or &quot;.&quot;) to the name of
+the folder.
+
+<P>
+If a folder is a directory, then the folder name will be painted
+according to the color defined by this variable, and a separator
+indicator  (like &quot;/&quot; or &quot;.&quot;) will be added 
+to the name. That
+indicator will be painted according to the color defined in the
+<A HREF="h_config_directory_color">Directory Color</A> option.
+
+<P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+====== h_config_directory_color =====
+<HTML>
+<HEAD>
+<TITLE>OPTION: Directory Color</TITLE>
+</HEAD>
+<BODY>
+<H1>OPTION: Directory Color</H1>
+
+Sets the colors Alpine uses for coloring a directory in the FOLDER LIST
+screen. By default, the Folder Color is the normal text color.
+<P>
+If you set a color for this feature, other than the normal color
+(the default), or a color for
+<A HREF="h_config_folder_color">Folder Color</A>, then folders
+will be colored according to the color specified in the
+<A HREF="h_config_folder_color">Folder Color</A> option. In this
+case, the color will be the only indication that the colored name
+refers to a directory. The normal behavior is that Alpine
+indicates that a name refers to a directory by appending a
+separator (like &quot;/&quot; or &quot;.&quot;) to the name of
+the folder.
+<P>
+If a folder is a directory, then the folder name will be painted
+according to the color defined by the option
+<A HREF="h_config_folder_color">Folder Color</A>, and the separator
+indicator  (like &quot;/&quot; or &quot;.&quot;) will be added
+after the name. That
+indicator will be painted according to the color defined in this
+option.
+<P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+====== h_config_folder_list_color =====
+<HTML>
+<HEAD>
+<TITLE>OPTION: Folder-List Color</TITLE>
+</HEAD>
+<BODY>
+<H1>OPTION: Folder-List Color</H1>
+
+Sets the colors Alpine uses for coloring normal text in the FOLDER LIST
+screen. By default, the Folder-List Color is the normal text color.
+<P>
+This text refers to the informative text that Alpine displays so you
+can recognize each collection. The color of the content of each collection
+is determined by the options <A HREF="h_config_folder_color">Folder Color</A>
+and <A HREF="h_config_directory_color">Directory Color</A>.
+<P>
+Unlike the options
+<A HREF="h_config_folder_color">Folder Color</A>
+and <A HREF="h_config_directory_color">Directory Color</A>, configuring
+this option does not affect the way that Alpine reports folders,
+directories and folders that are directories.
+<P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
 ====== h_config_incunseen_color =====
 <HTML>
 <HEAD>
@@ -31705,6 +31854,35 @@ contain the word &quot;important&quot; will be colored.
 If the pattern you enter is a comma-separated list of patterns, then coloring
 happens if any of those patterns matches.
 <P>
+<A HREF="h_color_setup">Descriptions of the available commands</A>
+<P>
+Look <A HREF="h_edit_nav_cmds">here</A>
+to see the available Editing and Navigation commands.
+<P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+====== h_config_indextoken_color =====
+<HTML>
+<HEAD>
+<TITLE>OPTION: <!--#echo var="VAR_index-token-colors"--></TITLE>
+</HEAD>
+<BODY>
+<H1>OPTION: <!--#echo var="VAR_index-token-colors"--></H1>
+
+This option allows you to set up the color in which any token, not specified by the
+previous options, will be colored in the MESSAGE INDEX screen. 
+<P>
+In order to use this option, you must press the &quot;I&quot; <B>IndxHdr</B> command, and add
+a token that can be used in the index format. 
+The list of available tokens is <A HREF="h_index_tokens">here</A>.
+<P>
+If you fail to enter a valid token your entry will be ignored, and you will be asked to
+enter a new one. Once you have entered a valid token, a line will be added to the
+configuration screen that you can use to set up the colors in which that token will
+be painted. This is done in the same way that you configure colors for other
+variables.
+
 <A HREF="h_color_setup">Descriptions of the available commands</A>
 <P>
 Look <A HREF="h_edit_nav_cmds">here</A>
@@ -35324,3 +35502,6 @@ in size will be selected. Examples: 2176, 1.53K (1530), or 3M (3000000).
 ========== h_select_by_smaller_size ==========
 Enter a number or ^C to cancel. All messages less than this many characters
 in size will be selected. Examples: 2176, 1.53K (1530), or 3M (3000000).
+========== h_preserve_field ==========
+Use 'p' to toggle between preserving or not preserving the original To:
+and Cc: fields of the message. Enter ^C to cancel message.

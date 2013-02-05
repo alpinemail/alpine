@@ -198,6 +198,8 @@ CONF_TXT_T cf_text_titlebar_color_style[] =	"Controls display of color for the t
 
 CONF_TXT_T cf_text_view_hdr_color[] =	"When viewing messages, these are the header colors";
 
+CONF_TXT_T cf_text_index_token_color[] =	"Colors in which tokens will be displayed in the index screen";
+
 CONF_TXT_T cf_text_save_msg_name_rule[] =	"Determines default folder name for Saves...\n# Choices: default-folder, by-sender, by-from, by-recipient, last-folder-used.\n# Default: \"default-folder\", i.e. \"saved-messages\" (Unix) or \"SAVEMAIL\" (PC).";
 
 CONF_TXT_T cf_text_fcc_name_rule[] =	"Determines default name for Fcc...\n# Choices: default-fcc, by-recipient, last-fcc-used.\n# Default: \"default-fcc\" (see also \"default-fcc=\" variable.)";
@@ -789,6 +791,12 @@ static struct variable variables[] = {
 {"title-background-color",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0},
 {"title-closed-foreground-color",	0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0},
 {"title-closed-background-color",	0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0},
+{"folder-foreground-color",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0},
+{"folder-background-color",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0},
+{"directory-foreground-color",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0},
+{"directory-background-color",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0},
+{"folder-list-text-foreground-color",	0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0},
+{"folder-list-text-background-color",	0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0},
 {"status-foreground-color",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0},
 {"status-background-color",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0},
 {"keylabel-foreground-color",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0},
@@ -841,6 +849,8 @@ static struct variable variables[] = {
 {"index-from-background-color",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0},
 {"index-opening-foreground-color",	0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0},
 {"index-opening-background-color",	0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0},
+{"index-token-colors",			0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0,
+	NULL,			cf_text_index_token_color},
 {"viewer-hdr-colors",			0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0,
 	"Viewer Header Colors",	cf_text_view_hdr_color},
 {"keyword-colors",			0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0,
@@ -1651,6 +1661,9 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     GLO_TITLE_BACK_COLOR	= cpystr(DEFAULT_TITLE_BACK_RGB);
     GLO_TITLECLOSED_FORE_COLOR	= cpystr(DEFAULT_TITLECLOSED_FORE_RGB);
     GLO_TITLECLOSED_BACK_COLOR	= cpystr(DEFAULT_TITLECLOSED_BACK_RGB);
+    GLO_FOLDER_FORE_COLOR	= cpystr(DEFAULT_NORM_FORE_RGB);
+    GLO_DIRECTORY_FORE_COLOR	= cpystr(DEFAULT_NORM_FORE_RGB);
+    GLO_FOLDER_LIST_FORE_COLOR	= cpystr(DEFAULT_NORM_FORE_RGB);
     GLO_METAMSG_FORE_COLOR	= cpystr(DEFAULT_METAMSG_FORE_RGB);
     GLO_METAMSG_BACK_COLOR	= cpystr(DEFAULT_METAMSG_BACK_RGB);
     GLO_QUOTE1_FORE_COLOR	= cpystr(DEFAULT_QUOTE1_FORE_RGB);
@@ -2800,6 +2813,8 @@ feature_list(int index)
 	 F_ENABLE_STRIP_SIGDASHES, h_config_strip_sigdashes, PREF_RPLY, 0},
 	{"forward-as-attachment", "Forward messages as attachments",
 	 F_FORWARD_AS_ATTACHMENT, h_config_forward_as_attachment, PREF_RPLY, 0},
+	{"preserve-original-fields", NULL,
+	 F_PRESERVE_ORIGINAL_FIELD, h_config_preserve_field, PREF_RPLY, 0},
 
 /* Sending Prefs */
 	{"disable-sender", "Do Not Generate Sender Header",
@@ -6401,6 +6416,9 @@ set_current_color_vals(struct pine *ps)
 
     set_color_val(&vars[V_TITLE_FORE_COLOR], 1);
     set_color_val(&vars[V_TITLECLOSED_FORE_COLOR], 0);
+    set_color_val(&vars[V_FOLDER_FORE_COLOR], 0);
+    set_color_val(&vars[V_DIRECTORY_FORE_COLOR], 0);
+    set_color_val(&vars[V_FOLDER_LIST_FORE_COLOR], 0);
     set_color_val(&vars[V_STATUS_FORE_COLOR], 1);
     set_color_val(&vars[V_KEYLABEL_FORE_COLOR], 1);
     set_color_val(&vars[V_KEYNAME_FORE_COLOR], 1);
@@ -6425,6 +6443,7 @@ set_current_color_vals(struct pine *ps)
     set_color_val(&vars[V_INCUNSEEN_FORE_COLOR], 0);
     set_color_val(&vars[V_SIGNATURE_FORE_COLOR], 0);
 
+    set_current_val(&ps->vars[V_INDEX_TOKEN_COLORS], TRUE, TRUE);
     set_current_val(&ps->vars[V_VIEW_HDR_COLORS], TRUE, TRUE);
     set_current_val(&ps->vars[V_KW_COLORS], TRUE, TRUE);
     set_custom_spec_colors(ps);
@@ -6577,6 +6596,11 @@ var_defaults_to_rev(struct variable *v)
 void
 set_custom_spec_colors(struct pine *ps)
 {
+    if(ps->index_token_colors)
+      free_spec_colors(&ps->index_token_colors);
+
+    ps->index_token_colors = spec_colors_from_varlist(ps->VAR_INDEX_TOKEN_COLORS, 1);
+
     if(ps->hdr_colors)
       free_spec_colors(&ps->hdr_colors);
 
@@ -7739,6 +7763,12 @@ config_help(int var, int feature)
       case V_TITLECLOSED_FORE_COLOR :
       case V_TITLECLOSED_BACK_COLOR :
 	return(h_config_titleclosed_color);
+      case V_FOLDER_FORE_COLOR:
+	return(h_config_folder_color);
+      case V_DIRECTORY_FORE_COLOR:
+	return(h_config_directory_color);
+      case V_FOLDER_LIST_FORE_COLOR:
+	return(h_config_folder_list_color);
       case V_STATUS_FORE_COLOR :
       case V_STATUS_BACK_COLOR :
 	return(h_config_status_color);
@@ -7809,6 +7839,8 @@ config_help(int var, int feature)
 	return(h_config_metamsg_color);
       case V_VIEW_HDR_COLORS :
 	return(h_config_customhdr_color);
+      case V_INDEX_TOKEN_COLORS :
+	return(h_config_indextoken_color);
       case V_PRINTER :
 	return(h_config_printer);
       case V_PERSONAL_PRINT_CATEGORY :

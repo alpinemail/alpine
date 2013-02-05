@@ -373,20 +373,37 @@ reply_seed(struct pine *ps, ENVELOPE *outgoing, ENVELOPE *env,
 	/* Put Reply-To or From in To. */
 	*to_tail = reply_cp_addr(ps, 0, NULL, NULL, outgoing->to,
 				 (ADDRESS *) NULL, saved_from, RCA_ALL);
-	/* and the rest in cc */
 	if(replytoall){
-	    *cc_tail = reply_cp_addr(ps, 0, NULL, NULL, outgoing->cc,
-				     outgoing->to, saved_to, RCA_ALL);
-	    while(*cc_tail)		/* stay on last address */
-	      cc_tail = &(*cc_tail)->next;
+	    if(ps->preserve){
+		while(*to_tail)
+		   to_tail = &(*to_tail)->next;
 
-	    *cc_tail = reply_cp_addr(ps, 0, NULL, NULL, outgoing->cc,
-				     outgoing->to, saved_cc, RCA_ALL);
-	    while(*cc_tail)
-	      cc_tail = &(*cc_tail)->next;
+	        *to_tail = reply_cp_addr(ps, 0, NULL, NULL, outgoing->to,
+				 (ADDRESS *) NULL, saved_to, RCA_ALL);
 
-	    *cc_tail = reply_cp_addr(ps, 0, NULL, NULL, outgoing->cc,
+		while(*to_tail)
+		   to_tail = &(*to_tail)->next;
+
+		*to_tail = reply_cp_addr(ps, 0, NULL, NULL, outgoing->cc,
 				     outgoing->to, saved_resent, RCA_ALL);
+
+		*cc_tail = reply_cp_addr(ps, 0, NULL, NULL, outgoing->cc,
+				     outgoing->to, saved_cc, RCA_ALL);
+	    }
+	    else{	/* and the rest in cc */
+		*cc_tail = reply_cp_addr(ps, 0, NULL, NULL, outgoing->cc,
+				     outgoing->to, saved_to, RCA_ALL);
+		while(*cc_tail)		/* stay on last address */
+	           cc_tail = &(*cc_tail)->next;
+
+		*cc_tail = reply_cp_addr(ps, 0, NULL, NULL, outgoing->cc,
+				     outgoing->to, saved_cc, RCA_ALL);
+		while(*cc_tail)
+		      cc_tail = &(*cc_tail)->next;
+
+		*cc_tail = reply_cp_addr(ps, 0, NULL, NULL, outgoing->cc,
+				     outgoing->to, saved_resent, RCA_ALL);
+	    }
 	}
     }
     else if(saved_to){

@@ -78,7 +78,12 @@ or search for a folder name.
 #define	FLW_LIST	0x04	/* Allow for ListMode for subscribing */
 #define	FLW_UNSEEN	0x08	/* Add (unseen) */
 
-
+/* folder colors */
+#define CLR_UNSEEN	0x01	/* color folder with unseen/new messages */
+#define CLR_FOLDER	0x02	/* color a name of folder or directory   */
+#define CLR_DIRECT	0x04	/* color a separator of a directory	 */
+#define CLR_FLDRLT	0x08	/* color of explanatory text in list scrn*/
+#define CLR_NORMAL	0x10	/* use normal color			 */
 
 /*----------------------------------------------------------------------
    The data needed to redraw the folders screen, including the case where the 
@@ -174,7 +179,10 @@ int         folder_list_write(gf_io_t, HANDLE_S **, CONTEXT_S *, int, char *, in
 int	    folder_list_write_prefix(FOLDER_S *, int, gf_io_t);
 int         folder_list_write_middle(FOLDER_S *fp, CONTEXT_S *ctxt, gf_io_t pc, HANDLE_S *);
 int	    folder_list_write_suffix(FOLDER_S *, int, gf_io_t);
-int         color_monitored_unseen(FOLDER_S *, int);
+int         color_monitored(FOLDER_S *, int, int);
+int         color_test_for_folder(char *, char *);
+int         color_write_for_folder(gf_io_t pc, int testtype);
+int         use_color_for_folder(FOLDER_S *fp);
 int	    folder_list_ith(int, CONTEXT_S *);
 char	   *folder_list_center_space(char *, int);
 HANDLE_S   *folder_list_handle(FSTATE_S *, HANDLE_S *);
@@ -1616,8 +1624,10 @@ folder_list_text(struct pine *ps, FPROC_S *fp, gf_io_t pc, HANDLE_S **handlesp, 
 		if(c_list->prev)
 		  gf_puts("\n", pc);		/* blank line */
 
+		color_write_for_folder(pc, CLR_FLDRLT);
 		gf_puts(repeat_char(cols, '-'), pc);
 		gf_puts("\n", pc);
+		color_write_for_folder(pc, CLR_NORMAL);
 	    }
 
 	    /* nickname or description */
@@ -1626,6 +1636,7 @@ folder_list_text(struct pine *ps, FPROC_S *fp, gf_io_t pc, HANDLE_S **handlesp, 
 		   || F_ON(F_CMBND_SUBDIR_DISP, ps_global))){
 		char buf[6*MAX_SCREEN_COLS + 1];
 
+		color_write_for_folder(pc, CLR_FLDRLT);
 		if(cols < 40){
 		  snprintf(buf, sizeof(buf), "%.*s", cols,
 			strsquish(tmp_20k_buf, SIZEOF_20KBUF,
@@ -1652,6 +1663,7 @@ folder_list_text(struct pine *ps, FPROC_S *fp, gf_io_t pc, HANDLE_S **handlesp, 
 
 		gf_puts(buf, pc);
 		gf_puts("\n", pc);
+		color_write_for_folder(pc, CLR_NORMAL);
 	    }
 	    else if(c_list->label){
 		if(utf8_width(c_list->label) > ps_global->ttyo->screen_cols)
@@ -1661,9 +1673,11 @@ folder_list_text(struct pine *ps, FPROC_S *fp, gf_io_t pc, HANDLE_S **handlesp, 
 
 		lbuf[sizeof(lbuf)-1] = '\0';
 
+		color_write_for_folder(pc, CLR_FLDRLT);
 		gf_puts(folder_list_center_space(lbuf, cols), pc);
 		gf_puts(lbuf, pc);
 		gf_puts("\n", pc);
+		color_write_for_folder(pc, CLR_NORMAL);
 	    }
 
 	    if(c_list->comment){
@@ -1674,9 +1688,11 @@ folder_list_text(struct pine *ps, FPROC_S *fp, gf_io_t pc, HANDLE_S **handlesp, 
 
 		lbuf[sizeof(lbuf)-1] = '\0';
 
+		color_write_for_folder(pc, CLR_FLDRLT);
 		gf_puts(folder_list_center_space(lbuf, cols), pc);
 		gf_puts(lbuf, pc);
 		gf_puts("\n", pc);
+		color_write_for_folder(pc, CLR_NORMAL);
 	    }
 
 	    if(c_list->dir->desc){
@@ -1685,9 +1701,11 @@ folder_list_text(struct pine *ps, FPROC_S *fp, gf_io_t pc, HANDLE_S **handlesp, 
 		strncpy(buf, strsquish(tmp_20k_buf,SIZEOF_20KBUF,c_list->dir->desc,cols),
 			sizeof(buf)-1);
 		buf[sizeof(buf)-1] = '\0';
+		color_write_for_folder(pc, CLR_FLDRLT);
 		gf_puts(folder_list_center_space(buf, cols), pc);
 		gf_puts(buf, pc);
 		gf_puts("\n", pc);
+		color_write_for_folder(pc, CLR_NORMAL);
 	    }
 
 	    if(c_list->use & CNTXT_ZOOM){
@@ -1704,18 +1722,23 @@ folder_list_text(struct pine *ps, FPROC_S *fp, gf_io_t pc, HANDLE_S **handlesp, 
 
 		lbuf[sizeof(lbuf)-1] = '\0';
 
+		color_write_for_folder(pc, CLR_FLDRLT);
 		gf_puts(folder_list_center_space(lbuf, cols), pc);
 		gf_puts(lbuf, pc);
 		gf_puts("\n", pc);
+		color_write_for_folder(pc, CLR_NORMAL);
 	    }
 
+	    color_write_for_folder(pc, CLR_FLDRLT);
 	    gf_puts(repeat_char(cols, '-'), pc);
 	    gf_puts("\n\n", pc);
+	    color_write_for_folder(pc, CLR_NORMAL);
 	}
 
 	if(shown){
 	    /* Run thru list formatting as necessary */
 	    if((ftotal = folder_total(FOLDERS(c_list))) != 0){
+		int use_color;
 		/* If previously selected, mark members of new list */
 		selected = selected_folders(c_list);
 
@@ -1732,6 +1755,7 @@ folder_list_text(struct pine *ps, FPROC_S *fp, gf_io_t pc, HANDLE_S **handlesp, 
 
 		    fcount++;
 
+		    use_color = use_color_for_folder(f);
 		    fname = folder_name_decoded((unsigned char *)FLDR_NAME(f));
 
 		    width = utf8_width(fname ? (char *)fname : FLDR_NAME(f));
@@ -1740,7 +1764,7 @@ folder_list_text(struct pine *ps, FPROC_S *fp, gf_io_t pc, HANDLE_S **handlesp, 
 		       fs_give((void **)&fname);
 
 		    if(f->isdir)
-		      width += (f->isfolder) ? 3 : 1;
+		       width += (f->isfolder) ? (use_color ? 1 : 3) : (use_color ? 0 : 1);
 
 		    if(NEWS_TEST(c_list) && (c_list->use & CNTXT_FINDALL))
 		      /* assume listmode so we don't have to reformat */
@@ -1874,9 +1898,11 @@ folder_list_text(struct pine *ps, FPROC_S *fp, gf_io_t pc, HANDLE_S **handlesp, 
 
 		lbuf[sizeof(lbuf)-1] = '\0';
 
+		color_write_for_folder(pc, CLR_FLDRLT);
 		gf_puts(folder_list_center_space(lbuf, cols), pc);
 		(void) folder_list_write(pc, handlesp, c_list, -1, lbuf,
 					(handlesp) ? FLW_LUNK : FLW_NONE);
+		color_write_for_folder(pc, CLR_NORMAL);
 	    }
 	}
 	else if(fp->fs->combined_view
@@ -1891,9 +1917,11 @@ folder_list_text(struct pine *ps, FPROC_S *fp, gf_io_t pc, HANDLE_S **handlesp, 
 
 	    lbuf[sizeof(lbuf)-1] = '\0';
 
+	    color_write_for_folder(pc, CLR_FLDRLT);
 	    gf_puts(folder_list_center_space(lbuf, cols), pc);
 	    (void) folder_list_write(pc, handlesp, c_list, -1, lbuf,
 				    (handlesp) ? FLW_LUNK : FLW_NONE);
+	    color_write_for_folder(pc, CLR_NORMAL);
 	}
 
 	gf_puts("\n", pc);			/* blank line */
@@ -1940,17 +1968,24 @@ folder_list_write(gf_io_t pc, HANDLE_S **handlesp, CONTEXT_S *ctxt, int fnum, ch
 
     if(h1){
 	/* color unseen? */
-	if(color_monitored_unseen(fp, flags)){
+	if(color_monitored(fp, flags, CLR_UNSEEN)){
 	    h1->color_unseen = 1;
 	    if(h2)
 	      h2->color_unseen = 1;
 	}
+	/* color folder? */
+	if(color_monitored(fp, flags, CLR_FOLDER)){
+	    h1->color_folder = 1;
+	    if(h2)
+	      h2->color_folder = 1;
+	}
     }
 
     /* embed handle pointer */
-    if(((h1 && h1->color_unseen) ?
-		gf_puts(color_embed(ps_global->VAR_INCUNSEEN_FORE_COLOR,
-				    ps_global->VAR_INCUNSEEN_BACK_COLOR), pc) : 1)
+    if(((h1 && h1->color_unseen) ? color_write_for_folder(pc, CLR_UNSEEN)
+		: ((h1 && h1->color_folder) 
+		  ? color_write_for_folder(pc, fp->isfolder ? CLR_FOLDER : CLR_DIRECT)
+							    : 1))
        && (h1 ? ((*pc)(TAG_EMBED) && (*pc)(TAG_HANDLE)
 	     && (*pc)(strlen(buf)) && gf_puts(buf, pc)) : 1)
        && (fp ? ((lprefix = folder_list_write_prefix(fp, flags, pc)) >= 0
@@ -1959,9 +1994,8 @@ folder_list_write(gf_io_t pc, HANDLE_S **handlesp, CONTEXT_S *ctxt, int fnum, ch
 	      : (alt_name ? gf_puts(alt_name, pc) : 0))
        && (h1 ? ((*pc)(TAG_EMBED) && (*pc)(TAG_BOLDOFF)
 		&& (*pc)(TAG_EMBED) && (*pc)(TAG_INVOFF)) : 1)
-       && ((h1 && h1->color_unseen) ?
-	       gf_puts(color_embed(ps_global->VAR_NORM_FORE_COLOR,
-				   ps_global->VAR_NORM_BACK_COLOR), pc) : 1)){
+       && ((h1 && (h1->color_unseen || h1->color_folder)) ?
+		color_write_for_folder(pc, CLR_NORMAL): 1)){
 	if(fp)
 	  width = lprefix + lmiddle + lsuffix;
 	else if(alt_name)
@@ -2000,11 +2034,10 @@ folder_list_write_prefix(FOLDER_S *f, int flags, gf_io_t pc)
     return(rv);
 }
 
-
 int
 folder_list_write_middle(FOLDER_S *fp, CONTEXT_S *ctxt, gf_io_t pc, HANDLE_S *h2)
 {
-    int rv = -1;
+    int rv = -1, use_color;
     char buf[256];
     unsigned char *fname;
 
@@ -2017,18 +2050,23 @@ folder_list_write_middle(FOLDER_S *fp, CONTEXT_S *ctxt, gf_io_t pc, HANDLE_S *h2
       return(rv);
 
     fname = folder_name_decoded((unsigned char *)FLDR_NAME(fp));
+    use_color = use_color_for_folder(fp);
 
     if(gf_puts(fname ? (char *)fname : FLDR_NAME(fp), pc)
        && (h2 ? ((*pc)(TAG_EMBED) && (*pc)(TAG_BOLDOFF)		/* tie off handle 1 */
 		&& (*pc)(TAG_EMBED) && (*pc)(TAG_INVOFF)) : 1)
+       && ((use_color && fp->isdir && fp->isfolder)
+		? color_write_for_folder(pc, CLR_DIRECT) : 1)
        && (h2 ? ((*pc)(TAG_EMBED) && (*pc)(TAG_HANDLE)		/* start handle 2 */
 	     && (*pc)(strlen(buf)) && gf_puts(buf, pc)) : 1)
-       && ((fp->isdir && fp->isfolder) ? (*pc)('[') : 1)
-       && ((fp->isdir) ? (*pc)(ctxt->dir->delim) : 1)
-       && ((fp->isdir && fp->isfolder) ? (*pc)(']') : 1)){
+       && use_color
+	 ? (fp->isdir && fp->isfolder ? (*pc)(ctxt->dir->delim) : 1)
+	 : (((fp->isdir && fp->isfolder) ? (*pc)('[') : 1)
+		&& ((fp->isdir) ? (*pc)(ctxt->dir->delim) : 1)
+		&& ((fp->isdir && fp->isfolder) ? (*pc)(']') : 1))){
 	rv = utf8_width(fname ? (char *)fname : FLDR_NAME(fp));
 	if(fp->isdir)
-	  rv += (fp->isfolder) ? 3 : 1;
+	  rv += (fp->isfolder) ? (use_color ? 1 : 3) : (use_color ? 0 : 1);
     }
 
     if(fname)
@@ -2079,20 +2117,85 @@ folder_list_write_suffix(FOLDER_S *f, int flags, gf_io_t pc)
     return(rv);
 }
 
+int
+color_write_for_folder(gf_io_t pc, int testtype)
+{
+  int rv;
+  if(!pico_usingcolor())
+    return 1;
+  switch (testtype){
+    case CLR_UNSEEN: 
+	rv = gf_puts(color_embed(ps_global->VAR_INCUNSEEN_FORE_COLOR,
+		ps_global->VAR_INCUNSEEN_BACK_COLOR), pc);
+	break;
+    case CLR_FOLDER:
+	rv = gf_puts(color_embed(ps_global->VAR_FOLDER_FORE_COLOR,
+		ps_global->VAR_FOLDER_BACK_COLOR ), pc);
+	break;
+    case CLR_FLDRLT:
+	rv = gf_puts(color_embed(ps_global->VAR_FOLDER_LIST_FORE_COLOR,
+		ps_global->VAR_FOLDER_LIST_BACK_COLOR ), pc);
+	break;
+    case CLR_DIRECT:
+	rv = gf_puts(color_embed(ps_global->VAR_DIRECTORY_FORE_COLOR,
+		ps_global->VAR_DIRECTORY_BACK_COLOR), pc);
+	break;
+    case CLR_NORMAL:
+	rv = gf_puts(color_embed(ps_global->VAR_NORM_FORE_COLOR,
+		ps_global->VAR_NORM_BACK_COLOR), pc);
+	break;
+    default: 
+	rv = 0;	/* fail */
+	break;
+  }
+  return rv;
+}
+
 
 int
-color_monitored_unseen(FOLDER_S *f, int flags)
+color_test_for_folder(char *color_fore, char *color_back)
 {
-    return((flags & FLW_UNSEEN) && f && f->unseen_valid
+   return pico_usingcolor()
+	   && pico_is_good_color(color_fore)
+	   && pico_is_good_color(color_back)
+	   && (colorcmp(color_fore, ps_global->VAR_NORM_FORE_COLOR)
+	       || colorcmp(color_back, 
+			   ps_global->VAR_NORM_BACK_COLOR)) ? 1 : 0;
+
+}
+
+
+int
+use_color_for_folder(FOLDER_S *fp)
+{
+   int test1, test2;
+   if(fp->isdir)
+	test1 = color_test_for_folder(ps_global->VAR_DIRECTORY_FORE_COLOR,
+				ps_global->VAR_DIRECTORY_BACK_COLOR);
+    if(fp->isfolder)
+	test2 = color_test_for_folder(ps_global->VAR_FOLDER_FORE_COLOR,
+				ps_global->VAR_FOLDER_BACK_COLOR);
+    return (fp->isdir && fp->isfolder) ? test1 + test2
+			: (fp->isdir ? test1 : (fp->isfolder? test2 : 0));
+}
+
+
+int
+color_monitored(FOLDER_S *f, int flags, int testtype)
+{
+   int rv;
+   switch(testtype){
+	case CLR_UNSEEN: rv = (flags & FLW_UNSEEN) && f && f->unseen_valid
 	   && ((F_ON(F_INCOMING_CHECKING_RECENT, ps_global) && f->new > 0L)
 	       || (F_OFF(F_INCOMING_CHECKING_RECENT, ps_global) && f->unseen > 0L))
-           && pico_usingcolor()
-	   && pico_is_good_color(ps_global->VAR_INCUNSEEN_FORE_COLOR)
-	   && pico_is_good_color(ps_global->VAR_INCUNSEEN_BACK_COLOR)
-	   && (colorcmp(ps_global->VAR_INCUNSEEN_FORE_COLOR,
-		        ps_global->VAR_NORM_FORE_COLOR)
-	       || colorcmp(ps_global->VAR_INCUNSEEN_BACK_COLOR,
-			   ps_global->VAR_NORM_BACK_COLOR)));
+	   && color_test_for_folder(ps_global->VAR_INCUNSEEN_FORE_COLOR,
+				ps_global->VAR_INCUNSEEN_BACK_COLOR) ? 1 : 0;
+		break;
+	case CLR_FOLDER: rv = f ? use_color_for_folder(f) : 0;
+		break;
+	default: rv = 0;
+     }
+     return rv;
 }
 
 

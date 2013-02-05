@@ -3373,7 +3373,8 @@ update_option_screen(struct pine *ps, OPT_SCREEN_S *screen, Pos *cursor_pos)
 			    ptr = sample;
 
 			    /* then the color sample */
-			    if(ctmp->var == &ps->vars[V_VIEW_HDR_COLORS]){
+			    if(ctmp->var == &ps->vars[V_VIEW_HDR_COLORS]
+				|| ctmp->var == &ps->vars[V_INDEX_TOKEN_COLORS]){
 				SPEC_COLOR_S *hc, *hcolors;
 
 				lastc = newc = NULL;
@@ -5611,6 +5612,7 @@ fix_side_effects(struct pine *ps, struct variable *var, int revert)
 	}
     }
     else if(var == &ps->vars[V_KW_COLORS] ||
+	    var == &ps->vars[V_INDEX_TOKEN_COLORS] ||
 	    var == &ps->vars[V_IND_PLUS_FORE_COLOR] ||
 	    var == &ps->vars[V_IND_IMP_FORE_COLOR]  ||
             var == &ps->vars[V_IND_DEL_FORE_COLOR]  ||

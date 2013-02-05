@@ -57,13 +57,15 @@ char *
 dfilter(char *rawcmd, STORE_S *input_so, gf_io_t output_pc, FILTLIST_S *aux_filters)
 {
     char *status = NULL, *cmd, *resultf = NULL, *tmpfile = NULL;
-    int   key = 0;
+    int   key = 0, silent = 0;
 
-    if((cmd = expand_filter_tokens(rawcmd,NULL,&tmpfile,&resultf,NULL,&key,NULL)) != NULL){
+    if((cmd = expand_filter_tokens(rawcmd,NULL,&tmpfile,&resultf,NULL,&key,NULL, &silent)) != NULL){
 	suspend_busy_cue();
 #ifndef	_WINDOWS
-	ps_global->mangled_screen = 1;
-	ClearScreen();
+	if(!silent){
+	  ps_global->mangled_screen = 1;
+	  ClearScreen();
+	}
 	fflush(stdout);
 #endif
 
@@ -100,7 +102,8 @@ dfilter(char *rawcmd, STORE_S *input_so, gf_io_t output_pc, FILTLIST_S *aux_filt
 		/* prepare the terminal in case the filter uses it */
 		if(status == NULL){
 		    if((filter_pipe = open_system_pipe(cmd, NULL, NULL,
-						      PIPE_USER | PIPE_RESET,
+						PIPE_USER | (silent ? PIPE_SILENT : 
+						(F_ON(F_DISABLE_TERM_RESET_DISP, ps_global) ? 0 : PIPE_RESET)),
 						      0, pipe_callback, NULL)) != NULL){
 			if(close_system_pipe(&filter_pipe, NULL, pipe_callback) == 0){
 			    /* pull result out of tmp file */
@@ -131,7 +134,7 @@ dfilter(char *rawcmd, STORE_S *input_so, gf_io_t output_pc, FILTLIST_S *aux_filt
 	      status = "Can't open display filter tmp file";
 	}
 	else if((status = gf_filter(cmd, key ? filter_session_key() : NULL,
-				   input_so, output_pc, aux_filters,
+				   input_so, output_pc, aux_filters, silent,
 				   F_ON(F_DISABLE_TERM_RESET_DISP, ps_global),
 				   pipe_callback)) != NULL){
 	    unsigned long ch;
@@ -151,7 +154,8 @@ dfilter(char *rawcmd, STORE_S *input_so, gf_io_t output_pc, FILTLIST_S *aux_filt
 
 	resume_busy_cue(0);
 #ifndef	_WINDOWS
-	ClearScreen();
+	if(!silent)
+	  ClearScreen();
 #endif
 	fs_give((void **)&cmd);
     }
@@ -166,7 +170,7 @@ dfilter(char *rawcmd, STORE_S *input_so, gf_io_t output_pc, FILTLIST_S *aux_filt
  */
 char *
 expand_filter_tokens(char *filter, ENVELOPE *env, char **tmpf, char **resultf,
-		     char **mtypef, int *key, int *hdrs)
+		     char **mtypef, int *key, int *hdrs, int *silent)
 {
     char   **array, **q;
     char    *bp, *cmd = NULL, *p = NULL,
@@ -312,6 +316,11 @@ expand_filter_tokens(char *filter, ENVELOPE *env, char **tmpf, char **resultf,
 	    (*q)[0] = '\0';
 	    if(hdrs)
 	      *hdrs = 1;
+	}
+	else if(!strcmp(*q, "_SILENT_")){
+	    (*q)[0] = '\0';
+	    if(silent)
+	      *silent = 1;
 	}
     }
 

@@ -11,8 +11,8 @@
 # Origin: gettext-0.16
 
 PACKAGE = alpine
-VERSION = 2.10
-PACKAGE_BUGREPORT = alpine-contact@u.washington.edu
+VERSION = 2.10.9
+PACKAGE_BUGREPORT = chappa@washington.edu
 
 SHELL = /bin/sh
 

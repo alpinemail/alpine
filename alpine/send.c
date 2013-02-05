@@ -5223,7 +5223,7 @@ filter_message_text(char *fcmd, ENVELOPE *outgoing, struct mail_bodystruct *body
 
     if(fcmd
        && (cmd=expand_filter_tokens(fcmd, outgoing, &tmpf, &resultf, &mtf,
-				    &key, &include_hdrs))){
+				    &key, &include_hdrs, NULL))){
 	if(tmpf){
 	    /*
 	     * We need WRITE_TO_LOCALE here because the user is going to
@@ -5330,7 +5330,7 @@ filter_message_text(char *fcmd, ENVELOPE *outgoing, struct mail_bodystruct *body
 		}
 		else
 		  errstr = gf_filter(cmd, key ? filter_session_key() : NULL,
-				     readthis_so, pc, NULL, 0,
+				     readthis_so, pc, NULL, 0, 0,
 				     pipe_callback);
 
 		if(our_tmpf_so)
