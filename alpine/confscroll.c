@@ -3035,7 +3035,7 @@ update_option_screen(struct pine *ps, OPT_SCREEN_S *screen, Pos *cursor_pos)
     int		   last_selectable;
     mswin_beginupdate();
 #endif
-    if(screen == NULL)
+    if(screen == NULL || BODY_LINES(ps) < 0)
        return;
 
     if(cursor_pos){

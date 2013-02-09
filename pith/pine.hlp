@@ -199,7 +199,8 @@ message, as specified by original sender.
 Bugs that have been addressed include:
 <P>
 <UL>
-  <LI> Crash when a non-compliant SMTP server closes a connection without a LOGOUT
+  <LI> Crash when a non-compliant SMTP server closes a connection without a LOGOUT.
+  <LI> Crash when resizing the screen in a configuration screen.
 </UL>
 
 <P>

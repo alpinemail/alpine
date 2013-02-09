@@ -30,3 +30,4 @@ imap/an
 dmail
 imap/ip6
 include/
+autom4te*
