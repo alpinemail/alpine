@@ -139,9 +139,8 @@ at RCS version number 4.122.  In particular, there were some placeholders
 with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
-
 ============= h_revision =================
-$Id: pine.hlp 1266 2013-02-07 18:39:12Z chappa@washington.edu $
+Alpine Commit 5 2013-02-15 22:27:57
 ============= h_news =================
 <HTML>
 <HEAD>
