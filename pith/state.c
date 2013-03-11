@@ -98,7 +98,7 @@ new_pine_struct(void)
     p->atmts->description = NULL;
     p->low_speed       = 1;
     p->init_context    = -1;
-    msgno_init(&p->msgmap, 0L, SortArrival, 0);
+/*    msgno_init(&p->msgmap, 0L, SortArrival, 0);*/
     init_init_vars(p);
 
     return(p);

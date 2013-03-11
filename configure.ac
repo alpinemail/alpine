@@ -1493,7 +1493,7 @@ case "$host" in
     ;;
   *-*-cygwin)
     systype="CYG"
-    alpine_path_delim="\\\\"
+    alpine_path_delim="/"
     alpine_mode_readonly="(S_IREAD | S_IWRITE)"
     alpine_c_client_target="cyg"
     LIBS="$LIBS $LIBINTL"
