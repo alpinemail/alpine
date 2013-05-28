@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 5 2013-02-15 22:27:57
+Alpine Commit 8 2013-03-11 01:40:41
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -179,9 +179,9 @@ Additions include:
 <P>
 
 <UL>
-   <LI> Add ability to <A HREF="h_config_folder_color">color folder names</A>, <A 
-HREF="h_config_directory_color">directory names</A>,
- and <A HREF="h_config_folder_list_color">text</A> in the FOLDER SCREEN
+   <LI> Add ability to <A HREF="h_config_folder_color">color folder names</A>, 
+ <A HREF="h_config_directory_color">directory names</A>,
+ and <A HREF="h_config_folder_list_color">text</A> in the FOLDER SCREEN.
    <LI> Add the ability to <A HREF="h_config_indextoken_color">color any token</A>
 used in the display of the INDEX SCREEN.
    <LI> New option <A HREF="h_config_preserve_field"><!--#echo var="FEAT_preserve-original-fields"--></A>
@@ -191,14 +191,14 @@ message, as specified by original sender.
 <A HREF="h_config_display_filters">list of tokens</A>
  for a display filter, so that Alpine will not redraw the screen when it is unnecessary.
    <LI> Quota command includes subcommands for printing, forwarding, etc.
-
 </UL>
 
 <P>
 Bugs that have been addressed include:
 <P>
 <UL>
-  <LI> Crash when a non-compliant SMTP server closes a connection without a LOGOUT.
+  <LI> Fix Cygwin separator to &quot;/&quot;
+  <LI> Crash when a non-compliant SMTP server closes a connection without a QUIT command.
   <LI> Crash when resizing the screen in a configuration screen.
 </UL>
 
@@ -240,7 +240,7 @@ Bugs that have been addressed include:
    <LI> Crash when resizing the screen after display of LDAP search.
    <LI> Crash when redrawing screen while opening a remote folder collection.
    <LI> Infinite loop in scrolltool function during notification of new mail.
-   <LI> No repaint of the screen was done when the SMARTDATE token is used in the index screen after midnight.
+   <LI> No repaint of the screen after midnight was done when the SMARTDATE token is used in the index screen.
    <LI> No display of signed and encrypted S/MIME messages.
    <LI> Alpine will not build with OpenSSL.
    <LI> Crash for double locking in calls to c-client.
@@ -27794,28 +27794,28 @@ the sender of the forwarded message, or process it as part of a spam report.
 <BODY>
 <H1>FEATURE: <!--#echo var="FEAT_preserve-original-fields"--></H1>
 
-When you reply to a message that has been sent to several recipients, some of
-them may have been added in different parts of the headers. For example,
-some of the recipients will be listed in the To: header, while others will
-be listed in the Cc: header.
+This feature affects Alpine's behavior when one replies to a message. 
+When you receive a message, some or all of the recipients of the message 
+have been added to the To: and Cc: fields. If you reply to such message, 
+and this feature is disabled, then the original sender of the message is 
+added to the To: field, and all other recipients are added to the Cc: 
+field, while your address is added to the From: field.
+
 <P>
-If this feature is disabled, the default behavior of Alpine will be used, 
-and that is, that almost all recipients of the message will be 
-listed in the Cc: field. However, if you enable this feature, then, 
-excepting you, recipients originally listed in the Cc: field will be 
-listed again in the Cc: field, and those listed in the To: field in the 
-original message will be listed in the To: field again. The person in the 
-From: field will be added to the To: field.
+However, if this feature is enabled, then Alpine will preserve the 
+original fields as sent in the original message, so the Cc: and To: 
+fields will be preserved. The sender's address will be added to the To: 
+field, while your address is added to the From: field.
+
 <P>
-Note that this will cause some messages that you send in Alpine to look
-different. In particular, the To: field of a message will not be put in the
-Cc: field, as is normally done. In fact, most people expect this to happen.
-If you find that this is a problem you should disable this feature. You can
-still make Alpine have this behavior on a per message basis. In order to do
-this, you will see a new option in the menu for the &quot;Reply to all
-recipients?&quot; question. In this case, pressing &quot;p&quot; will make
-Alpine toggle its question so you can preserve the To: and Cc: fields for that
-message.
+The behavior of this feature is that replies to all messages will behave 
+in the way described above. If you only intend this to happen on a per 
+message basis, then keep this feature disabled, and when replying to a 
+message you will see a new option in the menu for the &quot;Reply to all 
+recipients?&quot; question. In this case, pressing &quot;p&quot; will 
+make Alpine toggle its question so you can preserve the To: and Cc: 
+fields for that message only.
+
 <UL>   
 <LI><A HREF="h_finding_help">Finding more information and requesting help</A>
 </UL><P>

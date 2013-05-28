@@ -15,7 +15,7 @@ dnl  */
 
 AC_PREREQ([2.57])
 
-AC_REVISION([$Id: configure.ac 1266 2013-02-07 18:39:12Z chappa@washington.edu $])
+AC_REVISION([Rev:1 by chappa@washington.edu])
 
 dnl Alpine Version Number is in $srcdir/VERSION
 AC_INIT(alpine, m4_normalize(m4_include([VERSION])), [chappa@washington.edu])
@@ -480,6 +480,30 @@ AC_ARG_WITH(system-fixed-pinerc,
     ])
 AC_DEFINE_UNQUOTED(SYSTEM_PINERC_FIXED, "$dpv", [System fixed pinerc])
 
+dnl OPTION: local support information, file that contains information on
+dnl 	    how to contact local support for Alpine.
+dnl NOTE: historically we used /lib for the config dir.
+dnl       don't ask, it was a long time ago. but, we can't
+dnl       change it now without breaking compatibility
+case "$prefix" in
+  NONE) dpv=/usr/local/lib/pine.info ;;
+  *) dpv=${prefix}/lib/pine.info ;;
+esac
+AC_ARG_WITH(local-support-info,
+  AC_HELP_STRING([--with-local-support-info=VALUE], [Local Support Info File (/usr/local/lib/pine.info)]),
+    [
+      case "$withval" in
+	no)
+	  ;;
+	yes)
+	  ;;
+	*)
+	  dpv=$withval
+	  ;;
+      esac
+    ])
+AC_DEFINE_UNQUOTED(SYSTEM_PINE_INFO_PATH, "$dpv", [Local Support Info File])
+
 dnl Function to simplify setting alpine/pico defaults
 dnl usage: PINEVAR(configure-name, definition-name, definition-value, help)
 AC_DEFUN([PINEVAR],
@@ -827,7 +851,7 @@ if test "x$with_tcl" = "xno" ; then
   AC_MSG_NOTICE([Excluding TCL Support, and thus Web Alpine Support])
 else
   AC_ARG_WITH(tcl-lib,
-    AC_HELP_STRING([--with-tcl-lib=LIBRARY], [Specific TCL Library, like \"tcl8.4\"]),
+    AC_HELP_STRING([--with-tcl-lib=LIBRARY], [Specific TCL Library, like \"tcl8.5\"]),
     [
       if test "x$withval" != "xno" ; then 
 	alpine_TCLLIB=$withval
@@ -1005,6 +1029,9 @@ if test "x$alpine_SSLTYPE" != "xnone" ; then
   AC_SEARCH_LIBS(SSL_library_init,ssl,
     [
       LIBS="$LIBS -lssl"
+    ],
+    [
+      alpine_SSLTYPE = "none"
     ])
   if test "x$alpine_SSLTYPE" = "xnone" ; then
     AC_MSG_NOTICE([OpenSSL libraries NOT found])
@@ -1012,6 +1039,43 @@ if test "x$alpine_SSLTYPE" != "xnone" ; then
     AC_MSG_NOTICE([OpenSSL libraries FOUND])
   fi
 fi
+
+dnl Crypto support is needed 
+if test "x$alpine_SSLTYPE" != "xnone" ; then
+  AC_SEARCH_LIBS(SSLeay,crypto,
+    [
+      LIBS="$LIBS -lcrypto"
+    ],
+    [
+      alpine_CRYPTO = "none"
+    ])
+  if test "x$alpine_CRYPTO" = "xnone" ; then
+    AC_ERROR([crypto library NOT found])
+  else
+    AC_MSG_NOTICE([crypto library found])
+  fi
+fi
+
+dnl PAM support is needed to build c-client, and hence Alpine.
+if test "x$alpine_PAM" != "xnone" ; then
+  AC_SEARCH_LIBS(pam_start,pam,
+    [
+      LIBS="$LIBS -lpam"
+      AC_CHECK_HEADER([security/pam_appl.h],,
+	[
+	  alpine_PAM="none"
+	  alpine_pam_none_reason="header files not found"
+	])
+    ],
+    [
+	alpine_PAM="none"
+	alpine_pam_none_reason="library files not found"
+    ])
+  if test -n "$alpine_pam_none_reason" ; then
+    AC_ERROR([No PAM support: $alpine_pam_none_reason])
+  fi
+fi
+
 
 dnl provide KRB5 support?
 if test "x$alpine_GSSTYPE" != "xnone" ; then
@@ -1037,7 +1101,7 @@ fi
 
 dnl check for tcl libraries for Web Alpine (HACKY)
 if test -n "$WEB_BUILD" ; then
-  AC_SEARCH_LIBS([Tcl_Eval],[$alpine_TCLLIB tcl8.4 tcl8.3 tcl84 tcl83 tcl],,
+  AC_SEARCH_LIBS([Tcl_Eval],[$alpine_TCLLIB tcl8.5 tcl8.4 tcl8.3 tcl84 tcl83 tcl],,
     [
       WEB_BUILD=
     ])

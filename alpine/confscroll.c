@@ -3035,7 +3035,7 @@ update_option_screen(struct pine *ps, OPT_SCREEN_S *screen, Pos *cursor_pos)
     int		   last_selectable;
     mswin_beginupdate();
 #endif
-    if(screen == NULL || BODY_LINES(ps) < 0)
+    if(screen == NULL || BODY_LINES(ps) < 1)
        return;
 
     if(cursor_pos){
@@ -3143,6 +3143,7 @@ update_option_screen(struct pine *ps, OPT_SCREEN_S *screen, Pos *cursor_pos)
 	    }
 
 	    value = (ctmp->flags & CF_INHERIT) ? INHERIT : ctmp->value;
+	    dprint((1, "value = %s", ctmp->value));
 	    if(value){
 		char *p;
 		int   i, j;
@@ -3678,6 +3679,7 @@ update_option_screen(struct pine *ps, OPT_SCREEN_S *screen, Pos *cursor_pos)
 			}
 		    }
 		    else{
+			dprint((1, "value = %s, tmp_20k = %s", ctmp->value, tmp_20k_buf));
 			w = utf8_width(tmp_20k_buf);
 			want_width = ps->ttyo->screen_cols - ctmp->valoffset; 
 			if(w > want_width){

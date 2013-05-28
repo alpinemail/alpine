@@ -591,6 +591,9 @@
 /* System fixed pinerc */
 #undef SYSTEM_PINERC_FIXED
 
+/* Local Support Info File */
+#undef SYSTEM_PINE_INFO_PATH
+
 /* Pine-Centric Host Specifier */
 #undef SYSTYPE
 

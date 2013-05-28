@@ -1,5 +1,7 @@
 *.[ao]
 *~
+*m4
+autom4te*
 Make*
 make*
 alpine
