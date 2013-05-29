@@ -1,2 +1,2 @@
-char datestamp[]="Thu May 23 08:59:47 MDT 2013";
+char datestamp[]="Tue May 28 01:05:37 MDT 2013";
 char hoststamp[]="linux";

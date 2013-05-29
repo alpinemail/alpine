@@ -1390,7 +1390,7 @@ encrypt_outgoing_message(METAENV *header, BODY **bodyP)
     dprint((9, "encrypt_outgoing_message()"));
     smime_init();
 
-    cipher = EVP_des_cbc();
+    cipher = EVP_aes_256_cbc();
 
     encerts = sk_X509_new_null();
 

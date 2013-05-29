@@ -1432,7 +1432,7 @@ url_launch(HANDLE_S *handle)
 	else
 #endif
 	/* quote shell specials */
-	if(strpbrk(handle->h.url.path, "&*;<>?[]|~$(){}'\"") != NULL){
+	if(strpbrk(handle->h.url.path, "&*!;<>?[]|~$(){}'\"") != NULL){
 	    escape_single_quotes++;
 	    if((p = strstr(toolp, "_URL_")) != NULL){  /* explicit arg? */
 		int in_quote = 0;
@@ -1510,7 +1510,8 @@ url_launch(HANDLE_S *handle)
 		      *cmdp++ = '\'';	/* closing quote */
 		      *cmdp++ = '\\';
 		      *cmdp++ = '\'';	/* opening quote comes from p below */
-		  }
+		  } else if (strchr("&*!;<>?[]|~$(){}\"", *p) != NULL)
+		      *cmdp++ = '\\';
 
 		  *cmdp++ = *p;
 	      }

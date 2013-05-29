@@ -1,7 +1,7 @@
 *.[ao]
 *~
 *m4
-autom4te*
+autom4te.*/*
 Make*
 make*
 alpine
@@ -32,4 +32,9 @@ imap/an
 dmail
 imap/ip6
 include/
-autom4te*
+libwpcom*
+web/bin
+wpcomm*
+web/*/*/alpined
+web/*/*/alpineldap
+.gitignore

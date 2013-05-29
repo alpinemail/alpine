@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 8 2013-03-11 01:40:41
+Alpine Commit 9 2013-05-29 16:02:24
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -179,6 +179,7 @@ Additions include:
 <P>
 
 <UL>
+   <LI> Increase encryption of S/MIME encrypted messages.
    <LI> Add ability to <A HREF="h_config_folder_color">color folder names</A>, 
  <A HREF="h_config_directory_color">directory names</A>,
  and <A HREF="h_config_folder_list_color">text</A> in the FOLDER SCREEN.
@@ -197,7 +198,9 @@ message, as specified by original sender.
 Bugs that have been addressed include:
 <P>
 <UL>
-  <LI> Fix Cygwin separator to &quot;/&quot;
+  <LI> Proper quote of shell characters in urls.
+  <LI> Configure script did not test for crypto or pam libraries.
+  <LI> Fix Cygwin separator to &quot;/&quot;.
   <LI> Crash when a non-compliant SMTP server closes a connection without a QUIT command.
   <LI> Crash when resizing the screen in a configuration screen.
 </UL>
