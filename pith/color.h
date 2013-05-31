@@ -21,24 +21,6 @@
 #include "../pith/pattern.h"
 #include "../pith/osdep/color.h"
 
-#define NO_FLOWED  0x0000
-#define IS_FLOWED  0x0001
-#define DELETEQUO  0x0010
-#define COLORAQUO  0x0100
-#define RAWSTRING  0x1000
-
-/* This is needed for justification, I will move it to a better place later
- * or maybe not
- */
-#define is_digit(c) ((((c) >= '0') && ((c) <= '9')) ? 1 : 0)
-
-#define is_letter(c) (((c) >= 'a' && (c) <= 'z') || \
-                         ((c) >= 'A' && (c) <= 'Z'))
-
-#define next(w,i) ((((w)[(i)]) != 0) ? ((w)[(i) + 1]) : 0)
-
-#define single_level(c) (((c) == '>') || ((c) == '|') || ((c) == '~') || \
-                          ((c) == ']'))
 
 typedef struct spec_color_s {
     int   inherit;	/* this isn't a color, it is INHERIT */
@@ -98,7 +80,6 @@ typedef struct spec_color_s {
 /* exported protoypes */
 char	*color_embed(char *, char *);
 int	 colorcmp(char *, char *);
-int	 next_level_quote(char *, char **, int, int);
 int	 color_a_quote(long, char *, LT_INS_S **, void *);
 void	 free_spec_colors(SPEC_COLOR_S **);
 

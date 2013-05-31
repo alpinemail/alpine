@@ -25,10 +25,10 @@ static char rcsid[] = "$Id: word.c 769 2007-10-24 00:15:40Z hubert@u.washington.
  */
 
 #include	"headers.h"
-#include	"../pith/osdep/color.h"
+
 
 int fpnewline(UCS *quote);
-int fillregion(UCS *qstr, UCS *istr, REGION *addedregion);
+int fillregion(UCS *qstr, REGION *addedregion);
 int setquotelevelinregion(int quotelevel, REGION *addedregion);
 int is_user_separator(UCS c);
 
@@ -431,156 +431,42 @@ is_user_separator(UCS c)
     return 0;
 }
 
-/* Support of indentation of paragraphs */
-#define is_indent_char(c)  (((c) == '.' || (c) == '}' || (c) == RPAREN || \
-			     (c) == '*' || (c) == '+' || is_a_digit(c) || \
-			     ISspace(c) || (c) == '-' || \
-			     (c) == ']') ? 1 : 0)
-#define allowed_after_digit(c,word,k)  ((((c) == '.' && \
-			     allowed_after_period(next((word),(k))))  ||\
-				(c) == RPAREN || (c) == '}' || (c) == ']' ||\
-				  ISspace(c) ||  is_a_digit(c) || \
-				  ((c) == '-' ) && \
-				    allowed_after_dash(next((word),(k)))) \
-				? 1 : 0)
-#define allowed_after_period(c)	 (((c) == RPAREN || (c) == '}' || (c) == ']' ||\
-				   ISspace(c) || (c) == '-' || \
-				   is_a_digit(c)) ? 1 : 0)
-#define allowed_after_parenth(c)  (ISspace(c) ? 1 : 0)
-#define allowed_after_space(c)	  (ISspace(c) ? 1 : 0)
-#define allowed_after_braces(c)	  (ISspace(c) ? 1 : 0)
-#define allowed_after_star(c)	 ((ISspace(c) || (c) == RPAREN ||\
-                                       (c) == ']' || (c) == '}') ? 1 : 0)
-#define allowed_after_dash(c)	  ((ISspace(c) || is_a_digit(c)) ? 1 : 0)
-#define EOLchar(c)		  (((c) == '.' || (c) == ':' || (c) == '?' ||\
-					(c) == '!') ? 1 : 0)
-
-int indent_match(char **, LINE *, char *, int, int);
-
-/* Extended justification support */
-#define is_cquote(c) ((c) == '>' || (c) == '|' || (c) == ']' || (c) == ':')
-#define is_cword(c)  ((((c) >= 'a') && ((c) <= 'z')) ||  \
-                     (((c) >= 'A') && ((c) <= 'Z')) || \
-                     (((c) >= '0') && ((c) <= '9')) || \
-                      ((c) == ' ') || ((c) == '?') || \
-                      ((c) == '@') || ((c) == '.') || \
-                      ((c) == '!') || ((c) == '\'') || \
-                      ((c) == ',') || ((c) == '\"') ? 1 : 0)
-#define isaquote(c)   ((c) == '\"' || (c) == '\'')
-#define is8bit(c)     ((((int) (c)) & 0x80) ? 1 : 0)
-#define iscontrol(c)  (iscntrl(((int) (c)) & 0x7f) ? 1 : 0)
-#define forbidden(c)  (((c) == '\"') || ((c) == '\'') || ((c) == '$') ||\
-                       ((c) == ',')  || ((c) == '.')  || ((c) == '-') ||\
-                       ((c) == LPAREN) || ((c) == '/')|| ((c) == '`') ||\
-                       ((c) == '{') || ((c) == '\\') || (iscontrol((c))) ||\
-                       (((c) >= '0')  && ((c) <= '9')) || ((c) == '?'))
-#define is_cletter(c)  ((((c) >= 'a') && ((c) <= 'z'))) ||\
-                       ((((c) >= 'A') && ((c) <= 'Z'))||\
-                      is8bit(c))
-#define is_cnumber(c) ((c) >= '0' && (c) <= '9')
-#define allwd_after_word(c) (((c) == ' ') || ((c) == '>') || is_cletter(c))
-#define allwd_after_qsword(c)  (((c) != '\\') && ((c) != RPAREN))
-#define before(word,i) (((i) > 0) ? (word)[(i) - 1] : 0)
-#define next(w,i) ((((w)[(i)]) != 0) ? ((w)[(i) + 1]) : 0)
-#define now(w,i)  ((w)[(i)])
-#define is_qsword(c)  (((c) == ':') || ((c) == RPAREN) ? 1 : 0)
-#define is_colon(c)   (((c) == ':') ? 1 : 0)
-#define is_rarrow(c)  (((c) == '>') ? 1 : 0)
-#define is_tilde(c)   (((c) == '~') ? 1 : 0)
-#define is_dash(c)    (((c) == '-') ? 1 : 0)
-#define is_pound(c)   (((c) == '#') ? 1 : 0)
-#define is_a_digit(c) ((((c) >= '0') && ((c) <= '9')) ? 1 : 0)
-#define is_allowed(c)  (is_cquote(c) || is_cword(c) || is_dash(c) || \
-                       is_pound(c))
-#define qs_allowed(a)  (((a)->qstype != qsGdb) && ((a)->qstype != qsProg))
-
-/* Internal justification functions */
-QSTRING_S *qs_quote_match(char **, LINE *, char *, int);
-int      ucs4_strlenis(UCS *);
-void     linencpy(char *, LINE *, int);
-
-void
-linencpy(word, l, buflen)
- char word[NSTRING];
- LINE *l;
- int buflen;
-{
-  int i;
-  UCS ucs_word[NSTRING];
-  char *utf_word;
-
-  word[0] = '\0';
-  if(l){
-    for (i = 0; i < buflen && i < llength(l)
-               && (ucs_word[i] = lgetc(l,i).c); i++);
-    ucs_word[i == buflen ? i-1 : i] = '\0';
-    utf_word = ucs4_to_utf8_cpystr(ucs_word);
-    strncpy(word, utf_word, (NSTRING < buflen ? NSTRING : buflen));
-    word[NSTRING-1] = '\0';
-    if(utf_word) fs_give((void **)&utf_word);
-  }
-}
-
- /*
-  * This function returns the quote string as a structure. In this way we
-  * have two ways to get the quote string: as a char * or as a QSTRING_S *
-  * directly.
-  */
-QSTRING_S *
-qs_quote_match(char **q, LINE *l, char *rqstr, int rqstrlen)
-{
-    char GLine[NSTRING], NLine[NSTRING], PLine[NSTRING];
-    LINE *nl = l != curbp->b_linep ? lforw(l) : NULL;
-    LINE *pl = lback(l) != curbp->b_linep ? lback(l) : NULL;
-    int plb = 1;
-
-   linencpy(GLine, l, NSTRING);
-   linencpy(NLine, nl, NSTRING);
-
-   if (pl){
-      linencpy(PLine, pl, NSTRING);
-      if(lback(pl) != curbp->b_linep){
-	char PPLine[NSTRING];
-
-	linencpy(PPLine, lback(pl), NSTRING);
-	plb = line_isblank(q, PLine, GLine, PPLine, NSTRING);
-      }
-   }
-   return do_quote_match(q, GLine, NLine, PLine, rqstr, rqstrlen, plb);
-}
 
 /*
  * Return number of quotes if whatever starts the line matches the quote string
- * rqstr is a pointer to raw qstring; buf points to processed qstring
  */
 int
-quote_match(char **q, LINE *l, char *buf, size_t buflen, int raw)
+quote_match(UCS *q, LINE *l, UCS *buf, size_t buflen)
 {
-    QSTRING_S *qs;
-    char rqstr[NSTRING];
+    register int i, n, j, qb;
 
-    qs = qs_quote_match(q, l, rqstr, NSTRING);
-    if(qs)
-	record_quote_string(qs);
-    flatten_qstring(qs, buf, buflen);
-    if (qs) free_qs(&qs);
+    *buf = '\0';
+    if(*q == '\0')
+      return(1);
 
-    if(raw){
-      strncpy(buf, rqstr, buflen < NSTRING ? buflen : NSTRING);
-      buf[buflen-1] = '\0';
+    qb = (ucs4_strlen(q) > 1 && q[ucs4_strlen(q)-1] == ' ') ? 1 : 0;
+    for(n = 0, j = 0; ;){
+	for(i = 0; j <= llength(l) && qb ? q[i+1] : q[i]; i++, j++)
+	  if(q[i] != lgetc(l, j).c)
+	    return(n);
+
+	n++;
+	if((!qb && q[i] == '\0') || (qb && q[i+1] == '\0')){
+	    if(ucs4_strlen(buf) + ucs4_strlen(q) + 1 < buflen){
+		ucs4_strncat(buf, q, buflen-ucs4_strlen(q)-1);
+		buf[buflen-1] = '\0';
+		if(qb && (j > llength(l) || lgetc(l, j).c != ' '))
+		  buf[ucs4_strlen(buf)-1] = '\0';
+	    }
+	}
+	if(j > llength(l))
+	  return(n);
+	else if(qb && lgetc(l, j).c == ' ')
+	  j++;
     }
-
-    return  buf && buf[0] ? strlen(buf) : 0;
+    return(n);  /* never reached */
 }
 
-int ucs4_strlenis(UCS *ucs_qstr)
-{
-  char *str = ucs4_to_utf8_cpystr(ucs_qstr);
-  int i = (int) strlenis(str);
-
-  if(str) fs_give((void **)&str);
-  return i;
-}
 
 /* Justify the entire buffer instead of just a paragraph */
 int
@@ -835,7 +721,6 @@ fillpara(int f, int n)
     }
 
     if(action == 'R' && curwp->w_markp){
-	char qstrfl[NSTRING];
 	/* let yank() know that it may be restoring a paragraph */
 	thisflag |= CFFILL;
 
@@ -848,25 +733,21 @@ fillpara(int f, int n)
 
 	/* determine if we're justifying quoted text or not */
 	qstr = (glo_quote_str
-		&& quote_match(default_qstr(glo_quote_str, 1), 
-			       (curwp->w_doto > 0 ? curwp->w_dotp->l_fp : curwp->w_dotp),
-			       qstrfl, NSTRING, 0)
-		&& *qstrfl) ? utf8_to_ucs4_cpystr(qstrfl) : NULL;
+		&& quote_match(glo_quote_str, 
+			       curwp->w_doto > 0 ? curwp->w_dotp->l_fp : curwp->w_dotp,
+			       qstr2, NSTRING)
+		&& *qstr2) ? qstr2 : NULL;
+
 
 	/*
 	 * Fillregion moves dot to the end of the filled region.
 	 */
-	if(!fillregion(qstr, NULL, &addedregion))
+	if(!fillregion(qstr, &addedregion))
 	  return(FALSE);
 
 	set_last_region_added(&addedregion);
-
-	if(qstr)
-	  fs_give((void **)&qstr);
     }
     else if(action == 'P'){
-	char ind_str[NSTRING], qstrfl[NSTRING];
-	UCS *istr;
 
 	/*
 	 * Justfiy the current paragraph.
@@ -878,15 +759,16 @@ fillpara(int f, int n)
 	if(gotoeop(FALSE, 1) == FALSE)
 	  return(FALSE);
 
+	/* determine if we're justifying quoted text or not */
+	qstr = (glo_quote_str
+		&& quote_match(glo_quote_str, 
+			       curwp->w_dotp, qstr2, NSTRING)
+		&& *qstr2) ? qstr2 : NULL;
+
 	setmark(0,0);			/* mark last line of para */
 
 	/* jump back to the beginning of the paragraph */
 	gotobop(FALSE, 1);
-
-	istr = indent_match(default_qstr(glo_quote_str, 1), curwp->w_dotp, ind_str, NSTRING, 0)
-	   && *ind_str  ? utf8_to_ucs4_cpystr(ind_str) : NULL;
-	qstr = (quote_match(default_qstr(glo_quote_str, 1), curwp->w_dotp, qstrfl, NSTRING, 0)
-            && *qstrfl) ? utf8_to_ucs4_cpystr(qstrfl) : NULL;
 
 	/* let yank() know that it may be restoring a paragraph */
 	thisflag |= (CFFILL | CFFLPA);
@@ -901,14 +783,8 @@ fillpara(int f, int n)
 	/*
 	 * Fillregion moves dot to the end of the filled region.
 	 */
-	if(!fillregion(qstr, istr, &addedregion))
+	if(!fillregion(qstr, &addedregion))
 	  return(FALSE);
-
-	if(qstr)
-	  fs_give((void **)&qstr);
-
-	if(istr)
-	  fs_give((void **)&istr);
 
 	set_last_region_added(&addedregion);
 
@@ -951,16 +827,16 @@ fillpara(int f, int n)
  * can delete it and restore the saved part.
  */
 int
-fillregion(UCS *qstr, UCS *istr, REGION *addedregion)
+fillregion(UCS *qstr, REGION *addedregion)
 {
     long    c, sz, last_char = 0;
-    int	    i, j, qlen, same_word, qi, pqi, qlenis,
+    int	    i, j, qlen, same_word,
 	    spaces, word_len, word_ind, line_len, ww;
     int     starts_midline = 0;
     int     ends_midline = 0;
     int     offset_into_start;
     LINE   *line_before_start, *lp;
-    UCS     line_last, word[NSTRING], quoid[NSTRING], qstr2[NSTRING];
+    UCS     line_last, word[NSTRING];
     REGION  region;
 
     /* if region starts midline insert a newline */
@@ -970,35 +846,6 @@ fillregion(UCS *qstr, UCS *istr, REGION *addedregion)
     /* if region ends midline insert a newline at end */
     if(curwp->w_marko > 0 && curwp->w_marko < llength(curwp->w_markp))
       ends_midline++;
-
-    for (i = 0; (i < NSTRING) && qstr && (quoid[i] = qstr[i]); i++);
-    for (j = 0; ((i + j) < NSTRING) && istr && (quoid[i] = istr[j]); i++,j++);
-    quoid[i] = '\0';
-    qi = ucs4_strlen(quoid);
-    if (istr)			/* strip trailing spaces */
-       for (;ISspace(quoid[qi - 1]); qi--);
-    quoid[qi] = '\0';     /* we have closed quoid at "X" in the first line */
-
-    if (ucs4_strlenis(quoid) > fillcol)
-	return FALSE;		/* Too wide, we can't justify this! */
-
-    if (qstr && istr){
-	for (i = ucs4_strlen(qstr) - 1; ISspace(qstr[i]); i--);
-	qstr[i + 1] = '\0';	/* qstrfl */
-    }
-    qlen   = ucs4_strlen(qstr);	/* qstrfl*/
-    qlenis = ucs4_strlenis(qstr);
-
-    for(i = 0, qstr2[0] = '\0'; qstr && qstr[i] && (qstr2[i] = qstr[i]); i++);
-
-    if (istr && ((j = ucs4_strlenis(quoid) - ucs4_strlenis(qstr)) > 0)){
-	pqi = ucs4_strlen(qstr);
-	for (i = 0; (i < j) && (qstr2[pqi + i] = ' '); i++);
-	if (ISspace(istr[ucs4_strlen(istr) - 1]))
-	   qstr2[pqi + i++] = ' ';
-	qstr2[pqi + i] = '\0';
-	qstr = qstr2;
-    }
 
     /* cut the paragraph into our fill buffer */
     fdelete();
@@ -1016,36 +863,28 @@ fillregion(UCS *qstr, UCS *istr, REGION *addedregion)
 
     /* Now insert it back wrapped */
     spaces = word_len = word_ind = line_len = same_word = 0;
+    qlen = qstr ? ucs4_strlen(qstr) : 0;
 
     /* Beginning with leading quoting... */
-    if(qstr || istr){
-	for(i = 0; quoid[i] != '\0' ; i++)
-	  linsert(1, quoid[i]);
+    if(qstr){
+	i = 0;
+	while(qstr[i]){
+	  ww = wcellwidth(qstr[i]);
+	  line_len += (ww >= 0 ? ww : 1);
+	  linsert(1, qstr[i++]);
+	}
 
 	line_last = ' ';			/* no word-flush space! */
-        line_len = ucs4_strlenis(quoid);         /* we demand a recount! */
     }
 
     /* remove first leading quotes if any */
     if(starts_midline)
       i = 0;
-    else{
-      if(qstr || istr){
-        for (i = 0; (c = fremove(i)) != '\0'; i++){
-                word[i] = c;
-                word[i+1] = '\0';
-                if(ucs4_strlenis(word) >= ucs4_strlenis(quoid))
-                break;
-        }
-	i++;
-      }
-      else
-	i = 0;
-      for(; ISspace(c = fremove(i)); i++){
+    else
+      for(i = qlen; (c = fremove(i)) == ' ' || c == TAB; i++){
 	  linsert(1, line_last = (UCS) c);
 	  line_len += ((c == TAB) ? (~line_len & 0x07) + 1 : 1);
       }
-    }
 
     /* then digest the rest... */
     while((c = fremove(i++)) >= 0){
@@ -1066,22 +905,21 @@ fillregion(UCS *qstr, UCS *istr, REGION *addedregion)
 
 	  case TAB :
 	  case ' ' :
-	  case NBSP:
 	    spaces++;
 	    break;
 
 	  default :
 	    if(spaces){				/* flush word? */
-		if((line_len - qlenis > 0)
+		if((line_len - qlen > 0)
 		   && line_len + word_len + 1 > fillcol
-		   && ((ISspace(line_last))
+		   && ((ucs4_isspace(line_last))
 		       || (linsert(1, ' ')))
 		   && same_word == 0
 		   && (line_len = fpnewline(qstr)))
 		  line_last = ' ';	/* no word-flush space! */
 
 		if(word_len){			/* word to write? */
-		    if(line_len && !ISspace(line_last)){
+		    if(line_len && !ucs4_isspace(line_last)){
 			linsert(1, ' ');	/* need padding? */
 			line_len++;
 		    }
@@ -1103,8 +941,8 @@ fillregion(UCS *qstr, UCS *istr, REGION *addedregion)
 
 	    if(word_ind + 1 >= NSTRING){
 		/* Magic!  Fake that we output a wrapped word */
-		if((line_len - qlenis > 0) && same_word == 0){
-		    if(!ISspace(line_last))
+		if((line_len - qlen > 0) && same_word == 0){
+		    if(!ucs4_isspace(line_last))
 		      linsert(1, ' ');
 		    line_len = fpnewline(qstr);
 		}
@@ -1126,12 +964,12 @@ fillregion(UCS *qstr, UCS *istr, REGION *addedregion)
     }
 
     if(word_len){
-	if((line_len - qlenis > 0) && (line_len + word_len + 1 > fillcol) && same_word == 0){
-	    if(!ISspace(line_last))
+	if((line_len - qlen > 0) && (line_len + word_len + 1 > fillcol) && same_word == 0){
+	    if(!ucs4_isspace(line_last))
 	      linsert(1, ' ');
 	    (void) fpnewline(qstr);
 	}
-	else if(line_len && !ISspace(line_last))
+	else if(line_len && !ucs4_isspace(line_last))
 	  linsert(1, ' ');
 
 	for(j = 0; j < word_ind; j++)
@@ -1189,11 +1027,11 @@ fpnewline(UCS *quote)
     int len;
 
     lnewline();
-    for(len = ucs4_strlenis(quote); quote && *quote; quote++){
+    for(len = 0; quote && *quote; quote++){
 	int ww;
 
-/*	ww = wcellwidth(*quote);
-	len += (ww >= 0 ? ww : 1);*/
+	ww = wcellwidth(*quote);
+	len += (ww >= 0 ? ww : 1);
 	linsert(1, *quote);
     }
 
@@ -1337,45 +1175,5 @@ setquotelevelinregion(int quotelevel, REGION *addedregion)
 	markregion(1);
     }
 
-    /*
-     * This puts us at the end of the quoted region instead
-     * of on the following line. This makes it convenient
-     * for the user to follow a quotelevel adjustment with
-     * a Justify if desired.
-     */
-    if(backuptoprevline){
-	curwp->w_doto = 0;
-	backchar(0, 1);
-    }
-
-    if(ends_midline){	/* doesn't need fixing otherwise */
-	unmarkbuffer();
-	markregion(1);
-    }
-
     return (TRUE);
 }
-
-/*
- * If there is an indent string this function returns
- * its length
- */ 
-int
-indent_match(char **q, LINE *l, char *buf, int buflen, int raw)
-{
-     char GLine[NSTRING];
-     int  i, k, plb;
-       
-     k = quote_match(q,l, buf, buflen, raw);
-     linencpy(GLine, l, NSTRING);
-     plb = (lback(l) != curbp->b_linep) ? lisblank(lback(l)) : 1;
-     if (!plb){
-        i = llength(lback(l)) - 1;
-        for (; i >= 0 && ISspace(lgetc(lback(l), i).c); i--);
-        if (EOLchar(lgetc(lback(l), i).c))
-          plb++;
-     }      
-    
-     return get_indent_raw_line(q, GLine, buf, buflen, k, plb);
-}
-

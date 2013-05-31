@@ -17,7 +17,6 @@ static char rcsid[] = "$Id: mailindx.c 1266 2009-07-14 18:39:12Z hubert@u.washin
 
 #include "../pith/headers.h"
 #include "../pith/mailindx.h"
-#include "../pith/pineelt.h"
 #include "../pith/mailview.h"
 #include "../pith/flag.h"
 #include "../pith/icache.h"
@@ -41,7 +40,6 @@ static char rcsid[] = "$Id: mailindx.c 1266 2009-07-14 18:39:12Z hubert@u.washin
 #include "../pith/send.h"
 #include "../pith/options.h"
 #include "../pith/ablookup.h"
-#include "../pith/rules.h"
 #ifdef _WINDOWS
 #include "../pico/osdep/mswin.h"
 #endif
@@ -105,6 +103,7 @@ char           *format_str(int, int);
 char           *copy_format_str(int, int, char *, int);
 void            set_print_format(IELEM_S *, int, int);
 void            set_ielem_widths_in_field(IFIELD_S *);
+
 
 #define BIGWIDTH 2047
 
@@ -229,7 +228,6 @@ init_index_format(char *format, INDEX_COL_S **answer)
 	      case iSTime:
 	      case iKSize:
 	      case iSize:
-	      case iSizeThread:
 	      case iPrioAlpha:
 		(*answer)[column].req_width = 7;
 		break;
@@ -376,13 +374,6 @@ reset_index_format(void)
     PAT_STATE     pstate;
     PAT_S        *pat;
     int           we_set_it = 0;
-    char *rule;
-
-    if(rule = get_rule_result(FOR_INDEX, ps_global->cur_folder, V_INDEX_RULES)){
-      init_index_format(rule, &ps_global->index_disp_format);
-      fs_give((void **)&rule);
-      return;
-    }
 
     if(ps_global->mail_stream && nonempty_patterns(rflags, &pstate)){
 	for(pat = first_pattern(&pstate); pat; pat = next_pattern(&pstate)){
@@ -456,15 +447,14 @@ free_hdrtok(HEADER_TOK_S **hdrtok)
 static INDEX_PARSE_T itokens[] = {
     {"STATUS",		iStatus,	FOR_INDEX},
     {"MSGNO",		iMessNo,	FOR_INDEX},
-    {"DATE",		iDate,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
+    {"DATE",		iDate,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
     {"FROMORTO",	iFromTo,	FOR_INDEX},
     {"FROMORTONOTNEWS",	iFromToNotNews,	FOR_INDEX},
     {"SIZE",		iSize,		FOR_INDEX},
     {"SIZECOMMA",	iSizeComma,	FOR_INDEX},
-    {"SIZETHREAD",	iSizeThread,	FOR_INDEX},
     {"SIZENARROW",	iSizeNarrow,	FOR_INDEX},
     {"KSIZE",		iKSize,		FOR_INDEX},
-    {"SUBJECT",		iSubject,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE|FOR_TRIM},
+    {"SUBJECT",		iSubject,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
     {"FULLSTATUS",	iFStatus,	FOR_INDEX},
     {"IMAPSTATUS",	iIStatus,	FOR_INDEX},
     {"SHORTIMAPSTATUS",	iSIStatus,	FOR_INDEX},
@@ -473,58 +463,55 @@ static INDEX_PARSE_T itokens[] = {
     {"SUBJECTTEXT",	iSubjectText,	FOR_INDEX},
     {"SUBJKEYTEXT",	iSubjKeyText,	FOR_INDEX},
     {"SUBJKEYINITTEXT", iSubjKeyInitText, FOR_INDEX},
-    {"OPENINGTEXT",	iOpeningText,	FOR_INDEX|FOR_RULE|FOR_SAVE|FOR_TRIM},
-    {"OPENINGTEXTNQ",	iOpeningTextNQ,	FOR_INDEX|FOR_RULE|FOR_SAVE|FOR_TRIM},
-    {"KEY",		iKey,		FOR_INDEX|FOR_RULE|FOR_SAVE|FOR_COMPOSE},
-    {"KEYINIT",		iKeyInit,	FOR_INDEX|FOR_RULE|FOR_SAVE|FOR_COMPOSE},
+    {"OPENINGTEXT",	iOpeningText,	FOR_INDEX},
+    {"OPENINGTEXTNQ",	iOpeningTextNQ,	FOR_INDEX},
+    {"KEY",		iKey,		FOR_INDEX},
+    {"KEYINIT",		iKeyInit,	FOR_INDEX},
     {"DESCRIPSIZE",	iDescripSize,	FOR_INDEX},
     {"ATT",		iAtt,		FOR_INDEX},
     {"SCORE",		iScore,		FOR_INDEX},
     {"PRIORITY",	iPrio,		FOR_INDEX},
     {"PRIORITYALPHA",	iPrioAlpha,	FOR_INDEX},
-    {"PRIORITY!",	iPrioBang,	FOR_INDEX},  
-    {"LONGDATE",	iLDate,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SHORTDATE1",	iS1Date,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SHORTDATE2",	iS2Date,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SHORTDATE3",	iS3Date,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SHORTDATE4",	iS4Date,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"DATEISO",		iDateIso,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SHORTDATEISO",	iDateIsoS,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SMARTDATE",	iSDate,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SMARTTIME",	iSTime,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SMARTDATEISO",	iSDateIso,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SMARTDATESHORTISO",iSDateIsoS,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SMARTDATES1",	iSDateS1,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SMARTDATES2",	iSDateS2,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SMARTDATES3",	iSDateS3,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SMARTDATES4",	iSDateS4,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SMARTDATETIME",	iSDateTime,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SMARTDATETIMEISO",iSDateTimeIso,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SMARTDATETIMESHORTISO",iSDateTimeIsoS,FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SMARTDATETIMES1",	iSDateTimeS1,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SMARTDATETIMES2",	iSDateTimeS2,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SMARTDATETIMES3",	iSDateTimeS3,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SMARTDATETIMES4",	iSDateTimeS4,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SMARTDATETIME24",		iSDateTime24,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SMARTDATETIMEISO24",	iSDateTimeIso24,FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SMARTDATETIMESHORTISO24",iSDateTimeIsoS24,FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SMARTDATETIMES124",	iSDateTimeS124,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SMARTDATETIMES224",	iSDateTimeS224,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SMARTDATETIMES324",	iSDateTimeS324,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"SMARTDATETIMES424",	iSDateTimeS424,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"TIME24",		iTime24,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"TIME12",		iTime12,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"TIMEZONE",	iTimezone,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"MONTHABBREV",	iMonAbb,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"DAYOFWEEKABBREV",	iDayOfWeekAbb,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"DAYOFWEEK",	iDayOfWeek,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"FROM",		iFrom,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_COMPOSE},
-    {"TO",		iTo,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_COMPOSE},
-    {"SENDER",		iSender,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"CC",		iCc,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_SAVE|FOR_SAVE},
-    {"ADDRESSTO",	iAddressTo,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"ADDRESSCC",	iAddressCc,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"ADDRESSRECIPS",	iAddressRecip,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
+    {"PRIORITY!",	iPrioBang,	FOR_INDEX},
+    {"LONGDATE",	iLDate,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SHORTDATE1",	iS1Date,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SHORTDATE2",	iS2Date,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SHORTDATE3",	iS3Date,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SHORTDATE4",	iS4Date,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"DATEISO",		iDateIso,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SHORTDATEISO",	iDateIsoS,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SMARTDATE",	iSDate,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SMARTTIME",	iSTime,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SMARTDATEISO",	iSDateIso,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SMARTDATESHORTISO",iSDateIsoS,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SMARTDATES1",	iSDateS1,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SMARTDATES2",	iSDateS2,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SMARTDATES3",	iSDateS3,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SMARTDATES4",	iSDateS4,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SMARTDATETIME",	iSDateTime,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SMARTDATETIMEISO",iSDateTimeIso,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SMARTDATETIMESHORTISO",iSDateTimeIsoS,FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SMARTDATETIMES1",	iSDateTimeS1,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SMARTDATETIMES2",	iSDateTimeS2,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SMARTDATETIMES3",	iSDateTimeS3,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SMARTDATETIMES4",	iSDateTimeS4,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SMARTDATETIME24",		iSDateTime24,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SMARTDATETIMEISO24",	iSDateTimeIso24,FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SMARTDATETIMESHORTISO24",iSDateTimeIsoS24,FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SMARTDATETIMES124",	iSDateTimeS124,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SMARTDATETIMES224",	iSDateTimeS224,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SMARTDATETIMES324",	iSDateTimeS324,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SMARTDATETIMES424",	iSDateTimeS424,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"TIME24",		iTime24,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"TIME12",		iTime12,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"TIMEZONE",	iTimezone,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"MONTHABBREV",	iMonAbb,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"DAYOFWEEKABBREV",	iDayOfWeekAbb,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"DAYOFWEEK",	iDayOfWeek,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"FROM",		iFrom,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"TO",		iTo,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SENDER",		iSender,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"CC",		iCc,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
     {"RECIPS",		iRecips,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
     {"NEWS",		iNews,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
     {"TOANDNEWS",	iToAndNews,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
@@ -533,68 +520,56 @@ static INDEX_PARSE_T itokens[] = {
     {"NEWSANDRECIPS",	iNewsAndRecips,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
     {"MSGID",		iMsgID,		FOR_REPLY_INTRO|FOR_TEMPLATE},
     {"CURNEWS",		iCurNews,	FOR_REPLY_INTRO|FOR_TEMPLATE},
-    {"DAYDATE",		iRDate,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"PREFDATE",	iPrefDate,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"PREFTIME",	iPrefTime,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"PREFDATETIME",	iPrefDateTime,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"DAY",		iDay,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"DAYORDINAL",	iDayOrdinal,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"DAY2DIGIT",	iDay2Digit,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"MONTHLONG",	iMonLong,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"MONTH",		iMon,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"MONTH2DIGIT",	iMon2Digit,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"YEAR",		iYear,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"YEAR2DIGIT",	iYear2Digit,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE|FOR_SAVE},
-    {"ADDRESS",		iAddress,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_RULE},
+    {"DAYDATE",		iRDate,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"PREFDATE",	iPrefDate,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"PREFTIME",	iPrefTime,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"PREFDATETIME",	iPrefDateTime,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"DAY",		iDay,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"DAYORDINAL",	iDayOrdinal,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"DAY2DIGIT",	iDay2Digit,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"MONTHLONG",	iMonLong,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"MONTH",		iMon,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"MONTH2DIGIT",	iMon2Digit,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"YEAR",		iYear,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"YEAR2DIGIT",	iYear2Digit,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"ADDRESS",		iAddress,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
     {"MAILBOX",		iMailbox,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
     {"ROLENICK",       	iRoleNick,	FOR_REPLY_INTRO|FOR_TEMPLATE},
     {"INIT",		iInit,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
-    {"CURDATE",		iCurDate,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
-    {"CURDATEISO",	iCurDateIso,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
-    {"CURDATEISOS",	iCurDateIsoS,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
-    {"CURTIME24",	iCurTime24,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
-    {"CURTIME12",	iCurTime12,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
-    {"CURDAY",		iCurDay,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
-    {"CURDAY2DIGIT",	iCurDay2Digit,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
-    {"CURDAYOFWEEK",	iCurDayOfWeek,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
+    {"CURDATE",		iCurDate,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
+    {"CURDATEISO",	iCurDateIso,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
+    {"CURDATEISOS",	iCurDateIsoS,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
+    {"CURTIME24",	iCurTime24,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
+    {"CURTIME12",	iCurTime12,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
+    {"CURDAY",		iCurDay,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
+    {"CURDAY2DIGIT",	iCurDay2Digit,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
+    {"CURDAYOFWEEK",	iCurDayOfWeek,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
     {"CURDAYOFWEEKABBREV", iCurDayOfWeekAbb,
-					FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
-    {"CURMONTH",	iCurMon,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
-    {"CURMONTH2DIGIT",	iCurMon2Digit,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
-    {"CURMONTHLONG",	iCurMonLong,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
-    {"CURMONTHABBREV",	iCurMonAbb,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
-    {"CURYEAR",		iCurYear,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
-    {"CURYEAR2DIGIT",	iCurYear2Digit,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
-    {"CURPREFDATE",	iCurPrefDate,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
-    {"CURPREFTIME",	iCurPrefTime,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
+					FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
+    {"CURMONTH",	iCurMon,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
+    {"CURMONTH2DIGIT",	iCurMon2Digit,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
+    {"CURMONTHLONG",	iCurMonLong,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
+    {"CURMONTHABBREV",	iCurMonAbb,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
+    {"CURYEAR",		iCurYear,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
+    {"CURYEAR2DIGIT",	iCurYear2Digit,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
+    {"CURPREFDATE",	iCurPrefDate,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
+    {"CURPREFTIME",	iCurPrefTime,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
     {"CURPREFDATETIME",	iCurPrefDateTime,
-					FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
-    {"LASTMONTH",	iLstMon,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
-    {"LASTMONTH2DIGIT",	iLstMon2Digit,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
-    {"LASTMONTHLONG",	iLstMonLong,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
-    {"LASTMONTHABBREV",	iLstMonAbb,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
-    {"LASTMONTHYEAR",	iLstMonYear,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
+					FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
+    {"LASTMONTH",	iLstMon,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
+    {"LASTMONTH2DIGIT",	iLstMon2Digit,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
+    {"LASTMONTHLONG",	iLstMonLong,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
+    {"LASTMONTHABBREV",	iLstMonAbb,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
+    {"LASTMONTHYEAR",	iLstMonYear,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
     {"LASTMONTHYEAR2DIGIT", iLstMonYear2Digit,
-					FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
-    {"LASTYEAR",	iLstYear,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
-    {"LASTYEAR2DIGIT",	iLstYear2Digit,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT|FOR_RULE|FOR_SAVE},
+					FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
+    {"LASTYEAR",	iLstYear,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
+    {"LASTYEAR2DIGIT",	iLstYear2Digit,	FOR_REPLY_INTRO|FOR_TEMPLATE|FOR_FILT},
     {"HEADER",		iHeader,	FOR_INDEX},
     {"TEXT",		iText,		FOR_INDEX},
     {"ARROW",		iArrow,		FOR_INDEX},
     {"NEWLINE",		iNewLine,	FOR_REPLY_INTRO},
     {"CURSORPOS",	iCursorPos,	FOR_TEMPLATE},
-    {"NICK",		iNick,		FOR_RULE|FOR_SAVE},
-    {"FOLDER",		iFolder,	FOR_RULE|FOR_SAVE|FOR_FOLDER},
-    {"ROLE",		iRole,		FOR_RULE|FOR_RESUB|FOR_TRIM|FOR_TEMPLATE},
-    {"PROCID",		iProcid,	FOR_RULE|FOR_RESUB|FOR_FLAG|FOR_COMPOSE|FOR_TRIM|FOR_TEMPLATE},
-    {"PKEY",		iPkey,		FOR_RULE|FOR_KEY},
-    {"SCREEN",		iScreen,	FOR_RULE|FOR_KEY},
-    {"FLAG",		iFlag,		FOR_RULE|FOR_SAVE|FOR_FLAG},
-    {"COLLECTION",	iCollection,	FOR_RULE|FOR_SAVE|FOR_COMPOSE|FOR_FOLDER},
-    {"BCC",		iBcc,		FOR_COMPOSE|FOR_RULE},
-    {"LCC",		iLcc,		FOR_COMPOSE|FOR_RULE},
-    {"FORWARDFROM",	iFfrom,		FOR_COMPOSE|FOR_RULE},
-    {"FORWARDADDRESS",	iFadd,		FOR_COMPOSE|FOR_RULE},
     {NULL,		iNothing,	FOR_NOTHING}
 };
 
@@ -968,7 +943,7 @@ static IndexColType fixed_ctypes[] = {
     iSDateTimeS1, iSDateTimeS2, iSDateTimeS3, iSDateTimeS4,
     iSDateTimeIso24, iSDateTimeIsoS24,
     iSDateTimeS124, iSDateTimeS224, iSDateTimeS324, iSDateTimeS424,
-    iSize, iSizeComma, iSizeNarrow, iKSize, iDescripSize, iSizeThread,
+    iSize, iSizeComma, iSizeNarrow, iKSize, iDescripSize,
     iPrio, iPrioBang, iPrioAlpha, iInit,
     iAtt, iTime24, iTime12, iTimezone, iMonAbb, iYear, iYear2Digit,
     iDay2Digit, iMon2Digit, iDayOfWeekAbb, iScore, iMonLong, iDayOfWeek
@@ -1161,7 +1136,6 @@ setup_index_header_widths(MAILSTREAM *stream)
 		  case iTime12:
 		  case iSize:
 		  case iKSize:
-		  case iSizeThread:
 		    cdesc->actual_length = 7;
 		    cdesc->adjustment = Right;
 		    break;
@@ -1255,7 +1229,7 @@ setup_index_header_widths(MAILSTREAM *stream)
 	cdesc->ctype != iNothing;
 	cdesc++)
       if(cdesc->ctype == iSize || cdesc->ctype == iKSize ||
-         cdesc->ctype == iSizeNarrow  || cdesc->ctype == iSizeThread ||
+         cdesc->ctype == iSizeNarrow ||
 	 cdesc->ctype == iSizeComma || cdesc->ctype == iDescripSize){
 	  if(cdesc->actual_length == 0){
 	      if((fix=cdesc->width) > 0){ /* had this reserved */
@@ -1638,12 +1612,10 @@ build_header_work(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap,
 
 		/* find next thread which is visible */
 		do{
-		   unsigned long branch;
 		    if(mn_get_revsort(msgmap) && thrd->prevthd)
 		      thrd = fetch_thread(stream, thrd->prevthd);
-			/*branch = get_branch(stream,thrd)*/
-		    else if(!mn_get_revsort(msgmap) && thrd->branch)
-		      thrd = fetch_thread(stream, thrd->branch);
+		    else if(!mn_get_revsort(msgmap) && thrd->nextthd)
+		      thrd = fetch_thread(stream, thrd->nextthd);
 		    else
 		      thrd = NULL;
 		} while(thrd
@@ -2055,10 +2027,13 @@ format_index_index_line(INDEXDATA_S *idata)
      */
     ice = copy_ice(ice);
 
-    thrd = fetch_thread(idata->stream, idata->rawno);
     /* is this a collapsed thread index line? */
-    if(!idata->bogus && THREADING())
-	collapsed = thrd && thread_is_kolapsed(ps_global, idata->stream, ps_global->msgmap, idata->rawno);
+    if(!idata->bogus && THREADING()){
+	thrd = fetch_thread(idata->stream, idata->rawno);
+	collapsed = thrd && thrd->next
+		    && get_lflag(idata->stream, NULL,
+				 idata->rawno, MN_COLL);
+    }
 
     /* calculate contents of the required fields */
     for(cdesc = ps_global->index_disp_format; cdesc->ctype != iNothing; cdesc++)
@@ -2100,15 +2075,10 @@ format_index_index_line(INDEXDATA_S *idata)
 			      if(to_us == ' ')
 				to_us = '+';
 
-			      if(to_us == '+' 
-				   && F_ON(F_MARK_FOR_GROUP,ps_global) &&
-				 (addr->next || addr != fetch_to(idata)))
-				   to_us = '.';
-
 			      break;
 			  }
 
-			if(to_us == ' ' && resent_to_us(idata)){
+			if(to_us != '+' && resent_to_us(idata)){
 			    ice->to_us = 1;
 			    if(to_us == ' ')
 			      to_us = '+';
@@ -2162,7 +2132,7 @@ format_index_index_line(INDEXDATA_S *idata)
 			    ielem->color = new_color_pair(VAR_IND_IMP_FORE_COLOR, VAR_IND_IMP_BACK_COLOR);
 			}
 		    }
-		    else if(str[0] == '+' || str[0] == '-' || str[0] == '.'){
+		    else if(str[0] == '+' || str[0] == '-'){
 			if(VAR_IND_PLUS_FORE_COLOR && VAR_IND_PLUS_BACK_COLOR){
 			    ielem = ifield->ielem;
 			    ielem->freecolor = 1;
@@ -2218,12 +2188,6 @@ format_index_index_line(INDEXDATA_S *idata)
 			for(addr = fetch_to(idata); addr; addr = addr->next)
 			  if(address_is_us(addr, ps_global)){
 			      to_us = '+';
-
-			      if(to_us == '+' 
-				   && F_ON(F_MARK_FOR_GROUP,ps_global) &&
-				 (addr->next || addr != fetch_to(idata)))
-				   to_us = '.';
-
 			      break;
 			  }
 		      
@@ -2319,7 +2283,7 @@ format_index_index_line(INDEXDATA_S *idata)
 
 		  if(pico_usingcolor()){
 
-		      if(str[0] == '+' || str[0] == '-' || str[0] == '.'){
+		      if(str[0] == '+' || str[0] == '-'){
 			  if(start == 0
 			     && VAR_IND_PLUS_FORE_COLOR
 			     && VAR_IND_PLUS_BACK_COLOR){
@@ -2501,24 +2465,6 @@ format_index_index_line(INDEXDATA_S *idata)
 		from_str(cdesc->ctype, idata, str, sizeof(str), ice);
 	        break;
 
-	      case iAddressTo:
-	      case iAddressCc:
-	      case iAddressRecip:
-		{ENVELOPE *env;
-		 int we_clear;
-		env = rules_fetchenvelope(idata, &we_clear); 
-		sprintf(str, "%-*.*s", ifield->width, ifield->width,
-		        detoken_src((cdesc->ctype == iAddressTo 
-				? "_ADDRESSTO_"
-				: (cdesc->ctype == iAddressCc
-				   ? "_ADRESSCC_"
-				   : "_ADRESSRECIPS_")), FOR_INDEX, 
-				env, NULL, NULL, NULL));
-		if(we_clear)
-		   mail_free_envelope(&env);
-		}
-		break;
-
 	      case iTo:
 		if(((field = ((addr = fetch_to(idata))
 			      ? "To"
@@ -2585,30 +2531,7 @@ format_index_index_line(INDEXDATA_S *idata)
 
 	        break;
 
-           case iSizeThread:
-              if (!THREADING()){
-                goto getsize;
-              } else if (collapsed){
-                   l =  count_flags_in_thread(idata->stream, thrd, F_NONE);
-                   snprintf(str, sizeof(str), "(%lu)", l);
-              }
-              else{
-                  thrd = fetch_thread(idata->stream, idata->rawno);
-                  if(!thrd)
-                         snprintf(str, sizeof(str), "%s", "Error");
-                  else{
-                      long lengthb;
-                      lengthb = get_length_branch(idata->stream, idata->rawno);
-                      if (lengthb > 0L)
-                         snprintf(str, sizeof(str), "(%lu)", lengthb);
-                      else
-                         snprintf(str,sizeof(str), "%s", " ");
-                    }
-              }
-             break;
-
 	      case iSize:
-getsize:
 		/* 0 ... 9999 */
 		if((l = fetch_size(idata)) < 10*1000L)
 		  snprintf(str, sizeof(str), "(%lu)", l);
@@ -2862,6 +2785,7 @@ getsize:
 		    if(first_text){
 			strncpy(str, first_text, BIGWIDTH);
 			str[BIGWIDTH] = '\0';
+			fs_give((void **) &first_text);
 		    }
 		}
 
@@ -3183,7 +3107,7 @@ format_thread_index_line(INDEXDATA_S *idata)
 		  tice->linecolor = new_color_pair(VAR_IND_IMP_FORE_COLOR,
 						   VAR_IND_IMP_BACK_COLOR);
 	    }
-	    else if((to_us == '+' || to_us == '-' || to_us == '.')
+	    else if((to_us == '+' || to_us == '-')
 		    && VAR_IND_PLUS_FORE_COLOR && VAR_IND_PLUS_BACK_COLOR){
 		ielem = ifield->ielem;
 		ielem->freecolor = 1;
@@ -3786,26 +3710,6 @@ fetch_firsttext(INDEXDATA_S *idata, int delete_quotes)
     gf_io_t pc;
     long partial_fetch_len = 0L;
     SEARCHSET *ss, **sset;
-    MESSAGECACHE *mc;
-    PINELT_S     *pelt;
-
-    /* we cache the result we get from this function, so that we do not have to
-     * refetch the text in case there is a change. We could cache in the envelope
-     * but c-client does not have a special field for that, nor we want to use the
-     * sparep pointer, since there could be other uses for sparep later, and even 
-     * if we add a pointer to the ENVELOPE structure, we would be caching the same 
-     * text twice (one in a private pointer, and the new pointer) and that would 
-     * not make sense. Instead we will use an elt for this
-     */
-
-    if((mc = mail_elt(idata->stream, idata->rawno))
-       && ((pelt = (PINELT_S *) mc->sparep) == NULL)){
-        pelt = (PINELT_S *) fs_get(sizeof(PINELT_S));
-        memset(pelt, 0, sizeof(PINELT_S));
-    }
-        
-    if(pelt && pelt->firsttext != NULL)
-      return(pelt->firsttext);
 
 try_again:
 
@@ -3899,17 +3803,7 @@ try_again:
 
 			if(p > buf){
 			    size_t l;
-			    ENVELOPE *env;
-			    char *rule_result;
 
-			    if(rule_result = find_value((delete_quotes
-				      ? "_OPENINGTEXTNQ_" : "_OPENINGTEXT_"), 
-				      buf, PROCESS_SP, idata, 4)){
-			      collspaces(rule_result);
-			      strncpy(buf, rule_result, sizeof(buf));
-			      buf[sizeof(buf) - 1] = '\0';
-			      fs_give((void **) &rule_result);
-			    }
 			    l = strlen(buf);
 			    l += 100;
 			    firsttext = fs_get((l+1) * sizeof(char));
@@ -3933,8 +3827,6 @@ try_again:
 			    goto try_again;
 			}
 		    }
-		    if(mc && pelt)
-			pelt->firsttext = firsttext;
 		}
 	    }	
 	}
@@ -5375,10 +5267,10 @@ subj_str(INDEXDATA_S *idata, char *str, size_t strsize, SubjKW kwtype, int openi
 {
     char          *subject, *origsubj, *origstr, *rawsubj, *sptr = NULL;
     char          *p, *border, *q = NULL, *free_subj = NULL;
-    char	  *sp, *rule_result;
+    char	  *sp;
     size_t         len;
     int            width = -1;
-    int            depth = 0, mult = 2, collapsed, i, we_clear = 0;
+    int            depth = 0, mult = 2;
     int            save;
     int            do_subj = 0, truncated_tree = 0;
     PINETHRD_S    *thd, *thdorig;
@@ -5432,13 +5324,7 @@ subj_str(INDEXDATA_S *idata, char *str, size_t strsize, SubjKW kwtype, int openi
      * origsubj is the original subject but it has been decoded. We need
      * to free it at the end of this routine.
      */
-    if (rule_result = find_value("_SUBJECT_", origsubj, PROCESS_SP, idata, 4)){
-       if(origsubj)
-	 fs_give((void **)&origsubj);
-       we_clear++;
-       origsubj = cpystr(rule_result);
-       fs_give((void **)&rule_result);
-    }
+
 
     /*
      * prepend_keyword will put the keyword stuff before the subject
@@ -5526,8 +5412,10 @@ subj_str(INDEXDATA_S *idata, char *str, size_t strsize, SubjKW kwtype, int openi
 
 	if(pith_opt_condense_thread_cue)
 	  width = (*pith_opt_condense_thread_cue)(thd, ice, &str, &strsize, width,
-	   this_thread_is_kolapsed(ps_global, idata->stream, ps_global->msgmap, idata->rawno) &&
-	   (count_thread(ps_global,idata->stream, ps_global->msgmap, idata->rawno) != 1));
+						  thd && thd->next
+						  && get_lflag(idata->stream,
+							       NULL,idata->rawno,
+							       MN_COLL));
 
 	/*
 	 * width is < available strsize and
@@ -5877,9 +5765,6 @@ subj_str(INDEXDATA_S *idata, char *str, size_t strsize, SubjKW kwtype, int openi
 
     if(free_subj)
       fs_give((void **) &free_subj);
-
-    if (we_clear && origsubj)
-      fs_give((void **)&origsubj);
 }
 
 
@@ -6158,8 +6043,11 @@ from_str(IndexColType ctype, INDEXDATA_S *idata, char *str, size_t strsize, ICE_
 	border = str + width;
 	if(pith_opt_condense_thread_cue)
 	  width = (*pith_opt_condense_thread_cue)(thd, ice, &str, &strsize, width,
-	   this_thread_is_kolapsed(ps_global, idata->stream, ps_global->msgmap, idata->rawno) &&
-	     (count_thread(ps_global,idata->stream, ps_global->msgmap, idata->rawno) != 1));
+						  thd && thd->next
+						  && get_lflag(idata->stream,
+							       NULL,idata->rawno,
+							       MN_COLL));
+
 	fptr = str;
 
 	if(thd)
@@ -6245,33 +6133,16 @@ from_str(IndexColType ctype, INDEXDATA_S *idata, char *str, size_t strsize, ICE_
 				 ? "To"
 				 : (addr = fetch_cc(idata))
 				 ? "Cc"
-				 : NULL))){
-			  char *rule_result;
-			  rule_result = find_value("_FROM_", NULL, 0, idata, 1);
-			  if (!rule_result)
-			  set_index_addr(idata, field, addr, "To: ",
-				strsize-1, fptr);
-			  else{
-			    sprintf(str, "%-*.*s", strsize-1, strsize-1, 
-								rule_result);
-			    fs_give((void **)&rule_result);
-			  }
-
+				 : NULL))
+		       && set_index_addr(idata, field, addr, "To: ",
+					 strsize-1, fptr))
 		      break;
-		    }
+
 		    if(ctype == iFromTo &&
 		       (newsgroups = fetch_newsgroups(idata)) &&
 		       *newsgroups){
-			   char *rule_result;
-			   rule_result = find_value("_FROM_", NULL, 0, idata, 1);
-			   if (!rule_result)
-				sprintf(str, "To: %-*.*s", strsize-1-4, 
-					strsize-1-4, newsgroups);
-				else{
-				  sprintf(str, "%-*.*s", strsize-1, strsize-1,
-							 rule_result);
-				  fs_give((void **)&rule_result);
-				}
+			snprintf(fptr, strsize, "To: %-*.*s", strsize-1-4, strsize-1-4,
+				newsgroups);
 			break;
 		    }
 
@@ -6284,15 +6155,7 @@ from_str(IndexColType ctype, INDEXDATA_S *idata, char *str, size_t strsize, ICE_
 	      break;
 
 	  case iFrom:
-	   { char *rule_result;
-	     rule_result = find_value("_FROM_", NULL, 0, idata, 4);
-	     if (!rule_result) 
-	      set_index_addr(idata, "From", fetch_from(idata), NULL, strsize-1, fptr);
-	     else{
-		sprintf(str, "%-*.*s", strsize-1, strsize-1, rule_result);
-		fs_give((void **)&rule_result);
-	     }
-	   }
+	    set_index_addr(idata, "From", fetch_from(idata), NULL, strsize-1, fptr);
 	    break;
 
 	  case iAddress:
@@ -6588,65 +6451,4 @@ set_print_format(IELEM_S *ielem, int width, int leftadj)
 	    ielem->freeprintf = (PRINT_FORMAT_LEN(width,leftadj) + 1) * sizeof(char);
 	}
     }
-}
-
-void
-setup_threading_display_style(void)
-{
-  RULE_RESULT *rule;
-  NAMEVAL_S *v;
-  int i;
-
-  rule = get_result_rule(V_THREAD_DISP_STYLE_RULES, FOR_THREAD, NULL);
-  if (rule || ps_global->VAR_THREAD_DISP_STYLE){
-     for(i = 0; v = thread_disp_styles(i); i++)
-        if(!strucmp(rule ? rule->result : ps_global->VAR_THREAD_DISP_STYLE, 
-		    rule ? (v ? v->name : "" ) : S_OR_L(v))){
-              ps_global->thread_disp_style = v->value;
-              break;
-        }
-     if (rule){
-	if (rule->result)
-	   fs_give((void **)&rule->result);
-	fs_give((void **)&rule);
-     }
-  }
-}
-
-char *
-find_value(char *token, char *use_this, int flag, INDEXDATA_S *idata, int nfcn)
-{
- int n = 0, i, rule_context, we_clear;
- char  *rule_result = NULL, **list;
- ENVELOPE *env;
- RULELIST *rule;
- RULE_S *prule;
-
- env = rules_fetchenvelope(idata, &we_clear);
- if(env && env->sparep)
-    fs_give((void **)&env->sparep);
- if(we_clear)
-   mail_free_envelope(&env);
- if(rule = get_rulelist_from_code(V_REPLACE_RULES, ps_global->rule_list)){
-    list = functions_for_token(token);
-    while(rule_result == NULL && (prule = get_rule(rule,n++))){
-        rule_context = 0;
-        if (prule->action->token && !strcmp(prule->action->token, token)){
-           for (i = 0; i < nfcn; i++)
-              if(list[i+1] && !strcmp(prule->action->function, list[i+1]))
-                 rule_context |= context_for_function(list[i+1]);
-           if (rule_context){
-	      env = rules_fetchenvelope(idata, &we_clear);
-	      if(use_this)
-		env->sparep = get_sparep_for_rule(use_this, flag);
-	     rule_result = process_rule(prule, rule_context, env);
-	     if(env->sparep)
-		free_sparep_for_rule(&env->sparep);
-	     if(we_clear)
-	       mail_free_envelope(&env);
-	   }
-        }
-    }
- }
- return rule_result;
 }

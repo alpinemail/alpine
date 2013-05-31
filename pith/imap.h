@@ -35,7 +35,6 @@ typedef struct _mmlogin_s {
     unsigned	    altflag:1;
     unsigned	    ok_novalidate:1;
     unsigned	    warned:1;
-    unsigned	    invalidpwd:1;	/* password is invalid, assume valid */
     STRLIST_S	   *hosts;
     struct _mmlogin_s *next;
 } MMLOGIN_S;

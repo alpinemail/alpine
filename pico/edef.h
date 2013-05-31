@@ -32,7 +32,6 @@
 
 /* initialized global definitions */
 
-int	sendnow = 0;			/* should we send now		*/
 int     fillcol = 72;                   /* Current fill column          */
 int     userfillcol = -1;               /* Fillcol set from cmd line    */
 UCS     pat[NPAT];                      /* Search pattern		*/
@@ -85,7 +84,6 @@ void    *input_cs;		/* passed to mbtow() via kbseq() */
 
 /* initialized global external declarations */
 
-extern	int	sendnow;		/* should we send now		*/
 extern  int     fillcol;                /* Fill column                  */
 extern  int     userfillcol;            /* Fillcol set from cmd line    */
 extern  UCS     pat[];                  /* Search pattern               */

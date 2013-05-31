@@ -73,7 +73,6 @@ static char rcsid[] = "$Id: mailcmd.c 1266 2009-07-14 18:39:12Z hubert@u.washing
 #include "../pith/tempfile.h"
 #include "../pith/search.h"
 #include "../pith/margin.h"
-#include "../pith/rules.h"
 #ifdef _WINDOWS
 #include "../pico/osdep/mswin.h"
 #endif
@@ -114,7 +113,7 @@ int	  select_by_thread(MAILSTREAM *, MSGNO_S *, SEARCHSET **);
 char     *choose_a_rule(int);
 int	  select_by_keyword(MAILSTREAM *, SEARCHSET **);
 char     *choose_a_keyword(void);
-int	  select_sort(struct pine *, int, SortOrder *, int *, int);
+int	  select_sort(struct pine *, int, SortOrder *, int *);
 int       print_index(struct pine *, MSGNO_S *, int);
 
 
@@ -975,7 +974,7 @@ nfolder:
 				     state->context_current, &recent_cnt,
 				     F_ON(F_TAB_NO_CONFIRM,state)
 				       ? NULL : &did_cancel))){
-			if(!in_inbox && F_OFF(F_AUTO_CIRCULAR_TAB,state)){
+			if(!in_inbox){
 			    static ESCKEY_S inbox_opt[] = {
 				{'y', 'y', "Y", N_("Yes")},
 				{'n', 'n', "N", N_("No")},
@@ -1336,7 +1335,7 @@ get_out:
 	if(any_messages(msgmap, NULL, NULL)){
 	    if(any_lflagged(msgmap, MN_SLCT) > 0L){
 		if(apply_command(state, stream, msgmap, 0,
-				 AC_NONE, question_line, 1)){
+				 AC_NONE, question_line)){
 		    if(F_ON(F_AUTO_UNSELECT, state)){
 			agg_select_all(stream, msgmap, NULL, 0);
 			unzoom_index(state, stream, msgmap);
@@ -1354,35 +1353,23 @@ get_out:
 
           /*-------- Sort command -------*/
       case MC_SORT :
-      case MC_SORTHREAD:
 	{
 	    int were_threading = THREADING();
 	    SortOrder sort = mn_get_sort(msgmap);
 	    int	      rev  = mn_get_revsort(msgmap);
-	    int	      thread = (command == MC_SORT) ? 0 : 1;
 
 	    dprint((1,"MAIL_CMD: sort\n"));		    
-	    if(sort == SortThread)
-		sort = ps_global->thread_cur_sort;
-	    if(select_sort(state, question_line, &sort, &rev, thread)){
+	    if(select_sort(state, question_line, &sort, &rev)){
 		/* $ command reinitializes threading collapsed/expanded info */
 		if(SORT_IS_THREADED(msgmap) && !SEP_THRDINDX())
 		  erase_threading_info(stream, msgmap);
-
-		if(command == MC_SORTHREAD){
-		  ps_global->thread_cur_sort = sort;
-		  sort = SortThread;
-		}
-		else if(sort == SortThread)	/* command = MC_SORT */
-		  ps_global->thread_cur_sort = F_ON(F_THREAD_SORTS_BY_ARRIVAL, ps_global)
-						? SortArrival : ps_global->thread_def_sort;
 
 		if(ps_global && ps_global->ttyo){
 		    blank_keymenu(ps_global->ttyo->screen_rows - 2, 0);
 		    ps_global->mangled_footer = 1;
 		}
 
-		sort_folder(stream, msgmap, sort, rev, SRT_VRB|SRT_MAN, 1);
+		sort_folder(stream, msgmap, sort, rev, SRT_VRB|SRT_MAN);
 	    }
 
 	    state->mangled_footer = 1;
@@ -2607,9 +2594,6 @@ role_compose(struct pine *state)
 		role->nick = cpystr("Default Role");
 	    }
 
-	    if(state->role)
-	      fs_give((void **)&state->role);
-	    state->role = cpystr(role->nick); /* remember the role */
 	    state->redrawer = NULL;
 	    switch(action){
 	      case 'c':
@@ -2660,12 +2644,12 @@ save_prompt(struct pine *state, CONTEXT_S **cntxt, char *nfldr, size_t len_nfldr
 	    char *nmsgs, ENVELOPE *env, long int rawmsgno, char *section,
 	    SaveDel *dela, SavePreserveOrder *prea)
 {
-    int		      rc, ku = -1, n = 0, flags, last_rc = 0, saveable_count = 0, done = 0;
+    int		      rc, ku = -1, n, flags, last_rc = 0, saveable_count = 0, done = 0;
     int		      delindex, preindex, r;
     char	      prompt[6*MAX_SCREEN_COLS+1], *p, expanded[MAILTMPLEN];
     char              *buf = tmp_20k_buf;
     char              shortbuf[200];
-    char              *folder, folder2[MAXPATH];
+    char              *folder;
     HelpType	      help;
     SaveDel           del = DontAsk;
     SavePreserveOrder pre = DontAskPreserve;
@@ -2673,7 +2657,6 @@ save_prompt(struct pine *state, CONTEXT_S **cntxt, char *nfldr, size_t len_nfldr
     static HISTORY_S *history = NULL;
     CONTEXT_S	     *tc;
     ESCKEY_S	      ekey[10];
-    RULE_RESULT	     *rule;
 
     if(!cntxt)
       panic("no context ptr in save_prompt");
@@ -2682,15 +2665,6 @@ save_prompt(struct pine *state, CONTEXT_S **cntxt, char *nfldr, size_t len_nfldr
 
     if(!(folder = save_get_default(state, env, rawmsgno, section, cntxt)))
       return(0);		/* message expunged! */
-
-    if (rule = get_result_rule(V_SAVE_RULES, FOR_SAVE, env)){
-       strncpy(folder2,rule->result,sizeof(folder2)-1);
-       folder2[sizeof(folder2)-1] = '\0';
-       folder = folder2;
-       if (rule->result)
-	   fs_give((void **)&rule->result);
-       fs_give((void **)&rule);
-    }
 
     /* how many context's can be saved to... */
     for(tc = state->context_list; tc; tc = tc->next)
@@ -3200,10 +3174,6 @@ cmd_expunge(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap)
 		if(SORT_IS_THREADED(msgmap))
 		  refresh_sort(stream, msgmap, SRT_NON);
 
-		if (msgmap->nmsgs
-			&& F_ON(F_ENHANCED_THREAD, state) && COLL_THRDS())
-			kolapse_thread(state, stream, msgmap, '[', 0);
-
 		state->mangled_body = 1;
 		state->mangled_header = 1;
 		q_status_message2(SM_ORDER, 0, 4,
@@ -3298,9 +3268,6 @@ cmd_expunge(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap)
 	 */
 	if(SORT_IS_THREADED(msgmap))
 	  refresh_sort(stream, msgmap, SRT_NON);
-	if (msgmap->nmsgs
-		&& F_ON(F_ENHANCED_THREAD, state) && COLL_THRDS())
-		kolapse_thread(state, stream, msgmap, '[', 0);
     }
     else{
 	if(del_count)
@@ -3381,9 +3348,6 @@ save_size_changed_prompt(long msgno, int flags)
 	{'a', 'a', "A", "yes to All"},
 	{-1, 0, NULL, NULL}
     };
-
-    if(F_ON(F_IGNORE_SIZE, ps_global))
-      return 'y';
 
     if(flags & SSCP_INIT || flags & SSCP_END){
 	if(flags & SSCP_END && possible_corruption)
@@ -6981,7 +6945,7 @@ select_by_current(struct pine *state, MSGNO_S *msgmap, CmdWhere in_index)
 	 * Maybe it makes sense to zoom after a select but not after a colon
 	 * command even though they are very similar.
 	 */
-	thread_command(state, state->mail_stream, msgmap, ':', -FOOTER_ROWS(state), 1);
+	thread_command(state, state->mail_stream, msgmap, ':', -FOOTER_ROWS(state));
     }
     else{
 	if((all_selected =
@@ -7037,7 +7001,7 @@ select_by_current(struct pine *state, MSGNO_S *msgmap, CmdWhere in_index)
   ----*/
 int
 apply_command(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap,
-	      UCS preloadkeystroke, int flags, int q_line, int display)
+	      UCS preloadkeystroke, int flags, int q_line)
 {
     int i = 8,			/* number of static entries in sel_opts3 */
         rv = 0,
@@ -7189,18 +7153,8 @@ apply_command(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap,
 	collapse_or_expand(state, stream, msgmap,
 			   F_ON(F_SLASH_COLL_ENTIRE, ps_global)
 			     ? 0L
-			     : mn_get_cur(msgmap),
-			   display);
+			     : mn_get_cur(msgmap));
 	break;
-
-      case '[' :
-	collapse_this_thread(state, stream, msgmap, display, 0);
-      break;
-
-      case ']' :
-	expand_this_thread(state, stream, msgmap, display, 0);
-      break;
-
 
       case ':' :
 	select_thread_stmp(state, stream, msgmap);
@@ -7235,7 +7189,7 @@ apply_command(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap,
 int
 select_by_number(MAILSTREAM *stream, MSGNO_S *msgmap, SEARCHSET **limitsrch)
 {
-    int r, end, cur;
+    int r, end;
     long n1, n2, raw;
     char number1[16], number2[16], numbers[80], *p, *t;
     HelpType help;
@@ -7282,7 +7236,7 @@ select_by_number(MAILSTREAM *stream, MSGNO_S *msgmap, SEARCHSET **limitsrch)
 
 	*t = '\0';
 
-	end = cur = 0;
+	end = 0;
 	if(number1[0] == '\0'){
 	    if(*p == '-'){
 		q_status_message1(SM_ORDER | SM_DING, 0, 2,
@@ -7294,14 +7248,6 @@ select_by_number(MAILSTREAM *stream, MSGNO_S *msgmap, SEARCHSET **limitsrch)
 		end = 1;
 		p += strlen("end");
 	    }
-	    else if(!strucmp(p, "$")){
-		end = 1;
-		p++;
-	    }
-	    else if(!struncmp(p, ".",1)){
-		cur = 1;
-		p++;
-	    }
 	    else{
 		q_status_message1(SM_ORDER | SM_DING, 0, 2,
 			        _("Invalid message number: %s"), numbers);
@@ -7311,8 +7257,6 @@ select_by_number(MAILSTREAM *stream, MSGNO_S *msgmap, SEARCHSET **limitsrch)
 
 	if(end)
 	  n1 = mn_get_total(msgmap);
-	else if(cur)
-	  n1 = mn_get_cur(msgmap);
 	else if((n1 = atol(number1)) < 1L || n1 > mn_get_total(msgmap)){
 	    q_status_message1(SM_ORDER | SM_DING, 0, 2,
 			      _("\"%s\" out of message number range"),
@@ -7327,19 +7271,11 @@ select_by_number(MAILSTREAM *stream, MSGNO_S *msgmap, SEARCHSET **limitsrch)
 
 	    *t = '\0';
 
-	    end = cur = 0;
+	    end = 0;
 	    if(number2[0] == '\0'){
 		if(!strucmp("end", p)){
 		    end = 1;
 		    p += strlen("end");
-		}
-		else if(!strucmp(p, "$")){
-		   end = 1;
-		   p++;
-		}
-		else if(!struncmp(p, ".",1)){
-		   cur = 1;
-		   p++;
 		}
 		else{
 		    q_status_message1(SM_ORDER | SM_DING, 0, 2,
@@ -7351,8 +7287,6 @@ select_by_number(MAILSTREAM *stream, MSGNO_S *msgmap, SEARCHSET **limitsrch)
 
 	    if(end)
 	      n2 = mn_get_total(msgmap);
-	    else if(cur)
-	      n2 = mn_get_cur(msgmap);
 	    else if((n2 = atol(number2)) < 1L || n2 > mn_get_total(msgmap)){
 		q_status_message1(SM_ORDER | SM_DING, 0, 2,
 				  _("\"%s\" out of message number range"),
@@ -9080,10 +9014,10 @@ Args: state -- pine state pointer
       Returns 0 if it was cancelled, 1 otherwise.
   ----*/
 int
-select_sort(struct pine *state, int ql, SortOrder *sort, int *rev, int thread)
+select_sort(struct pine *state, int ql, SortOrder *sort, int *rev)
 {
     char      prompt[200], tmp[3], *p;
-    int       s, i, j;
+    int       s, i;
     int       deefault = 'a', retval = 1;
     HelpType  help;
     ESCKEY_S  sorts[14];
@@ -9116,26 +9050,17 @@ select_sort(struct pine *state, int ql, SortOrder *sort, int *rev, int thread)
       strncpy(prompt, _("Choose type of sort, or 'R' to reverse current sort : "),
 	      sizeof(prompt));
 
-    for(i = 0, j = 0; state->sort_types[i] != EndofList; i++) {
-       sorts[i].rval = i;
-       sorts[i].name = cpystr("");
-       sorts[i].label = "";
-       sorts[i].ch    = -2;
-       if (!thread || allowed_thread_key(state->sort_types[i])){
-          p = sorts[j].label = sort_name(state->sort_types[i]);
-          while(*(p+1) && islower((unsigned char)*p))
-            p++;
-          sorts[j].ch   = tolower((unsigned char)(tmp[0] = *p));
-          sorts[j++].name = cpystr(tmp);
-       }
+    for(i = 0; state->sort_types[i] != EndofList; i++) {
+	sorts[i].rval	   = i;
+	p = sorts[i].label = sort_name(state->sort_types[i]);
+	while(*(p+1) && islower((unsigned char)*p))
+	  p++;
 
-       if (thread){
-          if (state->thread_def_sort == state->sort_types[i])
-              deefault = sorts[j-1].rval;
-       }
-       else
-           if(mn_get_sort(state->msgmap) == state->sort_types[i])
-             deefault = sorts[i].rval;
+	sorts[i].ch   = tolower((unsigned char)(tmp[0] = *p));
+	sorts[i].name = cpystr(tmp);
+
+        if(mn_get_sort(state->msgmap) == state->sort_types[i])
+	  deefault = sorts[i].rval;
     }
 
     sorts[i].ch     = 'r';
@@ -9159,17 +9084,8 @@ select_sort(struct pine *state, int ql, SortOrder *sort, int *rev, int thread)
 	state->mangled_body = 1;		/* signal screen's changed */
 	if(s == 'r')
 	  *rev = !mn_get_revsort(state->msgmap);
-	else{
-	  if(thread){
-	    for(i = 0; state->sort_types[i] != EndofList; i++){
-	      if(struncmp(sort_name(state->sort_types[i]),
-                  sorts[s].label, strlen(sorts[s].label)) == 0)
-        	break;
-	    }
-	    s = i;
-	  }
+	else
 	  *sort = state->sort_types[s];
-	}
 
 	if(F_ON(F_SHOW_SORT, ps_global))
 	  ps_global->mangled_header = 1;
@@ -9554,378 +9470,3 @@ flag_submenu(mc)
 }
 
 #endif	/* _WINDOWS */
-
-void
-cmd_delete_this_thread(state, stream, msgmap)
-    struct pine *state;
-    MAILSTREAM  *stream;
-    MSGNO_S     *msgmap;
-{
-    unsigned long rawno, top, save_kolapsed;
-    PINETHRD_S   *thrd = NULL, *nxthrd;
-
-    if(!stream)
-      return;
-
-    rawno = mn_m2raw(msgmap, mn_get_cur(msgmap));
-    move_top_this_thread(stream, msgmap, rawno);
-    top =  mn_m2raw(msgmap, mn_get_cur(msgmap));
-    if(top)
-      thrd = fetch_thread(stream, top);
-
-    if(!thrd)
-      return;
-
-    save_kolapsed = this_thread_is_kolapsed(state, stream, msgmap, top);
-    collapse_this_thread(state, stream, msgmap, 0, 0);
-    thread_command(state, stream, msgmap, 'd', -FOOTER_ROWS(state), 1);
-    if (!save_kolapsed)
-       expand_this_thread(state, stream, msgmap, 0, 0);
-}
-
-void
-cmd_delete_thread(state, stream, msgmap)
-    struct pine *state;
-    MAILSTREAM  *stream;
-    MSGNO_S     *msgmap;
-{
-    unsigned long rawno, top, orig_top, topnxt, save_kolapsed;
-    PINETHRD_S   *thrd = NULL, *nxthrd;
-    int done = 0, count;
-
-    if(!stream)
-      return;
-
-    rawno = mn_m2raw(msgmap, mn_get_cur(msgmap));
-    move_top_thread(stream, msgmap, rawno);
-    top =  orig_top = mn_m2raw(msgmap, mn_get_cur(msgmap));
-    if(top)
-      thrd = fetch_thread(stream, top);
-
-    if(!thrd)
-      return;
-
-    while (!done){
-      cmd_delete_this_thread(state, stream, msgmap);
-      if (F_OFF(F_ENHANCED_THREAD, state)
-         || (move_next_this_thread(state, stream, msgmap, 0) <= 0)
-         || !(top = mn_m2raw(msgmap, mn_get_cur(msgmap)))
-         || (orig_top != top_thread(stream, top)))
-         done++;
-    }
-    mn_set_cur(msgmap,mn_raw2m(msgmap, rawno));
-    cmd_delete(state, msgmap, MCMD_NONE, cmd_delete_index);
-    count = count_thread(state, stream, msgmap, rawno);
-    q_status_message2(SM_ORDER, 0, 1, "%s message%s marked deleted",
-                int2string(count), plural(count));
-}
-
-int
-collapse_this_thread(state, stream, msgmap, display, special)
-    struct pine *state;
-    MAILSTREAM  *stream;
-    MSGNO_S     *msgmap;
-    int          display;
-    int		 special;
-{
-    int collapsed, rv = 1, done = 0;
-    PINETHRD_S   *thrd = NULL, *nthrd;
-    unsigned long rawno, orig, msgno;
-
-    if(!stream)
-      return 0;
-
-    rawno = mn_m2raw(msgmap, mn_get_cur(msgmap));
-
-    if(rawno)
-       thrd = fetch_thread(stream, rawno);
-
-    if(!thrd)
-       return rv;
-
-    collapsed = this_thread_is_kolapsed(state, stream, msgmap, rawno);
-
-    if (special && collapsed){
-	expand_this_thread(state, stream, msgmap, 0, 0);
-	collapsed = 0;
-    }
-
-    clear_index_cache_ent(stream, rawno, 0);
-
-    if (!collapsed && thrd->next){
-       if (thrd->rawno == top_thread(stream, thrd->rawno))
-         collapse_or_expand(state, stream, msgmap, mn_get_cur(msgmap), display);
-       else{
-	 set_lflag(stream, msgmap, mn_raw2m(msgmap,thrd->rawno), MN_COLL, 1);
-	 set_thread_subtree(stream, thrd, msgmap, 1, MN_CHID);
-       }
-    }
-    else{
-       if (!collapsed && special 
-	   && ((F_OFF(F_ENHANCED_THREAD, state) && !thrd->next) 
-	        || F_ON(F_ENHANCED_THREAD, state))){
-	  if (thrd->toploose){
-	    if (thrd->rawno != thrd->toploose)
-	       set_lflag(stream, msgmap, mn_raw2m(msgmap,thrd->rawno),MN_CHID, 
-									     1);
-	    else
-	       set_lflag(stream, msgmap, mn_raw2m(msgmap,thrd->rawno),MN_COLL,
-									     1);
-	  }
-       }
-       else{
-         rv = 0; 
-         if (display)
-            q_status_message(SM_ORDER, 0, 1, "Thread already collapsed");
-       }
-    }
-    return rv;
-}
-
-void
-collapse_thread(state, stream, msgmap, display)
-    struct pine *state;
-    MAILSTREAM  *stream;
-    MSGNO_S     *msgmap;
-    int          display;
-{
-    int collapsed, rv = 1, done = 0;
-    PINETHRD_S   *thrd = NULL;
-    unsigned long orig, orig_top, top;
-
-    if(!stream)
-      return;
-
-    expand_this_thread(state, stream, msgmap, display, 1);
-    orig = mn_m2raw(msgmap, mn_get_cur(msgmap));
-    move_top_thread(stream, msgmap,orig);
-    top = orig_top = mn_m2raw(msgmap, mn_get_cur(msgmap));
-
-    if(top)
-      thrd = fetch_thread(stream, top);
-
-    if(!thrd)
-      return;
-
-    while (!done){
-      collapse_this_thread(state, stream, msgmap, display, 1);
-      if (F_OFF(F_ENHANCED_THREAD, state)
-         || (move_next_this_thread(state, stream, msgmap, 0) <= 0)
-	 || !(top = mn_m2raw(msgmap, mn_get_cur(msgmap)))
-	 || (orig_top != top_thread(stream, top)))
-	 done++;
-    }
-    mn_set_cur(msgmap,mn_raw2m(msgmap, orig_top));
-}
-
-int
-expand_this_thread(state, stream, msgmap, display, special)
-    struct pine *state;
-    MAILSTREAM  *stream;
-    MSGNO_S     *msgmap;
-    int          display;
-    int		 special;
-{
-    int collapsed, rv = 1, done = 0;
-    PINETHRD_S   *thrd = NULL, *nthrd;
-    unsigned long rawno, orig, msgno;
-
-    if(!stream)
-      return 0;
-
-    orig = mn_m2raw(msgmap, mn_get_cur(msgmap));
-    move_top_this_thread(stream, msgmap,orig);
-    rawno = mn_m2raw(msgmap, mn_get_cur(msgmap));
-
-    if(rawno)
-       thrd = fetch_thread(stream, rawno);
-
-    if(!thrd)
-       return rv;
-
-    collapsed = this_thread_is_kolapsed(state, stream, msgmap, rawno);
-
-    if (special && !collapsed){
-	collapse_this_thread(state, stream, msgmap, 0, 0);
-	collapsed = 1;
-    }
-
-    clear_index_cache_ent(stream, rawno, 0);
-
-     if (collapsed && thrd->next){
-       if (thrd->rawno == top_thread(stream, thrd->rawno))
-         collapse_or_expand(state, stream, msgmap, mn_get_cur(msgmap), display);
-       else{
-        set_lflag(stream, msgmap, mn_raw2m(msgmap,thrd->rawno), MN_COLL, 0);
-	 set_thread_subtree(stream, thrd, msgmap, 0, MN_CHID);
-       }
-     }
-     else{
-       if (collapsed && special 
-	&& ((F_OFF(F_ENHANCED_THREAD, state) && !thrd->next) 
-	   || F_ON(F_ENHANCED_THREAD, state))){ 
-	  if (thrd->toploose)
-	    if (thrd->rawno != thrd->toploose)
-	       set_lflag(stream, msgmap, mn_raw2m(msgmap,thrd->rawno),MN_CHID, 0);
-	    else
-	       set_lflag(stream, msgmap, mn_raw2m(msgmap,thrd->rawno),MN_COLL, 0);
-       }
-       else{
-         rv = 0; 
-         if (display)
-            q_status_message(SM_ORDER, 0, 1, "Thread already expanded");
-       }
-     }
-    return rv;
-}
-
-void
-expand_thread(state, stream, msgmap, display)
-    struct pine *state;
-    MAILSTREAM  *stream;
-    MSGNO_S     *msgmap;
-    int          display;
-{
-    int collapsed, rv = 1, done = 0;
-    PINETHRD_S   *thrd = NULL;
-    unsigned long orig, orig_top, top;
-
-    if(!stream)
-      return;
-
-    orig = mn_m2raw(msgmap, mn_get_cur(msgmap));
-    top = orig_top = mn_m2raw(msgmap, mn_get_cur(msgmap));
-
-    if(top)
-      thrd = fetch_thread(stream, top);
-
-    if(!thrd)
-      return;
-
-    while (!done){
-      expand_this_thread(state, stream, msgmap, display, 1);
-      if (F_OFF(F_ENHANCED_THREAD, state)
-         || (move_next_this_thread(state, stream, msgmap, 0) <= 0)
-	 || !(top = mn_m2raw(msgmap, mn_get_cur(msgmap)))
-	 || (orig_top != top_thread(stream, top)))
-	 done++;
-    }
-    mn_set_cur(msgmap,mn_raw2m(msgmap, orig_top));
-}
-
-
-void
-cmd_undelete_this_thread(state, stream, msgmap)
-    struct pine *state;
-    MAILSTREAM  *stream;
-    MSGNO_S     *msgmap;
-{
-    unsigned long rawno;
-    int save_kolapsed;
-
-    rawno = mn_m2raw(msgmap, mn_get_cur(msgmap));
-    save_kolapsed = this_thread_is_kolapsed(state, stream, msgmap, rawno);
-    collapse_this_thread(state, stream, msgmap, 0, 0);
-    thread_command(state, stream, msgmap, 'u', -FOOTER_ROWS(state), 1);
-    if (!save_kolapsed)
-       expand_this_thread(state, stream, msgmap, 0, 0);
-}
-
-void
-cmd_undelete_thread(state, stream, msgmap)
-    struct pine *state;
-    MAILSTREAM  *stream;
-    MSGNO_S     *msgmap;
-{
-    PINETHRD_S   *thrd = NULL;
-    unsigned long rawno, top, orig_top;
-    int done = 0, count;
-
-    rawno = mn_m2raw(msgmap, mn_get_cur(msgmap));
-    move_top_thread(stream, msgmap, rawno);
-    top =  orig_top = mn_m2raw(msgmap, mn_get_cur(msgmap));
-    if(top)
-      thrd = fetch_thread(stream, top);
-
-    if(!thrd)
-      return;
-
-    while (!done){
-      cmd_undelete_this_thread(state, stream, msgmap);
-      if (F_OFF(F_ENHANCED_THREAD, state)
-         || (move_next_this_thread(state, stream, msgmap, 0) <= 0)
-	 || !(top = mn_m2raw(msgmap, mn_get_cur(msgmap)))
-	 || (orig_top != top_thread(stream, top)))
-	 done++;
-    }
-    mn_set_cur(msgmap,mn_raw2m(msgmap, rawno));
-    count = count_thread(state, stream, msgmap, rawno);
-    q_status_message2(SM_ORDER, 0, 1, "Deletion mark removed from %s message%s",
-		int2string(count), plural(count));
-}
-
-void
-kolapse_thread(state, stream, msgmap, ch, display)
-    struct pine *state;
-    MAILSTREAM  *stream;
-    MSGNO_S     *msgmap;
-    char      ch;
-    int		display;
-{
-    PINETHRD_S   *thrd = NULL;
-    unsigned long rawno;
-    int       rv = 1, done = 0;
-
-    if(!stream)
-      return;
-
-    rawno = mn_m2raw(msgmap, mn_get_cur(msgmap));
-    if(rawno)
-      thrd = fetch_thread(stream, rawno);
-
-    if(!thrd)
-      return;
-
-    clear_index_cache(stream, 0);
-    mn_set_cur(msgmap,1); /* go to the first message */
-    while (!done){
-      if (ch == '[')
-	collapse_thread(state, stream, msgmap, display);
-      else
-	expand_thread(state, stream, msgmap, display);
-      if ((rv = move_next_thread(state, stream, msgmap, 0)) <= 0)
-         done++;
-    }
-
-    if (rv < 0){
-      if (display)
-      q_status_message(SM_ORDER, 0, 1, (ch == '[')
-               ? "Error while collapsing thread"
-               : "Error while expanding thread");
-    }
-    else
-      if(display)
-      q_status_message(SM_ORDER, 0, 1, (ch == '[')
-               ? "All threads collapsed. Use \"}\" to expand them"
-               : "All threads expanded. Use \"{\" to collapse them");
-
-    mn_set_cur(msgmap,mn_raw2m(msgmap, top_thread(stream,rawno)));
-}
-
-void
-cmd_select_thread(state, stream, msgmap)
-    struct pine *state;
-    MAILSTREAM  *stream;
-    MSGNO_S     *msgmap;
-{
-    unsigned long rawno;
-    int save_kolapsed;
-
-    rawno = mn_m2raw(msgmap, mn_get_cur(msgmap));
-    save_kolapsed = thread_is_kolapsed(state, stream, msgmap, rawno);
-    collapse_thread(state, stream, msgmap, 0);
-    thread_command(state, stream, msgmap, ':', -FOOTER_ROWS(state), 1);
-    if (!save_kolapsed)
-       expand_thread(state, stream, msgmap, 0);
-}
-

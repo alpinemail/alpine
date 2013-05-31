@@ -95,7 +95,6 @@ ffgetline(UCS buf[], size_t nbuf, size_t *charsreturned, int msg)
 {
     size_t i;
     UCS    ucs;
-    static int shown = 0;
 
     if(charsreturned)
       *charsreturned = 0;
@@ -122,10 +121,8 @@ ffgetline(UCS buf[], size_t nbuf, size_t *charsreturned, int msg)
 	    if(charsreturned)
 	      *charsreturned = nbuf - 1;
 
-	    if(msg && !shown){
-	      shown = 1;
+	    if(msg)
 	      emlwrite("File has long line", NULL);
-	    }
 
 	    return FIOLNG;
         }
@@ -134,7 +131,6 @@ ffgetline(UCS buf[], size_t nbuf, size_t *charsreturned, int msg)
     }
 
     if(ucs == CCONV_EOF){
-	shown = 0;	/* warn the next time, again, only once */
         if(ferror(g_pico_fio.fp)){
             emlwrite("File read error", NULL);
 	    if(charsreturned)

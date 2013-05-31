@@ -261,7 +261,7 @@ exec_mailcap_cmd(MCAP_CMD_S *mc_cmd, char *image_file, int needsterminal)
     p = command = (char *)fs_get((l+1) * sizeof(char));
     if(!needsterminal)  /* put in background if it doesn't need terminal */
       *p++ = '(';
-    snprintf(p, l+1-(p-command), "%s ; sleep %d ; rm -f %s", cmd, ps_global->sleep, image_file);
+    snprintf(p, l+1-(p-command), "%s ; rm -f %s", cmd, image_file);
     command[l] = '\0';
     p += strlen(p);
     if(!needsterminal && (p-command)+5 < l){

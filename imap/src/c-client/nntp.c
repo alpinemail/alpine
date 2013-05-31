@@ -2031,7 +2031,6 @@ long nntp_send_auth_work (SENDSTREAM *stream,NETMBX *mb,char *pwd,long flags)
       sprintf (tmp,"Retrying using %s authentication after %.80s",
 	       at->name,lsterr);
       mm_log (tmp,NIL);
-      delete_password(mb, mb ? mb->user : NULL);
       fs_give ((void **) &lsterr);
     }
     trial = 0;			/* initial trial count */
@@ -2040,7 +2039,6 @@ long nntp_send_auth_work (SENDSTREAM *stream,NETMBX *mb,char *pwd,long flags)
       if (lsterr) {
 	sprintf (tmp,"Retrying %s authentication after %.80s",at->name,lsterr);
 	mm_log (tmp,WARN);
-	delete_password(mb, mb ? mb->user : NULL);
 	fs_give ((void **) &lsterr);
       }
       stream->saslcancel = NIL;
@@ -2066,7 +2064,6 @@ long nntp_send_auth_work (SENDSTREAM *stream,NETMBX *mb,char *pwd,long flags)
       sprintf (tmp,"Can not authenticate to NNTP server: %.80s",lsterr);
       mm_log (tmp,ERROR);
     }
-    delete_password(mb, mb ? mb->user : NULL);
     fs_give ((void **) &lsterr);
   }
   else if (mb->secflag)		/* no SASL, can't do /secure */
@@ -2095,8 +2092,6 @@ long nntp_send_auth_work (SENDSTREAM *stream,NETMBX *mb,char *pwd,long flags)
       stream->sensitive = T;	/* hide this command */
       if (nntp_send_work (stream,"AUTHINFO PASS",pwd) == NNTPAUTHED)
 	ret = LONGT;		/* password OK */
-      else
-        delete_password(mb, mb ? mb->user : NULL);
       stream->sensitive = NIL;	/* unhide */
       if (ret) break;		/* OK if successful */
     default:			/* authentication failed */

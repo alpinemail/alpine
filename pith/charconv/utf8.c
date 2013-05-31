@@ -1049,56 +1049,6 @@ utf8_width(char *str)
 
 
 /*
- * Returns the screen cells width of the UTF-8 string argument, treating tabs
- * in a special way.
- */
-unsigned
-utf8_widthis(char *str)
-{
-    unsigned width = 0;
-    int this_width;
-    UCS ucs;
-    unsigned long remaining_octets;
-    char *readptr;
-
-    if(!(str && *str))
-      return(width);
-
-    readptr = str;
-    remaining_octets = readptr ? strlen(readptr) : 0;
-
-    while(remaining_octets > 0 && *readptr){
-
-	ucs = (UCS) utf8_get((unsigned char **) &readptr, &remaining_octets);
-
-	if(ucs & U8G_ERROR){
-	    /*
-	     * This should not happen, but do something to handle it anyway.
-	     * Treat each character as a single width character, which is what should
-	     * probably happen when we actually go to write it out.
-	     */
-	    remaining_octets--;
-	    readptr++;
-	    this_width = 1;
-	}
-	else{
-	    this_width = (ucs == TAB) ? ((~width & 0x07) + 1) : wcellwidth(ucs);
-
-	    /*
-	     * If this_width is -1 that means we can't print this character
-	     * with our current locale. Writechar will print a '?'.
-	     */
-	    if(this_width < 0)
-	      this_width = 1;
-	}
-
-	width += (unsigned) this_width;
-    }
-
-    return(width);
-}
-
-/*
  * Copy UTF-8 characters from src into dst.
  * This is intended to be used if you want to truncate a string at
  * the start instead of the end. For example, you have a long string

@@ -650,25 +650,10 @@ struct key index_keys[] =
 	RCOMPOSE_MENU,
 	HOMEKEY_MENU,
 	ENDKEY_MENU,
-	{"K","Sort Thread",{MC_SORTHREAD,1,{'k'}},KS_NONE},
+	NULL_MENU,
 	/* TRANSLATORS: toggles a collapsed view or an expanded view
 	   of a message thread on and off */
 	{"/",N_("Collapse/Expand"),{MC_COLLAPSE,1,{'/'}},KS_NONE},
-	/* TRANSLATORS: Collapse all threads */
-	{"{",N_("Collapse All"),{MC_KOLAPSE,1,{'{'}},KS_NONE},
-	/* TRANSLATORS: Expand all threads */
-	{"}",N_("Expand All"), {MC_EXPTHREAD,1,{'}'}},KS_NONE},
-
-	HELP_MENU,
-	OTHER_MENU,
-	{")","Next Threa",{MC_NEXTHREAD,1,{')'}},KS_NONE},
-	{"(","Prev Threa",{MC_PRETHREAD,1,{'('}},KS_NONE},
-	{"^R","Remove Thr",{MC_DELTHREAD,1,{ctrl('r')}},KS_NONE},
-	{"^U","Undel Thre",{MC_UNDTHREAD,1,{ctrl('u')}},KS_NONE},
-	{"^T","Select Thr",{MC_SELTHREAD,1,{ctrl('t')}},KS_NONE},
-	NULL_MENU,
-	{"[","Close Thre",{MC_CTHREAD,1,{'['}},KS_NONE},
-	{"]","Open Threa",{MC_OTHREAD,1,{']'}},KS_NONE},
 	{"@", N_("Quota"), {MC_QUOTA,1,{'@'}}, KS_NONE},
 	NULL_MENU};
 INST_KEY_MENU(index_keymenu, index_keys);
@@ -743,22 +728,9 @@ struct key thread_keys[] =
 	RCOMPOSE_MENU,
 	HOMEKEY_MENU,
 	ENDKEY_MENU,
-	{"]",N_("Open Thread"),{MC_OTHREAD,1,{']'}},KS_NONE},
+	NULL_MENU,
 	{"/",N_("Collapse/Expand"),{MC_COLLAPSE,1,{'/'}},KS_NONE},
-	{")",N_("Next Thread"),{MC_NEXTHREAD,1,{')'}},KS_NONE},    
-	{"(",N_("Prev Thread"),{MC_PRETHREAD,1,{'('}},KS_NONE},  
-
-	HELP_MENU,
-	OTHER_MENU,
 	{"@", N_("Quota"), {MC_QUOTA,1,{'@'}}, KS_NONE},
-	NULL_MENU, 
-	{"^R",N_("Remove Thread"),{MC_DELTHREAD,1,{ctrl('r')}},KS_NONE},
-	{"^U",N_("Undelete Thread"),{MC_UNDTHREAD,1,{ctrl('u')}},KS_NONE},
-	{"^T",N_("SelecT Thread"),{MC_SELTHREAD,1,{ctrl('t')}},KS_NONE},
-	NULL_MENU,
-	NULL_MENU,
-	NULL_MENU, 
-	{"K","Sort Thread",{MC_SORTHREAD,1,{'k'}},KS_NONE},  
 	NULL_MENU};
 INST_KEY_MENU(thread_keymenu, thread_keys);
 
@@ -908,20 +880,7 @@ struct key view_keys[] =
 	NULL_MENU,
 	NULL_MENU,
 	NULL_MENU,
-	NULL_MENU,
-
-	HELP_MENU,
-	OTHER_MENU,
-	NULL_MENU,
-	NULL_MENU,
-	NULL_MENU,
-	NULL_MENU,
-	NULL_MENU,
-	{"(",N_("Prev Thread"),{MC_PRETHREAD,1,{'('}},KS_NONE},
-	{")",N_("Next Thread"),{MC_NEXTHREAD,1,{')'}},KS_NONE},
-	{"^R",N_("Remove Thread"),{MC_DELTHREAD,1,{ctrl('r')}},KS_NONE},
-	{"^U",N_("Undelete Thread"),{MC_UNDTHREAD,1,{ctrl('u')}},KS_NONE},
-	{"^T",N_("selecT Thread"),{MC_SELTHREAD,1,{ctrl('t')}},KS_NONE}};
+	NULL_MENU};
 INST_KEY_MENU(view_keymenu, view_keys);
 
 

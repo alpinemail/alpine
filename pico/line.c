@@ -608,12 +608,14 @@ int
 lisblank(LINE *line)
 {
     int n = 0;
-    char qstr[NLINE];
+    UCS qstr[NLINE];
 
-    n = quote_match(default_qstr(glo_quote_str, 1), line, qstr, NLINE, 1);
+    n = (glo_quote_str
+	 && quote_match(glo_quote_str, line, qstr, NLINE))
+	  ? ucs4_strlen(qstr) : 0;
 
     for(; n < llength(line); n++)
-      if(!ISspace(lgetc(line, n).c))
+      if(!ucs4_isspace(lgetc(line, n).c))
 	return(FALSE);
 
     return(TRUE);

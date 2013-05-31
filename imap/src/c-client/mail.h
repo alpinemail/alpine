@@ -177,8 +177,6 @@
 #define SET_EXTERNALAUTHID (long) 230
 #define GET_SSLCAPATH (long) 231
 #define SET_SSLCAPATH (long) 232
-#define GET_ERASEPASSWORD (long) 233
-#define SET_ERASEPASSWORD (long) 234
 
 	/* 3xx: TCP/IP */
 #define GET_OPENTIMEOUT (long) 300
@@ -355,10 +353,6 @@
 #define SET_SCANCONTENTS (long) 573
 #define GET_MHALLOWINBOX (long) 574
 #define SET_MHALLOWINBOX (long) 575
-#define GET_COURIERSTYLE (long) 576
-#define SET_COURIERSTYLE (long) 577
-#define SET_MDINBOXPATH  (long) 578
-#define GET_MDINBOXPATH  (long) 579
 
 /* Driver flags */
 
@@ -1332,7 +1326,6 @@ typedef ADDRESS *(*parsephrase_t) (char *phrase,char *end,char *host);
 typedef void *(*blocknotify_t) (int reason,void *data);
 typedef long (*kinit_t) (char *host,char *reason);
 typedef void (*sendcommand_t) (MAILSTREAM *stream,char *cmd,long flags);
-typedef void (*deletepwd_t) (NETMBX *mb,char *user);
 typedef char *(*newsrcquery_t) (MAILSTREAM *stream,char *mulname,char *name);
 typedef void (*getacl_t) (MAILSTREAM *stream,char *mailbox,ACLLIST *acl);
 typedef void (*listrights_t) (MAILSTREAM *stream,char *mailbox,char *id,
@@ -1611,8 +1604,6 @@ void mm_nocritical (MAILSTREAM *stream);
 long mm_diskerror (MAILSTREAM *stream,long errcode,long serious);
 void mm_fatal (char *string);
 void *mm_cache (MAILSTREAM *stream,unsigned long msgno,long op);
-
-void delete_password (NETMBX *mb, char *user);
 
 extern STRINGDRIVER mail_string;
 void mail_versioncheck (char *version);

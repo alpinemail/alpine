@@ -31,8 +31,7 @@ char   *pine_newsrcquery(MAILSTREAM *, char *, char *);
 int     url_local_certdetails(char *);
 void    pine_sslfailure(char *, char *, unsigned long);
 void	mm_expunged_current(long unsigned int);
-void    pine_delete_pwd(NETMBX *mb, char *user);
- 
+
 #ifdef	LOCAL_PASSWD_CACHE
 int     get_passfile_passwd(char *, char *, char *, STRLIST_S *, int);
 int     is_using_passfile();

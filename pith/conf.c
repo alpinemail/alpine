@@ -29,7 +29,6 @@ static char rcsid[] = "$Id: conf.c 1266 2009-07-14 18:39:12Z hubert@u.washington
 #include "../pith/remote.h"
 #include "../pith/keyword.h"
 #include "../pith/mailview.h"
-#include "../pith/rules.h"
 #include "../pith/list.h"
 #include "../pith/status.h"
 #include "../pith/ldap.h"
@@ -207,8 +206,6 @@ CONF_TXT_T cf_text_fcc_name_rule[] =	"Determines default name for Fcc...\n# Choi
 
 CONF_TXT_T cf_text_sort_key[] =		"Sets presentation order of messages in Index. Choices:\n# Subject, From, Arrival, Date, Size, To, Cc, OrderedSubj, Score, and Thread.\n# Order may be reversed by appending /Reverse. Default: \"Arrival\".";
 
-CONF_TXT_T cf_text_thread_sort_key[] =        "#Sets presentation order of threads in thread index. Choices:\n#arrival, and thread.";
-
 CONF_TXT_T cf_text_addrbook_sort_rule[] =	"Sets presentation order of address book entries. Choices: dont-sort,\n# fullname-with-lists-last, fullname, nickname-with-lists-last, nickname\n# Default: \"fullname-with-lists-last\".";
 
 CONF_TXT_T cf_text_folder_sort_rule[] =	"Sets presentation order of folder list entries. Choices: alphabetical,\n# alpha-with-dirs-last, alpha-with-dirs-first.\n# Default: \"alpha-with-directories-last\".";
@@ -225,43 +222,11 @@ CONF_TXT_T cf_text_unk_character_set[] =	"Defaults to nothing, which is equivale
 
 CONF_TXT_T cf_text_editor[] =		"Specifies the program invoked by ^_ in the Composer,\n# or the \"enable-alternate-editor-implicitly\" feature.";
 
-CONF_TXT_T cf_text_compose_rules[] =	"Allows a user to set rules when composing messages.";
- 
-CONF_TXT_T cf_text_forward_rules[] =	"Allows a user to set rules when forwarding messages.";
- 
-CONF_TXT_T cf_text_reply_rules[] =	"Allows a user to set rules when replying messages.";
- 
-CONF_TXT_T cf_text_index_rules[] =	"Allows a user to supersede global index format variable in designated folders.";
- 
-CONF_TXT_T cf_text_key_def_rules[] =	"Allows a user to override keystrokes in certain screens.";
-
-CONF_TXT_T cf_text_replace_rules[] =	"Allows a user to change the form a specify field in the index-format is \n# displayed.";
- 
-CONF_TXT_T cf_text_reply_indent_rules[] = "Allows a user to change the form a specify a reply-indent-string\n# based of rules.";
- 
-CONF_TXT_T cf_text_reply_leadin_rules[] =	"Allows a user to replace the reply-leadin message based on different parameters.";
- 
-CONF_TXT_T cf_text_reply_subject_rules[] =	"Allows a user to replace the subject of a message in a customs based way";
- 
-CONF_TXT_T cf_text_thread_displaystyle_rule[] = "Allows a user to specify the threading style of specific folders";
- 
-CONF_TXT_T cf_text_thread_indexstyle_rule[] = "Allows a user to specify the threading index style of specific folders";
- 
-CONF_TXT_T cf_text_save_rules[] =	"Allows a user to specify a save folder message for specific senders or folders.";
- 
-CONF_TXT_T cf_text_smtp_rules[] =	"Allows a user to specify a smtp server to be used when sending e-mail,\n# according to the rules specified here.";
- 
-CONF_TXT_T cf_text_sort_rules[] =	"Allows a user to specify the sort default order of a specific folder.";
- 
-CONF_TXT_T cf_text_startup_rules[] =	"Allows a user to specify the position of a highlighted message when opening a \n# folder.";
- 
 CONF_TXT_T cf_text_speller[] =		"Specifies the program invoked by ^T in the Composer.";
 
 CONF_TXT_T cf_text_deadlets[] =		"Specifies the number of dead letter files to keep when canceling.";
 
 CONF_TXT_T cf_text_fillcol[] =		"Specifies the column of the screen where the composer should wrap.";
-
-CONF_TXT_T cf_special_text_color[] =	"Specifies a comma separated list of text and regular expresions that Pine\n# will highlight";
 
 CONF_TXT_T cf_text_replystr[] =		"Specifies the string to insert when replying to a message.";
 
@@ -375,8 +340,6 @@ CONF_TXT_T cf_text_stat_msg_delay[] =	"The number of seconds to sleep after writ
 
 CONF_TXT_T cf_text_busy_cue_rate[] =	"Number of times per-second to update busy cue messages";
 
-CONF_TXT_T cf_text_sleep[] =	"The number of seconds between a viewer finishing opening a file and removing\n#it. See more details in configuration screen. Default: 0";
-
 CONF_TXT_T cf_text_mailcheck[] =	"The approximate number of seconds between checks for new mail";
 
 CONF_TXT_T cf_text_mailchecknoncurr[] =	"The approximate number of seconds between checks for new mail in folders\n# other than the current folder and inbox.\n# Default is same as mail-check-interval";
@@ -467,9 +430,6 @@ CONF_TXT_T cf_text_window_position[] =	"Window position in the format: CxR+X+Y\n
 
 CONF_TXT_T cf_text_newsrc_path[] =		"Full path and name of NEWSRC file";
 
-#ifndef _WINDOWS
-CONF_TXT_T cf_text_maildir_location[] = "Location relative to your HOME directory of the directory where your INBOX\n# for the maildir format is located. Default value is \"Maildir\". If your\n# inbox is located at \"~/Maildir\" you do not need to change this value.\n# A common value is also \".maildir\"";
-#endif
 
 /*----------------------------------------------------------------------
 These are the variables that control a number of pine functions.  They
@@ -560,8 +520,6 @@ static struct variable variables[] = {
 	NULL,			cf_text_fcc_name_rule},
 {"sort-key",				0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	NULL,			cf_text_sort_key},
-{"thread-sort-key",			0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
-	NULL,			cf_text_thread_sort_key},
 {"addrbook-sort-rule",			0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	"Address Book Sort Rule",	cf_text_addrbook_sort_rule},
 {"folder-sort-rule",			0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
@@ -584,34 +542,6 @@ static struct variable variables[] = {
 	NULL,			cf_text_thread_exp_char},
 {"threading-lastreply-character",	0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	"Threading Last Reply Character",	cf_text_thread_lastreply_char},
-{"threading-display-style-rule",	0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0,
-	"Threading Display Style Rule",	cf_text_thread_displaystyle_rule},
-{"threading-index-style-rule",		0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0,
-	"Threading Index Style Rule",	cf_text_thread_indexstyle_rule},
-{"compose-rules",			0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0,
-	"Compose Rules",	cf_text_compose_rules},
-{"forward-rules",			0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0,
-	"Forward Rules", 	cf_text_forward_rules},
-{"index-rules",				0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0,
-	"Index Rules",		cf_text_index_rules},
-{"key-definition-rules",		0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0,
-	"Key Definition Rules",	cf_text_key_def_rules},
-{"replace-rules",			0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0,
-	"Replace Rules",	cf_text_replace_rules},
-{"reply-indent-rules",			0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0,
-	"Reply Indent Rules",	cf_text_reply_indent_rules},
-{"reply-leadin-rules",			0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0,
-	"Reply Leadin Rules",	cf_text_reply_leadin_rules},
-{"reply-subject-rules",			0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0,
-	"Reply Subject Rules",	cf_text_reply_subject_rules},
-{"save-rules",				0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0,
-	"Save Rules",		cf_text_save_rules},
-{"smtp-rules",				0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0,
-	"Smtp Rules",		cf_text_smtp_rules},
-{"sort-rules",				0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0,
-	"Sort Rules",		cf_text_sort_rules},
-{"startup-rules",			0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0,
-	"Startup Rules",	cf_text_startup_rules},
 #ifndef	_WINDOWS
 {"display-character-set",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	NULL,			cf_text_disp_char_set},
@@ -630,8 +560,6 @@ static struct variable variables[] = {
 	NULL,			cf_text_speller},
 {"composer-wrap-column",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	NULL,			cf_text_fillcol},
-{"special-text-color",			0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0,
-	NULL,			cf_special_text_color},
 {"reply-indent-string",			0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0,
 	NULL,			cf_text_replystr},
 {"reply-leadin",			0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
@@ -688,8 +616,6 @@ static struct variable variables[] = {
 	NULL,			cf_text_stat_msg_delay},
 {"busy-cue-rate",			0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	NULL,			cf_text_busy_cue_rate},
-{"sleep-interval-length",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
-	NULL,			cf_text_sleep},
 {"mail-check-interval",			0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	NULL,			cf_text_mailcheck},
 {"mail-check-interval-noncurrent",	0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
@@ -704,10 +630,6 @@ static struct variable variables[] = {
 	NULL,			cf_text_news_active},
 {"news-spool-directory",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	NULL,			cf_text_news_spooldir},
-#ifndef _WINDOWS
-{"maildir-location",			0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
-	"Maildir Location",			cf_text_maildir_location},
-#endif
 {"upload-command",			0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	NULL,			cf_text_upload_cmd},
 {"upload-command-prefix",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
@@ -895,8 +817,6 @@ static struct variable variables[] = {
 {"incoming-unseen-background-color",	0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0},
 {"signature-foreground-color",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0},
 {"signature-background-color",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0},
-{"special-text-foreground-color",	0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0},
-{"special-text-background-color",	0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0},
 {"prompt-foreground-color",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0},
 {"prompt-background-color",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0},
 {"header-general-foreground-color",	0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0},
@@ -1646,7 +1566,7 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     register struct variable *vars = ps->vars;
     int		 obs_header_in_reply = 0,     /* the obs_ variables are to       */
 		 obs_old_style_reply = 0,     /* support backwards compatibility */
-		 obs_save_by_sender, i, def_sort_rev, thread_def_sort_rev;
+		 obs_save_by_sender, i, def_sort_rev;
     long         rvl;
     PINERC_S    *fixedprc = NULL;
     FeatureLevel obs_feature_level;
@@ -1671,7 +1591,6 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     GLO_FEATURE_LEVEL		= cpystr("sappling");
     GLO_OLD_STYLE_REPLY		= cpystr(DF_OLD_STYLE_REPLY);
     GLO_SORT_KEY		= cpystr(DF_SORT_KEY);
-    GLO_THREAD_SORT_KEY		= cpystr(DF_THREAD_SORT_KEY);
     GLO_SAVED_MSG_NAME_RULE	= cpystr(DF_SAVED_MSG_NAME_RULE);
     GLO_FCC_RULE		= cpystr(DF_FCC_RULE);
     GLO_AB_SORT_RULE		= cpystr(DF_AB_SORT_RULE);
@@ -1696,7 +1615,6 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     GLO_LOCAL_FULLNAME		= cpystr(DF_LOCAL_FULLNAME);
     GLO_LOCAL_ADDRESS		= cpystr(DF_LOCAL_ADDRESS);
     GLO_OVERLAP			= cpystr(DF_OVERLAP);
-    GLO_SLEEP			= cpystr("0");
     GLO_MAXREMSTREAM		= cpystr(DF_MAXREMSTREAM);
     GLO_MARGIN			= cpystr(DF_MARGIN);
     GLO_FILLCOL			= cpystr(DF_FILLCOL);
@@ -2067,8 +1985,6 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     set_current_val(&vars[V_FORM_FOLDER], TRUE, TRUE);
     set_current_val(&vars[V_EDITOR], TRUE, TRUE);
     set_current_val(&vars[V_SPELLER], TRUE, TRUE);
-    set_current_val(&vars[V_SPECIAL_TEXT], TRUE, TRUE);
-    regex_pattern(VAR_SPECIAL_TEXT);
     set_current_val(&vars[V_IMAGE_VIEWER], TRUE, TRUE);
     set_current_val(&vars[V_BROWSER], TRUE, TRUE);
     set_current_val(&vars[V_SMTP_SERVER], TRUE, TRUE);
@@ -2152,13 +2068,6 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
 	    }
 	}
     }
-
-    set_current_val(&vars[V_SLEEP], TRUE, TRUE);
-    ps->sleep = i = 0;
-    if(SVAR_SLEEP(ps, i, tmp_20k_buf, SIZEOF_20KBUF))
-      init_error(ps, SM_ORDER | SM_DING, 3, 5, tmp_20k_buf);
-    else
-      ps->sleep = i;
 
     set_current_val(&vars[V_OVERLAP], TRUE, TRUE);
     ps->viewer_overlap = i = atoi(DF_OVERLAP);
@@ -2348,12 +2257,6 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     if(VAR_NEWS_SPOOL_DIR)
       mail_parameters(NULL, SET_NEWSSPOOL,
 		      (void *)VAR_NEWS_SPOOL_DIR);
-
-#ifndef _WINDOWS
-    set_current_val(&vars[V_MAILDIR_LOCATION], TRUE, TRUE);
-    if(VAR_MAILDIR_LOCATION && VAR_MAILDIR_LOCATION[0])
-      mail_parameters(NULL, SET_MDINBOXPATH, (void *)VAR_MAILDIR_LOCATION);
-#endif
 
     /* guarantee a save default */
     set_current_val(&vars[V_DEFAULT_SAVE_FOLDER], TRUE, TRUE);
@@ -2594,7 +2497,7 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     set_current_val(&vars[V_ARCHIVED_FOLDERS], TRUE, TRUE);
     set_current_val(&vars[V_INCOMING_FOLDERS], TRUE, TRUE);
     set_current_val(&vars[V_SORT_KEY], TRUE, TRUE);
-    if(decode_sort(VAR_SORT_KEY, &ps->def_sort, &def_sort_rev,0) == -1){
+    if(decode_sort(VAR_SORT_KEY, &ps->def_sort, &def_sort_rev) == -1){
 	snprintf(tmp_20k_buf, SIZEOF_20KBUF, "Sort type \"%.200s\" is invalid", VAR_SORT_KEY);
 	init_error(ps, SM_ORDER | SM_DING, 3, 5, tmp_20k_buf);
 	ps->def_sort = SortArrival;
@@ -2602,17 +2505,6 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     }
     else
       ps->def_sort_rev = def_sort_rev;
-
-    set_current_val(&vars[V_THREAD_SORT_KEY], TRUE, TRUE);
-    if(decode_sort(VAR_THREAD_SORT_KEY, &ps->thread_def_sort, 
-                              &thread_def_sort_rev, 1) == -1){
-      sprintf(tmp_20k_buf, "Sort type \"%s\" is invalid", VAR_THREAD_SORT_KEY);
-      init_error(ps, SM_ORDER | SM_DING, 3, 5, tmp_20k_buf);
-      ps->thread_def_sort = SortThread;
-      ps->thread_def_sort_rev = 0;
-    }
-    else
-      ps->thread_def_sort_rev = thread_def_sort_rev;
 
     cur_rule_value(&vars[V_SAVED_MSG_NAME_RULE], TRUE, TRUE);
     {NAMEVAL_S *v; int i;
@@ -2700,7 +2592,6 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
       if(cmds_f)
         (*cmds_f)(ps, VAR_INIT_CMD_LIST);
 
-    (void)create_rule_list(ps_global->vars);
 #ifdef	_WINDOWS
     mswin_set_quit_confirm (F_OFF(F_QUIT_WO_CONFIRM, ps_global));
 #endif	/* _WINDOWS */
@@ -2904,8 +2795,6 @@ feature_list(int index)
 	 F_ALWAYS_SPELL_CHECK, h_config_always_spell_check, PREF_COMP, 0},
 
 /* Reply Prefs */
-	{"alternate-reply-menu", NULL,
-	 F_ALT_REPLY_MENU, h_config_alt_reply_menu, PREF_RPLY, 0},
 	{"copy-to-address-to-from-if-it-is-us", "Copy To Address to From if it is Us",
 	 F_COPY_TO_TO_FROM, h_config_copy_to_to_from, PREF_RPLY, 0},
 	{"enable-reply-indent-string-editing", NULL,
@@ -2950,8 +2839,6 @@ feature_list(int index)
 	 F_NO_FCC_ATTACH, h_config_no_fcc_attach, PREF_SEND, 0},
 	{"fcc-on-bounce", "Include Fcc When Bouncing Messages",
 	 F_FCC_ON_BOUNCE, h_config_fcc_on_bounce, PREF_SEND, 0},
-	{"return-path-uses-domain-name", NULL,
-	 F_USE_DOMAIN_NAME, h_config_use_domain, PREF_SEND, 0},
 	{"mark-fcc-seen", NULL,
 	 F_MARK_FCC_SEEN, h_config_mark_fcc_seen, PREF_SEND, 0},
 	{"fcc-only-without-confirm", "Send to Fcc Only Without Confirming",
@@ -2998,10 +2885,6 @@ feature_list(int index)
 	 F_SORT_DEFAULT_SAVE_ALPHA, h_config_sort_save_alpha, PREF_FLDR, 0},
 	{"vertical-folder-list", "Use Vertical Folder List",
 	 F_VERTICAL_FOLDER_LIST, h_config_vertical_list, PREF_FLDR, 0},
-#ifndef _WINDOWS
-	{"use-courier-folder-list", "Courier Style Folder List",
-	 F_COURIER_FOLDER_LIST, h_config_courier_list, PREF_FLDR, 0},
-#endif
 
 /* Addr book */
 	{"combined-addrbook-display", "Combined Address Book Display",
@@ -3018,8 +2901,6 @@ feature_list(int index)
 /* Index prefs */
 	{"auto-open-next-unread", NULL,
 	 F_AUTO_OPEN_NEXT_UNREAD, h_config_auto_open_unread, PREF_INDX, 0},
-	{"enable-circular-tab", NULL,
-	 F_AUTO_CIRCULAR_TAB, h_config_circular_tab, PREF_INDX, 0},
 	{"continue-tab-without-confirm", "Continue NextNew Without Confirming",
 	 F_TAB_NO_CONFIRM, h_config_tab_no_prompt, PREF_INDX, 0},
 	{"convert-dates-to-localtime", NULL,
@@ -3032,8 +2913,6 @@ feature_list(int index)
 	 F_ENABLE_SPACE_AS_TAB, h_config_cruise_mode, PREF_INDX, 0},
 	{"enable-cruise-mode-delete", "Enable Cruise Mode With Deleting",
 	 F_ENABLE_TAB_DELETES, h_config_cruise_mode_delete, PREF_INDX, 0},
-	{"mark-for-me-in-group", "Mark for Group Message to Me",
-	 F_MARK_FOR_GROUP, h_config_mark_for_group, PREF_INDX, 1},
 	{"mark-for-cc", "Mark for CC",
 	 F_MARK_FOR_CC, h_config_mark_for_cc, PREF_INDX, 1},
 	{"next-thread-without-confirm", "Read Next Thread Without Confirming",
@@ -3050,8 +2929,6 @@ feature_list(int index)
 	 F_COLOR_LINE_IMPORTANT, h_config_color_thrd_import, PREF_INDX, 0},
 	{"thread-sorts-by-arrival", "Thread Sorts by Arrival",
 	 F_THREAD_SORTS_BY_ARRIVAL, h_config_thread_sorts_by_arrival, PREF_INDX, 0},
-	{"enhanced-fancy-thread-support", "Enhanced Fancy Thread Support",
-	 F_ENHANCED_THREAD, h_config_enhanced_thread, PREF_INDX, 0},
 
 /* Viewer prefs */
 	{"enable-msg-view-addresses", "Enable Message View Address Links",
@@ -3062,8 +2939,6 @@ feature_list(int index)
 	 F_VIEW_SEL_URL, h_config_enable_view_url, PREF_VIEW, 1},
 	{"enable-msg-view-web-hostnames", "Enable Message View Web Hostname Links",
 	 F_VIEW_SEL_URL_HOST, h_config_enable_view_web_host, PREF_VIEW, 1},
-	{"enable-msg-view-long-url", "Enable Recognition of Long URLS without Delimiter",
-	 F_VIEW_LONG_URL, h_config_enable_long_url, PREF_VIEW, 0},
 	{"enable-msg-view-forced-arrows", "Enable Message View Forced Arrows",
 	 F_FORCE_ARROWS, h_config_enable_view_arrows, PREF_VIEW, 0},
 	/* set to TRUE for windows */
@@ -3161,8 +3036,6 @@ feature_list(int index)
 	 F_FORCE_LOW_SPEED, h_config_force_low_speed, PREF_OS_LWSD, 0},
 	{"auto-move-read-msgs", "Auto Move Read Messages",
 	 F_AUTO_READ_MSGS, h_config_auto_read_msgs, PREF_MISC, 0},
-	{"auto-move-read-msgs-using-rules", "Auto Move Read Messages Using Rules",
-	 F_AUTO_READ_MSGS_RULES, h_config_auto_read_msgs_rules, PREF_MISC, 0},
 	{"auto-unselect-after-apply", NULL,
 	 F_AUTO_UNSELECT, h_config_auto_unselect, PREF_MISC, 0},
 	{"auto-unzoom-after-apply", NULL,
@@ -3224,8 +3097,6 @@ feature_list(int index)
 	 F_FULL_AUTO_EXPUNGE, h_config_full_auto_expunge, PREF_MISC, 0},
 	{"force-arrow-cursor", NULL,
 	 F_FORCE_ARROW, h_config_force_arrow, PREF_MISC, 0},
-	{"ignore-size-changes", NULL,
-	 F_IGNORE_SIZE, h_config_ignore_size, PREF_MISC, 0},
 	{"maildrops-preserve-state", NULL,
 	 F_MAILDROPS_PRESERVE_STATE, h_config_maildrops_preserve_state,
 	 PREF_MISC, 0},
@@ -6571,7 +6442,6 @@ set_current_color_vals(struct pine *ps)
     set_color_val(&vars[V_IND_OP_FORE_COLOR], 0);
     set_color_val(&vars[V_INCUNSEEN_FORE_COLOR], 0);
     set_color_val(&vars[V_SIGNATURE_FORE_COLOR], 0);
-    set_color_val(&vars[V_SPECIAL_TEXT_FORE_COLOR], 0);
 
     set_current_val(&ps->vars[V_INDEX_TOKEN_COLORS], TRUE, TRUE);
     set_current_val(&ps->vars[V_VIEW_HDR_COLORS], TRUE, TRUE);
@@ -7094,12 +6964,6 @@ toggle_feature(struct pine *ps, struct variable *var, FEATURE_S *f,
 
 	break;
 
-#ifndef _WINDOWS
-      case F_COURIER_FOLDER_LIST:
-      mail_parameters(NULL,SET_COURIERSTYLE,(void *)(F_ON(f->id ,ps)? 1 : 0));
-      break; /* COURIER == 1, CCLIENT == 0, see maildir.h */
-#endif
-
       case F_COLOR_LINE_IMPORTANT :
       case F_DATES_TO_LOCAL :
 	clear_index_cache(ps->mail_stream, 0);
@@ -7111,7 +6975,6 @@ toggle_feature(struct pine *ps, struct variable *var, FEATURE_S *f,
 	break;
 
       case F_MARK_FOR_CC :
-      case F_MARK_FOR_GROUP :
 	clear_index_cache(ps->mail_stream, 0);
 	if(THREADING() && sp_viewing_a_thread(ps->mail_stream))
 	  unview_thread(ps, ps->mail_stream, ps->msgmap);
@@ -7706,40 +7569,10 @@ config_help(int var, int feature)
 	return(h_config_fcc_rule);
       case V_SORT_KEY :
 	return(h_config_sort_key);
-      case V_THREAD_SORT_KEY :
-        return(h_config_thread_sort_key);
       case V_AB_SORT_RULE :
 	return(h_config_ab_sort_rule);
       case V_FLD_SORT_RULE :
 	return(h_config_fld_sort_rule);
-      case V_THREAD_DISP_STYLE_RULES:
-	return(h_config_thread_display_style_rule);
-      case V_THREAD_INDEX_STYLE_RULES:
-	return(h_config_thread_index_style_rule);
-      case V_COMPOSE_RULES:
-	return(h_config_compose_rules);
-      case V_FORWARD_RULES:
-	return(h_config_forward_rules);
-      case V_INDEX_RULES:
-	return(h_config_index_rules);
-      case V_KEY_RULES:
-	return(h_config_key_macro_rules);
-      case V_REPLACE_RULES:
-	return(h_config_replace_rules);
-      case V_REPLY_INDENT_RULES:
-	return(h_config_reply_indent_rules);
-      case V_REPLY_LEADIN_RULES:
-	return(h_config_reply_leadin_rules);
-      case V_RESUB_RULES:
-	return(h_config_resub_rules);
-      case V_SAVE_RULES:
-	return(h_config_save_rules);
-      case V_SMTP_RULES:
-	return(h_config_smtp_rules);
-      case V_SORT_RULES:
-	return(h_config_sort_rules);
-      case V_STARTUP_RULES:
-	return(h_config_startup_rules);
       case V_POST_CHAR_SET :
 	return(h_config_post_char_set);
       case V_UNK_CHAR_SET :
@@ -7780,8 +7613,6 @@ config_help(int var, int feature)
 	return(h_config_incoming_second_interv);
       case V_INCCHECKLIST :
 	return(h_config_incoming_list);
-      case V_SLEEP :
-	return(h_config_sleep);
       case V_OVERLAP :
 	return(h_config_viewer_overlap);
       case V_MAXREMSTREAM :
@@ -7792,8 +7623,6 @@ config_help(int var, int feature)
 	return(h_config_scroll_margin);
       case V_DEADLETS :
 	return(h_config_deadlets);
-       case V_SPECIAL_TEXT :
-	return(h_config_special_text_to_color);
       case V_FILLCOL :
 	return(h_config_composer_wrap_column);
       case V_TCPOPENTIMEO :
@@ -7916,10 +7745,6 @@ config_help(int var, int feature)
 	return(h_config_newmailwidth);
       case V_NEWSRC_PATH :
 	return(h_config_newsrc_path);
-#ifndef _WINDOWS
-      case V_MAILDIR_LOCATION :
-	return(h_config_maildir_location);
-#endif
       case V_BROWSER :
 	return(h_config_browser);
 #if defined(DOS) || defined(OS2)
@@ -7963,9 +7788,6 @@ config_help(int var, int feature)
       case V_SIGNATURE_FORE_COLOR :
       case V_SIGNATURE_BACK_COLOR :
 	return(h_config_signature_color);
-      case V_SPECIAL_TEXT_FORE_COLOR :
-      case V_SPECIAL_TEXT_BACK_COLOR :
-	return(h_config_special_text_color);
       case V_PROMPT_FORE_COLOR :
       case V_PROMPT_BACK_COLOR :
 	return(h_config_prompt_color);
@@ -8449,4 +8271,3 @@ pcpine_general_help(titlebuf)
 }
 
 #endif	/* _WINDOWS */
-

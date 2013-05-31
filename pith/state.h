@@ -33,7 +33,7 @@
 #include "../pith/stream.h"
 #include "../pith/color.h"
 #include "../pith/user.h"
-#include "../pith/rulestype.h"
+
 
 /*
  * Printing control structure
@@ -105,11 +105,6 @@ struct pine {
     MAILSTREAM  *mail_stream;		/* ptr to current folder stream */
     MSGNO_S	*msgmap;		/* ptr to current message map   */
 
-    char	screen_name[10];	/* name of current screen */
-    char	*role;			/* role used when composing */
-    char	*procid;		/* procedure id when needed */
-    int		exiting;
-
     unsigned     read_predicted:1;
 
     char         cur_folder[MAXPATH+1];
@@ -142,8 +137,6 @@ struct pine {
     unsigned     unseen_in_view:1;
     unsigned     start_in_context:1;	/* start fldr_scrn in current cntxt */
     unsigned     def_sort_rev:1;	/* true if reverse sort is default  */ 
-    unsigned	 thread_def_sort_rev:1; /* true if reverse sort is default in thread screen  */
-    unsigned	 msgmap_thread_def_sort_rev:1; /* true if reverse sort is being used in thread screen  */
     unsigned     restricted:1;
 
     unsigned	 save_msg_rule:5;
@@ -251,23 +244,10 @@ struct pine {
     SPEC_COLOR_S *hdr_colors;		/* list of configed colors for view */
     SPEC_COLOR_S *index_token_colors;	/* list of configed colors for index */
 
-    char	*prefix;		/* prefix for fillpara */
-    char	**list_qstr;		/* list of known quote strings */
     short	 init_context;
-
-    struct { 
-	ACTION_S *role_chosen;
-	int attach;
- 	int strip;
-	int no_send_flowed;
-	int inchdr;
-    } reply;
 
     int         *initial_cmds;         /* cmds to execute on startup */
     int         *free_initial_cmds;    /* used to free when done */
-    int         *initial_cmds_backup;  /* keep a copy in case they are freed */
-    int         *free_initial_cmds_backup;  /* free the copy */
-    int		 initial_cmds_offset;	/* how many commands we have executed */
 
     char         c_client_error[300];  /* when nowhow_error is set and PARSE */
 
@@ -305,9 +285,6 @@ struct pine {
     EditWhich	 ew_for_srch_take;
 
     SortOrder    def_sort,	/* Default sort type */
-		 thread_def_sort, /* Default Sort Type in Thread Screen */
-		 thread_cur_sort, /* current sort style for threads */
-		 msgmap_thread_sort,
 		 sort_types[22];
 
     int		 preserve;
@@ -324,15 +301,9 @@ struct pine {
 
     int		 nmw_width;
 
-    char	*subject;
-    int		 send_immediately;
-    int		 failed_read;
-
     int          hours_to_timeout;
 
     int          tcp_query_timeout;
-
-    int		 sleep;	/* time in seconds to sleep before removing temp file */
 
     int          inc_check_timeout;
     int          inc_check_interval;		/* for local and IMAP */
@@ -352,8 +323,6 @@ struct pine {
     char        *display_charmap;	/* needs to be freed */
     char        *keyboard_charmap;	/* needs to be freed */
     void        *input_cs;
-    regex_t	 colorpat;
-    int		 paterror;
 
     char        *posting_charmap;	/* needs to be freed */
 
@@ -365,7 +334,6 @@ struct pine {
     struct {
         char	*(*display_filter)(char *, STORE_S *, gf_io_t, FILTLIST_S *);
         char	*(*display_filter_trigger)(BODY *, char *, size_t);
-	char	*(*exec_rule)(char *, gf_io_t, gf_io_t);
     } tools;
 
     KEYWORD_S   *keywords;
@@ -375,9 +343,6 @@ struct pine {
 
     char	 last_error[500];
     INIT_ERR_S  *init_errs;
-
-    PRULELIST_S *rule_list;
-    char	*pressed_key;
 
     PRINT_S	*print;
 

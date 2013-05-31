@@ -144,53 +144,10 @@
 #define VAR_SORT_KEY		     vars[V_SORT_KEY].current_val.p
 #define GLO_SORT_KEY		     vars[V_SORT_KEY].global_val.p
 #define COM_SORT_KEY		     vars[V_SORT_KEY].cmdline_val.p
-#define VAR_THREAD_SORT_KEY	     vars[V_THREAD_SORT_KEY].current_val.p
-#define GLO_THREAD_SORT_KEY	     vars[V_THREAD_SORT_KEY].global_val.p
-#define COM_THREAD_SORT_KEY	     vars[V_THREAD_SORT_KEY].cmdline_val.p
 #define VAR_AB_SORT_RULE	     vars[V_AB_SORT_RULE].current_val.p
 #define GLO_AB_SORT_RULE	     vars[V_AB_SORT_RULE].global_val.p
 #define VAR_FLD_SORT_RULE	     vars[V_FLD_SORT_RULE].current_val.p
 #define GLO_FLD_SORT_RULE	     vars[V_FLD_SORT_RULE].global_val.p
-#define VAR_COMPOSE_RULES	     vars[V_COMPOSE_RULES].current_val.l
-#define GLO_COMPOSE_RULES	     vars[V_COMPOSE_RULES].global_val.l
-#define USR_COMPOSE_RULES	     vars[V_COMPOSE_RULES].user_val.l
-#define VAR_FORWARD_RULES	     vars[V_FORWARD_RULES].current_val.l
-#define GLO_FORWARD_RULES	     vars[V_FORWARD_RULES].global_val.l
-#define USR_FORWARD_RULES	     vars[V_FORWARD_RULES].user_val.l
-#define VAR_INDEX_RULES		     vars[V_INDEX_RULES].current_val.l
-#define GLO_INDEX_RULES		     vars[V_INDEX_RULES].global_val.l
-#define USR_INDEX_RULES		     vars[V_INDEX_RULES].user_val.l
-#define VAR_KEY_RULES		     vars[V_KEY_RULES].current_val.l
-#define GLO_KEY_RULES		     vars[V_KEY_RULES].global_val.l
-#define USR_KEY_RULES		     vars[V_KEY_RULES].user_val.l
-#define VAR_REPLACE_RULES	     vars[V_REPLACE_RULES].current_val.l
-#define GLO_REPLACE_RULES	     vars[V_REPLACE_RULES].global_val.l
-#define USR_REPLACE_RULES	     vars[V_REPLACE_RULES].user_val.l
-#define VAR_REPLY_INDENT_RULES	     vars[V_REPLY_INDENT_RULES].current_val.l
-#define GLO_REPLY_INDENT_RULES	     vars[V_REPLY_INDENT_RULES].global_val.l
-#define USR_REPLY_INDENT_RULES	     vars[V_REPLY_INDENT_RULES].user_val.l
-#define VAR_REPLY_LEADIN_RULES	     vars[V_REPLY_LEADIN_RULES].current_val.l
-#define GLO_REPLY_LEADIN_RULES	     vars[V_REPLY_LEADIN_RULES].global_val.l
-#define USR_REPLY_LEADIN_RULES	     vars[V_REPLY_LEADIN_RULES].user_val.l
-#define VAR_RESUB_RULES		     vars[V_RESUB_RULES].current_val.l
-#define GLO_RESUB_RULES		     vars[V_RESUB_RULES].global_val.l
-#define USR_RESUB_RULES		     vars[V_RESUB_RULES].user_val.l
-#define VAR_THREAD_DISP_STYLE_RULES  vars[V_THREAD_DISP_STYLE_RULES].current_val.l
-#define GLO_THREAD_DISP_STYLE_RULES  vars[V_THREAD_DISP_STYLE_RULES].global_val.l
-#define VAR_THREAD_INDEX_STYLE_RULES vars[V_THREAD_INDEX_STYLE_RULES].current_val.l
-#define GLO_THREAD_INDEX_STYLE_RULES vars[V_THREAD_INDEX_STYLE_RULES].global_val.l
-#define VAR_SAVE_RULES		     vars[V_SAVE_RULES].current_val.l
-#define GLO_SAVE_RULES		     vars[V_SAVE_RULES].global_val.l
-#define USR_SAVE_RULES		     vars[V_SAVE_RULES].user_val.l
-#define VAR_SMTP_RULES		     vars[V_SMTP_RULES].current_val.l
-#define GLO_SMTP_RULES		     vars[V_SMTP_RULES].global_val.l
-#define USR_SMTP_RULES		     vars[V_SMTP_RULES].user_val.l
-#define VAR_SORT_RULES		     vars[V_SORT_RULES].current_val.l
-#define GLO_SORT_RULES		     vars[V_SORT_RULES].global_val.l
-#define USR_SORT_RULES		     vars[V_SORT_RULES].user_val.l
-#define VAR_STARTUP_RULES	     vars[V_STARTUP_RULES].current_val.l
-#define GLO_STARTUP_RULES	     vars[V_STARTUP_RULES].global_val.l
-#define USR_STARTUP_RULES	     vars[V_STARTUP_RULES].user_val.l
 #ifndef	_WINDOWS
 #define VAR_CHAR_SET		     vars[V_CHAR_SET].current_val.p
 #define GLO_CHAR_SET		     vars[V_CHAR_SET].global_val.p
@@ -204,8 +161,6 @@
 #define GLO_EDITOR		     vars[V_EDITOR].global_val.l
 #define VAR_SPELLER		     vars[V_SPELLER].current_val.p
 #define GLO_SPELLER		     vars[V_SPELLER].global_val.p
-#define VAR_SPECIAL_TEXT	     vars[V_SPECIAL_TEXT].current_val.l
-#define GLO_SPECIAL_TEXT	     vars[V_SPECIAL_TEXT].global_val.l
 #define VAR_FILLCOL		     vars[V_FILLCOL].current_val.p
 #define GLO_FILLCOL		     vars[V_FILLCOL].global_val.p
 #define VAR_DEADLETS		     vars[V_DEADLETS].current_val.p
@@ -274,8 +229,6 @@
 #define GLO_OPENING_SEP		     vars[V_OPENING_SEP].global_val.p
 #define VAR_ABOOK_FORMATS	     vars[V_ABOOK_FORMATS].current_val.l
 #define VAR_INDEX_FORMAT	     vars[V_INDEX_FORMAT].current_val.p
-#define VAR_SLEEP		     vars[V_SLEEP].current_val.p
-#define GLO_SLEEP		     vars[V_SLEEP].global_val.p
 #define VAR_OVERLAP		     vars[V_OVERLAP].current_val.p
 #define GLO_OVERLAP		     vars[V_OVERLAP].global_val.p
 #define VAR_MAXREMSTREAM	     vars[V_MAXREMSTREAM].current_val.p
@@ -297,10 +250,6 @@
 #define GLO_NEWS_ACTIVE_PATH	     vars[V_NEWS_ACTIVE_PATH].global_val.p
 #define VAR_NEWS_SPOOL_DIR	     vars[V_NEWS_SPOOL_DIR].current_val.p
 #define GLO_NEWS_SPOOL_DIR	     vars[V_NEWS_SPOOL_DIR].global_val.p
-#ifndef _WINDOWS
-#define VAR_MAILDIR_LOCATION	     vars[V_MAILDIR_LOCATION].current_val.p
-#define GLO_MAILDIR_LOCATION	     vars[V_MAILDIR_LOCATION].global_val.p
-#endif
 #define VAR_DISABLE_DRIVERS	     vars[V_DISABLE_DRIVERS].current_val.l
 #define VAR_DISABLE_AUTHS	     vars[V_DISABLE_AUTHS].current_val.l
 #define VAR_REMOTE_ABOOK_METADATA    vars[V_REMOTE_ABOOK_METADATA].current_val.p
@@ -507,8 +456,6 @@
 #define GLO_SIGNATURE_FORE_COLOR     vars[V_SIGNATURE_FORE_COLOR].global_val.p
 #define VAR_SIGNATURE_BACK_COLOR     vars[V_SIGNATURE_BACK_COLOR].current_val.p
 #define GLO_SIGNATURE_BACK_COLOR     vars[V_SIGNATURE_BACK_COLOR].global_val.p
-#define VAR_SPECIAL_TEXT_FORE_COLOR  vars[V_SPECIAL_TEXT_FORE_COLOR].current_val.p
-#define VAR_SPECIAL_TEXT_BACK_COLOR  vars[V_SPECIAL_TEXT_BACK_COLOR].current_val.p
 #define VAR_PROMPT_FORE_COLOR	     vars[V_PROMPT_FORE_COLOR].current_val.p
 #define VAR_PROMPT_BACK_COLOR	     vars[V_PROMPT_BACK_COLOR].current_val.p
 #define VAR_VIEW_HDR_COLORS	     vars[V_VIEW_HDR_COLORS].current_val.l
@@ -724,10 +671,6 @@
  */
 #define Q_SUPP_LIMIT (4)
 #define Q_DEL_ALL    (-10)
-#define	SVAR_SLEEP(ps,n,e,el)	strtoval((ps)->VAR_SLEEP,		  \
-					 &(n), 0, 120, 0, (e),		  \
-					  (el), 			  \
-					 "Sleep-Interval-Length")
 #define	SVAR_OVERLAP(ps,n,e,el)	strtoval((ps)->VAR_OVERLAP,		  \
 					 &(n), 0, 20, 0, (e),		  \
 					  (el), 			  \

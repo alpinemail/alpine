@@ -37,7 +37,6 @@ typedef struct pine_thrd {
     unsigned long nextthd;	/* next thread, only tops have this	*/
     unsigned long prevthd;	/* previous thread, only tops have this	*/
     unsigned long top;		/* top of this thread			*/
-    unsigned long toploose;	/* top of this thread, if is loose	*/
     unsigned long head;		/* head of the whole thread list	*/
 } PINETHRD_S;
 
@@ -93,7 +92,7 @@ void	      erase_threading_info(MAILSTREAM *, MSGNO_S *);
 void	      sort_thread_callback(MAILSTREAM *, THREADNODE *);
 void	      collapse_threads(MAILSTREAM *, MSGNO_S *, PINETHRD_S *);
 PINETHRD_S   *msgno_thread_info(MAILSTREAM *, unsigned long, PINETHRD_S *, unsigned);
-void	      collapse_or_expand(struct pine *, MAILSTREAM *, MSGNO_S *, unsigned long, int);
+void	      collapse_or_expand(struct pine *, MAILSTREAM *, MSGNO_S *, unsigned long);
 void	      select_thread_stmp(struct pine *, MAILSTREAM *, MSGNO_S *);
 unsigned long count_flags_in_thread(MAILSTREAM *, PINETHRD_S *, long);
 unsigned long count_lflags_in_thread(MAILSTREAM *, PINETHRD_S *, MSGNO_S *, int);
@@ -107,24 +106,6 @@ int	      view_thread(struct pine *, MAILSTREAM *, MSGNO_S *, int);
 int	      unview_thread(struct pine *, MAILSTREAM *, MSGNO_S *);
 PINETHRD_S   *find_thread_by_number(MAILSTREAM *, MSGNO_S *, long, PINETHRD_S *);
 void	      set_search_bit_for_thread(MAILSTREAM *, PINETHRD_S *, SEARCHSET **);
-void	      find_msgmap(MAILSTREAM *, MSGNO_S *, int, SortOrder, unsigned);
-void	      move_thread(struct pine *, MAILSTREAM *, MSGNO_S *, int);
-void	      relink_threads(MAILSTREAM *, MSGNO_S *, long *);
-long	      top_thread(MAILSTREAM *, long);
-long	      top_this_thread(MAILSTREAM *, long);
-long	      get_length_branch(MAILSTREAM *, long);
-unsigned long get_next(MAILSTREAM *,PINETHRD_S *);
-unsigned long get_branch(MAILSTREAM *,PINETHRD_S *);
-int	      count_thread(struct pine *, MAILSTREAM *, MSGNO_S *, long);
-int	      count_this_thread(MAILSTREAM *, unsigned long);
-int	      this_thread_is_kolapsed(struct pine *, MAILSTREAM *, MSGNO_S *, long);
-int	      thread_is_kolapsed(struct pine *, MAILSTREAM *, MSGNO_S *, long);
-int	      move_prev_thread(struct pine *, MAILSTREAM  *, MSGNO_S *, int);
-int	      move_next_thread(struct pine *, MAILSTREAM  *, MSGNO_S *, int);
-int	      move_next_this_thread(struct pine *, MAILSTREAM  *, MSGNO_S *, int);
-void	      move_top_thread(MAILSTREAM *, MSGNO_S *, long);
-void	      move_top_this_thread(MAILSTREAM *, MSGNO_S *, long);
-THREADNODE   *copy_tree(THREADNODE *);
-int	      allowed_thread_key(SortOrder sort);
+
 
 #endif /* PITH_THREAD_INCLUDED */

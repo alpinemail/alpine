@@ -60,7 +60,6 @@ static char args_err_missing_passfile[] =	N_("missing argument for option \"-pas
 static char args_err_non_abs_passfile[] =	N_("argument to \"-passfile\" should be fully-qualified");
 #endif
 static char args_err_missing_sort[] =		N_("missing argument for option \"-sort\"");
-static char args_err_missing_thread_sort[] =	N_("missing argument for option \"-threadsort\"");
 static char args_err_missing_flag_arg[] =	N_("missing argument for flag \"%c\"");
 static char args_err_missing_flag_num[] =	N_("Non numeric argument for flag \"%c\"");
 static char args_err_missing_debug_num[] =	N_("Non numeric argument for \"%s\"");
@@ -104,13 +103,11 @@ N_(" -k \t\tKeys - Force use of function keys"),
 N_(" -z \t\tSuspend - allow use of ^Z suspension"),
 N_(" -r \t\tRestricted - can only send mail to oneself"),
 N_(" -sort <sort>\tSort - Specify sort order of folder:"),
-N_(" -threadsort <sort>\tSort - Specify sort order of thread index screen:"),
 N_("\t\t\tarrival, subject, threaded, orderedsubject, date,"),
 N_("\t\t\tfrom, size, score, to, cc, /reverse"),
 N_(" -i\t\tIndex - Go directly to index, bypassing main menu"),
 N_(" -I <keystroke_list>   Initial keystrokes to be executed"),
 N_(" -n <number>\tEntry in index to begin on"),
-N_(" -noutf8\t Warns Alpine that piped input is not encoded in utf-8"),
 N_(" -o \t\tReadOnly - Open first folder read-only"),
 N_(" -conf\t\tConfiguration - Print out fresh global configuration. The"),
 N_("\t\tvalues of your global configuration affect all Alpine users"),
@@ -195,7 +192,6 @@ pine_args(struct pine *pine_state, int argc, char **argv, ARGDATA_S *args)
     char *cmd_list            = NULL;
     char *debug_str           = NULL;
     char *sort                = NULL;
-    char *threadsort          = NULL;
     char *pinerc_file         = NULL;
     char *lc		      = NULL;
     int   do_help             = 0;
@@ -367,17 +363,6 @@ Loop: while(--ac > 0)
 
 		  goto Loop;
 	      }
-	      else if(strcmp(*av, "threadsort") == 0){
-	            if(--ac){
-	                threadsort = *++av;
-	                COM_THREAD_SORT_KEY = cpystr(threadsort);
-	            }
-	            else{
-	                display_args_err(_(args_err_missing_thread_sort), NULL, 1);
-	              ++usage;
-	          }
-	          goto Loop;
-	      }
 	      else if(strcmp(*av, "url") == 0){
 		  if(args->action == aaFolder && !args->data.folder){
 		      args->action = aaURL;
@@ -484,10 +469,6 @@ Loop: while(--ac > 0)
 
 		  goto Loop;
 	      }
-	      else if(strcmp(*av, "noutf8") == 0){
-		  args->noutf8++;
-		  goto Loop;
-	      }
 	      else if(strcmp(*av, "bail") == 0){
 		  pine_state->exit_if_no_pinerc = 1;
 		  goto Loop;
@@ -496,12 +477,6 @@ Loop: while(--ac > 0)
 		  do_version = 1;
 		  goto Loop;
 	      }
-              else if(strcmp(*av, "subject") == 0){
-                     if(--ac){
-                        pine_state->subject = cpystr(*++av);
-                        }
-                        goto Loop;
-              }
 #ifdef	_WINDOWS
 	      else if(strcmp(*av, "install") == 0){
 		  pine_state->install_flag = 1;
@@ -852,14 +827,14 @@ Loop: while(--ac > 0)
       exit(-1);
 
     if(do_version){
-	extern char datestamp[], hoststamp[], plevstamp[];
+	extern char datestamp[], hoststamp[];
 	char rev[128];
 
-	snprintf(tmp_20k_buf, SIZEOF_20KBUF, "Alpine %s (%s %s) built %s on %s, using patchlevel %s.",
+	snprintf(tmp_20k_buf, SIZEOF_20KBUF, "Alpine %s (%s %s) built %s on %s",
 		 ALPINE_VERSION,
 		 SYSTYPE ? SYSTYPE : "?",
 		 get_alpine_revision_string(rev, sizeof(rev)),
-		 datestamp, hoststamp, plevstamp);
+		 datestamp, hoststamp);
 	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
 	display_args_err(tmp_20k_buf, NULL, 0);
 	exit(0);

@@ -95,7 +95,7 @@ int	 checkbox_tool(struct pine *, int, CONF_S **, unsigned);
 int	 radiobutton_tool(struct pine *, int, CONF_S **, unsigned);
 int	 yesno_tool(struct pine *, int, CONF_S **, unsigned);
 int      text_toolit(struct pine *, int, CONF_S **, unsigned, int);
-char    *generalized_sort_pretty_value(struct pine *, CONF_S *, int, int);
+char    *generalized_sort_pretty_value(struct pine *, CONF_S *, int);
 int	 exclude_config_var(struct pine *, struct variable *, int);
 int      config_exit_cmd(unsigned);
 int	 simple_exit_cmd(unsigned);

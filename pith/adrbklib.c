@@ -5136,14 +5136,8 @@ init_addrbooks(OpenStatus want_status, int reset_to_top, int open_if_only_one, i
 	    if(as.cur >= as.how_many_personals)
 	      pab->type |= GLOBAL;
 
-	    if(ps_global->mail_stream && 
-		ps_global->mail_stream->lock && (pab->type & REMOTE_VIA_IMAP)){
-	      as.initialized = 0;
-	      pab->access = NoAccess;
-	    }
-	    else{
-	      pab->access = adrbk_access(pab);
-	    }
+	    pab->access = adrbk_access(pab);
+
 	    /* global address books are forced readonly */
 	    if(pab->type & GLOBAL && pab->access != NoAccess)
 	      pab->access = ReadOnly;

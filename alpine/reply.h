@@ -28,7 +28,7 @@ int	    reply(struct pine *, ACTION_S *);
 int	    confirm_role(long, ACTION_S **);
 int	    reply_to_all_query(int *);
 int	    reply_using_replyto_query(void);
-int	    reply_text_query(struct pine *, long, ENVELOPE *, char **);
+int	    reply_text_query(struct pine *, long, char **);
 int	    reply_news_test(ENVELOPE *, ENVELOPE *);
 char       *get_signature_file(char *, int, int, int);
 int	    forward(struct pine *, ACTION_S *);

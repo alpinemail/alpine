@@ -111,8 +111,6 @@ open_mailer for details.
 int
 init_tty_driver(struct pine *ps)
 {
-   if(ps->send_immediately)
-     return 0;
 #ifdef	MOUSE
     if(F_ON(F_ENABLE_MOUSE, ps_global))
       init_mouse();
@@ -679,9 +677,6 @@ a lot of at UW
 void
 init_keyboard(int use_fkeys)
 {
-    if (ps_global->send_immediately)
-	return;
-
     if(use_fkeys && (!strucmp(term_name,"vt102")
 		     || !strucmp(term_name,"vt100")))
       printf("\033\133\071\071\150");
@@ -699,9 +694,6 @@ init_keyboard(int use_fkeys)
 void
 end_keyboard(int use_fkeys)
 {
-    if(ps_global->send_immediately)
-	return;
-
     if(use_fkeys && (!strcmp(term_name, "vt102")
 		     || !strcmp(term_name, "vt100"))){
 	printf("\033\133\071\071\154");

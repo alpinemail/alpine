@@ -26,7 +26,6 @@ static char rcsid[] = "$Id: terminal.c 921 2008-01-31 02:09:25Z hubert@u.washing
 #include "../keydefs.h"
 #include "../pico.h"
 #include "../mode.h"
-#include "../edef.h"
 
 #include "raw.h"
 #include "color.h"
@@ -478,12 +477,6 @@ static int
 tinfoopen(void)
 {
     int     row, col;
-
-    if (sendnow){
-      term.t_nrow = 23;
-      term.t_ncol = 80;
-      return 0;
-    }
 
     /*
      * determine the terminal's communication speed and decide
@@ -1259,12 +1252,6 @@ static int
 tcapopen(void)
 {
     int     row, col;
-
-    if (sendnow){
-      term.t_nrow = 23;
-      term.t_ncol = 80;
-      return 0;
-    }
 
     /*
      * determine the terminal's communication speed and decide

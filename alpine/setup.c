@@ -258,7 +258,7 @@ option_screen(struct pine *ps, int edit_exceptions)
 	    ctmpa->flags             |= CF_NOSELECT;
 	    ctmpa->value = cpystr("---  ----------------------");
 
-	    decode_sort(pval, &def_sort, &def_sort_rev, 0);
+	    decode_sort(pval, &def_sort, &def_sort_rev);
 
 	    for(j = 0; j < 2; j++){
 		for(i = 0; ps->sort_types[i] != EndofList; i++){
@@ -273,55 +273,6 @@ option_screen(struct pine *ps, int edit_exceptions)
 		}
 	    }
 	}
-        else if(vtmp == &ps->vars[V_THREAD_SORT_KEY]){ /* radio case */
-            SortOrder thread_def_sort;
-            int       thread_def_sort_rev, lv;
-
-            ctmpa->flags       |= CF_NOSELECT;
-            ctmpa->keymenu      = &config_radiobutton_keymenu;
-            ctmpa->tool         = NULL;
-
-            /* put a nice delimiter before list */
-            new_confline(&ctmpa)->var = NULL;
-            ctmpa->varnamep               = ctmpb;
-            ctmpa->keymenu                = &config_radiobutton_keymenu;
-            ctmpa->help                   = NO_HELP;
-            ctmpa->tool                   = radiobutton_tool;
-            ctmpa->valoffset              = 12;
-            ctmpa->flags                 |= CF_NOSELECT;
-            ctmpa->value = cpystr("Set    Thread Sort Options");
-
-            new_confline(&ctmpa)->var = NULL;
-            ctmpa->varnamep           = ctmpb;
-            ctmpa->keymenu            = &config_radiobutton_keymenu;
-            ctmpa->help               = NO_HELP;
-            ctmpa->tool               = radiobutton_tool;
-            ctmpa->valoffset          = 12;
-            ctmpa->flags             |= CF_NOSELECT;
-            ctmpa->value = cpystr("---  ----------------------");
-  
-            /* find longest value's name */
-            for(lv = 0, i = 0; ps->sort_types[i] != EndofList; i++)
-              if(lv < (j = strlen(sort_name(ps->sort_types[i]))))
-                lv = j;
-
-            decode_sort(pval, &thread_def_sort, &thread_def_sort_rev, 1);
-
-            for(j = 0; j < 2; j++){
-                for(i = 0; ps->sort_types[i] != EndofList; i++){
-		  if (allowed_thread_key(ps->sort_types[i])){
-                    new_confline(&ctmpa)->var = vtmp;
-                    ctmpa->varnamep           = ctmpb;
-                    ctmpa->keymenu            = &config_radiobutton_keymenu;
-                    ctmpa->help               = config_help(vtmp - ps->vars, 0);
-                    ctmpa->tool               = radiobutton_tool;
-                    ctmpa->valoffset          = 12;
-                    ctmpa->varmem             = i + (j * EndofList);
-                    ctmpa->value              = pretty_value(ps, ctmpa);
-		  }
-                }
-            }
-        }
 	else if(vtmp == &ps->vars[V_USE_ONLY_DOMAIN_NAME]){ /* yesno case */
 	    ctmpa->keymenu = &config_yesno_keymenu;
 	    ctmpa->tool	   = yesno_tool;
@@ -384,7 +335,6 @@ option_screen(struct pine *ps, int edit_exceptions)
 	}
 	else{
 	    if(vtmp == &ps->vars[V_FILLCOL]
-	       || vtmp == &ps->vars[V_SLEEP]
 	       || vtmp == &ps->vars[V_QUOTE_SUPPRESSION]
 	       || vtmp == &ps->vars[V_OVERLAP]
 	       || vtmp == &ps->vars[V_MAXREMSTREAM]
@@ -512,15 +462,6 @@ option_screen(struct pine *ps, int edit_exceptions)
 	    clear_index_cache(ps_global->mail_stream, 0);
 	    reset_sort_order(SRT_VRB);
 	}
-    }
-
-    pval = PVAL(&ps->vars[V_THREAD_SORT_KEY], ew);
-    if(vsave[V_THREAD_SORT_KEY].saved_user_val.p && pval
-       && strcmp(vsave[V_THREAD_SORT_KEY].saved_user_val.p, pval)){
-      if(!mn_get_mansort(ps_global->msgmap)){
-	  clear_index_cache(ps_global->mail_stream, 0);
-          reset_sort_order(SRT_VRB);
-      }
     }
 
     treat_color_vars_as_text = 0;

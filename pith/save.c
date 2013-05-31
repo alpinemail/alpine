@@ -954,7 +954,7 @@ save(struct pine *state, MAILSTREAM *stream, CONTEXT_S *context, char *folder,
 	      *date = '\0';
 
 	    rv = save_fetch_append(stream, mn_m2raw(msgmap, i),
-				   NULL, save_stream, folder, context,
+				   NULL, save_stream, save_folder, context,
 				   mc ? mc->rfc822_size : 0L, flags, date, so);
 
 	    if(flags)
@@ -1157,7 +1157,6 @@ long save_fetch_append_cb(MAILSTREAM *stream, void *data, char **flags,
 		    snprintf(buf, sizeof(buf),
 	 "Message to save shrank: source msg # %ld may be saved incorrectly",
 			     mn_raw2m(pkg->msgmap, raw));
-		    if(F_OFF(F_IGNORE_SIZE, ps_global))
 		    q_status_message(SM_ORDER, 0, 3, buf);
 		}
 		else{

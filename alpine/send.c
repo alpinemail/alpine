@@ -63,7 +63,7 @@ static char rcsid[] = "$Id: send.c 1142 2008-08-13 17:22:21Z hubert@u.washington
 #include "../pith/mimetype.h"
 #include "../pith/send.h"
 #include "../pith/smime.h"
-#include "../pith/rules.h"
+
 
 typedef struct body_particulars {
     unsigned short     type, encoding, had_csp;
@@ -238,11 +238,6 @@ alt_compose_screen(struct pine *pine_state)
 	memset((void *)role, 0, sizeof(*role));
 	role->nick = cpystr("Default Role");
     }
-
-    if (ps_global->role)
-       fs_give((void **)&ps_global->role);  
-
-    ps_global->role = cpystr(role->nick);
 
     pine_state->redrawer = NULL;
     compose_mail(NULL, NULL, role, NULL, NULL);
@@ -453,12 +448,8 @@ compose_mail(char *given_to, char *fcc_arg, ACTION_S *role_arg,
 
 	      ps_global->next_screen = prev_screen;
 	      ps_global->redrawer = redraw;
-	      if (ps_global->role)
-		  fs_give((void **)&ps_global->role);  
-	      if(role){
+	      if(role)
 		role = combine_inherited_role(role);
-		ps_global->role = cpystr(role->nick);
-	      }
 	    }
 	    break;
 	  
@@ -623,7 +614,6 @@ compose_mail(char *given_to, char *fcc_arg, ACTION_S *role_arg,
         if(given_to)
 	  rfc822_parse_adrlist(&outgoing->to, given_to, ps_global->maildomain);
 
-        outgoing->subject = cpystr(ps_global->subject);
         outgoing->message_id = generate_message_id();
 
 	/*
@@ -654,14 +644,9 @@ compose_mail(char *given_to, char *fcc_arg, ACTION_S *role_arg,
 	    }
 	}
 
-	if (ps_global->role)
-	    fs_give((void **)&ps_global->role);
-
-	if(role){
+	if(role)
 	  q_status_message1(SM_ORDER, 3, 4, _("Composing using role \"%s\""),
 			    role->nick);
-	  ps_global->role = cpystr(role->nick);
-	}
 
 	/*
 	 * The type of storage object allocated below is vitally
@@ -927,7 +912,7 @@ static struct headerentry he_template[]={
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, KS_NONE},
   {"From    : ",  "From",        h_composer_from,       10, 0, NULL,
    build_address, NULL, NULL, addr_book_compose,    "To AddrBk", NULL, abook_nickname_complete,
-   0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, KS_TOADDRBOOK},
+   0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, KS_TOADDRBOOK},
   {"Reply-To: ",  "Reply To",    h_composer_reply_to,   10, 0, NULL,
    build_address, NULL, NULL, addr_book_compose,    "To AddrBk", NULL, abook_nickname_complete,
    0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, KS_TOADDRBOOK},
@@ -1797,9 +1782,6 @@ pine_send(ENVELOPE *outgoing, struct mail_bodystruct **body,
     pbf = &pbuf1;
     standard_picobuf_setup(pbf);
 
-    pbf->auto_cmds = ps_global->initial_cmds_backup + 
-						ps_global->initial_cmds_offset;
-
     /*
      * Cancel any pending initial commands since pico uses a different
      * input routine.  If we didn't cancel them, they would happen after
@@ -2323,11 +2305,6 @@ pine_send(ENVELOPE *outgoing, struct mail_bodystruct **body,
 			he->rich_header = 0;
 		    }
 		}
-		if (F_ON(F_ALLOW_CHANGING_FROM, ps_global) &&
-		   !ps_global->never_allow_changing_from){
-		  he->display_it  = 1;  /* show it */
-		  he->rich_header = 0;
-		}
 
 		he_from			= he;
 		break;
@@ -2437,26 +2414,6 @@ pine_send(ENVELOPE *outgoing, struct mail_bodystruct **body,
 		    removing_trailing_white_space(pf->textbuf);
 		    (void)removing_double_quotes(pf->textbuf);
 		    build_address(pf->textbuf, &addr, NULL, NULL, NULL);
-		    if (!strncmp(pf->name,"Lcc",3) && addr && *addr){
-			RULE_RESULT *rule;
-
-  			outgoing->date = (unsigned char *) cpystr(addr);
-			ps_global->procid = cpystr("fwd-lcc");
-			rule = get_result_rule(V_FORWARD_RULES,
-			           FOR_COMPOSE|FOR_TRIM, outgoing);
-			if (rule){
-			    addr = cpystr(rule->result);
-			    removing_trailing_white_space(addr);
-			    (void)removing_extra_stuff(addr);
-			    if (rule->result)
-				fs_give((void **)&rule->result);
-				fs_give((void **)&rule);
-			}
-			fs_give((void **)&ps_global->procid);
-			if (outgoing->date)
-			    fs_give((void **)&outgoing->date);
-		    }   
-
 		    rfc822_parse_adrlist(pf->addr, addr,
 					 ps_global->maildomain);
 		    fs_give((void **)&addr);
@@ -3026,12 +2983,7 @@ pine_send(ENVELOPE *outgoing, struct mail_bodystruct **body,
 #ifdef _WINDOWS
 	mswin_setwindowmenu (MENU_DEFAULT);
 #endif
-	if (ps_global->send_immediately){  
-	   if(ps_global->free_initial_cmds_backup)
-	      fs_give((void **)&ps_global->free_initial_cmds_backup);
-	} 
-	else
-	   fix_windsize(ps_global);
+	fix_windsize(ps_global);
 
 	/*
 	 * Only reinitialize signals if we didn't receive an interesting
@@ -3090,9 +3042,7 @@ pine_send(ENVELOPE *outgoing, struct mail_bodystruct **body,
 	if(outgoing->return_path)
 	  mail_free_address(&outgoing->return_path);
 
-        outgoing->return_path = F_ON(F_USE_DOMAIN_NAME,ps_global) 
-				? rfc822_cpy_adr(generate_from())
-				: rfc822_cpy_adr(outgoing->from);
+	outgoing->return_path = rfc822_cpy_adr(outgoing->from);
 
 	/*
 	 * Don't ever believe the sender that is there.
@@ -3769,16 +3719,10 @@ pine_send(ENVELOPE *outgoing, struct mail_bodystruct **body,
 	    if(sending_filter_requested
 	       && !filter_message_text(sending_filter_requested, outgoing,
 				       *body, &orig_so, &header)){
-		if (!ps_global->send_immediately){
-		     q_status_message1(SM_ORDER, 3, 3,
+		q_status_message1(SM_ORDER, 3, 3,
 				 _("Problem filtering!  Nothing sent%s."),
 				 fcc ? " or saved to fcc" : "");
-		     continue;
-		}
-		else{
-		   fprintf(stderr, _("Problem filtering! Nothing sent or saved to Fcc\n"));
-		   exit(-1);
-		}
+		continue;
 	    }
 
             /*------ Actually post  -------*/
@@ -4022,8 +3966,6 @@ pine_send(ENVELOPE *outgoing, struct mail_bodystruct **body,
             /*----- Mail Post FAILED, back to composer -----*/
             if(result & (P_MAIL_LOSE | P_FCC_LOSE)){
 		dprint((1, "Send failed, continuing\n"));
-		if (ps_global->send_immediately)
-		   exit(1);
 
 		if(result & P_FCC_LOSE){
 		    /*
@@ -4058,7 +4000,6 @@ pine_send(ENVELOPE *outgoing, struct mail_bodystruct **body,
 	    update_answered_flags(reply);
 
             /*----- Signed, sealed, delivered! ------*/
-         if (!ps_global->send_immediately)
 	    q_status_message(SM_ORDER, 0, 3,
 			     pine_send_status(result, fcc, tmp_20k_buf, SIZEOF_20KBUF, NULL));
 
@@ -4525,7 +4466,7 @@ send_exit_for_pico(struct headerentry *he, void (*redraw_pico)(void), int allow_
 	return(1);
     }
 
-    if(!ps_global->send_immediately && F_ON(F_SEND_WO_CONFIRM, ps_global)){
+    if(F_ON(F_SEND_WO_CONFIRM, ps_global)){
 	if(result)
 	  *result = NULL;
 
@@ -4705,8 +4646,7 @@ send_exit_for_pico(struct headerentry *he, void (*redraw_pico)(void), int allow_
 
     opts[i].ch = -1;
 
-    if (!ps_global->send_immediately)
-       fix_windsize(ps_global);
+    fix_windsize(ps_global);
 
     while(1){
 	if(filters && filters->filter && (p = strindex(filters->filter, ' ')))
@@ -4888,8 +4828,7 @@ send_exit_for_pico(struct headerentry *he, void (*redraw_pico)(void), int allow_
 	if(double_rad +
 	   ((call_mailer_flags & CM_DSN_SHOW)
 	       ? 4 : F_ON(F_DSN, ps_global) ? 1 : 0) > 11)
-	  rv = ps_global->send_immediately ? 'y' :
-		double_radio_buttons(tmp_20k_buf, -FOOTER_ROWS(ps_global), opts,
+	  rv = double_radio_buttons(tmp_20k_buf, -FOOTER_ROWS(ps_global), opts,
 			   'y', 'z',
 			   (F_ON(F_DSN, ps_global) && allow_flowed)
 					          ? h_send_prompt_dsn_flowed :
@@ -4898,8 +4837,7 @@ send_exit_for_pico(struct headerentry *he, void (*redraw_pico)(void), int allow_
 						       h_send_prompt,
 			   RB_NORM);
 	else
-	  rv = ps_global->send_immediately ? 'y' :
-		radio_buttons(tmp_20k_buf, -FOOTER_ROWS(ps_global), opts,
+	  rv = radio_buttons(tmp_20k_buf, -FOOTER_ROWS(ps_global), opts,
 			   'y', 'z',
 			   (double_rad +
 			    ((call_mailer_flags & CM_DSN_SHOW)
@@ -5236,13 +5174,11 @@ cancel_for_pico(void (*redraw_pico)(void))
 	{'c', 'c', "C", N_("Confirm")},
 	{'n', 'n', "N", N_("No")},
 	{'y', 'y', "", ""},
-	{'t', 't', "T", N_("CounT")},
 	{-1, 0, NULL, NULL}
     };
 
     ps_global->redrawer = redraw_pico;
     fix_windsize(ps_global);
-    pbf->curpos[0] = '\0';
     
     while(1){
 	rv = radio_buttons(prompt, -FOOTER_ROWS(ps_global), opts,
@@ -5255,16 +5191,12 @@ cancel_for_pico(void (*redraw_pico)(void))
 	    q_status_message(SM_INFO, 1, 3, _(" Type \"C\" to cancel message "));
 	    display_message('x');
 	}
-	else if(rv == 't'){
-	    showcpos(1,0);
-	    break;
-	}
 	else
 	  break;
     }
 
     ps_global->redrawer = redraw;
-    return(pbf->curpos[0] ? pbf->curpos : rstr);
+    return(rstr);
 }
 
 
@@ -5368,11 +5300,9 @@ filter_message_text(char *fcmd, ENVELOPE *outgoing, struct mail_bodystruct *body
 	    if((tmp_so = so_get(PicoText, NULL, EDIT_ACCESS)) != NULL){
 		gf_set_so_writec(&pc, tmp_so);
 		ps_global->mangled_screen = 1;
-		if (!ps_global->send_immediately){
-		   suspend_busy_cue();
-		   ClearScreen();
-		   fflush(stdout);
-		}
+		suspend_busy_cue();
+		ClearScreen();
+		fflush(stdout);
 		if(tmpf){
 		    PIPE_S *fpipe;
 
@@ -5484,10 +5414,8 @@ filter_message_text(char *fcmd, ENVELOPE *outgoing, struct mail_bodystruct *body
 		    set_mime_type_by_grope(b);
 		}
 
-		if (!ps_global->send_immediately){
-		   ClearScreen();
-		   resume_busy_cue(0);
-		}
+		ClearScreen();
+		resume_busy_cue(0);
 	    }
 	    else
 	      errstr = "Can't create space for filtered text.";
@@ -5518,16 +5446,10 @@ filter_message_text(char *fcmd, ENVELOPE *outgoing, struct mail_bodystruct *body
 	if(tmp_so)
 	  so_give(&tmp_so);
 
-	if (!ps_global->send_immediately){
-	     q_status_message1(SM_ORDER | SM_DING, 3, 6, _("Problem filtering: %s"),
+	q_status_message1(SM_ORDER | SM_DING, 3, 6, _("Problem filtering: %s"),
 			  errstr);
-	     dprint((1, "Filter FAILED: %s\n",
+	dprint((1, "Filter FAILED: %s\n",
 	       errstr ? errstr : "?"));
-	}
-	else{
-	   fprintf(stderr, _("Filter FAILED: %s\n"), errstr ? errstr : "?");
-	   exit(-1);
-	}
     }
 
     return(errstr == NULL);

@@ -50,4 +50,3 @@ local.c: alpineldap.c color.c imap.c ldap.c remote.c signal.c \
 	 debug.c status.c stubs.c alpined.h color.h ldap.h
 	echo "char datestamp[]="\"`date`\"";" > local.c
 	echo "char hoststamp[]="\"`hostname`\"";" >> local.c
-	cat ../../../patchlevel >> local.c

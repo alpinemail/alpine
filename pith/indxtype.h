@@ -76,15 +76,12 @@ typedef enum {iNothing, iStatus, iFStatus, iIStatus, iSIStatus,
 	      iKey, iKeyInit,
 	      iPrefDate, iPrefTime, iPrefDateTime,
 	      iCurPrefDate, iCurPrefTime, iCurPrefDateTime,
-	      iSize, iSizeComma, iSizeNarrow, iDescripSize,  iSizeThread,
+	      iSize, iSizeComma, iSizeNarrow, iDescripSize,
 	      iNewsAndTo, iToAndNews, iNewsAndRecips, iRecipsAndNews,
 	      iFromTo, iFromToNotNews, iFrom, iTo, iSender, iCc, iNews, iRecips,
 	      iCurNews, iArrow,
 	      iMailbox, iAddress, iInit, iCursorPos,
 	      iDay2Digit, iMon2Digit, iYear2Digit,
-	      iFolder, iFlag, iCollection, iRole, iProcid, iScreen, iPkey,
-	      iNick, iAddressTo, iAddressCc, iAddressRecip, iBcc, iLcc,
-	      iFfrom, iFadd,
 	      iSTime, iKSize,
 	      iRoleNick, iNewLine,
 	      iHeader, iText,
@@ -106,26 +103,15 @@ typedef struct index_parse_tokens {
 
 
 /* these are flags for the what_for field in INDEX_PARSE_T */
-#define FOR_NOTHING	0x00000
-#define FOR_INDEX	0x00001
-#define FOR_REPLY_INTRO	0x00002
-#define FOR_TEMPLATE	0x00004  /* or for signature */
-#define FOR_FILT	0x00008
-#define DELIM_USCORE	0x00010
-#define DELIM_PAREN	0x00020
-#define DELIM_COLON	0x00040
-#define FOR_FOLDER	0x00080  /* for rules */
-#define FOR_RULE	0x00100  /* for rules */
-#define FOR_TRIM	0x00200  /* for rules */
-#define FOR_RESUB	0x00400  /* for rules */
-#define FOR_REPLACE	0x00800  /* for rules */
-#define FOR_SORT	0x01000  /* for rules */
-#define FOR_FLAG	0x02000  /* for rules */
-#define FOR_COMPOSE	0x04000  /* for rules */
-#define FOR_THREAD	0x08000  /* for rules */
-#define FOR_STARTUP	0x10000  /* for rules */
-#define FOR_KEY		0x20000	 /* for rules */
-#define FOR_SAVE	0x40000  /* for rules */
+#define FOR_NOTHING	0x00
+#define FOR_INDEX	0x01
+#define FOR_REPLY_INTRO	0x02
+#define FOR_TEMPLATE	0x04		/* or for signature */
+#define FOR_FILT	0x08
+#define DELIM_USCORE	0x10
+#define DELIM_PAREN	0x20
+#define DELIM_COLON	0x40
+
 
 #define DEFAULT_REPLY_INTRO "default"
 

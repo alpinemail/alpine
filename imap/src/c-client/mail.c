@@ -52,8 +52,6 @@ static mailcache_t mailcache = mm_cache;
 static rfc822out_t mail822out = NIL;
 				/* RFC-822 output generator (new style) */
 static rfc822outfull_t mail822outfull = NIL;
-				/* Erase password (client side) */
-static deletepwd_t erase_password = NIL;
 				/* SMTP verbose callback */
 static smtpverbose_t mailsmtpverbose = mm_dlog;
 				/* proxy copy routine */
@@ -546,11 +544,6 @@ void *mail_parameters (MAILSTREAM *stream,long function,void *value)
   case GET_SENDCOMMAND:
     ret = (void *) mailsendcommand;
     break;
-  case SET_ERASEPASSWORD:
-    erase_password = (deletepwd_t) value;
-  case GET_ERASEPASSWORD:
-    ret = (void *) erase_password;
-    break;
 
   case SET_SERVICENAME:
     servicename = (char *) value;
@@ -998,7 +991,7 @@ long mail_create (MAILSTREAM *stream,char *mailbox)
   MAILSTREAM *ts;
   char *s,*t,tmp[MAILTMPLEN];
   size_t i;
-  DRIVER *d, *md;
+  DRIVER *d;
 				/* never allow names with newlines */
   if (s = strpbrk (mailbox,"\015\012")) {
     MM_LOG ("Can't create mailbox with such a name",ERROR);
@@ -1022,8 +1015,6 @@ long mail_create (MAILSTREAM *stream,char *mailbox)
     return NIL;
   }
 
-  /* Hack, we should do this better, but it works */
-    for (md = maildrivers; md && strcmp (md->name, "md"); md = md->next);
 				/* see if special driver hack */
   if ((mailbox[0] == '#') && ((mailbox[1] == 'd') || (mailbox[1] == 'D')) &&
       ((mailbox[2] == 'r') || (mailbox[2] == 'R')) &&
@@ -1054,13 +1045,6 @@ long mail_create (MAILSTREAM *stream,char *mailbox)
 	   (((*mailbox == '{') || (*mailbox == '#')) &&
 	    (stream = mail_open (NIL,mailbox,OP_PROTOTYPE | OP_SILENT))))
     d = stream->dtb;
-  else if(mailbox[0] == '#'
-	&& (mailbox[1] == 'm' || mailbox[1] == 'M')
-	&& (mailbox[2] == 'd' || mailbox[2] == 'D'
-	    || mailbox[2] == 'c' || mailbox[2] == 'C')
-	&& mailbox[3] == '/'
-	&& mailbox[4] != '\0')
-     return (*md->create)(stream, mailbox);
   else if ((*mailbox != '{') && (ts = default_proto (NIL))) d = ts->dtb;
   else {			/* failed utterly */
     sprintf (tmp,"Can't create mailbox %.80s: indeterminate format",mailbox);
@@ -3368,13 +3352,13 @@ unsigned long mail_filter (char *text,unsigned long len,STRINGLIST *lines,
 			   long flags)
 {
   STRINGLIST *hdrs;
-  int notfound, fix = text[len - 1] == '\0';
+  int notfound;
   unsigned long i;
   char c,*s,*e,*t,tmp[MAILTMPLEN];
   char *src = text;
   char *dst = src;
   char *end = text + len;
-  text[fix ? len - 1 : len] = '\012';	/* guard against running off buffer */
+  text[len] = '\012';		/* guard against running off buffer */
   while (src < end) {		/* process header */
 				/* slurp header line name */
     for (s = src,e = s + MAILTMPLEN - 1,e = (e < end ? e : end),t = tmp;
@@ -3413,10 +3397,6 @@ unsigned long mail_filter (char *text,unsigned long len,STRINGLIST *lines,
     }
   }
   *dst = '\0';			/* tie off destination */
-  if(fix){
-	text[len] = '\012';
-	text[len-1] = '\0';
-  }
   return dst - text;
 }
 
@@ -6141,15 +6121,6 @@ unsigned int mail_lookup_auth_name (char *mechanism,long flags)
       return i;
   return 0;
 }
-/* Client side callback warning to delete wrong password
- * 
- */
-void delete_password(NETMBX *mb, char *user)
-{
-  deletepwd_t ep = mail_parameters(NULL, GET_ERASEPASSWORD, NULL);
-  if (ep) (ep)(mb, user);
-}
-
 
 /* Standard TCP/IP network driver */
 
