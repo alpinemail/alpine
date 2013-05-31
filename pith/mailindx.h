@@ -30,6 +30,9 @@ extern void		(*setup_header_widths)(MAILSTREAM *);
 
 
 /* exported prototypes */
+SortOrder      translate (char *, int);
+char	      *find_value (char *, char *, int, INDEXDATA_S *, int);
+void	       setup_threading_display_style (void);
 int	       msgline_hidden(MAILSTREAM *, MSGNO_S *, long, int);
 void	       adjust_cur_to_visible(MAILSTREAM *, MSGNO_S *);
 unsigned long  line_hash(char *);

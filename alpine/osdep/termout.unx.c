@@ -206,6 +206,9 @@ config_screen(struct ttyo **tt)
 void
 init_screen(void)
 {
+    if(ps_global->send_immediately)
+	return;
+
     if(_termcap_init)			/* init using termcap's rule */
       tputs(_termcap_init, 1, outchar);
 
@@ -313,6 +316,9 @@ end_screen(char *message, int exit_val)
 {
     int footer_rows_was_one = 0;
 
+    if(ps_global->send_immediately)
+      return;
+
     if(!panicking()){
 
 	dprint((9, "end_screen called\n"));
@@ -367,7 +373,7 @@ ClearScreen(void)
     _line = 0;	/* clear leaves us at top... */
     _col  = 0;
 
-    if(ps_global->in_init_seq)
+    if(ps_global->in_init_seq || ps_global->send_immediately)
       return;
 
     mark_status_unknown();

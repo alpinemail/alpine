@@ -62,7 +62,8 @@ The evolution continues...
 #include "../pith/tempfile.h"
 #include "../pith/busy.h"
 #include "../pith/ablookup.h"
-
+#include "../pith/copyaddr.h"
+#include "../pith/rules.h"
 
 /*
  * Internal Prototypes
@@ -109,11 +110,12 @@ reply(struct pine *pine_state, ACTION_S *role_arg)
     long        msgno, j, totalm, rflags, *seq = NULL;
     int         i, include_text = 0, times = -1, warned = 0, rv = 0,
 		flags = RSF_QUERY_REPLY_ALL, reply_raw_body = 0;
-    int         rolemsg = 0, copytomsg = 0;
+    int         rolemsg = 0, copytomsg = 0, do_role_early = 0;
     gf_io_t     pc;
     PAT_STATE   dummy;
     REDRAFT_POS_S *redraft_pos = NULL;
     ACTION_S   *role = NULL, *nrole;
+    RULE_RESULT *rule;
 #if	defined(DOS) && !defined(_WINDOWS)
     char *reserve;
 #endif
@@ -138,6 +140,69 @@ reply(struct pine *pine_state, ACTION_S *role_arg)
     if(ps_global->full_header == 2
        && F_ON(F_ENABLE_FULL_HDR_AND_TEXT, ps_global))
       reply_raw_body = 1;
+
+    /* Setup possible role */
+    if(role_arg)
+      role = copy_action(role_arg);
+
+    if(!role && F_ON(F_ENABLE_EDIT_REPLY_INDENT, pine_state)){
+	for(msgno = mn_first_cur(pine_state->msgmap);
+	    msgno > 0L;  msgno = mn_next_cur(pine_state->msgmap)){
+
+	    env = pine_mail_fetchstructure(pine_state->mail_stream,
+					   mn_m2raw(pine_state->msgmap, msgno),
+					   NULL);
+	    if(!env) {
+		q_status_message1(SM_ORDER,3,4,
+			    _("Error fetching message %s. Can't reply to it."),
+				long2string(msgno));
+		goto done_early;
+	    }
+
+	    if(rule = get_result_rule(V_REPLY_INDENT_RULES, FOR_COMPOSE , env)){
+	        RULELIST *list = get_rulelist_from_code(V_REPLY_INDENT_RULES,
+                                                ps_global->rule_list);
+	        RULE_S *prule = get_rule(list, rule->number);
+		if(condition_contains_token(prule->condition, ROLE_TOKEN))
+		  do_role_early++;
+		if(rule->result)
+		  fs_give((void **)&rule->result);
+		fs_give((void **)&rule);
+	    }
+	}
+    }
+
+    if(do_role_early){
+	rflags = ROLE_REPLY;
+	if(nonempty_patterns(rflags, &dummy)){
+	    /* setup default role */
+	    nrole = NULL;
+	    j = mn_first_cur(pine_state->msgmap);
+	    do {
+		role = nrole;
+		nrole = set_role_from_msg(pine_state, rflags,
+					  mn_m2raw(pine_state->msgmap, j),
+					  NULL);
+	    } while(nrole && (!role || nrole == role)
+		    && (j=mn_next_cur(pine_state->msgmap)) > 0L);
+
+	    if(!role || nrole == role)
+	      role = nrole;
+	    else
+	      role = NULL;
+
+	    if(confirm_role(rflags, &role))
+	      role = combine_inherited_role(role);
+	    else{				/* cancel reply */
+		role = NULL;
+		cmd_cancelled("Reply");
+		goto done_early;
+	    }
+	}
+    }
+
+    if (role)
+	ps_global->role = cpystr(role->nick); /* remember the role */
 
     /*
      * We may have to loop through first to figure out what default
@@ -230,7 +295,7 @@ reply(struct pine *pine_state, ACTION_S *role_arg)
 	if(!times){		/* only first time */
 	    char *p = cpystr(prefix);
 
-	    if((include_text=reply_text_query(pine_state,totalm,&prefix)) < 0)
+	    if((include_text=reply_text_query(pine_state,totalm,env,&prefix)) < 0)
 	      goto done_early;
 	    
 	    /* edited prefix? */
@@ -286,8 +351,18 @@ reply(struct pine *pine_state, ACTION_S *role_arg)
 		outgoing->subject = cpystr("Re: several messages");
 	    }
 	}
-	else
-	  outgoing->subject = reply_subject(env->subject, NULL, 0);
+	else{
+	   RULE_RESULT *rule;
+	   rule = get_result_rule(V_RESUB_RULES,FOR_RESUB|FOR_TRIM , env);
+	   if (rule){
+	     outgoing->subject = reply_subject(rule->result, NULL, 0);
+	     if (rule->result)
+	        fs_give((void **)&rule->result);
+	     fs_give((void **)&rule);
+	   }
+	   else
+	       outgoing->subject = reply_subject(env->subject, NULL, 0);
+	}
     }
 
     /* fill reply header */
@@ -306,13 +381,15 @@ reply(struct pine *pine_state, ACTION_S *role_arg)
     if(sp_expunge_count(pine_state->mail_stream))	/* cur msg expunged */
       goto done_early;
 
-    /* Setup possible role */
-    if(role_arg)
-      role = copy_action(role_arg);
+    if (ps_global->reply.role_chosen){
+      if(role_arg)
+        free_action(&role);
+      role = ps_global->reply.role_chosen;
+    }
 
-    if(!role){
+    if(!do_role_early){
 	rflags = ROLE_REPLY;
-	if(nonempty_patterns(rflags, &dummy)){
+	if(!ps_global->reply.role_chosen && nonempty_patterns(rflags, &dummy)){
 	    /* setup default role */
 	    nrole = NULL;
 	    j = mn_first_cur(pine_state->msgmap);
@@ -548,7 +625,7 @@ reply(struct pine *pine_state, ACTION_S *role_arg)
 
 	    if(orig_body == NULL || orig_body->type == TYPETEXT || reply_raw_body) {
 		reply_delimiter(env, role, pc);
-		if(F_ON(F_INCLUDE_HEADER, pine_state))
+		if(ps_global->reply.inchdr)
 		  reply_forward_header(pine_state->mail_stream,
 				       mn_m2raw(pine_state->msgmap,msgno),
 				       NULL, env, pc, prefix);
@@ -567,7 +644,7 @@ reply(struct pine *pine_state, ACTION_S *role_arg)
 		   && orig_body->nested.part->body.type == TYPETEXT) {
 		    /*---- First part of the message is text -----*/
 		    reply_delimiter(env, role, pc);
-		    if(F_ON(F_INCLUDE_HEADER, pine_state))
+		    if(ps_global->reply.inchdr)
 		      reply_forward_header(pine_state->mail_stream,
 					   mn_m2raw(pine_state->msgmap,
 						    msgno),
@@ -720,6 +797,9 @@ reply(struct pine *pine_state, ACTION_S *role_arg)
 
     if(prefix)
       fs_give((void **)&prefix);
+
+    if (ps_global->role)
+	fs_give((void **)&ps_global->role);
 
     if(fcc)
       fs_give((void **) &fcc);
@@ -876,7 +956,8 @@ confirm_role(long int rflags, ACTION_S **role)
 
 	prompt[sizeof(prompt)-1] = '\0';
 
-	cmd = radio_buttons(prompt, -FOOTER_ROWS(ps_global), ekey,
+	cmd = ps_global->send_immediately ? 'n' :
+		radio_buttons(prompt, -FOOTER_ROWS(ps_global), ekey,
 			    'y', 'x', help, RB_NORM);
 
 	switch(cmd){
@@ -1003,54 +1084,159 @@ reply_using_replyto_query(void)
  *	     0 if we're NOT to include the text
  *	    -1 on cancel or error
  */
+#define MAX_REPLY_OPTIONS 8
 int
-reply_text_query(struct pine *ps, long int many, char **prefix)
+reply_text_query(struct pine *ps, long int many, ENVELOPE *env, char **prefix)
 {
     int ret, edited = 0;
-    static ESCKEY_S rtq_opts[] = {
-	{'y', 'y', "Y", N_("Yes")},
-	{'n', 'n', "N", N_("No")},
-	{-1, 0, NULL, NULL},	                  /* may be overridden below */
-	{-1, 0, NULL, NULL}
-    };
+    static ESCKEY_S compose_style[MAX_REPLY_OPTIONS];
+    int	ekey_num;
+    int	orig_sf;
+
+    orig_sf = *prefix && **prefix ? (F_OFF(F_QUELL_FLOWED_TEXT, ps)
+		&& F_OFF(F_STRIP_WS_BEFORE_SEND, ps)
+		&& (strcmp(*prefix, "> ") == 0
+			|| strcmp(*prefix, ">") == 0)) : 0;
+
+    ps_global->reply.no_send_flowed = !orig_sf;
+    ps_global->reply.role_chosen = NULL;
+    ps_global->reply.strip = ps->full_header == 0
+		&& (F_ON(F_ENABLE_STRIP_SIGDASHES, ps)
+			|| F_ON(F_ENABLE_SIGDASHES, ps));
+    ps_global->reply.attach = F_ON(F_ATTACHMENTS_IN_REPLY, ps);
+    ps_global->reply.inchdr = F_ON(F_INCLUDE_HEADER, ps);
 
     if(F_ON(F_AUTO_INCLUDE_IN_REPLY, ps)
-       && F_OFF(F_ENABLE_EDIT_REPLY_INDENT, ps))
+        && F_OFF(F_ENABLE_EDIT_REPLY_INDENT, ps) && F_OFF(F_ALT_REPLY_MENU,ps))
       return(1);
 
-    while(1){
-	if(many > 1L)
-	  /* TRANSLATORS: The final three %s's can probably be safely ignored */
-	  snprintf(tmp_20k_buf, SIZEOF_20KBUF, _("Include %s original messages in Reply%s%s%s? "),
-		comatose(many),
+    while(1){ 
+	  /* TRANSLATORS: The final five %s's can probably be safely ignored */
+	snprintf(tmp_20k_buf, SIZEOF_20KBUF, _("Include %s%soriginal message%s in Reply%s%s%s%s%s%s? "),
+		(many > 1L) ? comatose(many) : "",
+		(many > 1L) ? " " : "",
+		(many > 1L) ? "s" : "",
+		(many > 1L) ? "s" : "",
 		F_ON(F_ENABLE_EDIT_REPLY_INDENT, ps) ? " (using \"" : "",
 		F_ON(F_ENABLE_EDIT_REPLY_INDENT, ps) ? *prefix : "",
-		F_ON(F_ENABLE_EDIT_REPLY_INDENT, ps) ? "\")" : "");
-	else
-	  snprintf(tmp_20k_buf, SIZEOF_20KBUF, _("Include original message in Reply%s%s%s? "),
-		F_ON(F_ENABLE_EDIT_REPLY_INDENT, ps) ? " (using \"" : "",
-		F_ON(F_ENABLE_EDIT_REPLY_INDENT, ps) ? *prefix : "",
+		ps_global->reply.role_chosen ? "\" and role \"" : "",
+		ps_global->reply.role_chosen ? ps_global->reply.role_chosen->nick : "",
 		F_ON(F_ENABLE_EDIT_REPLY_INDENT, ps) ? "\")" : "");
 
-	if(F_ON(F_ENABLE_EDIT_REPLY_INDENT, ps)){
-	    rtq_opts[2].ch    = ctrl('R');
-	    rtq_opts[2].rval  = 'r';
-	    rtq_opts[2].name  = "^R";
-	    rtq_opts[2].label = N_("Edit Indent String");
+	ekey_num = 0;
+	compose_style[ekey_num].ch    = 'y';
+	compose_style[ekey_num].rval  = 'y';
+	compose_style[ekey_num].name  = "Y";
+	compose_style[ekey_num++].label = N_("Yes");
+
+	compose_style[ekey_num].ch    = 'n';
+	compose_style[ekey_num].rval  = 'n';
+	compose_style[ekey_num].name  = "N";
+	compose_style[ekey_num++].label = N_("No");
+
+	if (F_ON(F_ENABLE_EDIT_REPLY_INDENT, ps)){
+	   compose_style[ekey_num].ch      = ctrl('R');
+	   compose_style[ekey_num].rval    = 'r';
+	   compose_style[ekey_num].name    = "^R";
+	   compose_style[ekey_num++].label = N_("Edit Indent String");
 	}
-	else
-	  rtq_opts[2].ch    = -1;
+
+	/***** Alternate Reply Menu ********/
+
+	if (F_ON(F_ALT_REPLY_MENU, ps)){
+	     unsigned which_help;
+
+	   if (F_ON(F_ENABLE_STRIP_SIGDASHES, ps) ||
+		F_ON(F_ENABLE_SIGDASHES, ps)){
+	      compose_style[ekey_num].ch      = 's';
+	      compose_style[ekey_num].rval    = 'S';
+	      compose_style[ekey_num].name    = "S";
+	      compose_style[ekey_num++].label = ps_global->reply.strip 
+						? N_("No Strip"): N_("Strip Sig");
+	   }
+
+	   compose_style[ekey_num].ch      = 'r';
+	   compose_style[ekey_num].rval    = 'R';
+	   compose_style[ekey_num].name    = "R";
+	   compose_style[ekey_num++].label = N_("Set Role");
+
+	   if(orig_sf){
+	      compose_style[ekey_num].ch      = 'f';
+	      compose_style[ekey_num].rval    = 'F';
+	      compose_style[ekey_num].name    = "F";
+	      compose_style[ekey_num++].label = ps_global->reply.no_send_flowed 
+						? N_("Quell Flow") : N_("Send Flowd");
+	   }
+
+	   compose_style[ekey_num].ch      = 'a';
+	   compose_style[ekey_num].rval    = 'A';
+	   compose_style[ekey_num].name    = "A";
+	   compose_style[ekey_num++].label = ps_global->reply.attach 
+						? N_("No Attach"): N_("Inc Attac");
+
+	   compose_style[ekey_num].ch      = 'h';
+	   compose_style[ekey_num].rval    = 'H';
+	   compose_style[ekey_num].name    = "H";
+	   compose_style[ekey_num++].label = ps_global->reply.inchdr 
+						? N_("No Header") : N_("Inc Head");
+
+	}
+	compose_style[ekey_num].ch    = -1;
+	compose_style[ekey_num].name  = NULL;
+	compose_style[ekey_num].label = NULL;
+
+	/***** End Alt Reply Menu  *********/
 
 	switch(ret = radio_buttons(tmp_20k_buf, 
 				   ps->ttyo->screen_rows > 4
 				     ? -FOOTER_ROWS(ps_global) : -1,
-				   rtq_opts,
+				   compose_style,
 				   (edited || F_ON(F_AUTO_INCLUDE_IN_REPLY, ps))
 				       ? 'y' : 'n',
 				   'x', NO_HELP, RB_SEQ_SENSITIVE)){
 	  case 'x':
 	    cmd_cancelled("Reply");
 	    return(-1);
+
+	  case 'F':
+		ps_global->reply.no_send_flowed = (ps_global->reply.no_send_flowed + 1) % 2;
+		break;
+
+	  case 'S':
+		ps_global->reply.strip = (ps_global->reply.strip + 1) % 2;
+	   break;
+
+	  case 'A':
+		ps_global->reply.attach = (ps_global->reply.attach + 1) % 2;
+	   break;
+
+	  case 'H':
+		ps_global->reply.inchdr = (ps_global->reply.inchdr + 1) % 2;
+	   break;
+
+
+	  case 'R':
+	  {
+           void (*prev_screen)(struct pine *) = ps->prev_screen,
+               (*redraw)(void) = ps->redrawer;
+           ps->redrawer = NULL;
+           ps->next_screen = SCREEN_FUN_NULL;
+           if(role_select_screen(ps, &ps_global->reply.role_chosen, 1) < 0){
+             cmd_cancelled("Reply");
+             ps->next_screen = prev_screen;
+             ps->redrawer = redraw;
+	     if (ps->redrawer)
+		(*ps->redrawer)();
+	     continue;
+           }
+           ps->next_screen = prev_screen;
+           ps->redrawer = redraw;
+           if(ps_global->reply.role_chosen)
+              ps_global->reply.role_chosen = combine_inherited_role(ps_global->reply.role_chosen);
+	  }
+	  if (ps->redrawer)
+	     (*ps->redrawer)();
+	  break;
 
 	  case 'r':
 	    if(prefix && *prefix){
@@ -1075,6 +1261,12 @@ reply_text_query(struct pine *ps, long int many, char **prefix)
 			if(flags & OE_USER_MODIFIED){
 			    fs_give((void **)prefix);
 			    *prefix = removing_quotes(cpystr(buf));
+			    orig_sf = *prefix && **prefix ?
+					   (F_OFF(F_QUELL_FLOWED_TEXT, ps)
+					&& F_OFF(F_STRIP_WS_BEFORE_SEND, ps)
+					&& (strcmp(*prefix, "> ") == 0
+					|| strcmp(*prefix, ">") == 0)) : 0;
+			    ps_global->reply.no_send_flowed = !orig_sf;
 			    edited = 1;
 			}
 
@@ -1471,9 +1663,14 @@ forward(struct pine *ps, ACTION_S *role_arg)
 	}
     }
 
-    if(role)
+    if (ps_global->role)
+      fs_give((void **)&ps_global->role);
+
+    if(role){
       q_status_message1(SM_ORDER, 3, 4,
 			_("Forwarding using role \"%s\""), role->nick);
+      ps_global->role = cpystr(role->nick);
+    }
 
     if(role && role->template){
 	char *filtered;
@@ -1705,6 +1902,7 @@ forward(struct pine *ps, ACTION_S *role_arg)
 #if	defined(DOS) && !defined(_WINDOWS)
     free((void *)reserve);
 #endif
+    outgoing->sparep = env && env->from ? copyaddr(env->from) : NULL;
     pine_send(outgoing, &body, "FORWARD MESSAGE",
 	      role, NULL, &reply, redraft_pos,
 	      NULL, NULL, 0);
@@ -2457,6 +2655,8 @@ display_message_for_pico(int x)
 {
     int rv;
     
+    if(ps_global->send_immediately)
+      return 0;
     clear_cursor_pos();			/* can't know where cursor is */
     mark_status_dirty();		/* don't count on cached text */
     fix_windsize(ps_global);

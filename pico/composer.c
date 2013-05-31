@@ -1872,6 +1872,8 @@ AppendAttachment(char *fn, char *sz, char *cmt)
     }
 
     UpdateHeader(0);
+    if(sendnow)
+	return(status !=0);
     PaintHeader(COMPOSER_TOP_LINE, status != 0);
     PaintBody(1);
     return(status != 0);
@@ -2015,7 +2017,7 @@ LineEdit(int allowedit, UCS *lastch)
 	tbufp = &strng[ods.p_len];
 
 	if(VALID_KEY(ch)){			/* char input */
-            /*
+insert_char:/*
              * if we are allowing editing, insert the new char
              * end up leaving tbufp pointing to newly
              * inserted character in string, and offset to the
@@ -2095,6 +2097,13 @@ LineEdit(int allowedit, UCS *lastch)
         }
         else {					/* interpret ch as a command */
             switch (ch = normalize_cmd(ch, ckm, 2)) {
+	      case (CTRL|'\\') :
+		if (ch = GetAccent())
+		  goto insert_char;
+		else
+		  clearcursor();
+	      break;
+
               case (CTRL|KEY_LEFT):     /* word skip left */
                 if(ods.p_ind > 0)       /* Scoot one char left if possible */
                   ods.p_ind--;
@@ -3362,6 +3371,9 @@ display_delimiter(int state)
 {
     UCS    *bufp, *buf;
 
+    if (sendnow)
+	return;
+
     if(ComposerTopLine - 1 >= BOTTOM())		/* silently forget it */
       return;
 
@@ -3417,6 +3429,9 @@ InvertPrompt(int entry, int state)
     UCS *buf, *bufp;
     UCS *end;
     int  i;
+
+    if (sendnow)
+      return(TRUE);
 
     buf = utf8_to_ucs4_cpystr(headents[entry].prompt);	/* fresh prompt paint */
     if(!buf)
@@ -4373,6 +4388,9 @@ is_blank(int row, int col, int n)
 void
 ShowPrompt(void)
 {
+    if (sendnow)
+	return;
+
     if(headents[ods.cur_e].key_label){
 	menu_header[TO_KEY].name  = "^T";
 	menu_header[TO_KEY].label = headents[ods.cur_e].key_label;

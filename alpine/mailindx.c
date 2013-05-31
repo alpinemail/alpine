@@ -229,6 +229,8 @@ mail_index_screen(struct pine *state)
     state->prev_screen = mail_index_screen;
     state->next_screen = SCREEN_FUN_NULL;
 
+    setup_threading_display_style();
+
     if(THRD_AUTO_VIEW()
        && sp_viewing_a_thread(state->mail_stream)
        && state->view_skipped_index
@@ -240,10 +242,14 @@ mail_index_screen(struct pine *state)
 
     adjust_cur_to_visible(state->mail_stream, state->msgmap);
 
+    strcpy(state->screen_name,"index");
+
     if(THRD_INDX())
       thread_index_screen(state);
     else
       index_index_screen(state);
+
+    strcpy(state->screen_name,"unknown");
 }
 
 
@@ -561,6 +567,7 @@ index_lister(struct pine *state, CONTEXT_S *cntxt, char *folder, MAILSTREAM *str
 
             /*---------- Scroll line up ----------*/
 	  case MC_CHARUP :
+previtem:
 	    (void) process_cmd(state, stream, msgmap, MC_PREVITEM,
 			       (style == MsgIndex
 				|| style == MultiMsgIndex
@@ -578,6 +585,7 @@ index_lister(struct pine *state, CONTEXT_S *cntxt, char *folder, MAILSTREAM *str
 
             /*---------- Scroll line down ----------*/
 	  case MC_CHARDOWN :
+nextitem:
 	    /*
 	     * Special Page framing handling here.  If we
 	     * did something that should scroll-by-a-line, frame
@@ -795,6 +803,7 @@ view_a_thread:
 
 
 	  case MC_THRDINDX :
+mc_thrdindx:
 	    msgmap->top = msgmap->top_after_thrd;
 	    if(unview_thread(state, stream, msgmap)){
 		state->next_screen = mail_index_screen;
@@ -845,7 +854,7 @@ view_a_thread:
 			      && mp.col == id.plus_col
 			      && style != ThreadIndex){
 			      collapse_or_expand(state, stream, msgmap,
-						 mn_get_cur(msgmap));
+						 mn_get_cur(msgmap), 1);
 			  }
 			  else if (mp.doubleclick){
 			      if(mp.button == M_BUTTON_LEFT){
@@ -954,8 +963,104 @@ view_a_thread:
 
 
 	  case MC_COLLAPSE :
-	    thread_command(state, stream, msgmap, ch, -FOOTER_ROWS(state));
+	    thread_command(state, stream, msgmap, ch, -FOOTER_ROWS(state), 1);
 	    break;
+
+	  case MC_CTHREAD  :
+	     if (SEP_THRDINDX())
+	        goto mc_thrdindx;
+	   else
+	     if (THREADING()){
+	        if (any_messages(ps_global->msgmap, NULL,
+							"to collapse a thread"))
+		   collapse_thread(state, stream,msgmap, 1);
+	     }
+	     else
+		q_status_message(SM_ORDER, 0, 1,
+		  "Command available in threaded mode only");
+	  break;
+
+	  case MC_OTHREAD  :
+	     if (SEP_THRDINDX())
+		goto view_a_thread;
+	  else
+	     if (THREADING()){
+		if (any_messages(ps_global->msgmap, NULL, "to expand a thread"))
+		   expand_thread(state, stream,msgmap, 1);
+	     }
+	     else
+		q_status_message(SM_ORDER, 0, 1,
+				"Command available in threaded mode only");
+	     break;
+
+	    case MC_NEXTHREAD:
+	    case MC_PRETHREAD:
+	     if (THRD_INDX()){
+		if (cmd == MC_NEXTHREAD)
+		   goto nextitem;
+		else
+		   goto previtem;
+	     }
+	     else
+		if (THREADING()){
+		   if (any_messages(ps_global->msgmap, NULL,
+						"to move to other thread"))
+		      move_thread(state, stream, msgmap,
+						cmd == MC_NEXTHREAD ? 1 : -1);
+		}
+		else
+		   q_status_message(SM_ORDER, 0, 1,
+			"Command available in threaded mode only");
+	     break;
+
+          case MC_KOLAPSE:
+          case MC_EXPTHREAD:
+              if (SEP_THRDINDX()){
+                      q_status_message(SM_ORDER, 0, 1,
+                              "Command not available in this screen");
+              }
+              else{
+              if (THREADING()){
+                 if (any_messages(ps_global->msgmap, NULL,
+                           cmd == MC_KOLAPSE ? "to collapse" : "to expand"))
+                    kolapse_thread(state, stream, msgmap,
+                              (cmd == MC_KOLAPSE) ? '[' : ']', 1);
+              }
+              else
+                  q_status_message(SM_ORDER, 0, 1,
+                       "Command available in threaded mode only");
+            }
+          break;
+
+        case MC_DELTHREAD:
+           if (THREADING()){
+              if (any_messages(ps_global->msgmap, NULL, "to delete"))
+                    cmd_delete_thread(state, stream, msgmap);
+           }
+           else
+              q_status_message(SM_ORDER, 0, 1,
+                       "Command available in threaded mode only");
+          break;
+
+        case MC_UNDTHREAD:
+           if (THREADING()){
+              if (any_messages(ps_global->msgmap, NULL, "to undelete"))
+                  cmd_undelete_thread(state, stream, msgmap);
+           }
+           else
+              q_status_message(SM_ORDER, 0, 1,
+                       "Command available in threaded mode only");
+        break;
+
+        case MC_SELTHREAD:
+           if (THREADING()){
+              if (any_messages(ps_global->msgmap, NULL, "to undelete"))
+                  cmd_select_thread(state, stream, msgmap);
+           }
+           else
+              q_status_message(SM_ORDER, 0, 1,
+                       "Command available in threaded mode only");
+        break;
 
           case MC_DELETE :
           case MC_UNDELETE :
@@ -977,13 +1082,12 @@ view_a_thread:
 		  if(rawno)
 		    thrd = fetch_thread(stream, rawno);
 
-		  collapsed = thrd && thrd->next
-			      && get_lflag(stream, NULL, rawno, MN_COLL);
+		collapsed = thread_is_kolapsed(ps_global, stream, msgmap, rawno);
 	      }
 
 	      if(collapsed){
 		  thread_command(state, stream, msgmap,
-				 ch, -FOOTER_ROWS(state));
+				 ch, -FOOTER_ROWS(state),1);
 		  /* increment current */
 		  if(cmd == MC_DELETE){
 		      advance_cur_after_delete(state, stream, msgmap,
@@ -2675,6 +2779,7 @@ top_ent_calc(MAILSTREAM *stream, MSGNO_S *msgs, long int at_top, long int lines_
 		      n = mn_raw2m(msgs, thrd->rawno);
 
 		    while(thrd){
+			unsigned long branch;
 			if(!msgline_hidden(stream, msgs, n, 0)
 			   && (++m % lines_per_page) == 1L)
 			  t = n;
@@ -2743,11 +2848,12 @@ top_ent_calc(MAILSTREAM *stream, MSGNO_S *msgs, long int at_top, long int lines_
 
 	    /* n is the end of this thread */
 	    while(thrd){
+		unsigned long next = 0L, branch = 0L;
 		n = mn_raw2m(msgs, thrd->rawno);
-		if(thrd->branch)
-		  thrd = fetch_thread(stream, thrd->branch);
-		else if(thrd->next)
-		  thrd = fetch_thread(stream, thrd->next);
+		if(branch = get_branch(stream,thrd))
+		  thrd = fetch_thread(stream, branch);
+		else if(next = get_next(stream,thrd))
+		  thrd = fetch_thread(stream, next);
 		else
 		  thrd = NULL;
 	    }
@@ -2855,7 +2961,7 @@ warn_other_cmds(void)
 
 void
 thread_command(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap,
-	       UCS preloadkeystroke, int q_line)
+	       UCS preloadkeystroke, int q_line, int display)
 {
     PINETHRD_S   *thrd = NULL;
     unsigned long rawno, save_branch;
@@ -2904,7 +3010,7 @@ thread_command(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap,
       cancel_busy_cue(0);
 
     (void ) apply_command(state, stream, msgmap, preloadkeystroke, flags,
-			  q_line);
+			  q_line, display);
 
     /* restore the original flags */
     copy_lflags(stream, msgmap, MN_STMP, MN_SLCT);
@@ -3398,7 +3504,7 @@ index_sort_callback(set, order)
     if(set){
 	sort_folder(ps_global->mail_stream, ps_global->msgmap,
 		    order & 0x000000ff,
-		    (order & 0x00000100) != 0, SRT_VRB);
+		    (order & 0x00000100) != 0, SRT_VRB, 1);
 	mswin_beginupdate();
 	update_titlebar_message();
 	update_titlebar_status();

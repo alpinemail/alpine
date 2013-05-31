@@ -131,6 +131,16 @@ GetKey(void)
 {
     UCS ch, status, cc;
 
+    if(sendnow){
+	ch = Pmaster && Pmaster->auto_cmds && *Pmaster->auto_cmds 
+		? *Pmaster->auto_cmds++ : NODATA;
+
+	if (ch >= 0x00 && ch <= 0x1F)
+	      ch = CTRL | (ch+'@');
+
+        return(ch);
+    }
+
     if(!ReadyForKey(FUDGE-5))
       return(NODATA);
 

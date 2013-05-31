@@ -215,6 +215,19 @@ struct key_menu {
 #define	MC_DECRYPT	802
 #define MC_QUOTA	803
 #define MC_ADDHEADER	804
+#define MC_DELTHREAD	805
+#define MC_UNDTHREAD	806
+#define MC_SELTHREAD	807
+#define MC_SSUTHREAD	808
+#define MC_DSUTHREAD	809
+#define MC_USUTHREAD	810
+#define MC_SORTHREAD	811
+#define MC_NEXTHREAD	812
+#define MC_KOLAPSE	813
+#define MC_EXPTHREAD	814
+#define MC_PRETHREAD	815
+#define MC_CTHREAD	816
+#define MC_OTHREAD	817
 
 /*
  * Some standard Key/Command Bindings 

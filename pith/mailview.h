@@ -30,6 +30,12 @@
 #include "../pith/color.h"
 
 
+typedef struct IVAL {
+   int start;
+   int end;
+   struct IVAL *next;
+} IVAL_S;
+
 /* format_message flags */
 #define	FM_DISPLAY	  0x0001	/* result is headed for display		*/
 #define	FM_NEW_MESS	  0x0002	/* a new message so zero out attachment descrip */
@@ -126,6 +132,15 @@ char	*format_body(long int, BODY *, HANDLE_S **, HEADER_S *, int, int, gf_io_t);
 int	 url_hilite(long, char *, LT_INS_S **, void *);
 int	 handle_start_color(char *, size_t, int *, int);
 int	 handle_end_color(char *, size_t, int *);
+IVAL_S	*compute_interval(char *,  int);
+void	 remove_spaces_ival(IVAL_S **, char *);
+void	 interval_free(IVAL_S **);
+void	 regex_pattern(char **);
+LT_INS_S  **insert_color_special_text(LT_INS_S **, char **, IVAL_S *,
+                                                       int, COLOR_PAIR *);
+int	    any_color_in_string(char *);
+int	    length_color(char *, int);
+int	    color_this_text(long, char *, LT_INS_S **, void *);
 
 /*
  * BUG:  BELOW IS UNIX/PC ONLY since config'd browser means nothing to webpine
@@ -142,6 +157,7 @@ COLOR_PAIR *hdr_color(char *, char *, SPEC_COLOR_S *);
 char	   *display_parameters(PARAMETER *);
 char	   *pine_fetch_header(MAILSTREAM *, long, char *, char **, long);
 int         color_signature(long, char *, LT_INS_S **, void *);
+int	    select_quote(long, char *, LT_INS_S **, void *);
 int	    scroll_handle_start_color(char *, size_t, int *);
 int	    scroll_handle_end_color(char *, size_t, int *, int);
 int         width_at_this_position(unsigned char *, unsigned long);

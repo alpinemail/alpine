@@ -61,7 +61,7 @@ KEYTAB  keytab[NBINDS] = {
 #ifdef	MOUSE
 	{KEY_MOUSE,		mousepress},
 #ifndef _WINDOWS
-	{CTRL|'\\',		toggle_xterm_mouse},
+	{CTRL|'|',		toggle_xterm_mouse},
 #endif
 #endif
 	{CTRL|'A',		gotobol},
@@ -100,7 +100,9 @@ KEYTAB  keytab[NBINDS] = {
 	{CTRL|KEY_HOME,	gotobob},
 	{CTRL|KEY_END,	gotoeob},
 	{0x7F,			backdel},
-	{0,			NULL}
+        {CTRL|'\\',             pineaccent},
+	{0,
+NULL}
 };
 
 
@@ -123,7 +125,7 @@ KEYTAB  pkeytab[NBINDS] = {
 #ifdef	MOUSE
 	{KEY_MOUSE,		mousepress},
 #ifndef _WINDOWS
-	{CTRL|'\\',		toggle_xterm_mouse},
+	{CTRL|'|',		toggle_xterm_mouse},
 #endif
 #endif
 	{CTRL|'A',		gotobol},

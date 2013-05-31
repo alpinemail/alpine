@@ -105,6 +105,7 @@ init_debug(void)
 
     if(debugfile != NULL){
 	char rev[128];
+	extern char plevstamp[];
 	time_t now = time((time_t *)0);
 	if(ps_global->debug_flush)
 	  setvbuf(debugfile, (char *)NULL, _IOLBF, BUFSIZ);
@@ -126,6 +127,8 @@ init_debug(void)
 	       SYSTYPE ? SYSTYPE : "?",
 	       get_alpine_revision_string(rev, sizeof(rev)),
 	       ctime(&now)));
+
+	dprint((0, "This version uses all.patch:\n%s\n\n", plevstamp));
 
 	dprint((0, "Starting after the reading_pinerc calls, the data in this file should\nbe encoded as UTF-8. Before that it will be in the user's native charset.\n"));
 	if(dfile && (debug > DEFAULT_DEBUG ||

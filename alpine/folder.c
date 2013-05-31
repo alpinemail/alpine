@@ -247,7 +247,7 @@ folder_screen(struct pine *ps)
     dprint((1, "=== folder_screen called ====\n"));
     mailcap_free(); /* free resources we won't be using for a while */
     ps->next_screen = SCREEN_FUN_NULL;
-
+    strcpy(ps->screen_name, "folder");
     /* Initialize folder state and dispatches */
     memset(&fs, 0, sizeof(FSTATE_S));
     fs.context		= cntxt;
@@ -344,6 +344,7 @@ folder_screen(struct pine *ps)
       pine_mail_close(*fs.cache_streamp);
 
     ps->prev_screen = folder_screen;
+    strcpy(ps->screen_name, "unknown");
 }
 
 
@@ -6342,11 +6343,17 @@ folder_delimiter(char *folder)
 char *
 next_folder(MAILSTREAM **streamp, char *next, size_t nextlen, char *current, CONTEXT_S *cntxt, long int *find_recent, int *did_cancel)
 {
-    int       index, recent = 0, failed_status = 0, try_fast;
+    int       index, recent = 0, failed_status = 0, try_fast, done = 0;
     char      prompt[128];
     FOLDER_S *f = NULL;
     char      tmp[MAILTMPLEN];
-
+    char *test_current = cpystr(current);
+    int  cur_indx  = folder_index(ps_global->cur_folder, cntxt, FI_FOLDER);
+    int  loop = !strcmp(next, ps_global->cur_folder) ? 0 :
+              (folder_index(test_current, cntxt, FI_FOLDER) <= cur_indx
+                      ? 1 : 0);
+    int  last = !strcmp(ps_global->cur_folder, ps_global->inbox_name)
+               ? 1 : cur_indx;
 
     /* note: find_folders may assign "stream" */
     build_folder_list(streamp, cntxt, NULL, NULL,
@@ -6357,7 +6364,9 @@ next_folder(MAILSTREAM **streamp, char *next, size_t nextlen, char *current, CON
     if(find_recent)
       *find_recent = 0L;
 
-    for(index = folder_index(current, cntxt, FI_FOLDER) + 1;
+
+find_new_message:
+    for(index = folder_index(test_current, cntxt, FI_FOLDER) + 1;
 	index > 0
 	&& index < folder_total(FOLDERS(cntxt))
 	&& (f = folder_entry(index, FOLDERS(cntxt)))
@@ -6367,6 +6376,11 @@ next_folder(MAILSTREAM **streamp, char *next, size_t nextlen, char *current, CON
 	  MAILSTREAM *stream = NULL;
 	  int         rv, we_cancel = 0, match;
 	  char        msg_buf[MAX_BM+1];
+
+	  if (loop && (index == last)){
+	    done++;
+	    break;
+	  }
 
 	  /* must be a folder and it can't be the current one */
 	  if(ps_global->context_current == ps_global->context_list
@@ -6535,12 +6549,24 @@ next_folder(MAILSTREAM **streamp, char *next, size_t nextlen, char *current, CON
     if(f && (!find_recent || recent)){
 	strncpy(next, FLDR_NAME(f), nextlen);
 	next[nextlen-1] = '\0';
+	done++;
     }
     else if(nextlen > 0)
       *next = '\0';
 
+    if (!done && F_ON(F_AUTO_CIRCULAR_TAB,ps_global)
+       && strcmp(test_current,ps_global->inbox_name)){
+       done++; loop++;
+	if (test_current)
+	   fs_give((void **)&test_current);
+	test_current = cpystr(ps_global->inbox_name);
+	goto find_new_message;
+   }
+
     /* BUG: how can this be made smarter so we cache the list? */
     free_folder_list(cntxt);
+    if (test_current)
+      fs_give((void **)&test_current);
     return((*next) ? next : NULL);
 }
 

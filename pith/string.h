@@ -86,12 +86,14 @@ struct date {
 
 /* exported protoypes */
 char	   *rplstr(char *, size_t, int, char *);
+void	    collspaces(char *);
 void	    sqzspaces(char *);
 void	    sqznewlines(char *);
 void	    removing_leading_white_space(char *);
 void	    removing_trailing_white_space(char *);
 void	    removing_leading_and_trailing_white_space(char *);
 int 	    removing_double_quotes(char *);
+void	    removing_extra_stuff (char *);
 char	   *skip_white_space(char *);
 char	   *skip_to_white_space(char *);
 char	   *removing_quotes(char *);

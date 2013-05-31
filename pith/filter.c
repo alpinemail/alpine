@@ -46,6 +46,7 @@ static char rcsid[] = "$Id: filter.c 1266 2009-07-14 18:39:12Z hubert@u.washingt
 #include "../pith/conf.h"
 #include "../pith/store.h"
 #include "../pith/color.h"
+#include "../pith/osdep/color.h"
 #include "../pith/escapes.h"
 #include "../pith/pipe.h"
 #include "../pith/status.h"
@@ -1375,14 +1376,24 @@ gf_b64_binary(FILTER_S *f, int flg)
 	register unsigned char t = f->t;
 	register int n = (int) f->n;
 	register int state = f->f1;
+	register unsigned char lastc;
 
 	while(GF_GETC(f, c)){
+
+	    lastc = c;
+	    if(f->f2){
+		GF_PUTC(f->next, c);
+		continue;
+	    }
 
 	    if(state){
 		state = 0;
 		if (c != '=') {
-		    gf_error("Illegal '=' in base64 text");
-		    /* NO RETURN */
+		    f->f2++;
+		    GF_PUTC(f->next, c);
+		    q_status_message(SM_ORDER,3,3,
+			_("Warning: Illegal '=' in base64 text"));
+		    continue;
 		}
 	    }
 
@@ -1399,8 +1410,11 @@ gf_b64_binary(FILTER_S *f, int flg)
 			break;
 
 		      default:		/* impossible quantum position */
-			gf_error("Internal base64 decoder error");
-			/* NO RETURN */
+			f->f2++;
+			GF_PUTC(f->next, lastc);
+			q_status_message(SM_ORDER,3,3,
+			_("Warning: Internal base64 decode error"));
+			break;
 		    }
 		}
 	    }
@@ -1441,6 +1455,7 @@ gf_b64_binary(FILTER_S *f, int flg)
 	dprint((9, "-- gf_reset b64_binary\n"));
 	f->n  = 0L;			/* quantum position */
 	f->f1 = 0;			/* state holder: equal seen? */
+	f->f2 = 0;			/* No errors when we start */
     }
 }
 
@@ -7599,6 +7614,7 @@ html_element_comment(FILTER_S *f, char *s)
 		char	*p, buf[MAILTMPLEN];
 		ADDRESS *adr;
 		extern char datestamp[];
+		extern char plevstamp[];
 
 		if(!strcmp(s = removing_quotes(s + 4), "ALPINE_VERSION")){
 		    p = ALPINE_VERSION;
@@ -7611,6 +7627,9 @@ html_element_comment(FILTER_S *f, char *s)
 		}
 		else if(!strcmp(s, "ALPINE_COMPILE_DATE")){
 		    p = datestamp;
+		}
+		else if(!strcmp(s, "ALPINE_PATCHLEVEL")){
+		    p = plevstamp;
 		}
 		else if(!strcmp(s, "ALPINE_TODAYS_DATE")){
 		    rfc822_date(p = buf);
@@ -9167,6 +9186,11 @@ typedef struct wrap_col_s {
 		margin_r,
 		indent;
     char	special[256];
+    long	curlinenum;	/* current line number */
+    int		curqstrpos;	/* current position in quote string */
+    long	linenum;	/* line number */
+    long	qstrlen;	/* multiples of 100 */
+    char      **qstrln;		/* qstrln[i] = quote string line i - 1 */
 } WRAP_S;
 
 #define	WRAP_MARG_L(F)	(((WRAP_S *)(F)->opt)->margin_l)
@@ -9208,6 +9232,12 @@ typedef struct wrap_col_s {
 #define	WRAP_COLOR(F)	(((WRAP_S *)(F)->opt)->color)
 #define	WRAP_COLOR_SET(F)  ((WRAP_COLOR(F)) && (WRAP_COLOR(F)->fg[0]))
 #define	WRAP_SPACES(F)	(((WRAP_S *)(F)->opt)->spaces)
+#define	WRAP_CURLINE(F)	(((WRAP_S *)(F)->opt)->curlinenum)
+#define	WRAP_CURPOS(F)	(((WRAP_S *)(F)->opt)->curqstrpos)
+#define	WRAP_LINENUM(F)	(((WRAP_S *)(F)->opt)->linenum)
+#define	WRAP_QSTRLEN(F)	(((WRAP_S *)(F)->opt)->qstrlen)
+#define	WRAP_QSTRN(F)	(((WRAP_S *)(F)->opt)->qstrln)
+#define	WRAP_QSTR(F, N)	(((WRAP_S *)(F)->opt)->qstrln[(N)])
 #define	WRAP_PUTC(F,C,W) {						\
 			    if((F)->linep == WRAP_LASTC(F)){		\
 				size_t offset = (F)->linep - (F)->line;	\
@@ -9285,6 +9315,8 @@ gf_wrap(FILTER_S *f, int flg)
 	      case CCR :				/* CRLF or CR in text ? */
 		state = BOL;				/* either way, handle start */
 
+		WRAP_CURLINE(f)++;
+		WRAP_CURPOS(f) = 0;
 		if(WRAP_FLOW(f)){
 		    /* wrapped line? */
 		    if(f->f2 == 0 && WRAP_SPC_LEN(f) && WRAP_TRL_SPC(f)){
@@ -9378,7 +9410,11 @@ gf_wrap(FILTER_S *f, int flg)
 
 	      case BOL :
 		if(WRAP_FLOW(f)){
-		    if(c == '>'){
+		    if(WRAP_CURLINE(f) < WRAP_QSTRLEN(f) 
+			&& WRAP_QSTR(f, WRAP_CURLINE(f)) 
+			&& WRAP_QSTR(f, WRAP_CURLINE(f))[WRAP_CURPOS(f)]
+			&& WRAP_QSTR(f, WRAP_CURLINE(f))[WRAP_CURPOS(f)] == c){
+			WRAP_CURPOS(f)++;
 			WRAP_FL_QC(f) = 1;		/* init it */
 			state = FL_QLEV;		/* go collect it */
 		    }
@@ -9392,7 +9428,16 @@ gf_wrap(FILTER_S *f, int flg)
 			}
 
 			/* quote level change implies new paragraph */
-			if(WRAP_FL_QD(f)){
+			if (WRAP_CURLINE(f) > 0 
+			&& WRAP_CURLINE(f) < WRAP_QSTRLEN(f)
+			&& (WRAP_QSTR(f, WRAP_CURLINE(f)) != NULL
+			     || WRAP_QSTR(f, WRAP_CURLINE(f) - 1) != NULL)
+			&& ((WRAP_QSTR(f, WRAP_CURLINE(f)) != NULL && 
+			     WRAP_QSTR(f, WRAP_CURLINE(f) - 1) == NULL)
+			   || (WRAP_QSTR(f, WRAP_CURLINE(f)) == NULL && 
+			       WRAP_QSTR(f, WRAP_CURLINE(f) - 1) != NULL)
+			   || strcmp(WRAP_QSTR(f, WRAP_CURLINE(f)),
+				     WRAP_QSTR(f, WRAP_CURLINE(f) - 1)))){
 			    WRAP_FL_QD(f) = 0;
 			    if(WRAP_HARD(f) == 0){
 				WRAP_HARD(f) = 1;
@@ -9444,8 +9489,12 @@ gf_wrap(FILTER_S *f, int flg)
 		break;
 
 	      case  FL_QLEV :
-		if(c == '>'){				/* another level */
-		    WRAP_FL_QC(f)++;
+		if(WRAP_CURLINE(f) < WRAP_QSTRLEN(f)
+		   && WRAP_QSTR(f, WRAP_CURLINE(f)) 
+		   && WRAP_QSTR(f, WRAP_CURLINE(f))[WRAP_CURPOS(f)]
+		   && WRAP_QSTR(f, WRAP_CURLINE(f))[WRAP_CURPOS(f)] == c){
+		    WRAP_CURPOS(f)++;
+		    WRAP_FL_QC(f)++; 			/* another level */
 		}
 		else {
 		    /* if EMBEDed, process it and return here */
@@ -9457,7 +9506,16 @@ gf_wrap(FILTER_S *f, int flg)
 		    }
 
 		    /* quote level change signals new paragraph */
-		    if(WRAP_FL_QC(f) != WRAP_FL_QD(f)){
+		    if (WRAP_CURLINE(f) > 0 
+			&& WRAP_CURLINE(f) < WRAP_QSTRLEN(f)
+			&& (WRAP_QSTR(f, WRAP_CURLINE(f))
+			     || WRAP_QSTR(f, WRAP_CURLINE(f) - 1))
+			&& ((WRAP_QSTR(f, WRAP_CURLINE(f)) && 
+			     !WRAP_QSTR(f, WRAP_CURLINE(f) - 1))
+			   || (!WRAP_QSTR(f, WRAP_CURLINE(f)) && 
+			       WRAP_QSTR(f, WRAP_CURLINE(f) - 1))
+			   || strcmp(WRAP_QSTR(f, WRAP_CURLINE(f)),
+				      WRAP_QSTR(f, WRAP_CURLINE(f) - 1)))){
 			WRAP_FL_QD(f) = WRAP_FL_QC(f);
 			if(WRAP_HARD(f) == 0){		/* add hard newline */ 
 			    WRAP_HARD(f) = 1;		/* hard newline */
@@ -9514,6 +9572,13 @@ gf_wrap(FILTER_S *f, int flg)
 		    state = FL_SIG;
 		    break;
 
+		  case ' ' :				/* what? */
+		   if (WRAP_CURLINE(f) < WRAP_QSTRLEN(f) 
+			&& WRAP_QSTR(f, WRAP_CURLINE(f))){
+			WRAP_SPC_LEN(f)++;
+			so_writec(' ', WRAP_SPACES(f));
+		   }
+
 		  default :				/* something else */
 		    state = DFL;
 		    goto case_dfl;			/* handle c like DFL */
@@ -9530,7 +9595,7 @@ gf_wrap(FILTER_S *f, int flg)
 					     &eob);      /* note any embedded*/
 			    wrap_eol(f, 1, &ip, &eib,
 				     &op, &eob);       /* plunk down newline */
-			    wrap_bol(f, 1, 1, &ip, &eib,
+			    wrap_bol(f, 1, WRAP_FLOW(f), &ip, &eib,
 				     &op, &eob);         /* write any prefix */
 			}
 
@@ -10027,7 +10092,7 @@ gf_wrap(FILTER_S *f, int flg)
 		    wrap_flush_embed(f, &ip, &eib, &op, &eob);
 		    wrap_eol(f, 1, &ip, &eib, &op,
 			     &eob);	    /* plunk down newline */
-		    wrap_bol(f,1,1, &ip, &eib, &op,
+		    wrap_bol(f,1,WRAP_FLOW(f), &ip, &eib, &op,
 			     &eob);	      /* write any prefix */
 		}
 
@@ -10099,6 +10164,13 @@ gf_wrap(FILTER_S *f, int flg)
 	wrap_flush(f, &ip, &eib, &op, &eob);
 	if(WRAP_COLOR(f))
 	  free_color_pair(&WRAP_COLOR(f));
+
+	{ long i;
+	  for (i = 0L; i < WRAP_QSTRLEN(f); i++)
+	      if (WRAP_QSTR(f,i))
+		fs_give((void **) &(WRAP_QSTR(f,i)));
+	  fs_give((void **)&WRAP_QSTRN(f));
+	}
 
 	fs_give((void **) &f->line);	/* free temp line buffer */
 	so_give(&WRAP_SPACES(f));
@@ -10450,7 +10522,8 @@ wrap_quote_insert(FILTER_S *f, unsigned char **ipp, unsigned char **eibp,
 {
     int j, i;
     COLOR_PAIR *col = NULL;
-    char *prefix = NULL, *last_prefix = NULL;
+    char *prefix = NULL, *last_prefix = NULL, *wrap_qstr = NULL;
+    int level = 0, oldj, len;
 
     if(ps_global->VAR_QUOTE_REPLACE_STRING){
 	get_pair(ps_global->VAR_QUOTE_REPLACE_STRING, &prefix, &last_prefix, 0, 0);
@@ -10459,10 +10532,22 @@ wrap_quote_insert(FILTER_S *f, unsigned char **ipp, unsigned char **eibp,
 	    last_prefix = NULL;
 	}
     }
+    
+    if(WRAP_CURLINE(f) < WRAP_QSTRLEN(f) && WRAP_QSTR(f, WRAP_CURLINE(f)))
+       wrap_qstr = cpystr(WRAP_QSTR(f, WRAP_CURLINE(f)));
+    len = wrap_qstr ? strlen(wrap_qstr) : 0;
 
-    for(j = 0; j < WRAP_FL_QD(f); j++){
+    for (j = wrap_qstr && *wrap_qstr == ' ' ? 1 : 0;
+		 j < len && isspace((unsigned char)wrap_qstr[j]); j++){
+	GF_PUTC_GLO(f->next, wrap_qstr[j]);
+        f->n += ((wrap_qstr[j] == TAB) ? (~f->n & 0x07) + 1 : 1);
+    }
+    
+    for(; j < len && level < len; level++){
+        oldj = j;
+        j = next_level_quote(wrap_qstr, (char **)NULL, j, WRAP_FLOW(f));
 	if(WRAP_USE_CLR(f)){
-	    if((j % 3) == 0
+	    if((level % 3) == 0
 	       && ps_global->VAR_QUOTE1_FORE_COLOR
 	       && ps_global->VAR_QUOTE1_BACK_COLOR
 	       && (col = new_color_pair(ps_global->VAR_QUOTE1_FORE_COLOR,
@@ -10470,7 +10555,7 @@ wrap_quote_insert(FILTER_S *f, unsigned char **ipp, unsigned char **eibp,
 	       && pico_is_good_colorpair(col)){
                 GF_COLOR_PUTC(f, col);
             }
-	    else if((j % 3) == 1
+	    else if((level % 3) == 1
 		    && ps_global->VAR_QUOTE2_FORE_COLOR
 		    && ps_global->VAR_QUOTE2_BACK_COLOR
 		    && (col = new_color_pair(ps_global->VAR_QUOTE2_FORE_COLOR,
@@ -10478,7 +10563,7 @@ wrap_quote_insert(FILTER_S *f, unsigned char **ipp, unsigned char **eibp,
 		    && pico_is_good_colorpair(col)){
 	        GF_COLOR_PUTC(f, col);
             }
-	    else if((j % 3) == 2
+	    else if((level % 3) == 2
 		    && ps_global->VAR_QUOTE3_FORE_COLOR
 		    && ps_global->VAR_QUOTE3_BACK_COLOR
 		    && (col = new_color_pair(ps_global->VAR_QUOTE3_FORE_COLOR,
@@ -10492,43 +10577,60 @@ wrap_quote_insert(FILTER_S *f, unsigned char **ipp, unsigned char **eibp,
 	    }
 	}
 
+	if (j > 1 && wrap_qstr[j-1] == ' ')
+	   j -= 1; 
+
 	if(!WRAP_LV_FLD(f)){
 	    if(!WRAP_FOR_CMPS(f) && ps_global->VAR_QUOTE_REPLACE_STRING && prefix){
 		for(i = 0; prefix[i]; i++)
 		  GF_PUTC_GLO(f->next, prefix[i]);
-		f->n += utf8_width(prefix);
-	    }
-	    else if(ps_global->VAR_REPLY_STRING
-		    && (!strcmp(ps_global->VAR_REPLY_STRING, ">")
-			|| !strcmp(ps_global->VAR_REPLY_STRING, "\">\""))){
-		GF_PUTC_GLO(f->next, '>');
-		f->n += 1;
+		f->n += utf8_widthis(prefix);
 	    }
 	    else{
-		GF_PUTC_GLO(f->next, '>');
-		GF_PUTC_GLO(f->next, ' ');
-		f->n += 2;
+	      for (i = oldj; i < j; i++)   
+		GF_PUTC_GLO(f->next, wrap_qstr[i]);
+	      f->n += j - oldj;
 	    }
 	}
 	else{
-	    GF_PUTC_GLO(f->next, '>');
-	    f->n += 1;
+	    for (i = oldj; i < j; i++)   
+		GF_PUTC_GLO(f->next, wrap_qstr[i]);
+	    f->n += j - oldj;
 	}
+	for (i = j; isspace((unsigned char)wrap_qstr[i]); i++);
+	if(!wrap_qstr[i]){
+	  f->n += i - j;
+	  for (; j < i; j++)
+		GF_PUTC_GLO(f->next, ' '); 
+	}
+        else{
+	   if((WRAP_LV_FLD(f)
+		|| !ps_global->VAR_QUOTE_REPLACE_STRING || !prefix)
+		|| !ps_global->VAR_REPLY_STRING
+			|| (strcmp(ps_global->VAR_REPLY_STRING, ">")
+			  && strcmp(ps_global->VAR_REPLY_STRING, "\">\""))){
+		  GF_PUTC_GLO(f->next, ' ');
+		  f->n += 1;
+	   }
+	}
+	for (; isspace((unsigned char)wrap_qstr[j]); j++);
     }
     if(j && WRAP_LV_FLD(f)){
 	GF_PUTC_GLO(f->next, ' ');
 	f->n++;
     }
-    else if(j && last_prefix){
+    else if(j && !value_is_space(wrap_qstr) && last_prefix){
 	for(i = 0; last_prefix[i]; i++)
 	  GF_PUTC_GLO(f->next, last_prefix[i]);
-	f->n += utf8_width(last_prefix);	
+	f->n += utf8_widthis(last_prefix);	
     }
 
     if(prefix)
       fs_give((void **)&prefix);
     if(last_prefix)
       fs_give((void **)&last_prefix);
+    if (wrap_qstr)
+      fs_give((void **)&wrap_qstr);  
 
     return 0;
 }
@@ -10560,6 +10662,12 @@ gf_wrap_filter_opt(int width, int width_max, int *margin, int indent, int flags)
     wrap->hdr_color    = (GFW_HDRCOLOR & flags) == GFW_HDRCOLOR;
     wrap->for_compose  = (GFW_FORCOMPOSE & flags) == GFW_FORCOMPOSE;
     wrap->handle_soft_hyphen = (GFW_SOFTHYPHEN & flags) == GFW_SOFTHYPHEN;
+    wrap->curlinenum   = 0L;
+    wrap->curqstrpos   = 0;
+    wrap->linenum      = 0L;
+    wrap->qstrlen      = 100L;
+    wrap->qstrln       = (char **) fs_get(100*sizeof(char *));
+    memset(wrap->qstrln, 0, 100*sizeof(char *));
 
     return((void *) wrap);
 }
@@ -11003,7 +11111,215 @@ typedef struct _linetest_s {
 			    } \
 			}
 
+#define ADD_QUOTE_STRING(F) {						\
+	int len = tmp_20k_buf[0] ? strlen(tmp_20k_buf) + 1 : 0;		\
+	FILTER_S *fltr;							\
+									\
+	for(fltr = (F); fltr && fltr->f != gf_wrap; fltr = fltr->next); \
+	if (fltr){							\
+	   if (WRAP_LINENUM(fltr) >= WRAP_QSTRLEN(fltr)){		\
+	      fs_resize((void **)&WRAP_QSTRN(fltr),			\
+			(WRAP_QSTRLEN(fltr) + 100) * sizeof(char *));	\
+	      memset(WRAP_QSTRN(fltr)+WRAP_QSTRLEN(fltr), 0, 		\
+						100*sizeof(char*));	\
+	      WRAP_QSTRLEN(fltr) += 100L;				\
+	   }								\
+	   if (len){							\
+	      WRAP_QSTR(fltr, WRAP_LINENUM(fltr)) = 			\
+				(char *) fs_get(len*sizeof(char));	\
+	      WRAP_QSTR(fltr, WRAP_LINENUM(fltr)) = cpystr(tmp_20k_buf);\
+	   }								\
+	   WRAP_LINENUM(fltr)++;					\
+	}								\
+}
 
+int end_of_line(char *line)
+{
+  int i;
+
+  for(i= 0; line && line[i]; i++){
+     if((line[i] == '\015' && line[i+1] == '\012') || line[i] == '\012')
+	break;
+  }
+  return i;
+}
+
+/* This macro is used in gf_quote_test. It receives a return code
+   from a filter. All filters that will print something must send
+   return code 0, except color_a_quote which must send return code
+   1
+ */
+
+#define GF_ADD_QUOTED_LINE(F, line) \
+{ \
+    LT_INS_S *ins = NULL, *insp; \
+    int done; \
+    char *gline, *cline;\
+    unsigned char  ch;\
+    register char *cp;\
+    register int   l;\
+	\
+    for (gline = cline = line; gline && cline; ){\
+	if(cline = strchr(gline,'\012'))\
+	  *cline = '\0';\
+	done = (*((LINETEST_S *) (F)->opt)->f)((F)->n++, gline, &ins,\
+			   ((LINETEST_S *) (F)->opt)->local);\
+	if (done < 2){ \
+	   if(done == 1)\
+	     ADD_QUOTE_STRING((F));\
+	   for(insp = ins,  cp = gline; *cp ; ){\
+	       if(insp && cp == insp->where){\
+		if(insp->len > 0){ \
+	          for(l = 0; l < insp->len; l++){\
+			  ch =  (unsigned char) insp->text[l];\
+		     GF_PUTC((F)->next, ch);\
+	          }\
+	          insp = insp->next;\
+		  continue; \
+		} else if(insp->len < 0){ \
+		  cp -= insp->len; \
+		  insp = insp->next; \
+		  continue; \
+		} \
+	       }\
+	       GF_PUTC((F)->next, *cp);\
+	       cp++;\
+	   }\
+	   while(insp){\
+	       for(l = 0; l < insp->len; l++){\
+	          ch = (unsigned char) insp->text[l];\
+	          GF_PUTC((F)->next, ch);\
+	       }\
+	       insp = insp->next;\
+	   }\
+	   gf_line_test_free_ins(&ins);\
+	   if(cline){ \
+	     *cline = '\012';\
+	     gline += cline - gline + 1;\
+	   }\
+	   GF_PUTC((F)->next, '\015');\
+	   GF_PUTC((F)->next, '\012');\
+	}\
+   }\
+}
+/* test second line of old line first */
+#define SECOND_LINE_QUOTE_TEST(line, F) \
+{\
+	*p = '\0';\
+	i = end_of_line((F)->oldline); \
+	if (((F)->oldline)[i]){\
+	   i += (((F)->oldline)[i] == '\015') ? 2 : 1;\
+	   line = (F)->oldline + i;\
+	   i = end_of_line(line); \
+	   if(line[i])\
+	     line[i] = '\0'; \
+	}\
+	for (i = 0; ((F)->line) \
+		&& (i < LINE_TEST_BLOCK) \
+		&& (i < SIZEOF_20KBUF)\
+		&& ((F)->line)[i] \
+		&& (((F)->line)[i] != '\015')\
+		&& (((F)->line)[i] != '\012')\
+		&& (tmp_20k_buf[i] = ((F)->line)[i]); i++);\
+	tmp_20k_buf[i] = '\0';\
+	GF_ADD_QUOTED_LINE((F), line);\
+}
+
+#define FIRST_LINE_QUOTE_TEST(line, F)\
+{\
+	*p = '\0';\
+	line = (F)->line;\
+	if ((F)->oldline)\
+	   fs_give((void **)&(F)->oldline);\
+	(F)->oldline = cpystr(line);\
+	i = end_of_line(line); \
+	if (line[i]){ \
+	   j = (line[i] == '\015') ? 2 : 1;\
+	   line[i] = '\0'; \
+	   i += j; \
+	}\
+	for (j = 0; ((F)->line) \
+		&& ((i + j) < LINE_TEST_BLOCK) \
+		&& (j < SIZEOF_20KBUF) \
+		&& ((F)->line)[i + j] \
+		&& (((F)->line)[i + j] != '\015')\
+		&& (((F)->line)[i + j] != '\012')\
+		&& (tmp_20k_buf[j] = ((F)->line)[i + j]); j++);\
+	tmp_20k_buf[j] = '\0';\
+	GF_ADD_QUOTED_LINE((F), line);\
+}
+
+
+void
+gf_quote_test(f, flg)
+    FILTER_S *f;
+    int	      flg;
+{
+    register char *p = f->linep;
+    register char *eobuf = GF_LINE_TEST_EOB(f);
+    char *line = NULL; 
+    int i, j;
+    GF_INIT(f, f->next);
+
+    if(flg == GF_DATA){
+	register unsigned char c;
+	register int state = f->f1;
+
+	while(GF_GETC(f, c)){
+
+	    GF_LINE_TEST_ADD(f, c);
+	    if(c == '\012')
+	      state++;
+	    if(state == 2){		/* two full lines read */
+		state = 0;
+
+		/* first process the second line of an old line */
+		if (f->oldline && f->oldline[0])
+		    SECOND_LINE_QUOTE_TEST(line, f);
+
+		/* now we process the first line */
+		FIRST_LINE_QUOTE_TEST(line, f);
+
+		p = f->line;
+	    }
+	}
+
+	f->f1 = state;
+	GF_END(f, f->next);
+    }
+    else if(flg == GF_EOD){
+        /* first process the second line of an old line */
+	if (f->oldline && f->oldline[0])
+	    SECOND_LINE_QUOTE_TEST(line, f);
+
+	/* now we process the first line */
+	FIRST_LINE_QUOTE_TEST(line, f);
+
+	/* We are out of data. In this case we have processed the second
+	 * line of an oldline, then the first line of a line, but we need
+	 * to process the second line of the given line. We do this by
+	 * processing it now!.
+	 */
+	if (line[i]){
+	   tmp_20k_buf[0] = '\0';	/* No next line */
+	   GF_ADD_QUOTED_LINE(f, line+i);
+	}
+
+	fs_give((void **) &f->oldline); /* free old line buffer */
+	fs_give((void **) &f->line);	/* free line buffer */
+	fs_give((void **) &f->opt);	/* free test struct */
+	GF_FLUSH(f->next);
+	(*f->next->f)(f->next, GF_EOD);
+    }
+    else if(flg == GF_RESET){
+	f->f1 = 0;			/* state */
+	f->n  = 0L;			/* line number */
+	f->f2 = LINE_TEST_BLOCK;	/* size of alloc'd line */
+	f->line = p = (char *) fs_get(f->f2 * sizeof(char));
+    }
+
+    f->linep = p;
+}
 
 /*
  * this simple filter accumulates characters until a newline, offers it

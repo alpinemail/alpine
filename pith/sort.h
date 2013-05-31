@@ -22,7 +22,7 @@
 
 
 #define	refresh_sort(S,M,F)	sort_folder((S), (M), mn_get_sort(M), \
-					    mn_get_revsort(M), (F))
+					    mn_get_revsort(M), (F), 1)
 
 struct global_sort_data {
     MSGNO_S *msgmap;
@@ -41,9 +41,9 @@ extern struct global_sort_data g_sort;
 
 /* exported protoypes */
 char	*sort_name(SortOrder);
-void	 sort_folder(MAILSTREAM *, MSGNO_S *, SortOrder, int, unsigned);
-int	 decode_sort(char *, SortOrder *, int *);
+void	 sort_folder(MAILSTREAM *, MSGNO_S *, SortOrder, int, unsigned, int);
+int	 decode_sort(char *, SortOrder *, int *, int);
 void	 reset_sort_order(unsigned);
-
+SortOrder translate(char *, int);
 
 #endif /* PITH_SORT_INCLUDED */

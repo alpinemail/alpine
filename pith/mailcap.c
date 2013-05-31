@@ -53,6 +53,7 @@ typedef struct mcap_entry {
     int                needsterminal;
     char              *contenttype;
     char              *command;
+    char	      *nametemplate;
     char              *testcommand;
     char              *label;           /* unused */
     char              *printcommand;    /* unused */
@@ -213,6 +214,9 @@ mc_init(void)
 	    if(mc->printcommand)
 	      dprint((11, "   printcommand: %s",
 		     mc->printcommand ? mc->printcommand : "?"));
+	    if(mc->nametemplate)
+	      dprint((11, "   nametemplate: %s",
+		     mc->nametemplate ? mc->nametemplate : "?"));
 	    dprint((11, "   needsterminal %d\n", mc->needsterminal));
 	}
     }
@@ -487,6 +491,11 @@ mc_build_entry(char **tokens)
 	    mc->printcommand = arg;
 	    dprint((9, "mailcap: printcommand=%s\n",
 		       mc->printcommand ? mc->printcommand : "?"));
+	}
+	else if(arg && !strucmp(*tokens, "nametemplate")){
+	    mc->nametemplate = arg;
+	    dprint((9, "mailcap: nametemplate=%s\n",
+		   arg ? arg : "?"));
 	}
 	else if(arg && !strucmp(*tokens, "compose")){
 	    /* not used */
@@ -974,3 +983,60 @@ mailcap_free(void)
     mail_free_stringlist(&MailcapData.raw);
     mc_free_entry(&MailcapData.head);
 }
+
+char *
+mc_template(char *tmp_file, BODY *body, int chk_extension)
+{
+    MailcapEntry *mc;
+    int  quoted = 0;
+    char *s, *to, *namefile = NULL;
+
+    mc = mc_get_command(body->type, body->subtype, body, chk_extension, NULL);
+    if(!mc || !mc->nametemplate || !tmp_file)
+      return tmp_file;
+
+    /* remove extension if requested for a specific extension */
+    if(mc->nametemplate && tmp_file && (s = strrchr(tmp_file, '.')) != NULL
+        && strchr(s, C_FILESEP) == NULL)
+        *s = '\0';
+
+    to = tmp_20k_buf;
+    if((s = strrchr(tmp_file, C_FILESEP)) != NULL){
+	*s++ = '\0';
+	sstrncpy(&to, tmp_file, SIZEOF_20KBUF-(to-tmp_20k_buf));
+	if(to-tmp_20k_buf < SIZEOF_20KBUF)
+	   *to++ = C_FILESEP;
+	namefile = s;
+    }
+
+    for(s = mc->nametemplate; *s; s++)
+      if(quoted){
+	quoted = 0;
+	switch(*s){
+	    case '%':
+		if(to-tmp_20k_buf < SIZEOF_20KBUF)
+		   *to++ = '%';
+		break;
+
+	   case 's':
+		sstrncpy(&to, namefile ? namefile : tmp_file, SIZEOF_20KBUF-(to-tmp_20k_buf));
+                break;
+
+	   default:
+		dprint((9,
+	"Ignoring unercognized format code in nametemplate: %%%c\n", *s ));
+		break;
+	}
+      }
+      else if(*s == '%')
+	quoted = 1;
+      else if(to-tmp_20k_buf < SIZEOF_20KBUF)
+	*to++ = *s;
+
+    *to++ = '\0';
+
+    fs_give((void **)&tmp_file);
+    tmp_file = cpystr(tmp_20k_buf);
+    return tmp_file;
+}
+

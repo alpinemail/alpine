@@ -111,6 +111,9 @@ q_status_message(int flags, int min_time, int max_time, char *message)
     char  *clean_msg;
     size_t mlen;
 
+    if (ps_global->send_immediately)
+	return;
+
     status_message_lock();
 
     /*
@@ -604,6 +607,9 @@ flush_status_messages(int skip_last_pause)
 {
     SMQ_T *q, *copy_of_q;
     int ding;
+
+    if(ps_global->send_immediately)
+      return;
 
 start_over:
     status_message_lock();

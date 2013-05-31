@@ -52,7 +52,11 @@ static char rcsid[] = "$Id: mailview.c 1266 2009-07-14 18:39:12Z hubert@u.washin
 #include "../pith/escapes.h"
 #include "../pith/keyword.h"
 #include "../pith/smime.h"
-
+#include "../pith/osdep/color.h"
+#include "../pico/osdep/color.h"
+#include "../pico/estruct.h"
+#include "../pico/pico.h"
+#include "../pico/efunc.h"
 
 #define FBUF_LEN	(50)
 
@@ -282,9 +286,17 @@ format_body(long int msgno, BODY *body, HANDLE_S **handlesp, HEADER_S *hp, int f
 	    if((flgs & FM_DISPLAY)
 	       && !(flgs & FM_NOCOLOR)
 	       && pico_usingcolor()
+	       && ps_global->VAR_SPECIAL_TEXT_FORE_COLOR
+	       && ps_global->VAR_SPECIAL_TEXT_BACK_COLOR){
+		gf_link_filter(gf_line_test, gf_line_test_opt(color_this_text, NULL));
+	    }
+
+	    if((flgs & FM_DISPLAY)
+	       && !(flgs & FM_NOCOLOR)
+	       && pico_usingcolor()
 	       && ps_global->VAR_SIGNATURE_FORE_COLOR
 	       && ps_global->VAR_SIGNATURE_BACK_COLOR){
-		gf_link_filter(gf_line_test, gf_line_test_opt(color_signature, &is_in_sig));
+		gf_link_filter(gf_quote_test, gf_line_test_opt(color_signature, &is_in_sig));
 	    }
 
 	    if((flgs & FM_DISPLAY)
@@ -292,8 +304,10 @@ format_body(long int msgno, BODY *body, HANDLE_S **handlesp, HEADER_S *hp, int f
 	       && pico_usingcolor()
 	       && ps_global->VAR_QUOTE1_FORE_COLOR
 	       && ps_global->VAR_QUOTE1_BACK_COLOR){
-		gf_link_filter(gf_line_test, gf_line_test_opt(color_a_quote, NULL));
+		gf_link_filter(gf_quote_test, gf_line_test_opt(color_a_quote, NULL));
 	    }
+	    else
+		gf_link_filter(gf_quote_test,gf_line_test_opt(select_quote, NULL));
 
 	    if(!(flgs & FM_NOWRAP)){
 		wrapflags = (flgs & FM_DISPLAY) ? (GFW_HANDLES|GFW_SOFTHYPHEN) : GFW_NONE;
@@ -1098,26 +1112,87 @@ int
 color_signature(long int linenum, char *line, LT_INS_S **ins, void *is_in_sig)
 {
     struct variable *vars = ps_global->vars;
-    int             *in_sig_block;
+    int             *in_sig_block, i, j,same_qstr = 0, plb;
     COLOR_PAIR      *col = NULL;
+    static char GLine[NSTRING] = {'\0'};
+    static char PLine[NSTRING] = {'\0'};
+    static char PPLine[NSTRING] = {'\0'};
+    char NLine[NSTRING] = {'\0'};
+    char rqstr[NSTRING] = {'\0'};
+    char *p, *q;
+    static char *buf, buf2[NSTRING] = {'\0'};
+    QSTRING_S *qs;
+    static int qstrlen = 0;
 
     if(is_in_sig == NULL)
       return 0;
 
+    if (linenum > 0){
+	strncpy(PLine, GLine, sizeof(PLine));
+	PLine[sizeof(PLine)-1] = '\0';
+    }
+
+    if(p = strchr(tmp_20k_buf, '\015')) *p = '\0';
+    strncpy(NLine, tmp_20k_buf, sizeof(NLine));
+    NLine[sizeof(NLine) - 1] = '\0';
+    if (p) *p = '\015';
+
+    strncpy(GLine, line, sizeof(GLine));
+    GLine[sizeof(GLine) - 1] = '\0';
+
+    ps_global->list_qstr = default_qstr(ps_global->prefix && *ps_global->prefix 
+		? (void *) ps_global->prefix : (void *) ">", 0);
+    plb = line_isblank(ps_global->list_qstr, PLine, GLine, PPLine, NSTRING);
+    qs = do_quote_match(ps_global->list_qstr, GLine, NLine, PLine, rqstr, NSTRING, plb);
+    if(linenum > 0)
+       strncpy(PPLine, PLine, NSTRING);
+    strncpy(buf2, rqstr, NSTRING);
+    i = buf2 && buf2[0] ? strlen(buf2) : 0;
+    free_qs(&qs);
+
+    /* determine if buf and buf2 are the same quote string */
+    if (!struncmp(buf, buf2, qstrlen)){
+      for (j = qstrlen; buf2[j] && isspace((unsigned char)buf2[j]); j++);
+      if (!buf2[j] || buf2[j] == '|' || (buf2[j] == '*' && buf2[j+1] != '>'))
+         same_qstr++;
+    }
+
     in_sig_block = (int *) is_in_sig;
     
-    if(!strcmp(line, SIGDASHES))
-      *in_sig_block = START_SIG_BLOCK; 
-    else if(*line == '\0')
+    if (*in_sig_block != OUT_SIG_BLOCK){
+      if (line && *line && (strlen(line) >= qstrlen) && same_qstr)
+         line += qstrlen;
+        else if (strlen(line) < qstrlen)
+         line += i;
+      else if (!same_qstr)
+         *in_sig_block = OUT_SIG_BLOCK;
+    }
+    else
+      line += i;
+
+    if(!strcmp(line, SIGDASHES) || !strcmp(line, "--")){
+      *in_sig_block = START_SIG_BLOCK;
+       buf = (char *) fs_get((i + 1)*sizeof(char));
+       buf = cpystr(buf2);
+       qstrlen = i;
+    }
+    else if(*line == '\0'){
       /* 
        * Suggested by Eduardo: allow for a blank line right after 
        * the sigdashes. 
        */
       *in_sig_block = (*in_sig_block == START_SIG_BLOCK)
 			  ? IN_SIG_BLOCK : OUT_SIG_BLOCK;
+    }
     else
       *in_sig_block = (*in_sig_block != OUT_SIG_BLOCK)
 			  ? IN_SIG_BLOCK : OUT_SIG_BLOCK;
+
+    if (*in_sig_block == OUT_SIG_BLOCK){
+      qstrlen = 0;    /* reset back in case there's another paragraph */
+      if (buf)
+         fs_give((void **)&buf);
+    }
 
     if(*in_sig_block != OUT_SIG_BLOCK
        && VAR_SIGNATURE_FORE_COLOR && VAR_SIGNATURE_BACK_COLOR
@@ -1482,18 +1557,78 @@ color_headers(long int linenum, char *line, LT_INS_S **ins, void *local)
     return(0);
 }
 
+int
+incomplete_url(char *up, int n, int delim)
+{
+  char *line, *line2;
+  int rv = 0, len;
+
+  if(*(up + n) != '\0')
+    return 0;
+
+  if(delim > 0)
+   return 1;
+
+  if(F_ON(F_VIEW_LONG_URL, ps_global)){
+    line = up;
+    if(!strncmp(line, "http://", 7))
+      line += 7;
+    else if(!strncmp(line, "https://", 8))
+      line += 8;
+    if(strchr(line, '/') != NULL && (line = strrchr(line, '/')) != NULL){
+      line++;
+      line2 = strrchr(line, '.');
+      rv = (strpbrk(line,"+#?=&") != NULL) 
+	    || (!line2 || line-line2 > 4);
+    }
+  }
+  return rv;
+}
+
 
 int
 url_hilite(long int linenum, char *line, LT_INS_S **ins, void *local)
 {
     register char *lp, *up = NULL, *urlp = NULL,
 		  *weburlp = NULL, *mailurlp = NULL;
-    int		   n, n1, n2, n3, l;
+    char *use_this_line, c, *begin_line, *end_line;
+    static int scannextline, delim = -1;
+    int		   n, n1, n2, n3, l, len;
+    int		   we_clear = 0, newhandle = 1, tie_off = 0;
     char	   buf[256], color[256];
     HANDLE_S	  *h;
     URL_HILITE_S  *uh;
 
-    for(lp = line; ; lp = up + n){
+    uh = (URL_HILITE_S *) local;
+    if((uh && uh->handlesp && ((h = *(uh->handlesp)) == NULL) || h->key == 0) ||
+	(!line || !*line) || linenum == 0)
+      scannextline = 0;		/* initialize scannextline */
+
+    if(scannextline != 0){
+	up = rfc1738_scan(line, &n1);
+
+	/* if we found a url in the current line, but it is not at the beginning of 
+	 * the next line, or if there is no url in this line, we check if the url 
+	 * in the previous line continues in this line.
+	 */
+
+	if(line != up){
+	  if(*uh->handlesp == NULL)
+	    h = new_handle(uh->handlesp);
+	  for(h = *uh->handlesp; h->next; h = h->next);	/* get last handle */
+	  len = h->h.url.path ? strlen(h->h.url.path) : 0;
+	  use_this_line = (char *) fs_get((len + strlen(line) + 1)*sizeof(char));
+	  sprintf(use_this_line,"%s%s", (h->h.url.path ? h->h.url.path : ""), line);
+	  we_clear++;
+	  newhandle = 0;
+	}
+	else
+	  use_this_line = line;
+    }
+    else
+       use_this_line = line;
+
+    for(lp = use_this_line; ; lp = up + n){
 	/* scan for all of them so we can choose the first */
 	if(F_ON(F_VIEW_SEL_URL,ps_global))
 	  urlp = rfc1738_scan(lp, &n1);
@@ -1503,6 +1638,10 @@ url_hilite(long int linenum, char *line, LT_INS_S **ins, void *local)
 	  mailurlp = mail_addr_scan(lp, &n3);
 	
 	if(urlp || weburlp || mailurlp){
+	    if(scannextline == 0){
+		newhandle++;
+		delim = -1;
+	    }
 	    up = urlp ? urlp : 
 		  weburlp ? weburlp : mailurlp;
 	    if(up == urlp && weburlp && weburlp < up)
@@ -1511,7 +1650,16 @@ url_hilite(long int linenum, char *line, LT_INS_S **ins, void *local)
 	      up = mailurlp;
 
 	    if(up == urlp){
+		if(delim < 0)
+		   delim = up > use_this_line && *(up - 1) == '<';
 		n = n1;
+		if(incomplete_url(up,n, delim))
+		   scannextline++;
+		else{
+		   if(scannextline)
+		     tie_off++;
+		   scannextline = 0;
+		}
 		weburlp = mailurlp = NULL;
 	    }
 	    else if(up == weburlp){
@@ -1528,35 +1676,57 @@ url_hilite(long int linenum, char *line, LT_INS_S **ins, void *local)
 
 	uh = (URL_HILITE_S *) local;
 
-	h	      = new_handle(uh->handlesp);
-	h->type	      = URL;
-	h->h.url.path = (char *) fs_get((n + 10) * sizeof(char));
-	snprintf(h->h.url.path, n+10, "%s%.*s",
+	if(tie_off){
+	   tie_off = 0;	/* do only once */
+	   begin_line = line;
+	   end_line = line + n - strlen(h->h.url.path);
+	   fs_give((void **)&h->h.url.path);
+	   c = *(use_this_line + n);
+	   *(use_this_line+n) = '\0';
+	   h->h.url.path = cpystr(use_this_line);
+	   *(use_this_line+n) = c;
+	}
+	else{
+	   if(newhandle){
+	     h = new_handle(uh->handlesp);
+	     h->type = URL;
+	   }
+	   begin_line = newhandle ? (we_clear ? line + strlen(line) - strlen(up) 
+					      : up) : line;
+	   end_line = newhandle ? begin_line + n : line + strlen(line);
+	   if(scannextline && h->h.url.path)
+	     fs_give((void **)&h->h.url.path);
+	   h->h.url.path = (char *) fs_get((n + 10) * sizeof(char));
+	   snprintf(h->h.url.path, n+10, "%s%.*s",
 		weburlp ? "http://" : (mailurlp ? "mailto:" : ""), n, up);
-	h->h.url.path[n+10-1] = '\0';
+	   h->h.url.path[n+10-1] = '\0';
+	}
 
 	if(handle_start_color(color, sizeof(color), &l, uh->hdr_color))
-	  ins = gf_line_test_new_ins(ins, up, color, l);
+	  ins = gf_line_test_new_ins(ins, begin_line, color, l);
 	else if(F_OFF(F_SLCTBL_ITEM_NOBOLD, ps_global))
-	  ins = gf_line_test_new_ins(ins, up, url_embed(TAG_BOLDON), 2);
+	  ins = gf_line_test_new_ins(ins, begin_line, url_embed(TAG_BOLDON), 2);
 
 	buf[0] = TAG_EMBED;
 	buf[1] = TAG_HANDLE;
 	snprintf(&buf[3], sizeof(buf)-3, "%d", h->key);
 	buf[sizeof(buf)-1] = '\0';
 	buf[2] = strlen(&buf[3]);
-	ins = gf_line_test_new_ins(ins, up, buf, (int) buf[2] + 3);
+	ins = gf_line_test_new_ins(ins, begin_line, buf, (int) buf[2] + 3);
 
 	/* in case it was the current selection */
-	ins = gf_line_test_new_ins(ins, up + n, url_embed(TAG_INVOFF), 2);
+	ins = gf_line_test_new_ins(ins, end_line, url_embed(TAG_INVOFF), 2);
 
 	if(scroll_handle_end_color(color, sizeof(color), &l, uh->hdr_color))
-	  ins = gf_line_test_new_ins(ins, up + n, color, l);
+	  ins = gf_line_test_new_ins(ins, end_line, color, l);
 	else
-	  ins = gf_line_test_new_ins(ins, up + n, url_embed(TAG_BOLDOFF), 2);
+	  ins = gf_line_test_new_ins(ins, end_line, url_embed(TAG_BOLDOFF), 2);
 
 	urlp = weburlp = mailurlp = NULL;
     }
+
+    if(we_clear)
+	fs_give((void **)&use_this_line);
 
     return(0);
 }
@@ -1677,6 +1847,77 @@ pad_to_right_edge(long int linenum, char *line, LT_INS_S **ins, void *local)
     return(0);
 }
 
+
+/* This filter gives a quote string of a line. It sends its reply back to the
+   calling filter in the tmp_20k_buf variable. This filter replies with
+   the full quote string including tailing spaces if any. It is the
+   responsibility of the calling filter to figure out if thos spaces are
+   useful for that filter or if they should be removed before doing any
+   useful work. For example, color_a_quote does not require the trailing
+   spaces, but gf_wrap does.
+ */
+int
+select_quote(long linenum, char *line, LT_INS_S **ins, void *local)
+{
+     int i, plb, *code;
+     char rqstr[NSTRING] = {'\0'}, buf[NSTRING] = {'\0'};
+     char GLine[NSTRING] = {'\0'}, PLine[NSTRING] = {'\0'};
+     char PPLine[NSTRING] = {'\0'}, NLine[NSTRING] = {'\0'};
+     static char GLine1[NSTRING] = {'\0'};
+     static char PLine1[NSTRING] = {'\0'};
+     static char PPLine1[NSTRING] = {'\0'};
+     static char GLine2[NSTRING] = {'\0'};
+     static char PLine2[NSTRING] = {'\0'};
+     static char PPLine2[NSTRING] = {'\0'};
+     QSTRING_S *qs;
+     int buflen = NSTRING < SIZEOF_20KBUF ? NSTRING - 1: SIZEOF_20KBUF - 1;
+     int who, raw;
+
+     code = (int *)local;
+     who = code ? (*code & COLORAQUO) : 0; /* may I ask who is calling? */
+     raw = code ? (*code & RAWSTRING) : 0; /* return raw string */
+     strncpy(GLine, (who ? GLine1 : GLine2), buflen);
+     strncpy(PLine, (who ? PLine1 : PLine2), buflen);
+     strncpy(PPLine, (who ? PPLine1 : PPLine2), buflen);
+
+     if (linenum > 0)
+        strncpy(PLine, GLine, buflen);
+
+     strncpy(NLine, tmp_20k_buf, buflen);
+
+     if (line)
+        strncpy(GLine, line, buflen);
+     else
+        GLine[0] = '\0';
+
+     ps_global->list_qstr = default_qstr(ps_global->prefix && *ps_global->prefix 
+		? (void *) ps_global->prefix : (void *) ">", 0);
+     plb = line_isblank(ps_global->list_qstr, PLine, GLine, PPLine, NSTRING);
+
+     qs = do_quote_match(ps_global->list_qstr, GLine, NLine, PLine, rqstr, NSTRING, plb);
+     if (raw)
+        strncpy(buf, rqstr, NSTRING);
+     else
+        flatten_qstring(qs, buf, NSTRING);
+     if(qs)
+	record_quote_string(qs);
+     free_qs(&qs);
+
+     /* do not paint an extra level for a line with a >From string at the
+      * begining of it
+      */
+     if (buf[0]){
+       i = strlen(buf);
+       if (strlen(line) >= i + 6 && !strncmp(line+i-1,">From ", 6))
+           buf[i - 1] = '\0';
+     }
+     strncpy(tmp_20k_buf, buf, buflen);
+     if (linenum > 0)
+       strncpy((who ? PPLine1 : PPLine2), PLine, buflen);
+     strncpy((who ? GLine1 : GLine2), GLine, buflen);
+     strncpy((who ? PLine1 : PLine2), PLine, buflen);
+     return 1;
+}
 
 
 #define	UES_LEN	12
@@ -2503,6 +2744,190 @@ hdr_color(char *fieldname, char *value, SPEC_COLOR_S *speccolor)
     return(color_pair);
 }
 
+void
+interval_free(IVAL_S **ival)
+{
+  if (!(*ival))
+    return;
+
+  if ((*ival)->next)
+    interval_free(&((*ival)->next));
+
+  fs_give((void **)(ival));
+}
+
+IVAL_S *
+compute_interval (char *string, int endm)
+{
+  IVAL_S *ival = NULL;
+  regmatch_t pmatch;
+
+  if(ps_global->paterror == 0 && 
+     regexec(&ps_global->colorpat, string + endm, 1, &pmatch, 0) == 0){
+       ival = (IVAL_S *) fs_get(sizeof(IVAL_S));
+       ival->start = endm + pmatch.rm_so;
+       ival->end   = endm + pmatch.rm_eo;
+       ival->next  = compute_interval(string, ival->end);
+  }
+  return ival;
+}
+
+void
+regex_pattern(char **plist)
+{
+  int i = 0, j = 0, len = 0;
+  char *pattern = NULL;
+  regex_t preg;
+
+  if(ps_global->paterror == 0)
+    regfree(&ps_global->colorpat);
+
+  if(plist && *plist && *plist){
+    for (i = 0; plist[i] && plist[i][0]; i++)
+	len += strlen(plist[i]) + 1;
+    pattern = (char *) fs_get(len * sizeof(char));
+    *pattern = '\0';
+    for (j = 0; j < i; j++){
+	strcat(pattern, plist[j]);
+	strcat(pattern, (j < i - 1) ? "|" : "");
+    }
+    if ((ps_global->paterror = regcomp(&preg, pattern, REG_EXTENDED)) != 0)
+      regfree(&preg);
+    else
+       ps_global->colorpat = preg;
+  }
+  if(pattern)
+    fs_give((void **)&pattern);
+}
+
+LT_INS_S **
+insert_color_special_text(LT_INS_S **ins, char **p, IVAL_S *ival, int last_end,
+			COLOR_PAIR *col)
+{
+   struct variable *vars = ps_global->vars;
+
+   if (ival){
+      *p += ival->start - last_end;
+      ins = gf_line_test_new_ins(ins, *p,  color_embed(col->fg, col->bg),
+				   (2 * RGBLEN) + 4);
+      *p += ival->end - ival->start;
+      ins = gf_line_test_new_ins(ins, *p, color_embed(VAR_NORM_FORE_COLOR,
+		      VAR_NORM_BACK_COLOR), (2 * RGBLEN) + 4);
+      ins = insert_color_special_text(ins, p, ival->next, ival->end, col);
+   }
+   return ins;
+}  
+
+int
+length_color(char *p, int begin_color)
+{
+  int len = 0, done = begin_color ? 0 : -1;
+  char *orig = p;
+
+  while (*p  && done <= 0){
+        switch(*p++){
+           case TAG_HANDLE :
+             p += *p + 1; 
+	     done++;
+           break;
+
+           case TAG_FGCOLOR :
+           case TAG_BGCOLOR :
+             p += RGBLEN;
+	     if (!begin_color)
+		done++;  
+           break;
+
+           default :
+             break;
+        }
+   }
+   len = p - orig;
+   return len;
+}
+
+int
+any_color_in_string(char *p)
+{
+   int rv = 0;
+   char *orig = p;
+   while (*p && !rv)
+      if (*p++ == TAG_EMBED)
+	rv = p - orig;
+   return rv;
+}
+
+void
+remove_spaces_ival(IVAL_S **ivalp, char *p)
+{
+    IVAL_S *ival;
+    int i;
+    if (!ivalp || !*ivalp)
+    return;
+    ival = *ivalp;
+    for (i = 0; isspace((unsigned char) p[ival->start + i]); i++);
+    if (ival->start + i < ival->end)  /* do not do this if match only spaces */
+      ival->start += i;
+    else
+      return;
+    for (i = 0; isspace((unsigned char) p[ival->end - i - 1]); i++);
+     ival->end -= i;
+    if (ival->next)
+	remove_spaces_ival(&(ival->next), p);
+}
+
+int
+color_this_text(long linenum, char *line, LT_INS_S **ins, void *local)
+{
+    struct variable *vars = ps_global->vars;
+    COLOR_PAIR *col = NULL;
+    char *p;
+    int i = 0;
+    static char *pattern = NULL;
+
+/*  select_quote(linenum, line, ins, (void *) &i);
+    for (i = 0; tmp_20k_buf[i] != '\0'; i++); */
+    p = line + i;
+
+    if(VAR_SPECIAL_TEXT_FORE_COLOR && VAR_SPECIAL_TEXT_BACK_COLOR
+       && (col = new_color_pair(VAR_SPECIAL_TEXT_FORE_COLOR,
+                                VAR_SPECIAL_TEXT_BACK_COLOR))
+       && !pico_is_good_colorpair(col))
+          free_color_pair(&col);
+
+    if(ps_global->VAR_SPECIAL_TEXT && *ps_global->VAR_SPECIAL_TEXT 
+	&& **ps_global->VAR_SPECIAL_TEXT && col){
+       IVAL_S *ival;
+       int done = 0, begin_color = 0;
+
+        while (!done){
+           if (i = any_color_in_string(p)){
+	      begin_color = (begin_color + 1) % 2;
+	      if (begin_color){
+                 p[i - 1] = '\0';
+                 ival = compute_interval(p, 0);
+		 remove_spaces_ival(&ival, p);
+                 p[i - 1] = TAG_EMBED;
+	         ins = insert_color_special_text(ins, &p, ival, 0, col);
+	      }
+              for (;*p++ != TAG_EMBED; );
+              p += length_color(p, begin_color);
+           }
+           else{
+              ival = compute_interval(p, 0);
+	      remove_spaces_ival(&ival, p);
+	      ins = insert_color_special_text(ins, &p, ival, 0, col);
+	      done++;
+           }
+	   interval_free(&ival);
+           if (!*p)
+             done++;
+        }
+        free_color_pair(&col);
+    }
+
+    return 0;
+}
 
 /*
  * The argument fieldname is something like "Subject:..." or "Subject".

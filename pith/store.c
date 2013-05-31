@@ -171,6 +171,14 @@ so_get(SourceType source, char *name, int rtype)
 		if(source == TmpFileStar)
 		  our_unlink(so->name);
 
+		if (ps_global->send_immediately){
+		   ps_global->failed_read++;
+		   if(ps_global->failed_read == 5){
+		     printf("No configurationf file found. Where is your .pinerc file?\n");
+		     exit(1);
+		   }
+		}
+
 		fs_give((void **)&so->name);
 		fs_give((void **)&so); 		/* so freed & set to NULL */
 	    }

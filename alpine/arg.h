@@ -27,6 +27,7 @@
 typedef struct argdata {
     enum	{aaFolder = 0, aaMore, aaURL, aaMail,
 		 aaPrcCopy, aaAbookCopy} action;
+    int	noutf8;
     union {
 	char	  *folder;
 	char	  *file;

@@ -39,6 +39,7 @@ static char rcsid[] = "$Id: mailcmd.c 1142 2008-08-13 17:22:21Z hubert@u.washing
 #include "../pith/ablookup.h"
 #include "../pith/search.h"
 #include "../pith/charconv/utf8.h"
+#include "../pith/rules.h"
 
 #ifdef _WINDOWS
 #include "../pico/osdep/mswin.h"
@@ -665,6 +666,7 @@ do_broach_folder(char *newfolder, CONTEXT_S *new_context, MAILSTREAM **streamp,
 	strncpy(ps_global->cur_folder, p, sizeof(ps_global->cur_folder)-1);
 	ps_global->cur_folder[sizeof(ps_global->cur_folder)-1] = '\0';
 	ps_global->context_current = ps_global->context_list;
+	setup_threading_index_style();
 	reset_index_format();
 	clear_index_cache(ps_global->mail_stream, 0);
         /* MUST sort before restoring msgno! */
@@ -990,6 +992,7 @@ do_broach_folder(char *newfolder, CONTEXT_S *new_context, MAILSTREAM **streamp,
 
     clear_index_cache(ps_global->mail_stream, 0);
     reset_index_format();
+    setup_threading_index_style();
 
     /*
      * Start news reading with messages the user's marked deleted
@@ -1113,7 +1116,10 @@ do_broach_folder(char *newfolder, CONTEXT_S *new_context, MAILSTREAM **streamp,
 
     if(!cur_already_set && mn_get_total(ps_global->msgmap) > 0L){
 
-	perfolder_startup_rule = reset_startup_rule(ps_global->mail_stream);
+	perfolder_startup_rule = get_perfolder_startup_rule(ps_global->mail_stream,
+                                       V_STARTUP_RULES, newfolder);
+
+	reset_startup_rule(ps_global->mail_stream);
 
 	if(ps_global->start_entry > 0){
 	    mn_set_cur(ps_global->msgmap, mn_get_revsort(ps_global->msgmap)
@@ -1135,124 +1141,7 @@ do_broach_folder(char *newfolder, CONTEXT_S *new_context, MAILSTREAM **streamp,
 	    else
 	      use_this_startup_rule = ps_global->inc_startup_rule;
 
-	    switch(use_this_startup_rule){
-	      /*
-	       * For news in incoming collection we're doing the same thing
-	       * for first-unseen and first-recent. In both those cases you
-	       * get first-unseen if FAKE_NEW is off and first-recent if
-	       * FAKE_NEW is on. If FAKE_NEW is on, first unseen is the
-	       * same as first recent because all recent msgs are unseen
-	       * and all unrecent msgs are seen (see pine_mail_open).
-	       */
-	      case IS_FIRST_UNSEEN:
-first_unseen:
-		mn_set_cur(ps_global->msgmap,
-			(sp_first_unseen(m)
-			 && mn_get_sort(ps_global->msgmap) == SortArrival
-			 && !mn_get_revsort(ps_global->msgmap)
-			 && !get_lflag(ps_global->mail_stream, NULL,
-				       sp_first_unseen(m), MN_EXLD)
-			 && (n = mn_raw2m(ps_global->msgmap, 
-					  sp_first_unseen(m))))
-			   ? n
-			   : first_sorted_flagged(F_UNSEEN | F_UNDEL, m, pc,
-					      THREADING() ? 0 : FSF_SKIP_CHID));
-		break;
-
-	      case IS_FIRST_RECENT:
-first_recent:
-		/*
-		 * We could really use recent for news but this is the way
-		 * it has always worked, so we'll leave it. That is, if
-		 * the FAKE_NEW feature is on, recent and unseen are
-		 * equivalent, so it doesn't matter. If the feature isn't
-		 * on, all the undeleted messages are unseen and we start
-		 * at the first one. User controls with the FAKE_NEW feature.
-		 */
-		if(IS_NEWS(ps_global->mail_stream)){
-		    mn_set_cur(ps_global->msgmap,
-			       first_sorted_flagged(F_UNSEEN|F_UNDEL, m, pc,
-					       THREADING() ? 0 : FSF_SKIP_CHID));
-		}
-		else{
-		    mn_set_cur(ps_global->msgmap,
-			       first_sorted_flagged(F_RECENT | F_UNSEEN
-						    | F_UNDEL,
-						    m, pc,
-					      THREADING() ? 0 : FSF_SKIP_CHID));
-		}
-		break;
-
-	      case IS_FIRST_IMPORTANT:
-		mn_set_cur(ps_global->msgmap,
-			   first_sorted_flagged(F_FLAG|F_UNDEL, m, pc,
-					      THREADING() ? 0 : FSF_SKIP_CHID));
-		break;
-
-	      case IS_FIRST_IMPORTANT_OR_UNSEEN:
-
-		if(IS_NEWS(ps_global->mail_stream))
-		  goto first_unseen;
-
-		{
-		    MsgNo flagged, first_unseen;
-
-		    flagged = first_sorted_flagged(F_FLAG|F_UNDEL, m, pc,
-					       THREADING() ? 0 : FSF_SKIP_CHID);
-		    first_unseen = (sp_first_unseen(m)
-			     && mn_get_sort(ps_global->msgmap) == SortArrival
-			     && !mn_get_revsort(ps_global->msgmap)
-			     && !get_lflag(ps_global->mail_stream, NULL,
-					   sp_first_unseen(m), MN_EXLD)
-			     && (n = mn_raw2m(ps_global->msgmap, 
-					      sp_first_unseen(m))))
-				? n
-				: first_sorted_flagged(F_UNSEEN|F_UNDEL, m, pc,
-					       THREADING() ? 0 : FSF_SKIP_CHID);
-		    mn_set_cur(ps_global->msgmap,
-			  (MsgNo) MIN((int) flagged, (int) first_unseen));
-
-		}
-
-		break;
-
-	      case IS_FIRST_IMPORTANT_OR_RECENT:
-
-		if(IS_NEWS(ps_global->mail_stream))
-		  goto first_recent;
-
-		{
-		    MsgNo flagged, first_recent;
-
-		    flagged = first_sorted_flagged(F_FLAG|F_UNDEL, m, pc,
-					       THREADING() ? 0 : FSF_SKIP_CHID);
-		    first_recent = first_sorted_flagged(F_RECENT | F_UNSEEN
-							| F_UNDEL,
-							m, pc,
-					       THREADING() ? 0 : FSF_SKIP_CHID);
-		    mn_set_cur(ps_global->msgmap,
-			      (MsgNo) MIN((int) flagged, (int) first_recent));
-		}
-
-		break;
-
-	      case IS_FIRST:
-		mn_set_cur(ps_global->msgmap,
-			   first_sorted_flagged(F_UNDEL, m, pc,
-					      THREADING() ? 0 : FSF_SKIP_CHID));
-		break;
-
-	      case IS_LAST:
-		mn_set_cur(ps_global->msgmap,
-			   first_sorted_flagged(F_UNDEL, m, pc,
-			         FSF_LAST | (THREADING() ? 0 : FSF_SKIP_CHID)));
-		break;
-
-	      default:
-		panic("Unexpected incoming startup case");
-		break;
-
-	    }
+	    find_startup_position(use_this_startup_rule, m, pc);
 	}
 	else if(IS_NEWS(ps_global->mail_stream)){
 	    /*
@@ -1430,9 +1319,11 @@ expunge_and_close(MAILSTREAM *stream, char **final_msg, long unsigned int flags)
 	    /* Save read messages? */
 	    if(VAR_READ_MESSAGE_FOLDER && VAR_READ_MESSAGE_FOLDER[0]
 	       && sp_flagged(stream, SP_INBOX)
-	       && (seen_not_del = count_flagged(stream, F_SEEN | F_UNDEL))){
+	       && (F_ON(F_AUTO_READ_MSGS_RULES, ps_global) ||
+		  (seen_not_del = count_flagged(stream, F_SEEN | F_UNDEL)))){
 
 		if(F_ON(F_AUTO_READ_MSGS,ps_global)
+		   || F_ON(F_AUTO_READ_MSGS_RULES, ps_global)
 		   || (pith_opt_read_msg_prompt
 		       && (*pith_opt_read_msg_prompt)(seen_not_del, VAR_READ_MESSAGE_FOLDER)))
 		  /* move inbox's read messages */
@@ -1703,6 +1594,9 @@ move_read_msgs(MAILSTREAM *stream, char *dstfldr, char *buf, size_t buflen, long
     char	  *bufp = NULL;
     MESSAGECACHE *mc;
 
+    if (F_ON(F_AUTO_READ_MSGS_RULES, ps_global))
+     return move_read_msgs_using_rules(stream, dstfldr, buf);
+
     if(!is_absolute_path(dstfldr)
        && !(save_context = default_save_context(ps_global->context_list)))
       save_context = ps_global->context_list;
@@ -1742,8 +1636,9 @@ move_read_msgs(MAILSTREAM *stream, char *dstfldr, char *buf, size_t buflen, long
 	snprintf(buf, buflen, "Moving %s read message%s to \"%s\"",
 		comatose(searched), plural(searched), dstfldr);
 	we_cancel = busy_cue(buf, NULL, 0);
-	if(save(ps_global, stream, save_context, dstfldr, msgmap,
-		SV_DELETE | SV_FIX_DELS | SV_INBOXWOCNTXT) == searched)
+	ps_global->exiting = 1;
+	if((save(ps_global, stream, save_context, dstfldr, msgmap,
+		SV_DELETE | SV_FIX_DELS | SV_INBOXWOCNTXT) == searched))
 	  strncpy(bufp = buf + 1, "Moved", MIN(5,buflen)); /* change Moving to Moved */
 
 	buf[buflen-1] = '\0';
@@ -1781,7 +1676,9 @@ move_read_incoming(MAILSTREAM *stream, CONTEXT_S *context, char *folder,
        && ((context_isambig(folder)
 	    && folder_is_nick(folder, FOLDERS(context), 0))
 	   || folder_index(folder, context, FI_FOLDER) > 0)
-       && (seen_undel = count_flagged(stream, F_SEEN | F_UNDEL))){
+       && ((seen_undel = count_flagged(stream, F_SEEN | F_UNDEL))
+	   || (F_ON(F_AUTO_READ_MSGS,ps_global) &&
+	       F_ON(F_AUTO_READ_MSGS_RULES, ps_global)))){
 
 	for(; f && *archive; archive++){
 	    char *p;
@@ -2738,4 +2635,296 @@ get_uname(char *mailbox, char *target, int len)
     target[i-start] = '\0';	/* tie it off */
 
     return(*target ? target : NULL);
+}
+
+char *
+move_read_msgs_using_rules(MAILSTREAM *stream, char *dstfldr, char *buf)
+{
+    CONTEXT_S  *save_context = NULL;
+    char **folder_to_save = NULL;
+    int  num, we_cancel;
+    long i, j, success;
+    MSGNO_S *msgmap = NULL;
+    unsigned long nmsgs = 0L, stream_nmsgs;
+
+    if(!is_absolute_path(dstfldr)
+       && !(save_context = default_save_context(ps_global->context_list)))
+       save_context = ps_global->context_list;
+
+    folder_to_save = (char **)fs_get((stream->nmsgs + 1)*sizeof(char *));
+    folder_to_save[0] = NULL;
+    mn_init(&msgmap, stream->nmsgs);
+    stream_nmsgs = stream->nmsgs;
+    for (i = 1L; i <= stream_nmsgs ; i++){
+        set_lflag(stream, msgmap, i, MN_SLCT, 0);
+        folder_to_save[i] = get_lflag(stream, NULL, i, MN_EXLD)
+                            ? NULL : get_folder_to_save(stream, i, dstfldr);
+    }
+    for (i = 1L; i <= stream_nmsgs; i++){
+        num = 0;
+        if (folder_to_save[i]){
+           mn_init(&msgmap, stream_nmsgs);
+           for (j = i; j <= stream_nmsgs ; j++){
+                if (folder_to_save[j]){
+                   if (!strcmp(folder_to_save[i], folder_to_save[j])){
+                        set_lflag(stream, msgmap, j, MN_SLCT, 1);
+                        num++;
+                        if (j != i)
+                           fs_give((void **)&folder_to_save[j]);
+                   }
+                 }
+           }
+           pseudo_selected(stream, msgmap);
+           sprintf(buf, "Moving %s read message%s to \"%.45s\"",
+                      comatose(num), plural(num), folder_to_save[i]);
+           we_cancel = busy_cue(buf, NULL, 1);
+           ps_global->exiting = 1;
+           if(success = save(ps_global, stream,save_context, folder_to_save[i],
+                                msgmap, SV_DELETE | SV_FIX_DELS))
+           nmsgs += success;
+           if(we_cancel)
+             cancel_busy_cue(success ? 0 : -1);
+           for (j = i; j <= stream_nmsgs ; j++)
+               set_lflag(stream, msgmap, j, MN_SLCT, 0);
+           fs_give((void **)&folder_to_save[i]);
+           mn_give(&msgmap);
+        }
+    }
+    ps_global->exiting = 0; /* useful if we call from aggregate operations */
+    sprintf(buf, "Moved automatically %s message%s",
+                comatose(nmsgs), plural(nmsgs));
+    if (folder_to_save)
+        fs_give((void **)folder_to_save);
+    rule_curpos = 0L;
+    return buf;
+}
+
+char *
+get_folder_to_save(MAILSTREAM *stream, long i, char *dstfldr)
+{
+    MESSAGECACHE *mc = NULL;
+    RULE_RESULT *rule;
+    MSGNO_S *msgmap = NULL;
+    char *folder_to_save = NULL, *save_folder = NULL;
+    int n;
+    long msgno;
+
+    /* The plan is as follows: Select each message of the folder. We
+     * need to set the cursor correctly so that iFlag gets the value
+     * correctly too, otherwise iFlag will get the value of the position
+     * of the cursor. After that we need to look for a rule that applies
+     * to the message and get the saving folder. If we get a saving folder,
+     * and we used the _FLAG_ token, use that folder, if no
+     * _FLAG_ token was used, move only if seen and not deleted, to the
+     * folder specified in the saving rule. If we did not get a saving
+     * folder from the rule, just save in the default folder.
+     */
+    mn_init(&msgmap, stream->nmsgs);
+    rule_curpos = i;
+    msgno = mn_m2raw(msgmap, i);
+    if (msgno > 0L){
+        mc = mail_elt(stream, msgno);
+        rule = (RULE_RESULT *)
+            get_result_rule(V_SAVE_RULES, FOR_SAVE, mc->private.msg.env);
+        if (rule){
+            folder_to_save = cpystr(rule->result);
+            n = rule->number;
+            fs_give((void **)&rule->result);
+            fs_give((void **)&rule);
+        }
+    }
+
+    if (folder_to_save && *folder_to_save){
+        RULELIST *list = get_rulelist_from_code(V_SAVE_RULES,
+                                                ps_global->rule_list);
+        RULE_S *prule = get_rule(list, n);
+        if (condition_contains_token(prule->condition, "_FLAG_")
+             || (mc->valid && mc->seen && !mc->deleted)
+             || (!mc->valid && mc->searched))
+             save_folder = cpystr(folder_to_save);
+          else
+             save_folder = NULL;
+    }
+    else
+       if (!mc || (mc->seen && !mc->deleted))
+          save_folder = cpystr(dstfldr);
+    mn_give(&msgmap);
+    rule_curpos = 0L;
+    return save_folder;
+}
+
+unsigned long
+rules_cursor_pos(MAILSTREAM *stream)
+{
+  MSGNO_S *msgmap = sp_msgmap(stream);
+  return rule_curpos != 0L ? rule_curpos : mn_m2raw(msgmap,mn_get_cur(msgmap));
+}
+
+void
+setup_threading_index_style(void)
+{
+  RULE_RESULT *rule;
+  NAMEVAL_S *v;
+  int i;
+
+  rule = get_result_rule(V_THREAD_INDEX_STYLE_RULES, FOR_THREAD, NULL);
+  if (rule || ps_global->VAR_THREAD_INDEX_STYLE){
+     for(i = 0; v = thread_index_styles(i); i++)
+        if(!strucmp(rule ? rule->result : ps_global->VAR_THREAD_INDEX_STYLE,
+                    rule ? (v ? v->name : "" ) : S_OR_L(v))){
+              ps_global->thread_index_style = v->value;
+              break;
+        }
+     if (rule){
+        if (rule->result)
+           fs_give((void **)&rule->result);
+        fs_give((void **)&rule);
+     }
+  }
+}
+
+unsigned
+get_perfolder_startup_rule(MAILSTREAM *stream, int rule_type, char *folder)
+{
+    unsigned    startup_rule;
+    char        *rule_result;
+
+    startup_rule =  reset_startup_rule(stream);
+    rule_result = get_rule_result(FOR_STARTUP, folder, rule_type);
+    if (rule_result && *rule_result){
+       int        i;
+       NAMEVAL_S *v;
+
+       for(i = 0; v = incoming_startup_rules(i); i++)
+          if(!strucmp(rule_result, v->name)){
+             startup_rule = v->value;
+             break;
+          }
+       fs_give((void **)&rule_result);
+     }
+   return startup_rule;
+}
+
+void
+find_startup_position(int rule, MAILSTREAM *m, long pc)
+{
+  long n;
+  switch(rule){
+              /*
+               * For news in incoming collection we're doing the same thing
+               * for first-unseen and first-recent. In both those cases you
+               * get first-unseen if FAKE_NEW is off and first-recent if
+               * FAKE_NEW is on. If FAKE_NEW is on, first unseen is the
+               * same as first recent because all recent msgs are unseen
+               * and all unrecent msgs are seen (see pine_mail_open).
+               */
+              case IS_FIRST_UNSEEN:
+first_unseen:
+                mn_set_cur(ps_global->msgmap,
+                        (sp_first_unseen(m)
+                         && mn_get_sort(ps_global->msgmap) == SortArrival
+                         && !mn_get_revsort(ps_global->msgmap)
+                         && !get_lflag(ps_global->mail_stream, NULL,
+                                       sp_first_unseen(m), MN_EXLD)
+                         && (n = mn_raw2m(ps_global->msgmap,
+                                          sp_first_unseen(m))))
+                           ? n
+                           : first_sorted_flagged(F_UNSEEN | F_UNDEL, m, pc,
+                                              THREADING() ? 0 : FSF_SKIP_CHID));
+                break;
+
+              case IS_FIRST_RECENT:
+first_recent:
+                /*
+                 * We could really use recent for news but this is the way
+                 * it has always worked, so we'll leave it. That is, if
+                 * the FAKE_NEW feature is on, recent and unseen are
+                 * equivalent, so it doesn't matter. If the feature isn't
+                 * on, all the undeleted messages are unseen and we start
+                 * at the first one. User controls with the FAKE_NEW feature.
+                 */
+                if(IS_NEWS(ps_global->mail_stream)){
+                    mn_set_cur(ps_global->msgmap,
+                               first_sorted_flagged(F_UNSEEN|F_UNDEL, m, pc,
+                                               THREADING() ? 0 : FSF_SKIP_CHID));
+                }
+                else{
+                    mn_set_cur(ps_global->msgmap,
+                               first_sorted_flagged(F_RECENT | F_UNSEEN
+                                                    | F_UNDEL,
+                                                    m, pc,
+                                              THREADING() ? 0 : FSF_SKIP_CHID));
+                }
+                break;
+
+              case IS_FIRST_IMPORTANT:
+                mn_set_cur(ps_global->msgmap,
+                           first_sorted_flagged(F_FLAG|F_UNDEL, m, pc,
+                                              THREADING() ? 0 : FSF_SKIP_CHID));
+                break;
+
+              case IS_FIRST_IMPORTANT_OR_UNSEEN:
+
+                if(IS_NEWS(ps_global->mail_stream))
+                  goto first_unseen;
+
+                {
+                    MsgNo flagged, first_unseen;
+
+                    flagged = first_sorted_flagged(F_FLAG|F_UNDEL, m, pc,
+                                               THREADING() ? 0 : FSF_SKIP_CHID);
+                    first_unseen = (sp_first_unseen(m)
+                             && mn_get_sort(ps_global->msgmap) == SortArrival
+                             && !mn_get_revsort(ps_global->msgmap)
+                             && !get_lflag(ps_global->mail_stream, NULL,
+                                           sp_first_unseen(m), MN_EXLD)
+                             && (n = mn_raw2m(ps_global->msgmap,
+                                              sp_first_unseen(m))))
+                                ? n
+                                : first_sorted_flagged(F_UNSEEN|F_UNDEL, m, pc,
+                                               THREADING() ? 0 : FSF_SKIP_CHID);
+                    mn_set_cur(ps_global->msgmap,
+                          (MsgNo) MIN((int) flagged, (int) first_unseen));
+
+                }
+
+                break;
+
+              case IS_FIRST_IMPORTANT_OR_RECENT:
+
+                if(IS_NEWS(ps_global->mail_stream))
+                  goto first_recent;
+
+                {
+                    MsgNo flagged, first_recent;
+
+                    flagged = first_sorted_flagged(F_FLAG|F_UNDEL, m, pc,
+                                               THREADING() ? 0 : FSF_SKIP_CHID);
+                    first_recent = first_sorted_flagged(F_RECENT | F_UNSEEN
+                                                        | F_UNDEL,
+                                                        m, pc,
+                                               THREADING() ? 0 : FSF_SKIP_CHID);
+                    mn_set_cur(ps_global->msgmap,
+                              (MsgNo) MIN((int) flagged, (int) first_recent));
+                }
+
+                break;
+
+              case IS_FIRST:
+                mn_set_cur(ps_global->msgmap,
+                           first_sorted_flagged(F_UNDEL, m, pc,
+                                              THREADING() ? 0 : FSF_SKIP_CHID));
+                break;
+
+              case IS_LAST:
+                mn_set_cur(ps_global->msgmap,
+                           first_sorted_flagged(F_UNDEL, m, pc,
+                                 FSF_LAST | (THREADING() ? 0 : FSF_SKIP_CHID)));
+                break;
+
+              default:
+                panic("Unexpected incoming startup case");
+                break;
+
+  }
 }

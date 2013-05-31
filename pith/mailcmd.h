@@ -42,6 +42,8 @@
 #define DB_FROMTAB	0x02	/* opening because of TAB command      */
 #define DB_INBOXWOCNTXT	0x04	/* interpret inbox as one true inbox */
 
+static  MAILSTREAM *saved_stream;
+static  unsigned long rule_curpos = 0L;
 
 /*
  * generic "is aggregate message command?" test
@@ -63,7 +65,13 @@ int	   do_broach_folder(char *, CONTEXT_S *, MAILSTREAM **, unsigned long);
 void	   expunge_and_close(MAILSTREAM *, char **, unsigned long);
 void	   agg_select_all(MAILSTREAM *, MSGNO_S *, long *, int);
 char	  *move_read_msgs(MAILSTREAM *, char *, char *, size_t, long);
+char	  *move_read_msgs_using_rules (MAILSTREAM *, char *, char *);
+unsigned   get_perfolder_startup_rule (MAILSTREAM *, int, char *);
+void	   setup_threading_index_style (void);
+void	   find_startup_position (int, MAILSTREAM *, long);
+char	  *get_folder_to_save (MAILSTREAM *, long, char *);
 char	  *move_read_incoming(MAILSTREAM *, CONTEXT_S *, char *, char **, char *, size_t);
+unsigned   long rules_cursor_pos (MAILSTREAM *);
 void	   cross_delete_crossposts(MAILSTREAM *);
 long	   zoom_index(struct pine *, MAILSTREAM *, MSGNO_S *, int);
 int	   unzoom_index(struct pine *, MAILSTREAM *, MSGNO_S *);

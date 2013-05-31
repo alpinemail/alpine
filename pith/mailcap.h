@@ -29,6 +29,7 @@ char       *mc_conf_path(char *, char *, char *, int, char *);
 int	    mailcap_can_display(int, char *, BODY *, int);
 MCAP_CMD_S *mailcap_build_command(int, char *, BODY *, char *, int *, int);
 void	    mailcap_free(void);
+char 	   *mc_template(char *, BODY *, int);
 
 /* currently mandatory to implement stubs */
 

@@ -46,3 +46,4 @@ CLEANFILES = date.c
 date.c:
 	echo "char datestamp[]="\"`date`\"";" > date.c
 	echo "char hoststamp[]="\"`hostname`\"";" >> date.c
+	cat ../patchlevel >> date.c

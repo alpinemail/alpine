@@ -1,0 +1,149 @@
+---------------------------------------
+
+Maildir Driver for Alpine 2.0
+By Eduardo Chappa 
+<chappa@gmx.com>
+
+---------------------------------------
+1. General Information About This Patch
+---------------------------------------
+
+This patch adds support for the maildir format to Alpine. We take the 
+approach that this patch is one more driver among the number of formats 
+supported by Alpine (more generally c-client). This approach differs from 
+older versions of similar patches, in that once a maildir patch was 
+applied, it was assumed that all your folders would be created in the 
+maildir format. 
+
+This patch does not assume that maildir is a preferred format, instead 
+puts maildir in equal footing with other formats (mbox, mbx, mix, etc), 
+and so a maildir folder in the mail/ collection is treated in the same way 
+as any other folder in any other format. In other words, just by reading 
+the name of a folder, or opening it, or doing any operation with it, you 
+can not know in which format the folder is.
+
+This implies that if you want to add a folder in the maildir format to the 
+mail/ collection, then you must add by pressing "A" in the folder list 
+collection and enter "#driver.md/mail/name_maildir_folder".
+
+If you only want to use maildir, however, you can do so too. In this case, 
+you must create a maildir collection. In that collection, only maildir 
+folders will be listed. If there is any folder in any other format, that 
+folder will be ignored. In another words, any folder listed there is in 
+maildir format and can be accessed through that collection, conversely, 
+any folder not listed there is not in maildir format and there is no way 
+to access it using this collection.
+
+In order to create a maildir collection, you could press M S L, and "A" to 
+add a collection. Fill in the required fields as follows:
+
+Nickname  : Anything
+Server    :
+Path      : #md/relative/path/to/maildir/collection/
+View      :
+
+For example, if "path" is set to "#md/mail/", then Alpine will look for your 
+maildir folders that are in ~/mail/.
+
+The code in this patch is mostly based in code for the unix driver plus 
+some combinations of the mh, mbx and nntp drivers for the c-client 
+library. Those drivers were designed by Mark Crispin, and bugs in this 
+code are not his bugs, but my own.
+
+  I got all the specification for this patch from 
+http://cr.yp.to/proto/maildir.html. If you know of a place with a better 
+specification for maildir format please let me know. The method this patch 
+uses to create a unique filename for a message is one of the "old 
+fashioned" methods. I realize that this is old fashioned, but it is 
+portable, and portability is the main reason why I decided to use an old 
+fashioned method (most methods are not portable. See the word 
+"Unfortunately" in that document).
+
+--------------
+2. Other Goals
+--------------
+
+  It is intended that this code will work well with any application 
+written using the c-client library. Of paramount importance is to make the 
+associated imap server work well when the server accesses a folder in 
+Maildir format. The program mailutil should also work flawlessly with this 
+implemetation of the driver.
+
+  It is intended that this driver be fast and stable. We intend not to 
+patch Alpine to make this driver do its work, unless such patching is for 
+fixing bugs in Alpine or to pass parameters to the driver.
+
+------------------------------------------------------------------------ 
+3. What are the known bugs of this implementation of the Maildir driver? 
+------------------------------------------------------------------------
+
+  I don't know any at this time. There have been bugs before, though, but 
+I try to fix bugs as soon as they are reported. 
+
+----------
+4. On UIDs
+----------
+
+ This patch keeps uids in the name of the file that contains the message, 
+by adding a ",u=" string to the file name to save the uid of a message. A 
+file is kept between sessions to save information on the last uid assigned 
+and its time of validity. Only one session with writing access can write 
+uids, all others must wait for the other session to assign them. The 
+session assigning uids creates a ".uidtemp" file which other sessions must 
+not disturb.
+
+  Uid support appeared in Alpine 1.00 (snapshot 925), and is experimental,
+please report any problems.
+
+----------------------------------------------
+5. Configuring Alpine and Setting up a Maildir 
+----------------------------------------------
+
+Once this approach was chosen, it implied the following:
+
+    * This patch assumes that your INBOX is located at "$HOME/Maildir".  
+      This is a directory which should have three subdirectories "cur", 
+      "tmp" and "new". Mail is delivered to 'new' and read from 'cur'. I 
+      have added a configuration option "maildir-location" which can be 
+      used to tell Alpine where your Maildir inbox is, in case your system 
+      does not use the above directory (e.g. your system may use 
+      "~/.maildir"). In this case define that variable to be the name of 
+      the directory where your e-mail is being delivered (e.g.  
+      ".maildir").
+
+    * If you want to use the above configuration as your inbox, you must 
+      define your inbox-path as "#md/inbox" (no quotes).  You can define 
+      the inbox-path like above even if you have changed the 
+      maildir-location variable. That's the whole point of that variable.
+
+-------------------------------------------
+6. What about Courier/Dovecot file systems?
+-------------------------------------------
+
+In a courier file system all folders are subfolders of a root folder 
+called INBOX. Normally INBOX is located at ~/Maildir and subfolders are 
+"dot" directories in ~/Maildir. For example ~/Maildir/.Trash is a 
+subfolder of INBOX and is accessed with the nickname "INBOX.Trash".
+
+You can not access folders in this way unless you preceed them with the 
+string "#mc/". The purpose of the string "#mc/" is to warn Alpine that a 
+collection in the Courier format is going to be accessed. Therefore, you 
+can SELECT a folder like "#mc/INBOX.Trash", but not "INBOX.Trash"
+
+You can access a collection through a server, but if you want to access a 
+collection of folders created using the Courier server, you MUST edit your
+".pinerc" file and enter the definition of the collection as follows:
+
+folder-collections="Anything you want" #mc/INBOX.[]
+
+You can replace the string "#mc/INBOX." by something different, for example
+"#mc/Courier/." will make Alpine search for your collection in ~/Courier.
+
+You can not add this setting directly into Alpine because Alpine fails to 
+accept this value from its input, but it takes it correctly when it is 
+added through the ".pinerc" file.
+
+You can access your inbox as "#mc/INBOX" or "#md/INBOX". Both definitions 
+point to the same place.
+
+Last Updated May 28, 2011

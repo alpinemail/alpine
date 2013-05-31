@@ -33,6 +33,7 @@ int	process_config_input(UCS *);
 int	key_recorder(int);
 int	key_playback(int);
 int	recent_keystroke(int *, char *, size_t);
+void	fake_config_screen(struct ttyo **);
 int	init_tty_driver(struct pine *);
 void	end_tty_driver(struct pine *);
 int	PineRaw(int);

@@ -1156,6 +1156,7 @@ long imap_auth (MAILSTREAM *stream,NETMBX *mb,char *tmp,char *usr)
 	}
 				/* no error if protocol-initiated cancel */
 	lsterr = cpystr (reply->text);
+	delete_password(mb, usr);
       }
     }
     while (LOCAL->netstream && !LOCAL->byeseen && trial &&
@@ -1207,6 +1208,7 @@ long imap_login (MAILSTREAM *stream,NETMBX *mb,char *pwd,char *usr)
 	if (imap_OK (stream,reply = imap_send (stream,"LOGIN",args)))
 	  ret = LONGT;		/* success */
 	else {
+	  delete_password(mb, usr);
 	  mm_log (reply->text,WARN);
 	  if (!LOCAL->referral && (trial == imap_maxlogintrials))
 	    mm_log ("Too many login failures",ERROR);

@@ -2755,7 +2755,7 @@ PEConfigCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST 
 			      init_save_defaults();
 			      break;
 			    case V_SORT_KEY:
-			      decode_sort(ps_global->VAR_SORT_KEY, &ps_global->def_sort, &def_sort_rev);
+			      decode_sort(ps_global->VAR_SORT_KEY, &ps_global->def_sort, &def_sort_rev, 0);
 			      break;
 			    case V_VIEW_HDR_COLORS :
 			      set_custom_spec_colors(ps_global);
@@ -6331,7 +6331,7 @@ PEMailboxCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST
 				      && mn_get_revsort(sp_msgmap(ps_global->mail_stream)) == reversed))
 				sort_folder(ps_global->mail_stream, sp_msgmap(ps_global->mail_stream),
 					    ps_global->sort_types[i], 
-					    reversed, 0);
+					    reversed, 0, 1);
 
 			      break;
 			  }

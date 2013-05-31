@@ -21,7 +21,8 @@ static char rcsid[] = "$Id: color.c 769 2007-10-24 00:15:40Z hubert@u.washington
 #include "../pith/state.h"
 #include "../pith/conf.h"
 #include "../pith/filter.h"
-
+#include "../pith/mailview.h"
+#include "../pico/estruct.h"
 
 char *
 color_embed(char *fg, char *bg)
@@ -70,23 +71,110 @@ struct quote_colors {
     struct quote_colors *next;
 };
 
+int
+is_word (buf, i, j)
+ char buf[NSTRING];
+ int i, j;
+{
+ return i <= j && is_letter(buf[i]) ?
+         (i < j ? is_word(buf,i+1,j) : 1) : 0;
+}
+
+int
+is_mailbox(buf,i,j)
+char buf[NSTRING];
+ int i, j;
+{
+  return i <= j && (is_letter(buf[i]) || is_digit(buf[i]) || buf[i] == '.')
+         ? (i < j ? is_mailbox(buf,i+1,j) : 1) : 0;
+}
+
+int
+next_level_quote(buf, line, i, is_flowed)
+   char *buf;
+   char **line;
+   int i;
+   int is_flowed;
+{
+   int j;
+
+   if (!single_level(buf[i])){
+        if(is_mailbox(buf,i,i)){
+          for (j = i; buf[j] && !isspace(buf[j]); j++);
+          if (is_word(buf,i,j-1) || is_mailbox(buf,i,j-1))
+           j += isspace(buf[j]) ? 2 : 1;
+        }
+        else{
+           switch(buf[i]){
+             case ':' :
+                      if (next(buf,i) != RPAREN)
+                           j = i + 1;
+                      else
+                           j = i + 2;
+                    break;
+
+             case '-' :
+                     if (next(buf,i) != '-')
+                        j = i + 2;
+                     else
+                        j = i + 3;
+                    break;
+
+             case '+' :
+             case '*' :
+                    if (next(buf,i) != ' ')
+                       j = i + 2;
+                    else
+                       j = i + 3;
+                    break;
+
+             default  :
+                   for (j = i; buf[j] && !isspace(buf[j])
+                         && (!single_level(buf[i]) && !is_letter(buf[j])); j++);
+
+                   j += isspace(buf[j]) ? 1 : 0;
+                   break;
+             }
+        }
+        if (line && *line)
+           (*line) += j - i;
+    }
+    else{
+       j = i+1;
+       if (line && *line)
+          (*line)++;
+    }
+    if(!is_flowed){
+        if(line && *line)
+          for(; isspace((unsigned char)*(*line)); (*line)++);
+        for (i = j; isspace((unsigned char) buf[i]); i++);
+    }
+    else i = j;
+    if (is_flowed && i != j)
+       buf[i] = '\0';
+   return i;
+}
 
 int
 color_a_quote(long int linenum, char *line, LT_INS_S **ins, void *is_flowed_msg)
 {
-    int countem = 0;
+    int countem = 0, i, j = 0;
     struct variable *vars = ps_global->vars;
-    char *p;
+    char *p, buf[NSTRING] = {'\0'};
     struct quote_colors *colors = NULL, *cp, *next;
     COLOR_PAIR *col = NULL;
     int is_flowed = is_flowed_msg ? *((int *)is_flowed_msg) : 0;
+    int code;
+
+    code = (is_flowed ? IS_FLOWED : NO_FLOWED) | COLORAQUO;
+    select_quote(linenum, line, ins, (void *) &code);
+    strncpy(buf, tmp_20k_buf, NSTRING < SIZEOF_20KBUF ? NSTRING : SIZEOF_20KBUF);
+    buf[sizeof(buf)-1] = '\0';
 
     p = line;
-    if(!is_flowed)
-      while(isspace((unsigned char)*p))
-	p++;
+    for(i = 0; isspace((unsigned char)buf[i]); i++, p++);
 
-    if(p[0] == '>'){
+    if(buf[i]){
 	struct quote_colors *c;
 
 	/*
@@ -135,7 +223,7 @@ color_a_quote(long int linenum, char *line, LT_INS_S **ins, void *is_flowed_msg)
       free_color_pair(&col);
 
     cp = NULL;
-    while(*p == '>'){
+    while(buf[i]){
 	cp = (cp && cp->next) ? cp->next : colors;
 
 	if(countem > 0)
@@ -145,10 +233,9 @@ color_a_quote(long int linenum, char *line, LT_INS_S **ins, void *is_flowed_msg)
 
 	countem = (countem == 1) ? 0 : countem;
 
-	p++;
-	if(!is_flowed)
-	  for(; isspace((unsigned char)*p); p++)
-	    ;
+       i = next_level_quote(buf, &p, i, is_flowed);
+       for (; isspace((unsigned char)*p); p++);
+       for (; isspace((unsigned char)buf[i]); i++);
     }
 
     if(colors){
@@ -211,7 +298,7 @@ color_a_quote(long int linenum, char *line, LT_INS_S **ins, void *is_flowed_msg)
 	}
     }
 
-    return(0);
+    return(1);
 }
 
 

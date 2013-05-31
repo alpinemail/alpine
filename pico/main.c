@@ -163,6 +163,7 @@ main(int argc, char *argv[])
     char    *file_to_edit = NULL;
     char    *display_charmap = NULL, *dc;
     char    *keyboard_charmap = NULL;
+    int	     line_information_on = FALSE;
     int      use_system = 0;
     char    *err = NULL;
 
@@ -416,6 +417,12 @@ main(int argc, char *argv[])
 	      emlwrite(_("You may possibly have new mail."), NULL);
 	}
 
+         if (c == (CTRL|'\\')){
+           c = GetAccent();
+	   if (!c)
+	     c = NODATA;
+	 }
+
 	if(km_popped)
 	  switch(c){
 	    case NODATA:
@@ -437,14 +444,29 @@ main(int argc, char *argv[])
 	      mlerase();
 	}
 
-	f = FALSE;
+	f = (c == (CTRL|'J'));
 	n = 1;
+	if (!line_information_on)
+	   line_information_on = (c == (CTRL|'C'));
+	else
+	   line_information_on = ((c == KEY_DOWN) || (c == KEY_UP) ||
+				  (c == KEY_RIGHT) || (c == KEY_LEFT) ||
+			          (c == (CTRL|'V')) || (c == (CTRL|'Y')) ||
+			          (c == (CTRL|'D')) || (c == (CTRL|'F')) ||
+				  (c == (CTRL|'B')) || (c == (CTRL|'N')) ||
+				  (c == (CTRL|'P')) || (c == (CTRL|'A')) || 
+				  (c == (CTRL|'E')) || (c == (CTRL|'U'))) 
+				&& (c != (CTRL|'C'));
 
 #ifdef	MOUSE
 	clear_mfunc(mouse_in_content);
 #endif
 					/* Do it.               */
 	execute(normalize_cmd(c, fkm, 1), f, n);
+	if (line_information_on){
+	   c = (CTRL|'C');
+	   execute(normalize_cmd(c, fkm, 1), f, n);
+	}
     }
 }
 

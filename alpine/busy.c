@@ -226,7 +226,7 @@ busy_cue(char *msg, percent_done_t pc_f, int delay)
 
 	    add_review_message(buf, -1);
 	}
-	else{
+	else if (!ps_global->send_immediately){
 	    q_status_message(SM_ORDER, 0, 1, progress);
 
 	    /*
@@ -238,8 +238,8 @@ busy_cue(char *msg, percent_done_t pc_f, int delay)
 	     */
 	    display_message('x');
 	}
-	
-	fflush(stdout);
+	if (!ps_global->send_immediately)   
+	  fflush(stdout);
     }
 
     /*
@@ -287,7 +287,8 @@ busy_cue(char *msg, percent_done_t pc_f, int delay)
     (*ap)->cf	 = done_busy_cue;
     ap		 = &(*ap)->next;
 
-    start_after(a);		/* launch cue handler */
+    if(!ps_global->send_immediately)
+       start_after(a);		/* launch cue handler */
 
 #ifdef _WINDOWS
     mswin_setcursor(MSWIN_CURSOR_BUSY);
@@ -435,6 +436,11 @@ void
 done_busy_cue(void *data)
 {
     int space_left, slots_used;
+
+    if (ps_global->send_immediately){
+	mark_status_dirty();
+	return;
+    }
 
     if(final_message && final_message_pri >= 0){
 	char progress[MAX_SCREEN_COLS+1];

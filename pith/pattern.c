@@ -1756,7 +1756,7 @@ parse_action_slash(char *str, ACTION_S *action)
 	    SortOrder def_sort;
 	    int       def_sort_rev;
 
-	    if(decode_sort(p, &def_sort, &def_sort_rev) != -1){
+	    if(decode_sort(p, &def_sort, &def_sort_rev, 0) != -1){
 		action->sort_is_set = 1;
 		action->sortorder = def_sort;
 		action->revsort   = (def_sort_rev ? 1 : 0);
@@ -5483,6 +5483,15 @@ match_pattern_folder_specific(PATTERN_S *folders, MAILSTREAM *stream, int flags)
 		break;
 	      
 	      case '#':
+#ifndef _WINDOWS
+		if(!struncmp(patfolder, "#md/", 4)
+		       || !struncmp(patfolder, "#mc/", 4)){
+		  maildir_file_path(patfolder, tmp1, sizeof(tmp1));
+		  if(!strcmp(patfolder, stream->mailbox))
+		     match++;
+		  break;
+		}
+#endif
 	        if(!strcmp(patfolder, stream->mailbox))
 		  match++;
 
@@ -7903,7 +7912,7 @@ move_filtered_msgs(MAILSTREAM *stream, MSGNO_S *msgmap, char *dstfldr,
     int           we_cancel = 0, width;
     CONTEXT_S	 *save_context = NULL;
     char	  buf[MAX_SCREEN_COLS+1], sbuf[MAX_SCREEN_COLS+1];
-    char         *save_ref = NULL;
+    char         *save_ref = NULL, *save_dstfldr = NULL, *save_dstfldr2 = NULL;
 #define	FILTMSG_MAX	30
 
     if(!stream)
@@ -7936,6 +7945,16 @@ move_filtered_msgs(MAILSTREAM *stream, MSGNO_S *msgmap, char *dstfldr,
 
     if(F_OFF(F_QUELL_FILTER_MSGS, ps_global))
       we_cancel = busy_cue(buf, NULL, 0);
+
+#ifndef _WINDOWS
+    if(!struncmp(dstfldr, "#md/", 4) || !struncmp(dstfldr, "#mc/", 4)){  
+	char tmp1[MAILTMPLEN];
+	maildir_file_path(dstfldr, tmp1, sizeof(tmp1));
+	save_dstfldr2 = dstfldr;
+	save_dstfldr = cpystr(tmp1);
+	dstfldr = save_dstfldr;
+   }
+#endif
 
     if(!is_absolute_path(dstfldr)
        && !(save_context = default_save_context(ps_global->context_list)))
@@ -7999,6 +8018,11 @@ move_filtered_msgs(MAILSTREAM *stream, MSGNO_S *msgmap, char *dstfldr,
 
     if(we_cancel)
       cancel_busy_cue(buf[0] ? 0 : -1);
+
+    if(save_dstfldr){
+	fs_give((void **)&save_dstfldr);
+	dstfldr = save_dstfldr2;
+    }
 
     return(buf[0] != '\0');
 }

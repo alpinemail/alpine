@@ -30,7 +30,7 @@ static char rcsid[] = "$Id: sort.c 1142 2008-08-13 17:22:21Z hubert@u.washington
 #include "../pith/signal.h"
 #include "../pith/busy.h"
 #include "../pith/icache.h"
-
+#include "../pith/rules.h"
 
 /*
  * global place to store mail_sort and mail_thread results
@@ -91,7 +91,7 @@ Args: msgmap --
   ----*/
 void
 sort_folder(MAILSTREAM *stream, MSGNO_S *msgmap, SortOrder new_sort,
-	    int new_rev, unsigned int flags)
+	    int new_rev, unsigned int flags, int first)
 {
     long	   raw_current, i, j;
     unsigned long *sort = NULL;
@@ -100,6 +100,15 @@ sort_folder(MAILSTREAM *stream, MSGNO_S *msgmap, SortOrder new_sort,
     SortOrder      current_sort;
     int	           current_rev;
     MESSAGECACHE  *mc;
+
+    if (first){
+       if (new_sort == SortThread)
+        find_msgmap(stream, msgmap, flags,
+                 ps_global->thread_cur_sort, new_rev);
+       else
+        sort_folder(stream, msgmap, new_sort, new_rev, flags, 0);
+       return;
+    }
 
     dprint((2, "Sorting by %s%s\n",
 	       sort_name(new_sort), new_rev ? "/reverse" : ""));
@@ -530,20 +539,20 @@ percent_sorted(void)
  * argument also means arrival/reverse.
  */
 int
-decode_sort(char *sort_spec, SortOrder *def_sort, int *def_sort_rev)
+decode_sort(char *sort_spec, SortOrder *def_sort, int *def_sort_rev, int thread)
 {
     char *sep;
     char *fix_this = NULL;
-    int   x, reverse;
+    int   x = 0, reverse;
 
     if(!sort_spec || !*sort_spec){
-	*def_sort = SortArrival;
+	*def_sort = thread ? SortThread : SortArrival;
 	*def_sort_rev = 0;
         return(0);
     }
 
     if(struncmp(sort_spec, "reverse", strlen(sort_spec)) == 0){
-	*def_sort = SortArrival;
+	*def_sort = thread ? SortThread : SortArrival;
 	*def_sort_rev = 1;
         return(0);
     }
@@ -572,7 +581,7 @@ decode_sort(char *sort_spec, SortOrder *def_sort, int *def_sort_rev)
     if(ps_global->sort_types[x] == EndofList)
       return(-1);
 
-    *def_sort     = ps_global->sort_types[x];
+    *def_sort	  = ps_global->sort_types[x];
     *def_sort_rev = reverse;
     return(0);
 }
@@ -686,10 +695,26 @@ reset_sort_order(unsigned int flags)
     PAT_S        *pat;
     SortOrder	  the_sort_order;
     int           sort_is_rev;
+    char       *rule_result;
+    SortOrder   new_sort = EndofList;
+    int               is_rev;
 
+   rule_result = get_rule_result(FOR_SORT, ps_global->cur_folder, V_SORT_RULES);
+   if (rule_result && *rule_result){
+      new_sort  = (SortOrder) translate(rule_result, 1);
+      is_rev    = (SortOrder) translate(rule_result, 0) == EndofList ? 0 : 1;
+      fs_give((void **)&rule_result);
+   }
+   if (new_sort != EndofList){
+       the_sort_order = new_sort;
+       sort_is_rev    = is_rev;
+   }
+   else{
     /* set default order */
     the_sort_order = ps_global->def_sort;
-    sort_is_rev    = ps_global->def_sort_rev;
+    sort_is_rev    = the_sort_order == SortThread
+			? (ps_global->thread_def_sort_rev + ps_global->def_sort_rev) % 2
+			: ps_global->def_sort_rev;
 
     if(ps_global->mail_stream && nonempty_patterns(rflags, &pstate)){
 	for(pat = first_pattern(&pstate); pat; pat = next_pattern(&pstate)){
@@ -702,9 +727,52 @@ reset_sort_order(unsigned int flags)
 	   && pat->action->sort_is_set){
 	    the_sort_order = pat->action->sortorder;
 	    sort_is_rev    = pat->action->revsort;
+	    sort_is_rev    = the_sort_order == SortThread
+				? (ps_global->thread_def_sort_rev + pat->action->revsort) % 2
+				: pat->action->revsort;
 	}
     }
+   }
+    if(the_sort_order == SortThread && !(flags & SRT_MAN))
+      ps_global->thread_cur_sort = ps_global->thread_def_sort;
 
     sort_folder(ps_global->mail_stream, ps_global->msgmap,
-		the_sort_order, sort_is_rev, flags);
+		the_sort_order, sort_is_rev, flags, 1);
 }
+
+SortOrder translate(char *order, int is_rev)
+{
+   int rev = 0;
+     if (!strncmp(order,"tHread", 6)
+                || (rev = !strncmp(order,"Reverse tHread", 14)))
+        return is_rev || rev ? SortThread : EndofList;
+     if (!strncmp(order,"OrderedSubj", 11)
+                || (rev = !strncmp(order,"Reverse OrderedSubj", 19)))
+        return is_rev || rev  ? SortSubject2 : EndofList;
+     if (!strncmp(order,"Subject", 7)
+                || (rev = !strncmp(order,"Reverse SortSubject", 15)))
+        return is_rev || rev  ?  SortSubject : EndofList;
+     if (!strncmp(order,"Arrival", 7)
+                || (rev = !strncmp(order,"Reverse Arrival", 15)))
+        return is_rev || rev  ?  SortArrival : EndofList;
+     if (!strncmp(order,"From", 4)
+                || (rev = !strncmp(order,"Reverse From", 12)))
+        return is_rev || rev  ?  SortFrom : EndofList;
+     if (!strncmp(order,"To", 2)
+                || (rev = !strncmp(order,"Reverse To", 10)))
+        return is_rev || rev  ?  SortTo : EndofList;
+     if (!strncmp(order,"Cc", 2)
+                || (rev = !strncmp(order,"Reverse Cc", 10)))
+        return is_rev || rev  ?  SortCc : EndofList;
+     if (!strncmp(order,"Date", 4)
+                || (rev = !strncmp(order,"Reverse Date", 12)))
+        return is_rev || rev  ?  SortDate : EndofList;
+     if (!strncmp(order,"siZe", 4)
+                || (rev = !strncmp(order,"Reverse siZe", 12)))
+        return is_rev || rev  ?  SortSize : EndofList;
+     if (!strncmp(order,"scorE", 5)
+                || (rev = !strncmp(order,"Reverse scorE", 13)))
+        return is_rev || rev  ?  SortScore : EndofList;
+   return EndofList;
+}
+

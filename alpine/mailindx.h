@@ -103,7 +103,7 @@ int		 truncate_subj_and_from_strings(void);
 void		 paint_index_hline(MAILSTREAM *, long, ICE_S *);
 void		 setup_index_state(int);
 void		 warn_other_cmds(void);
-void		 thread_command(struct pine *, MAILSTREAM *, MSGNO_S *, UCS, int);
+void		 thread_command(struct pine *, MAILSTREAM *, MSGNO_S *, UCS, int, int);
 COLOR_PAIR      *apply_rev_color(COLOR_PAIR *, int);
 #ifdef	_WINDOWS
 int		 index_sort_callback(int, long);

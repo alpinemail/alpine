@@ -408,6 +408,9 @@ get_mail_list(CONTEXT_S *list_cntxt, char *folder_base)
            && stricmp(filename, folder_base)){
 #else
         if(strncmp(filename, folder_base, folder_base_len) == 0
+#ifndef _WINDOWS
+	   && filename[folder_base_len] != list_cntxt->dir->delim
+#endif
            && strcmp(filename, folder_base)){
 #endif
 #endif

@@ -47,6 +47,7 @@
 #define setpgrp setpgid
 
 #define SYSTEMUID 18		/* Cygwin returns this for SYSTEM */
+#define FLAGSEP ';'
 #define geteuid Geteuid
 uid_t Geteuid (void);
 

@@ -106,13 +106,19 @@ MAILSTREAM dummyproto = {&dummydriver};
  * Accepts: mailbox name
  * Returns: our driver if name is valid, NIL otherwise
  */
-
+char * maildir_remove_root(char *);
 DRIVER *dummy_valid (char *name)
 {
-  char *s,tmp[MAILTMPLEN];
+  char *s,tmp[MAILTMPLEN], *rname;
   struct stat sbuf;
+
+  if(strlen(name) > MAILTMPLEN)
+   name[MAILTMPLEN] = '\0';
+
+  strcpy(tmp, name);
+  rname = maildir_remove_root(tmp);
 				/* must be valid local mailbox */
-  if (name && *name && (*name != '{') && (s = mailboxfile (tmp,name))) {
+  if (rname && *rname && (*rname != '{') && (s = mailboxfile (tmp,rname))) {
 				/* indeterminate clearbox INBOX */
     if (!*s) return &dummydriver;
     else if (!stat (s,&sbuf)) switch (sbuf.st_mode & S_IFMT) {
@@ -121,8 +127,9 @@ DRIVER *dummy_valid (char *name)
       return &dummydriver;
     }
 				/* blackbox INBOX does not exist yet */
-    else if (!compare_cstring (name,"INBOX")) return &dummydriver;
+    else if (!compare_cstring (rname,"INBOX")) return &dummydriver;
   }
+  if(rname) fs_give((void **)&rname);
   return NIL;
 }
 
@@ -454,6 +461,8 @@ long dummy_create (MAILSTREAM *stream,char *mailbox)
 {
   char *s,tmp[MAILTMPLEN];
   long ret = NIL;
+  if(!strncmp(mailbox,"#md/",4) || !strncmp(mailbox,"#mc/", 4))
+    return maildir_create(stream, mailbox);
 				/* validate name */
   if (!(compare_cstring (mailbox,"INBOX") && (s = dummy_file (tmp,mailbox)))) {
     sprintf (tmp,"Can't create %.80s: invalid name",mailbox);
@@ -519,6 +528,14 @@ long dummy_delete (MAILSTREAM *stream,char *mailbox)
 {
   struct stat sbuf;
   char *s,tmp[MAILTMPLEN];
+  if (!strncmp(mailbox,"#md/",4) || !strncmp(mailbox,"#mc/", 4) 
+	|| is_valid_maildir(&mailbox)){
+    char tmp[MAILTMPLEN] = {'\0'};
+    strcpy(tmp, mailbox);
+    if(tmp[strlen(tmp) - 1] != '/')
+       tmp[strlen(tmp)] = '/';
+     return maildir_delete(stream, tmp);
+  }
   if (!(s = dummy_file (tmp,mailbox))) {
     sprintf (tmp,"Can't delete - invalid name: %.80s",s);
     MM_LOG (tmp,ERROR);
@@ -544,12 +561,23 @@ long dummy_delete (MAILSTREAM *stream,char *mailbox)
 long dummy_rename (MAILSTREAM *stream,char *old,char *newname)
 {
   struct stat sbuf;
-  char c,*s,tmp[MAILTMPLEN],mbx[MAILTMPLEN],oldname[MAILTMPLEN];
+  char c,*s,tmp[MAILTMPLEN],mbx[MAILTMPLEN],oldname[MAILTMPLEN], *rold, *rnewname;
+
+  if(strlen(old) > MAILTMPLEN)
+    old[MAILTMPLEN] = '\0';
+
+  if(strlen(newname) > MAILTMPLEN)
+    newname[MAILTMPLEN] = '\0';
+
+  strcpy(tmp, old);
+  rold = maildir_remove_root(tmp);
+  strcpy(tmp, newname);
+  rnewname = maildir_remove_root(tmp);
 				/* no trailing / allowed */
-  if (!dummy_file (oldname,old) || !(s = dummy_file (mbx,newname)) ||
+  if (!dummy_file (oldname,rold) || !(s = dummy_file (mbx,rnewname)) ||
       stat (oldname,&sbuf) || ((s = strrchr (s,'/')) && !s[1] &&
 			       ((sbuf.st_mode & S_IFMT) != S_IFDIR))) {
-    sprintf (mbx,"Can't rename %.80s to %.80s: invalid name",old,newname);
+    sprintf (mbx,"Can't rename %.80s to %.80s: invalid name",rold,rnewname);
     MM_LOG (mbx,ERROR);
     return NIL;
   }
@@ -565,14 +593,16 @@ long dummy_rename (MAILSTREAM *stream,char *old,char *newname)
     }
   }
 				/* rename of non-ex INBOX creates dest */
-  if (!compare_cstring (old,"INBOX") && stat (oldname,&sbuf))
+  if (!compare_cstring (rold,"INBOX") && stat (oldname,&sbuf))
     return dummy_create (NIL,mbx);
   if (rename (oldname,mbx)) {
-    sprintf (tmp,"Can't rename mailbox %.80s to %.80s: %.80s",old,newname,
+    sprintf (tmp,"Can't rename mailbox %.80s to %.80s: %.80s",rold,rnewname,
 	     strerror (errno));
     MM_LOG (tmp,ERROR);
     return NIL;
   }
+  if(rold) fs_give((void **)&rold);
+  if(rnewname) fs_give((void **)&rnewname);
   return T;			/* return success */
 }
 

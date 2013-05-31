@@ -4128,6 +4128,8 @@ ab_compose_internal(BuildTo bldto, int allow_role)
 	 * won't do anything, but will cause compose_mail to think there's
 	 * already a role so that it won't try to confirm the default.
 	 */
+	if (ps_global->role)
+	   fs_give((void **)&ps_global->role);
 	if(role)
 	  role = copy_action(role);
 	else{
@@ -4135,6 +4137,7 @@ ab_compose_internal(BuildTo bldto, int allow_role)
 	    memset((void *)role, 0, sizeof(*role));
 	    role->nick = cpystr("Default Role");
 	}
+	ps_global->role = cpystr(role->nick);
     }
 
     compose_mail(addr, fcc, role, NULL, NULL);

@@ -45,6 +45,7 @@ static char rcsid[] = "$Id: mailview.c 1266 2009-07-14 18:39:12Z hubert@u.washin
 #include "dispfilt.h"
 #include "busy.h"
 #include "smime.h"
+#include "roleconf.h"
 #include "../pith/conf.h"
 #include "../pith/filter.h"
 #include "../pith/msgno.h"
@@ -130,6 +131,7 @@ struct view_write_s {
 #define	SS_CUR	2
 #define	SS_FREE	3
 
+static ACTION_S *role_chosen = NULL;
 
 /*
  * Handle hints.
@@ -204,7 +206,15 @@ char	   *pcpine_help_scroll(char *);
 int	    pcpine_view_cursor(int, long);
 #endif
 
+static char *prefix;
+#define NO_FLOWED  0x0000
+#define IS_FLOWED  0x0001
+#define DELETEQUO  0x0010
+#define COLORAQUO  0x0100
+#define RAWSTRING  0x1000
 
+int         is_word (char *, int, int);
+int         is_mailbox(char *, int, int);
 
 /*----------------------------------------------------------------------
      Format a buffer with the text of the current message for browser
@@ -242,6 +252,8 @@ mail_view_screen(struct pine *ps)
 
     ps->prev_screen = mail_view_screen;
     ps->force_prefer_plain = ps->force_no_prefer_plain = 0;
+
+    strcpy(ps->screen_name, "text");
 
     if(ps->ttyo->screen_rows - HEADER_ROWS(ps) - FOOTER_ROWS(ps) < 1){
 	q_status_message(SM_ORDER | SM_DING, 0, 3,
@@ -294,6 +306,17 @@ mail_view_screen(struct pine *ps)
 	}
 	else
 	  ps->unseen_in_view = !mc->seen;
+
+	prefix = reply_quote_str(env);
+	/* Make sure the prefix is not only made of spaces, so that we do not
+	 * paint the screen incorrectly
+	 */
+	if (prefix && *prefix){
+	   int i;
+	   for (i = 0; isspace((unsigned char) prefix[i]); i++);
+	   if (i == strlen(prefix))
+	     fs_give((void **)&prefix);
+	}
 
 	init_handles(&handles);
 
@@ -479,6 +502,10 @@ mail_view_screen(struct pine *ps)
     }
     while(ps->next_screen == SCREEN_FUN_NULL);
 
+    strcpy(ps->screen_name, "unknown");
+
+    if (prefix && *prefix)
+       fs_give((void **)&prefix);
     if(we_cancel)
       cancel_busy_cue(-1);
 
@@ -733,6 +760,8 @@ scroll_handle_prompt(HANDLE_S *handle, int force)
 	{0, 'a', "A", N_("editApp")},
 	{-1, 0, NULL, NULL}};
 
+    if (role_chosen)
+	free_action(&role_chosen);
     if(handle->type == URL){
 	launch_opts[4].ch = 'u';
 
@@ -847,12 +876,42 @@ scroll_handle_prompt(HANDLE_S *handle, int force)
 	 * sense if you just say View selected URL ...
 	 */
 	if(handle->type == URL &&
-	   !struncmp(handle->h.url.path, "mailto:", 7))
-	  snprintf(prompt, sizeof(prompt), "Compose mail to \"%.*s%s\" ? ",
-		  MIN(MAX(0,sc - 25), sizeof(prompt)-50), handle->h.url.path+7,
-		  (strlen(handle->h.url.path+7) > MAX(0,sc-25)) ? "..." : "");
-	else
-	  snprintf(prompt, sizeof(prompt), "View selected %s %s%.*s%s ? ",
+	  !struncmp(handle->h.url.path, "mailto:", 7)){
+	  int rolenick = role_chosen ? strlen(role_chosen->nick) : 0;
+	  int offset   = 25 + (role_chosen ? 20 : 0);
+	  int offset2  = max(0, sc - offset) - strlen(handle->h.url.path+7);
+	  int offset3  = sc - strlen(handle->h.url.path+7) - rolenick - offset;
+	  int laddress = min(max(0,sc - offset), sizeof(prompt)-50);
+	  int lrole    = rolenick;
+
+	  if (offset3 < 0){
+		lrole    = rolenick;
+		laddress = sc - offset - lrole;
+		offset3 = laddress - 20; /* redefine offset3 */
+		if (offset3 < 0){
+		   laddress = 20;
+		   lrole    = sc - offset - laddress;
+		}
+	  }
+	  launch_opts[2].ch = 'r';
+	  launch_opts[2].rval = 'r';
+	  launch_opts[2].name = "R";
+	  launch_opts[2].label = N_("Set Role");
+	  snprintf(prompt, sizeof(prompt), "Compose mail to \"%.*s%s\" %s%.*s%s%s? ",
+		laddress, handle->h.url.path+7,
+		(offset2 < 0 ? "..." : ""),
+		(role_chosen ? "using role \"" : ""),
+		(role_chosen ? lrole : 0),
+		(role_chosen ? role_chosen->nick  : ""),
+		(role_chosen ? (rolenick > lrole ? "..." : "") : ""),
+		(role_chosen ? "\" " : ""));
+	}
+	else{
+	    launch_opts[2].ch = -2;
+	    launch_opts[2].rval = 0;
+	    launch_opts[2].name = NULL;
+	    launch_opts[2].label = NULL;
+	    snprintf(prompt, sizeof(prompt), "View selected %s %s%.*s%s ? ",
 		  (handle->type == URL) ? "URL" : "Attachment",
 		  (handle->type == URL) ? "\"" : "",
 		  MIN(MAX(0,sc-27), sizeof(prompt)-50),
@@ -860,6 +919,7 @@ scroll_handle_prompt(HANDLE_S *handle, int force)
 		  (handle->type == URL)
 		    ? ((strlen(handle->h.url.path) > MAX(0,sc-27))
 			    ? "...\"" : "\"") : "");
+	}
 
 	prompt[sizeof(prompt)-1] = '\0';
 
@@ -867,6 +927,29 @@ scroll_handle_prompt(HANDLE_S *handle, int force)
 			     launch_opts, 'y', 'n', NO_HELP, RB_SEQ_SENSITIVE)){
 	  case 'y' :
 	    return(1);
+
+          case 'r':
+	  {
+	  void (*prev_screen)(struct pine *) = ps_global->prev_screen,
+		    (*redraw)(void) = ps_global->redrawer;
+	  ps_global->redrawer = NULL;
+	  ps_global->next_screen = SCREEN_FUN_NULL;
+	  if(role_select_screen(ps_global, &role_chosen, 1) < 0){
+	     cmd_cancelled("Compose");
+	   ps_global->next_screen = prev_screen;
+	   ps_global->redrawer = redraw;
+	     if(ps_global->redrawer)
+	       (*ps_global->redrawer)();
+	     return 0;
+	  }
+	  ps_global->next_screen = prev_screen;
+	  ps_global->redrawer = redraw;
+	  if(role_chosen)
+	  role_chosen = combine_inherited_role(role_chosen);
+	  if(ps_global->redrawer)
+	    (*ps_global->redrawer)();
+	  break;
+	}
 
 	  case 'u' :
 	    strncpy(tmp, handle->h.url.path, sizeof(tmp)-1);
@@ -1432,7 +1515,7 @@ url_launch(HANDLE_S *handle)
 	else
 #endif
 	/* quote shell specials */
-	if(strpbrk(handle->h.url.path, "&*!;<>?[]|~$(){}'\"") != NULL){
+	if(strpbrk(handle->h.url.path, "&*;<>?[]|~$(){}'\"") != NULL){
 	    escape_single_quotes++;
 	    if((p = strstr(toolp, "_URL_")) != NULL){  /* explicit arg? */
 		int in_quote = 0;
@@ -1510,8 +1593,7 @@ url_launch(HANDLE_S *handle)
 		      *cmdp++ = '\'';	/* closing quote */
 		      *cmdp++ = '\\';
 		      *cmdp++ = '\'';	/* opening quote comes from p below */
-		  } else if (strchr("&*!;<>?[]|~$(){}\"", *p) != NULL)
-		      *cmdp++ = '\\';
+		  }
 
 		  *cmdp++ = *p;
 	      }
@@ -1539,7 +1621,7 @@ url_launch(HANDLE_S *handle)
 	if(cmdp-cmd >= URL_MAX_LAUNCH)
 	  return(url_launch_too_long(rv));
 	
-	mode = PIPE_RESET | PIPE_USER | PIPE_RUNNOW ;
+	mode = PIPE_RESET | PIPE_USER | PIPE_RUNNOW | PIPE_NOSHELL;
 	if((syspipe = open_system_pipe(cmd, NULL, NULL, mode, 0, pipe_callback, pipe_report_error)) != NULL){
 	    close_system_pipe(&syspipe, NULL, pipe_callback);
 	    q_status_message(SM_ORDER, 0, 4, _("VIEWER command completed"));
@@ -1817,7 +1899,7 @@ url_local_mailto_and_atts(char *url, PATMT *attachlist)
 	fs_give((void **) &urlp);
 
 	rflags = ROLE_COMPOSE;
-	if(nonempty_patterns(rflags, &dummy)){
+	if(!(role = copy_action(role_chosen)) && nonempty_patterns(rflags, &dummy)){
 	    role = set_role_from_msg(ps_global, rflags, -1L, NULL);
 	    if(confirm_role(rflags, &role))
 	      role = combine_inherited_role(role);
@@ -1893,6 +1975,7 @@ outta_here:
     
     free_redraft_pos(&redraft_pos);
     free_action(&role);
+    free_action(&role_chosen);
 
     return(rv);
 }
@@ -3463,6 +3546,52 @@ scrolltool(SCROLL_S *sparms)
 	    print_to_printer(sparms);
 	    break;
 
+          case MC_NEXTHREAD:
+          case MC_PRETHREAD:
+             if (THREADING()){
+                if (any_messages(ps_global->msgmap, NULL,
+                                        "to move to other thread"))
+                  move_thread(ps_global, ps_global->mail_stream, ps_global->msgmap,
+                                                cmd == MC_NEXTHREAD ? 1 : -1);
+		  done = 1;
+             }
+             else
+                q_status_message(SM_ORDER, 0, 1,
+                         "Command available in threaded mode only");
+          break;
+
+          case MC_DELTHREAD:
+             if (THREADING()){
+                if (any_messages(ps_global->msgmap, NULL, "to delete"))
+                    cmd_delete_thread(ps_global, ps_global->mail_stream, ps_global->msgmap);
+		done = 1;
+             }
+             else
+                q_status_message(SM_ORDER, 0, 1,
+                         "Command available in threaded mode only");
+          break;  
+                
+          case MC_UNDTHREAD:
+             if (THREADING()){
+                if (any_messages(ps_global->msgmap, NULL, "to undelete"))
+                    cmd_undelete_thread(ps_global, ps_global->mail_stream, ps_global->msgmap);
+		done = 1;
+             }
+             else
+                q_status_message(SM_ORDER, 0, 1,
+                         "Command available in threaded mode only");   
+          break;
+             
+          case MC_SELTHREAD:
+             if (THREADING()){
+                if (any_messages(ps_global->msgmap, NULL, "to undelete"))
+                    cmd_select_thread(ps_global, ps_global->mail_stream, ps_global->msgmap);
+		done = 1;
+             }
+             else
+                q_status_message(SM_ORDER, 0, 1,
+                         "Command available in threaded mode only");
+          break;
 
 	    /* ------- First handle on Line ------ */
 	  case MC_GOTOBOL :

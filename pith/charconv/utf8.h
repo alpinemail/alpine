@@ -81,6 +81,7 @@ UCS           *ucs4_strncat(UCS *ucs4dst, UCS *ucs4src, size_t n);
 UCS           *ucs4_strchr(UCS *s, UCS c);
 UCS           *ucs4_strrchr(UCS *s, UCS c);
 unsigned       utf8_width(char *);
+unsigned       utf8_widthis(char *);
 size_t         utf8_to_width_rhs(char *, char *, size_t, unsigned);
 int            utf8_snprintf(char *, size_t, char *, ...);
 size_t         utf8_to_width(char *, char *, size_t, unsigned, unsigned *);

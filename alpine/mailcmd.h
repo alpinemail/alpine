@@ -84,7 +84,7 @@ char	   *broach_folder(int, int, int *, CONTEXT_S **);
 int	    ask_mailbox_reopen(struct pine *, int *);
 void	    visit_folder(struct pine *, char *, CONTEXT_S *, MAILSTREAM *, unsigned long);
 int	    select_by_current(struct pine *, MSGNO_S *, CmdWhere);
-int	    apply_command(struct pine *, MAILSTREAM *, MSGNO_S *, UCS, int, int);
+int	    apply_command(struct pine *, MAILSTREAM *, MSGNO_S *, UCS, int, int, int);
 char      **choose_list_of_keywords(void);
 char       *choose_a_charset(int);
 char      **choose_list_of_charsets(void);
@@ -102,6 +102,15 @@ int	    any_selected_callback(int, long);
 int	    flag_callback(int, long);
 MPopup	   *flag_submenu(MESSAGECACHE *);
 #endif
-
+void          cmd_delete_thread(struct pine *, MAILSTREAM *, MSGNO_S *);
+void          cmd_delete_this_thread(struct pine *, MAILSTREAM *, MSGNO_S *);
+void          cmd_undelete_this_thread(struct pine *, MAILSTREAM *, MSGNO_S *);
+void          cmd_undelete_thread(struct pine *, MAILSTREAM *, MSGNO_S *);
+void          cmd_select_thread(struct pine *, MAILSTREAM *, MSGNO_S *);
+void          kolapse_thread(struct pine *, MAILSTREAM *, MSGNO_S *, char, int);
+void          collapse_thread(struct pine *, MAILSTREAM *, MSGNO_S *, int);
+void          expand_thread(struct pine *, MAILSTREAM *, MSGNO_S *, int);
+int           collapse_this_thread(struct pine *, MAILSTREAM *, MSGNO_S *, int, int);
+int           expand_this_thread(struct pine *, MAILSTREAM *, MSGNO_S *, int, int);
 
 #endif /* PINE_MAILCMD_INCLUDED */

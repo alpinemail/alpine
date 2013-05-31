@@ -144,7 +144,7 @@ DEFAULTAUTHENTICATORS=ext md5 pla log
 # However, mh needs to be before any sysinbox formats (such as mmdf or unix)
 # since otherwise INBOX won't work correctly when mh_allow_inbox is set.
 #
-DEFAULTDRIVERS=imap nntp pop3 mix mx mbx tenex mtx mh mmdf unix news phile
+DEFAULTDRIVERS=maildir courier imap nntp pop3 mix mx mbx tenex mtx mh mmdf unix news phile
 CHUNKSIZE=65536
 
 # Normally no need to change any of these
@@ -153,7 +153,7 @@ ARCHIVE=c-client.a
 BINARIES=osdep.o mail.o misc.o newsrc.o smanager.o utf8.o utf8aux.o siglocal.o \
  dummy.o pseudo.o netmsg.o flstring.o fdstring.o \
  rfc822.o nntp.o smtp.o imap4r1.o pop3.o \
- unix.o mbx.o mmdf.o tenex.o mtx.o news.o phile.o mh.o mx.o mix.o
+ unix.o mbx.o mmdf.o tenex.o mtx.o news.o phile.o mh.o mx.o mix.o maildir.o
 CFLAGS=-g
 
 CAT=cat
@@ -290,7 +290,7 @@ cvx:	# Convex
 
 cyg:	# Cygwin - note that most local file drivers don't work!!
 	$(BUILD) `$(CAT) SPECIALS` OS=$@ \
-	DEFAULTDRIVERS="imap nntp pop3 mbx unix phile" \
+	DEFAULTDRIVERS="imap nntp pop3 mbx unix maildir phile" \
 	SIGTYPE=psx CHECKPW=cyg LOGINPW=cyg CRXTYPE=std \
 	SPOOLDIR=/var \
 	ACTIVEFILE=/usr/local/news/lib/active \
@@ -900,7 +900,7 @@ tenex.o: mail.h misc.h osdep.h dummy.h
 unix.o: mail.h misc.h osdep.h unix.h pseudo.h dummy.h
 utf8.o: mail.h misc.h osdep.h utf8.h tmap.c widths.c
 utf8aux.o: mail.h misc.h osdep.h utf8.h
-
+maildir.o: mail.h misc.h osdep.h maildir.h dummy.h
 
 # OS-dependent
 

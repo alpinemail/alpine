@@ -46,6 +46,8 @@ static char rcsid[] = "$Id: reply.c 1074 2008-06-04 00:08:43Z hubert@u.washingto
 #include "../pith/ablookup.h"
 #include "../pith/mailcmd.h"
 #include "../pith/margin.h"
+#include "../pith/copyaddr.h"
+#include "../pith/rules.h"
 
 
 /*
@@ -814,8 +816,27 @@ char *
 reply_quote_str(ENVELOPE *env)
 {
     char *prefix, *repl, *p, buf[MAX_PREFIX+1], pbf[MAX_SUBSTITUTION+1];
+    char reply_string[MAX_PREFIX+1];
 
-    strncpy(buf, ps_global->VAR_REPLY_STRING, sizeof(buf)-1);
+    { RULE_RESULT *rule;
+      rule = get_result_rule(V_REPLY_INDENT_RULES, FOR_COMPOSE , env);
+       if (rule){
+           strncpy(reply_string,rule->result,sizeof(reply_string));
+	   reply_string[sizeof(reply_string)-1] = '\0';
+           if (rule->result)
+	      fs_give((void **)&rule->result);
+	   fs_give((void **)&rule);
+       }
+       else
+	  if ((ps_global->VAR_REPLY_STRING) && (ps_global->VAR_REPLY_STRING[0])){
+	    strncpy(reply_string,ps_global->VAR_REPLY_STRING, sizeof(reply_string)-1);
+	    reply_string[sizeof(reply_string)-1] = '\0';
+	  }
+	  else
+           strncpy(reply_string,"> ",sizeof("> "));
+    }
+
+    strncpy(buf, reply_string, sizeof(buf)-1);
     buf[sizeof(buf)-1] = '\0';
 
     /* set up the prefix to quote included text */
@@ -867,10 +888,29 @@ reply_quote_str(ENVELOPE *env)
 int
 reply_quote_str_contains_tokens(void)
 {
-    return(ps_global->VAR_REPLY_STRING && ps_global->VAR_REPLY_STRING[0] &&
-	   (strstr(ps_global->VAR_REPLY_STRING, from_token) ||
-	    strstr(ps_global->VAR_REPLY_STRING, nick_token) ||
-	    strstr(ps_global->VAR_REPLY_STRING, init_token)));
+   char *reply_string;
+      
+   reply_string = (char *) malloc( 80*sizeof(char));
+   { RULE_RESULT *rule;
+     rule = get_result_rule(V_REPLY_INDENT_RULES, FOR_COMPOSE, NULL);
+      if (rule){
+          reply_string = cpystr(rule->result);
+	  if (rule->result)
+	     fs_give((void **)&rule->result);
+	  fs_give((void **)&rule);
+      }
+      else
+	  if ((ps_global->VAR_REPLY_STRING) && (ps_global->VAR_REPLY_STRING[0])){
+	    strncpy(reply_string,ps_global->VAR_REPLY_STRING, sizeof(reply_string)-1);
+	    reply_string[sizeof(reply_string)-1] = '\0';
+	  }
+	  else
+          reply_string = cpystr("> ");
+   }
+    return(reply_string && reply_string[0] &&
+	   (strstr(reply_string, from_token) ||
+	    strstr(reply_string, nick_token) ||
+	    strstr(reply_string, init_token)));
 }
 
 
@@ -972,7 +1012,7 @@ reply_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
 	if(!orig_body
 	   || orig_body->type == TYPETEXT
 	   || reply_raw_body
-	   || F_OFF(F_ATTACHMENTS_IN_REPLY, ps_global)){
+	   || !ps_global->reply.attach){
 	    char *charset = NULL;
 
 	    /*------ Simple text-only message ----*/
@@ -980,7 +1020,7 @@ reply_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
 	    body->type		     = TYPETEXT;
 	    body->contents.text.data = msgtext;
 	    reply_delimiter(env, role, pc);
-	    if(F_ON(F_INCLUDE_HEADER, ps_global))
+	    if(ps_global->reply.inchdr)
 	      reply_forward_header(stream, msgno, sect_prefix,
 				   env, pc, prefix);
 
@@ -1038,7 +1078,7 @@ reply_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
 
 		if(reply_body_text(orig_body, &tmp_body)){
 		    reply_delimiter(env, role, pc);
-		    if(F_ON(F_INCLUDE_HEADER, ps_global))
+		    if(ps_global->reply.inchdr)
 		      reply_forward_header(stream, msgno, sect_prefix,
 					   env, pc, prefix);
 
@@ -1076,7 +1116,7 @@ reply_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
 		        body->nested.part->body.subtype = cpystr("Plain");
 		    }
 		    reply_delimiter(env, role, pc);
-		    if(F_ON(F_INCLUDE_HEADER, ps_global))
+		    if(ps_global->reply.inchdr)
 		      reply_forward_header(stream, msgno, sect_prefix,
 					   env, pc, prefix);
 
@@ -1099,7 +1139,7 @@ reply_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
 		    int partnum;
 
 		    reply_delimiter(env, role, pc);
-		    if(F_ON(F_INCLUDE_HEADER, ps_global))
+		    if(ps_global->reply.inchdr)
 		      reply_forward_header(stream, msgno, sect_prefix,
 					   env, pc, prefix);
 
@@ -1334,6 +1374,10 @@ get_addr_data(ENVELOPE *env, IndexColType type, char *buf, size_t maxlen)
     buf[0] = '\0';
 
     switch(type){
+      case iFfrom:
+	addr = env && env->sparep ? env->sparep : NULL;
+	break;
+
       case iFrom:
 	addr = env ? env->from : NULL;
 	break;
@@ -1719,21 +1763,150 @@ get_reply_data(ENVELOPE *env, ACTION_S *role, IndexColType type, char *buf, size
 
 	break;
 
+      case iProcid:
+        if(ps_global->procid){
+	   strncpy(buf, ps_global->procid, maxlen);
+	   buf[maxlen] = '\0';
+	}
+      break;
+
+      case iRole:
+        if (ps_global->role){
+	   strncpy(buf, ps_global->role, maxlen);
+	   buf[maxlen] = '\0';
+	}
+      break;
+
+      case iRoleNick:
+	if(role && role->nick){
+	  strncpy(buf, role->nick, maxlen);
+	  buf[maxlen] = '\0';
+	}
+	break;
+
+      case iPkey:
+	if(ps_global->pressed_key){
+	  strcpy(buf, ps_global->pressed_key);
+	  buf[maxlen] = '\0';
+	}
+	break;
+
+      case iScreen:
+	if(ps_global->screen_name){
+	  strncpy(buf, ps_global->screen_name, maxlen);
+	  buf[maxlen] = '\0';
+	}
+	break;
+
+      case iFfrom:
       case iFrom:
       case iTo:
       case iCc:
       case iSender:
       case iRecips:
       case iInit:
+      if (env)  
 	get_addr_data(env, type, buf, maxlen);
 	break;
 
-      case iRoleNick:
-	if(role && role->nick){
-	    strncpy(buf, role->nick, maxlen);
-	    buf[maxlen] = '\0';
+     case iFolder:
+	if(ps_global->cur_folder){
+	  strncpy(buf,ps_global->cur_folder, maxlen);
+	  buf[maxlen] = '\0';
 	}
-	break;
+      break;
+
+     case iCollection:
+	if(ps_global->context_current->nickname){
+	  strncpy(buf,ps_global->context_current->nickname, maxlen);
+	  buf[maxlen] = '\0';
+	}
+      break;
+      
+     case iFlag:
+        {MAILSTREAM *stream = ps_global->mail_stream;
+	 MSGNO_S *msgmap = NULL;
+         long msgno;
+         MESSAGECACHE *mc;
+	 strncpy(buf, "_FLAG_", maxlen);	/* default value */
+	 if (stream){
+	     msgmap = sp_msgmap(stream);
+	     msgno =  mn_m2raw(msgmap, rules_cursor_pos(stream));
+	     if (msgno > 0L) mc = stream ? mail_elt(stream,  msgno) : NULL;
+	     if (mc)
+	        sprintf(buf,"%s%s%s%s",mc->flagged ? "*" : "",
+                mc->recent   ? (mc->seen ? "R" : "N") : (mc->seen) ? "R" : "U",
+                mc->answered ? "A" : "",
+                mc->deleted  ? "D" : "" );
+	 }
+	 buf[maxlen] = '\0';
+        }
+        break;
+         
+     case iNick:
+     {
+      ADDRESS *tmp_adr = NULL;
+      if (env){
+         tmp_adr = env->from ? copyaddr(env->from)
+                     : env->sender ? copyaddr(env->sender) : NULL;
+         get_nickname_from_addr(tmp_adr,buf,maxlen);
+	 mail_free_address(&tmp_adr);
+      }
+     }
+        break;
+
+     case iAddressCc:
+     case iAddressRecip:
+     case iAddressTo:
+     case iFadd:
+     {
+     int plen = 0; 	/* partial length */
+     ADDRESS *sparep2 = (type == iAddressTo || type == iAddressRecip) 
+			? ((env && env->to) 
+			   ? copyaddrlist(env->to)
+			   : NULL)
+			: (type == iAddressCc)
+			    ? ((env && env->cc) 
+				? copyaddrlist(env->cc)
+				: NULL)
+			    : ((env && env->sparep) 
+				? copyaddr((ADDRESS *)env->sparep)
+				: NULL);
+      ADDRESS *sparep;
+
+      if (type == iAddressRecip){
+	  ADDRESS *last_to = NULL;
+
+	for(last_to = sparep2;last_to && last_to->next; last_to= last_to->next);
+	
+	/* Make the end of To list point to cc list */
+	if(last_to)
+	  last_to->next = (env && env->cc ? copyaddrlist(env->cc) : NULL);
+
+      }
+      sparep = sparep2;
+      for(; sparep ; sparep = sparep->next)
+	if(sparep && sparep->mailbox && sparep->mailbox[0] &&
+	   (plen ? plen + 1 : plen) + strlen(sparep->mailbox) <= maxlen){
+	   if (plen == 0)
+	       strcpy(buf, sparep->mailbox);
+	   else{
+	       strcat(buf, " ");
+	       strcat(buf, sparep->mailbox);
+	   }
+	   if(sparep->host &&
+        	   sparep->host[0] &&
+		   sparep->host[0] != '.' &&
+		   strlen(buf) + strlen(sparep->host) + 1 <= maxlen){
+	      strcat(buf, "@");
+              strcat(buf, sparep->host);
+           }
+	   plen = strlen(buf);
+	}
+	 mail_free_address(&sparep2);
+     }
+         
+      break;  
 
       case iNewLine:
 	if(maxlen >= strlen(NEWLINE)){
@@ -1760,6 +1933,11 @@ get_reply_data(ENVELOPE *env, ACTION_S *role, IndexColType type, char *buf, size
 	    }
 	}
 
+	break;
+
+      case iLcc:	/* fake it, there are not enough spare pointers */
+	if (env && env->date)
+	  sprintf(buf,"%s",env->date);
 	break;
 
       case iNews:
@@ -1809,6 +1987,14 @@ get_reply_data(ENVELOPE *env, ACTION_S *role, IndexColType type, char *buf, size
 	if(space)
 	  fs_give((void **)&space);
 
+	break;
+
+      case iOpeningText:
+      case iOpeningTextNQ:
+	if(env && env->sparep){
+	   strncpy(buf, ((SPAREP_S *)env->sparep)->value, maxlen);
+	   buf[maxlen] = '\0';
+	}
 	break;
 
       case iSubject:
@@ -1869,7 +2055,18 @@ reply_delimiter(ENVELOPE *env, ACTION_S *role, gf_io_t pc)
     if(!env)
       return;
 
-    strncpy(buf, ps_global->VAR_REPLY_INTRO, MAX_DELIM);
+    { RULE_RESULT *rule;
+	rule = get_result_rule(V_REPLY_LEADIN_RULES, FOR_REPLY_INTRO, env);
+	if(rule){
+	   strncpy(buf, rule->result, MAX_DELIM);
+	   if (rule->result)
+	      fs_give((void **)&rule->result);
+	   fs_give((void **)&rule);
+	}
+	else
+	  strncpy(buf, ps_global->VAR_REPLY_INTRO, MAX_DELIM);
+    }
+
     buf[MAX_DELIM] = '\0';
     /* preserve exact default behavior from before */
     if(!strcmp(buf, DEFAULT_REPLY_INTRO)){
@@ -2128,6 +2325,7 @@ forward_subject(ENVELOPE *env, int flags)
 {
     size_t l;
     char  *p, buftmp[MAILTMPLEN];
+    RULE_RESULT *rule;
     
     if(!env)
       return(NULL);
@@ -2135,9 +2333,20 @@ forward_subject(ENVELOPE *env, int flags)
     dprint((9, "checking subject: \"%s\"\n",
 	       env->subject ? env->subject : "NULL"));
 
-    if(env->subject && env->subject[0]){		/* add (fwd)? */
-	snprintf(buftmp, sizeof(buftmp), "%s", env->subject);
-	buftmp[sizeof(buftmp)-1] = '\0';
+    buftmp[0] = '\0';
+    ps_global->procid = cpystr("fwd-subject");
+    if (rule = get_result_rule(V_FORWARD_RULES,FOR_COMPOSE, env)){
+       sprintf(buftmp, "%.200s", rule->result);
+       if(rule->result)
+       fs_give((void **)&rule->result);
+       fs_give((void **)&rule);
+    }
+    else if(env->subject)
+       sprintf(buftmp, "%.200s", env->subject);
+    buftmp[sizeof(buftmp)-1] = '\0';
+    fs_give((void **)&ps_global->procid);
+
+    if(buftmp[0]){            /* add (fwd)? */
 	/* decode any 8bit (copy to the temp buffer if decoding doesn't) */
 	if(rfc1522_decode_to_utf8((unsigned char *) tmp_20k_buf,
 				  SIZEOF_20KBUF, buftmp) == (unsigned char *) buftmp)
@@ -2638,8 +2847,11 @@ get_body_part_text(MAILSTREAM *stream, struct mail_bodystruct *body,
  		 * tied our hands, alter the prefix to continue flowed
  		 * formatting...
  		 */
- 		if(flow_res)
+ 		if(flow_res && !ps_global->reply.no_send_flowed)
 		  wrapflags |= GFW_FLOW_RESULT;
+
+		filters[filtcnt].filter = gf_quote_test;
+		filters[filtcnt++].data = gf_line_test_opt(select_quote, NULL);
 
 		filters[filtcnt].filter = gf_wrap;
 		/* 
@@ -2674,9 +2886,9 @@ get_body_part_text(MAILSTREAM *stream, struct mail_bodystruct *body,
 	 * We also want to fold "> " quotes so we get the
 	 * attributions correct.
  	 */
-	if(flow_res && prefix && !strucmp(prefix, "> "))
+	if(flow_res && !ps_global->reply.no_send_flowed && prefix && !strucmp(prefix, "> "))
 	  *(prefix_p = prefix + 1) = '\0';
-
+	ps_global->reply.no_send_flowed = 0; /* reset for next call */
 	if(!(wrapflags & GFW_FLOWED)
 	   && flow_res){
 	    filters[filtcnt].filter = gf_line_test;
@@ -2709,9 +2921,7 @@ get_body_part_text(MAILSTREAM *stream, struct mail_bodystruct *body,
     }
 
     if(prefix){
-	if(ps_global->full_header != 2
-	   && (F_ON(F_ENABLE_SIGDASHES, ps_global)
-	       || F_ON(F_ENABLE_STRIP_SIGDASHES, ps_global))){
+	if(ps_global->reply.strip){
 	    dashdata = 0;
 	    filters[filtcnt].filter = gf_line_test;
 	    filters[filtcnt++].data = gf_line_test_opt(sigdash_strip, &dashdata);
@@ -2736,7 +2946,7 @@ get_body_part_text(MAILSTREAM *stream, struct mail_bodystruct *body,
 	dq.do_color   = 0;
 	dq.delete_all = 1;
 
-	filters[filtcnt].filter = gf_line_test;
+	filters[filtcnt].filter = gf_quote_test;
 	filters[filtcnt++].data = gf_line_test_opt(delete_quotes, &dq);
     }
 

@@ -122,7 +122,7 @@ want_to(char *question, int dflt, int on_ctrl_C, HelpType help, int flags)
     int	  rv, width;
     size_t len;
 
-    if(!ps_global->ttyo)
+    if(!ps_global->ttyo || ps_global->send_immediately)
       return(pre_screen_config_want_to(question, dflt, on_ctrl_C));
 #ifdef _WINDOWS
     if (mswin_usedialog ()) {

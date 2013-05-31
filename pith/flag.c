@@ -594,14 +594,16 @@ set_lflag(MAILSTREAM *stream, MSGNO_S *msgs, long int n, int f, int v)
 
 	was_invisible = (pelt->hidden || pelt->colhid) ? 1 : 0;
 
+	thrd = fetch_thread(stream, rawno);
+
 	if((chk_thrd_cnt = ((msgs->visible_threads >= 0L)
 	   && THRD_INDX_ENABLED() && (f & MN_HIDE) && (pelt->hidden != v))) != 0){
 	    thrd = fetch_thread(stream, rawno);
 	    if(thrd && thrd->top){
-		if(thrd->top == thrd->rawno)
+		if(top_thread(stream, thrd->top) == thrd->rawno)
 		  topthrd = thrd;
 		else
-		  topthrd = fetch_thread(stream, thrd->top);
+		  topthrd = fetch_thread(stream, top_thread(stream, thrd->top));
 	    }
 
 	    if(topthrd){

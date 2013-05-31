@@ -2146,6 +2146,11 @@ display_attachment(long int msgno, ATTACH_S *a, int flags)
         return(1);
     }
 
+    /* ok, we have a filename. Now check if there is a template, and if
+     * so, rename the file accordingly
+     */
+    filename = mc_template(filename, a->body, a->can_display & MCD_EXT_PROMPT);
+
     if((store = so_get(FileStar, filename, WRITE_ACCESS|OWNER_ONLY)) == NULL){
         q_status_message2(SM_ORDER | SM_DING, 3, 5,
                           _("Error \"%s\", Can't write file %s"),
@@ -3308,7 +3313,7 @@ reply_msg_att(MAILSTREAM *stream, long int msgno, ATTACH_S *a)
     /*
      * For consistency, the first question is always "include text?"
      */
-    if((include_text = reply_text_query(ps_global, 1, &prefix)) >= 0
+    if((include_text = reply_text_query(ps_global, 1, NULL, &prefix)) >= 0
        && reply_news_test(a->body->nested.msg->env, outgoing) > 0
        && reply_harvest(ps_global, msgno, a->number,
 			a->body->nested.msg->env, &saved_from,

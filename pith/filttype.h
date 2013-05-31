@@ -35,6 +35,8 @@ typedef struct filter_s {	/* type to hold data for filter function */
     unsigned char t;		/* temporary char                        */
     char     *line;		/* place for temporary storage           */
     char     *linep;		/* pointer into storage space            */
+    char     *oldline;		/* the previous line to "line"		 */
+    char     *oldlinep;		/* the previous line to "line"		 */
     void     *opt;		/* optional per instance data		 */
     void     *data;		/* misc internal data pointer		 */
     unsigned char queue[1 + GF_MAXBUF];

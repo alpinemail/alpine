@@ -138,6 +138,15 @@ pico(PICO *pm)
     pico_all_done = 0;
     km_popped     = 0;
 
+    if (pm->auto_cmds){
+       int i;
+#define CTRL_X 24
+      for (i = 0;  pm->auto_cmds[i]; i++);
+      if ((i > 1) && (pm->auto_cmds[i - 2] == CTRL_X) && 
+		((pm->auto_cmds[i - 1] == 'y') || (pm->auto_cmds[i-1] == 'Y')))
+      sendnow++;
+    }
+
     if(!vtinit())			/* Init Displays.      */
       return(COMP_CANCEL);
 
@@ -638,12 +647,19 @@ abort_composer(int f, int n)
     result = "";
 
     Pmaster->arm_winch_cleanup++;
+    Pmaster->onctrlc++;
     if(Pmaster->canceltest){
         if(((Pmaster->pine_flags & MDHDRONLY) && !any_header_changes())
 	  || (result = (*Pmaster->canceltest)(redraw_pico_for_callback))){
-	    pico_all_done = COMP_CANCEL;
 	    emlwrite(result, NULL);
 	    Pmaster->arm_winch_cleanup--;
+	    if(Pmaster->curpos[0]){
+	       curwp->w_flag |= WFMODE;		/* and modeline so we  */
+	       sgarbk = TRUE;			/* redraw the keymenu  */
+	       pclear(term.t_nrow - 1, term.t_nrow + 1);
+	       return(FALSE);
+	    }
+	    pico_all_done = COMP_CANCEL;
 	    return(TRUE);
 	}
 	else{
@@ -670,6 +686,12 @@ abort_composer(int f, int n)
 
       case ABORT:
 	emlwrite(_("\007Cancel Cancelled"), NULL);
+	break;
+
+      case COUNT:
+	showcpos(1,0);
+	emlwrite(Pmaster->curpos, NULL);
+	Pmaster->onctrlc--;
 	break;
 
       default:
@@ -713,6 +735,19 @@ wquit(int f, int n)
 	    emlwrite(_("\007Problem with attachments!  Fix errors or delete attachments."), NULL);
 	    return(FALSE);
 	}
+
+ 	/* When we send a message using the command line we are going to
+ 	   ignore if the user wants to spell check, we assume he already
+ 	   did */
+ 	if (sendnow){
+ 	    ret = (*Pmaster->exittest)(Pmaster->headents,
+					redraw_pico_for_callback, 
+					Pmaster->allow_flowed_text,
+					&result);
+ 	    if (!ret)
+ 		pico_all_done = COMP_EXIT;
+ 	    return(result ? FALSE : TRUE);
+ 	}
 
 #ifdef	SPELLER
 	if(Pmaster->always_spell_check)

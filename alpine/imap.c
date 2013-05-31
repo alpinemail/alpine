@@ -2040,6 +2040,83 @@ passfile_name(char *pinerc, char *path, size_t len)
 
 #endif	/* PASSFILE */
 
+void
+pine_delete_pwd(NETMBX *mb, char *user)
+{
+    char	hostlist0[MAILTMPLEN], hostlist1[MAILTMPLEN];
+    char	port[20], non_def_port[20], insecure[20];
+    STRLIST_S hostlist[2];
+    MMLOGIN_S  *l;
+    struct servent *sv;
+
+
+    dprint((9, "pine_delete_pwd\n"));
+
+				/* do not invalidate password on cancel */
+    if(ps_global->user_says_cancel != 0)
+	return;
+
+	/* setup hostlist */
+    non_def_port[0] = '\0';
+    if(mb->port && mb->service &&
+       (sv = getservbyname(mb->service, "tcp")) &&
+       (mb->port != ntohs(sv->s_port))){
+        snprintf(non_def_port, sizeof(non_def_port), ":%lu", mb->port);
+        non_def_port[sizeof(non_def_port)-1] = '\0';
+        dprint((9, "mm_login: using non-default port=%s\n",
+                   non_def_port ? non_def_port : "?"));
+    }
+
+    if(*non_def_port){
+        strncpy(hostlist0, mb->host, sizeof(hostlist0)-1);
+        hostlist0[sizeof(hostlist0)-1] = '\0';
+        strncat(hostlist0, non_def_port, sizeof(hostlist0)-strlen(hostlist0)-1);
+        hostlist0[sizeof(hostlist0)-1] = '\0';
+        hostlist[0].name = hostlist0;
+        if(mb->orighost && mb->orighost[0] && strucmp(mb->host, mb->orighost)){
+            strncpy(hostlist1, mb->orighost, sizeof(hostlist1)-1);
+            hostlist1[sizeof(hostlist1)-1] = '\0';
+            strncat(hostlist1, non_def_port, sizeof(hostlist1)-strlen(hostlist1)-1);
+            hostlist1[sizeof(hostlist1)-1] = '\0';
+            hostlist[0].next = &hostlist[1];
+            hostlist[1].name = hostlist1;
+            hostlist[1].next = NULL;
+        }
+        else
+          hostlist[0].next = NULL;
+    }
+    else{
+        hostlist[0].name = mb->host;
+        if(mb->orighost && mb->orighost[0] && strucmp(mb->host, mb->orighost)){
+            hostlist[0].next = &hostlist[1];
+            hostlist[1].name = mb->orighost;
+            hostlist[1].next = NULL;
+        }
+        else
+          hostlist[0].next = NULL;
+    }
+
+    /* delete it from all lists */
+
+    for(l = mm_login_list; l; l = l->next)
+      if(imap_same_host(l->hosts, hostlist)
+	 && !strcmp(l->user, user ? user : "")
+	 && l->passwd){
+	    l->invalidpwd = 1;
+	    break;
+      }
+
+#ifdef	LOCAL_PASSWD_CACHE
+    for(l = passfile_cache; l; l = l->next)
+      if(imap_same_host(l->hosts, hostlist)
+	 && !strcmp(l->user, user ? user : "")
+	 && l->passwd){
+	    l->invalidpwd = 1;
+	    break;
+      }
+    write_passfile(ps_global->pinerc, passfile_cache); /* blast it from passfile */
+#endif
+}
 
 #ifdef	LOCAL_PASSWD_CACHE
 
@@ -2602,6 +2679,8 @@ write_passfile(pinerc, l)
 #endif /* SMIME */
 
     for(n = 0; l; l = l->next, n++){
+	if(l->invalidpwd == 1)	/* if password is invalid, do not save it */
+	   continue;
 	/*** do any necessary ENcryption here ***/
 	snprintf(tmp, sizeof(tmp), "%s\t%s\t%s\t%d%s%s\n", l->passwd, l->user,
 		l->hosts->name, l->altflag,

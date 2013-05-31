@@ -74,7 +74,10 @@ showcpos(int f, int n)
 	    thisline+1, lines+1, (int)((100L*(thisline+1))/(lines+1)),
 	    nbc, nch, (nch) ? (int)((100L*nbc)/nch) : 0);
 
-    emlwrite(buffer, NULL);
+    if(Pmaster)
+      strcpy(Pmaster->curpos, buffer);
+    else
+      emlwrite(buffer, NULL);
     return (TRUE);
 }
 

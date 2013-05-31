@@ -51,6 +51,7 @@ static char rcsid[] = "$Id: confscroll.c 1169 2008-08-27 06:42:06Z hubert@u.wash
 #include "../pith/tempfile.h"
 #include "../pith/pattern.h"
 #include "../pith/charconv/utf8.h"
+#include "../pith/rules.h"
 
 
 #define	CONFIG_SCREEN_HELP_TITLE	_("HELP FOR SETUP CONFIGURATION")
@@ -139,7 +140,7 @@ char    *yesno_pretty_value(struct pine *, CONF_S *);
 char    *radio_pretty_value(struct pine *, CONF_S *);
 char    *sigfile_pretty_value(struct pine *, CONF_S *);
 char    *color_pretty_value(struct pine *, CONF_S *);
-char    *sort_pretty_value(struct pine *, CONF_S *);
+char    *sort_pretty_value(struct pine *, CONF_S *, int);
 int      longest_feature_name(void);
 COLOR_PAIR *sample_color(struct pine *, struct variable *);
 COLOR_PAIR *sampleexc_color(struct pine *, struct variable *);
@@ -287,7 +288,8 @@ set_radio_pretty_vals(struct pine *ps, CONF_S **cl)
     CONF_S *ctmp;
 
     if(!(cl && *cl &&
-       ((*cl)->var == &ps->vars[V_SORT_KEY] ||
+        (((*cl)->var == &ps->vars[V_SORT_KEY]) || 
+        ((*cl)->var == &ps->vars[V_THREAD_SORT_KEY]) ||
         standard_radio_var(ps, (*cl)->var) ||
 	(*cl)->var == startup_ptr)))
       return;
@@ -463,7 +465,7 @@ conf_scroll_screen(struct pine *ps, OPT_SCREEN_S *screen, CONF_S *start_line, ch
     char	  tmp[MAXPATH+1];
     char         *utf8str;
     UCS           ch = 'x';
-    int		  cmd, i, j, done = 0, changes = 0;
+    int		  cmd, i, j, k = 1, done = 0, changes = 0;
     int		  retval = 0;
     int		  km_popped = 0, stay_in_col = 0;
     struct	  key_menu  *km = NULL;
@@ -512,6 +514,7 @@ conf_scroll_screen(struct pine *ps, OPT_SCREEN_S *screen, CONF_S *start_line, ch
 	}
 
 	/*----------- Check for new mail -----------*/
+        if (!ps->send_immediately){
         if(new_mail(0, NM_TIMING(ch), NM_STATUS_MSG | NM_DEFER_SORT) >= 0)
           ps->mangled_header = 1;
 
@@ -541,6 +544,7 @@ conf_scroll_screen(struct pine *ps, OPT_SCREEN_S *screen, CONF_S *start_line, ch
 	    mark_status_unknown();
 	}
 
+	} /* send_immediately */
 	if(ps->mangled_footer || km != screen->current->keymenu){
 	    bitmap_t	 bitmap;
 
@@ -612,6 +616,7 @@ conf_scroll_screen(struct pine *ps, OPT_SCREEN_S *screen, CONF_S *start_line, ch
 	    }
 	}
 
+	if(!ps_global->send_immediately){
 	MoveCursor(cursor_pos.row, cursor_pos.col);
 #ifdef	MOUSE
 	mouse_in_content(KEY_MOUSE, -1, -1, 0, 0);	/* prime the handler */
@@ -630,6 +635,14 @@ conf_scroll_screen(struct pine *ps, OPT_SCREEN_S *screen, CONF_S *start_line, ch
 #ifdef	_WINDOWS
 	mswin_setscrollcallback(NULL);
 #endif
+        } /* send_immediately */
+                       
+        if (ps->send_immediately){
+	      ps_global->dont_use_init_cmds = 0;
+              process_config_input(&ch);
+              if (ch == '\030')   /* ^X, bye */
+                goto end;
+        }           
 
 	cmd = menu_command(ch, km);
 
@@ -1383,7 +1396,7 @@ no_down:
 	    break;
 	}
     }
-
+end:
     screen->current = first_confline(screen->current);
     free_conflines(&screen->current);
     return(retval);
@@ -1551,6 +1564,10 @@ text_toolit(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags, int look_
 	if((*cl)->var == &ps->vars[V_FILLCOL]){
 	    lowrange = 1;
 	    hirange  = MAX_FILLCOL;
+	}
+	else if((*cl)->var == &ps->vars[V_SLEEP]){
+	    lowrange = 0;
+	    hirange  = 120;
 	}
 	else if((*cl)->var == &ps->vars[V_OVERLAP]
 		|| (*cl)->var == &ps->vars[V_MARGIN]){
@@ -2427,6 +2444,9 @@ delete:
 	 * Now go and set the current_val based on user_val changes
 	 * above.  Turn off command line settings...
 	 */
+	set_current_val((*cl)->var,
+	    (strcmp((*cl)->var->name,"key-definition-rules") ? TRUE : FALSE),
+	    FALSE);
 	set_current_val((*cl)->var, TRUE, FALSE);
 	fix_side_effects(ps, (*cl)->var, 0);
 
@@ -2923,7 +2943,7 @@ radiobutton_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags)
 	    }
 
 	    set_current_val((*cl)->var, TRUE, TRUE);
-	    if(decode_sort(ps->VAR_SORT_KEY, &def_sort, &def_sort_rev) != -1){
+	    if(decode_sort(ps->VAR_SORT_KEY, &def_sort, &def_sort_rev,0) != -1){
 		ps->def_sort     = def_sort;
 		ps->def_sort_rev = def_sort_rev;
 	    }
@@ -2932,6 +2952,37 @@ radiobutton_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags)
 	    ps->mangled_body = 1;	/* BUG: redraw it all for now? */
 	    rv = 1;
 	}
+        else if((*cl)->var == &ps->vars[V_THREAD_SORT_KEY]){
+            SortOrder thread_def_sort;
+            int       thread_def_sort_rev;
+
+            thread_def_sort_rev  = (*cl)->varmem >= (short) EndofList;
+            thread_def_sort      = (SortOrder) ((*cl)->varmem - (thread_def_sort_rev
+                                                                 * EndofList));
+            sprintf(tmp_20k_buf, "%s%s", sort_name(thread_def_sort),
+                   (thread_def_sort_rev) ? "/Reverse" : "");
+
+            if((*cl)->var->cmdline_val.p)
+              fs_give((void **)&(*cl)->var->cmdline_val.p);
+
+            if(apval){
+                if(*apval)
+                  fs_give((void **)apval);
+
+                *apval = cpystr(tmp_20k_buf);
+            }
+
+            set_current_val((*cl)->var, TRUE, TRUE);
+            if(decode_sort(ps->VAR_THREAD_SORT_KEY, &thread_def_sort, 
+                                        &thread_def_sort_rev, 1) != -1){
+                ps->thread_def_sort     = thread_def_sort;
+                ps->thread_def_sort_rev = thread_def_sort_rev;
+            }
+
+            set_radio_pretty_vals(ps, cl);
+            ps->mangled_body = 1;       /* BUG: redraw it all for now? */
+            rv = 1;
+        }
 	else
 	  q_status_message(SM_ORDER | SM_DING, 3, 6,
 			   "Programmer botch!  Unknown radiobutton type.");
@@ -3794,7 +3845,9 @@ pretty_value(struct pine *ps, CONF_S *cl)
     else if(standard_radio_var(ps, v) || v == startup_ptr)
       return(radio_pretty_value(ps, cl));
     else if(v == &ps->vars[V_SORT_KEY])
-      return(sort_pretty_value(ps, cl));
+       return(sort_pretty_value(ps, cl, 0));
+     else if(v == &ps->vars[V_THREAD_SORT_KEY])
+       return(sort_pretty_value(ps, cl, 1));
     else if(v == &ps->vars[V_SIGNATURE_FILE])
       return(sigfile_pretty_value(ps, cl));
     else if(v == &ps->vars[V_USE_ONLY_DOMAIN_NAME])
@@ -4325,14 +4378,14 @@ color_pretty_value(struct pine *ps, CONF_S *cl)
 
 
 char *
-sort_pretty_value(struct pine *ps, CONF_S *cl)
+sort_pretty_value(struct pine *ps, CONF_S *cl, int thread)
 {
-    return(generalized_sort_pretty_value(ps, cl, 1));
+    return(generalized_sort_pretty_value(ps, cl, 1, thread));
 }
 
 
 char *
-generalized_sort_pretty_value(struct pine *ps, CONF_S *cl, int default_ok)
+generalized_sort_pretty_value(struct pine *ps, CONF_S *cl, int default_ok, int thread)
 {
     char  tmp[6*MAXPATH];
     char *pvalnorm, *pvalexc, *pval;
@@ -4382,7 +4435,7 @@ generalized_sort_pretty_value(struct pine *ps, CONF_S *cl, int default_ok)
     }
     else if(fixed){
 	pval = v->fixed_val.p;
-	decode_sort(pval, &var_sort, &var_sort_rev);
+	decode_sort(pval, &var_sort, &var_sort_rev, thread);
 	is_the_one = (var_sort_rev == line_sort_rev && var_sort == line_sort);
 
 	utf8_snprintf(tmp, sizeof(tmp), "(%c)  %s%-*w%*s%s",
@@ -4393,9 +4446,9 @@ generalized_sort_pretty_value(struct pine *ps, CONF_S *cl, int default_ok)
 		is_the_one ? "   (value is fixed)" : "");
     }
     else if(is_set_for_this_level){
-	decode_sort(pval, &var_sort, &var_sort_rev);
+	decode_sort(pval, &var_sort, &var_sort_rev, thread);
 	is_the_one = (var_sort_rev == line_sort_rev && var_sort == line_sort);
-	decode_sort(pvalexc, &exc_sort, &exc_sort_rev);
+	decode_sort(pvalexc, &exc_sort, &exc_sort_rev, thread);
 	the_exc_one = (editing_normal_which_isnt_except && pvalexc &&
 		       exc_sort_rev == line_sort_rev && exc_sort == line_sort);
 	utf8_snprintf(tmp, sizeof(tmp), "(%c)  %s%-*w%*s%s",
@@ -4413,7 +4466,7 @@ generalized_sort_pretty_value(struct pine *ps, CONF_S *cl, int default_ok)
     }
     else{
 	if(pvalexc){
-	    decode_sort(pvalexc, &exc_sort, &exc_sort_rev);
+	    decode_sort(pvalexc, &exc_sort, &exc_sort_rev, thread);
 	    is_the_one = (exc_sort_rev == line_sort_rev &&
 			  exc_sort == line_sort);
 	    utf8_snprintf(tmp, sizeof(tmp), "( )  %s%-*w%*s%s",
@@ -4424,7 +4477,7 @@ generalized_sort_pretty_value(struct pine *ps, CONF_S *cl, int default_ok)
 	}
 	else{
 	    pval = v->current_val.p;
-	    decode_sort(pval, &var_sort, &var_sort_rev);
+	    decode_sort(pval, &var_sort, &var_sort_rev, thread);
 	    is_the_one = ((pval || default_ok) &&
 			  var_sort_rev == line_sort_rev &&
 			  var_sort == line_sort);
@@ -5161,6 +5214,30 @@ fix_side_effects(struct pine *ps, struct variable *var, int revert)
 	    var == &ps->vars[V_ABOOK_FORMATS]){
 	addrbook_reset();
     }
+    else if(var == &ps->vars[V_INDEX_RULES]){
+	   if(ps_global->rule_list)
+	      free_parsed_rule_list(&ps_global->rule_list);
+	   create_rule_list(ps->vars);
+	   reset_index_format();
+	   clear_index_cache(ps->mail_stream, 0);
+    }
+    else if(var == &ps->vars[V_COMPOSE_RULES] ||
+	    var == &ps->vars[V_FORWARD_RULES] ||
+	    var == &ps->vars[V_KEY_RULES] ||
+	    var == &ps->vars[V_REPLACE_RULES] ||
+	    var == &ps->vars[V_REPLY_INDENT_RULES] ||
+	    var == &ps->vars[V_REPLY_LEADIN_RULES] ||
+	    var == &ps->vars[V_RESUB_RULES] ||
+	    var == &ps->vars[V_SAVE_RULES] ||
+	    var == &ps->vars[V_SMTP_RULES] ||
+	    var == &ps->vars[V_SORT_RULES] ||
+	    var == &ps->vars[V_STARTUP_RULES] ||
+	    var == &ps->vars[V_THREAD_DISP_STYLE_RULES] ||
+	    var == &ps->vars[V_THREAD_INDEX_STYLE_RULES]){
+	if(ps_global->rule_list)
+	   free_parsed_rule_list(&ps_global->rule_list);
+	create_rule_list(ps->vars);
+    }
     else if(var == &ps->vars[V_INDEX_FORMAT]){
 	reset_index_format();
 	clear_index_cache(ps->mail_stream, 0);
@@ -5182,6 +5259,9 @@ fix_side_effects(struct pine *ps, struct variable *var, int revert)
 	  ps_global->keywords = init_keyword_list(var->current_val.l);
 
 	clear_index_cache(ps->mail_stream, 0);
+    }
+    else if(var == &ps->vars[V_SPECIAL_TEXT]){
+	regex_pattern(ps->VAR_SPECIAL_TEXT);
     }
     else if(var == &ps->vars[V_INIT_CMD_LIST]){
 	if(!revert)
@@ -5214,6 +5294,16 @@ fix_side_effects(struct pine *ps, struct variable *var, int revert)
 	}
 	else
 	  ps->viewer_overlap = old_value;
+    }
+    else if(var == &ps->vars[V_SLEEP]){
+	int old_value = ps->sleep;
+
+	if(SVAR_SLEEP(ps, old_value, tmp_20k_buf, SIZEOF_20KBUF)){
+	    if(!revert)
+	      q_status_message(SM_ORDER, 3, 5, tmp_20k_buf);
+	}
+	else
+	  ps->sleep = old_value;
     }
 #ifdef	SMIME
     else if(smime_related_var(ps, var)){
@@ -5496,6 +5586,12 @@ fix_side_effects(struct pine *ps, struct variable *var, int revert)
 			  (void *)var->current_val.p);
     }
 #endif
+#ifndef _WINDOWS
+    else if(var == &ps->vars[V_MAILDIR_LOCATION]){
+      if(var->current_val.p && var->current_val.p[0])
+	mail_parameters(NULL, SET_MDINBOXPATH, (void *)var->current_val.p);
+    }
+#endif
     else if(revert && standard_radio_var(ps, var)){
 
 	cur_rule_value(var, TRUE, FALSE);
@@ -5545,8 +5641,14 @@ fix_side_effects(struct pine *ps, struct variable *var, int revert)
     else if(revert && var == &ps->vars[V_SORT_KEY]){
 	int def_sort_rev;
 
-	decode_sort(VAR_SORT_KEY, &ps->def_sort, &def_sort_rev);
+	decode_sort(VAR_SORT_KEY, &ps->def_sort, &def_sort_rev, 0);
 	ps->def_sort_rev = def_sort_rev;
+    }
+    else if(revert && var == &ps->vars[V_THREAD_SORT_KEY]){
+      int thread_def_sort_rev;
+
+      decode_sort(VAR_THREAD_SORT_KEY, &ps->thread_def_sort, &thread_def_sort_rev, 1);
+      ps->thread_def_sort_rev = thread_def_sort_rev;
     }
     else if(var == &ps->vars[V_THREAD_MORE_CHAR] ||
             var == &ps->vars[V_THREAD_EXP_CHAR] ||

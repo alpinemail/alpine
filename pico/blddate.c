@@ -19,7 +19,7 @@ main(argc, argv)
     char **argv;
 {
     struct tm *t;
-    FILE      *outfile=stdout;
+    FILE      *outfile=stdout, *infile;
     time_t     ltime;
 
     if(argc > 1 && (outfile = fopen(argv[1], "w")) == NULL){
@@ -46,6 +46,12 @@ main(argc, argv)
 	    1900 + t->tm_year);
 
     fprintf(outfile, "char hoststamp[]=\"random-pc\";\n");
+    if((infile = fopen("../patchlevel", "r")) != NULL){
+	int c;
+	while ((c = getc(infile)) != EOF) putc(c, outfile);
+	fclose(infile);
+    }
+    else fprintf(outfile, "char plevstamp[]=\"No information available\";\n");
 
     fclose(outfile);
 

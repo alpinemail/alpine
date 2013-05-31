@@ -387,6 +387,9 @@ update(void)
     int     scroll = 0;
     CELL	     c;
 
+    if (sendnow)
+	return;
+
 #if	TYPEAH
     if (typahead())
 	return;
@@ -916,7 +919,7 @@ updateline(int row,			/* row on screen */
     int   nbflag;		/* non-blanks to the right flag? */
     int   cleartoeol = 0;
 
-    if(row < 0 || row > term.t_nrow)
+    if(row < 0 || row > term.t_nrow || sendnow)
       return;
 
     /* set up pointers to virtual and physical lines */
@@ -1285,7 +1288,7 @@ get_cursor(int *row, int *col)
 void
 mlerase(void)
 {
-    if (term.t_nrow < term.t_mrow)
+    if (term.t_nrow < term.t_mrow || sendnow)
       return;
 
     movecursor(term.t_nrow - term.t_mrow, 0);
@@ -1360,6 +1363,10 @@ mlyesno(UCS *prompt, int dflt)
     menu_yesno[6].label = N_("Cancel");
     menu_yesno[7].name  = "N";
     menu_yesno[7].label = (dflt == FALSE) ? "[" N_("No") "]" : N_("No");
+    if(Pmaster && Pmaster->onctrlc){
+      menu_yesno[8].name  = "T";
+      menu_yesno[8].label = N_("counT");
+    }
     wkeyhelp(menu_yesno);		/* paint generic menu */
     sgarbk = TRUE;			/* mark menu dirty */
     if(Pmaster && curwp)
@@ -1437,6 +1444,14 @@ mlyesno(UCS *prompt, int dflt)
 		sgarbk = TRUE;			/* mark menu dirty */
 		km_popped++;
 		break;
+	    }
+
+	  case 'T':
+	  case 't':
+	    if(Pmaster && Pmaster->onctrlc){
+	      pputs_utf8(_("counT"), 1);
+	      rv = COUNT;
+	      break;
 	    }
 	    /* else fall through */
 
@@ -1751,6 +1766,11 @@ mlreplyd(UCS *prompt, UCS *buf, int nbuf, int flg, EXTRAKEYS *extras)
 	    b = &buf[ucs4_strlen(buf)];
 	    continue;
 
+          case (CTRL|'\\'):
+           if (c = GetAccent())
+             goto text;
+          continue;
+
 	  case (CTRL|'F') :			/* CTRL-F forward a char*/
 	  case KEY_RIGHT :
 	    if(*b == '\0')
@@ -1759,6 +1779,18 @@ mlreplyd(UCS *prompt, UCS *buf, int nbuf, int flg, EXTRAKEYS *extras)
 	      b++;
 
 	    continue;
+
+	  case (CTRL|'N'):			/* Insert pattern */
+	   if (pat[0] != '\0'){
+		ucs4_strncpy(buf+ucs4_strlen(buf), pat, NPAT);
+		pputs(pat,1);
+		b = &buf[ucs4_strlen(buf)];
+		dline.vused += ucs4_strlen(pat);
+		changed = TRUE;
+		}
+	   else
+		(*term.t_beep)();
+	  continue;
 
 	  case (CTRL|'G') :			/* CTRL-G help		*/
 	    if(term.t_mrow == 0 && km_popped == 0){
@@ -1869,7 +1901,7 @@ mlreplyd(UCS *prompt, UCS *buf, int nbuf, int flg, EXTRAKEYS *extras)
 #endif
 
 	  default : 
-
+text:
 	    /* look for match in extra_v */
 	    for(i = 0; i < 12; i++)
 	      if(c && c == extra_v[i]){
@@ -1963,7 +1995,7 @@ emlwrite_ucs4(UCS *message, EML *eml)
 
     mlerase();
 
-    if(!(message && *message) || term.t_nrow < 2)	
+    if(!(message && *message) || term.t_nrow < 2 || sendnow)	
       return;    /* nothing to write or no space to write, bag it */
 
     bufp = message;
@@ -2152,8 +2184,9 @@ mlwrite(UCS *fmt, void *arg)
     }
 
     ret = ttcol;
-    while(ttcol < term.t_ncol)
-      pputc(' ', 0);
+    if(sendnow == 0)
+      while(ttcol < term.t_ncol)
+        pputc(' ', 0);
 
     movecursor(term.t_nrow - term.t_mrow, ret);
 
@@ -2632,6 +2665,8 @@ pputc(UCS c,				/* char to write */
 {
     int ind, width, printable_ascii = 0;
 
+    if(sendnow)
+	return;
     /*
      * This is necessary but not sufficient to allow us to draw. Note that
      * ttrow runs from 0 to t_nrow (so total number of rows is t_nrow+1)
@@ -2686,6 +2721,8 @@ void
 pputs(UCS *s,				/* string to write */
       int a)				/* and its attribute */
 {
+    if(sendnow)
+	return;
     while (*s != '\0')
       pputc(*s++, a);
 }
@@ -2696,6 +2733,8 @@ pputs_utf8(char *s, int a)
 {
     UCS *ucsstr = NULL;
 
+    if(sendnow)
+	return;
     if(s && *s){
 	ucsstr = utf8_to_ucs4_cpystr(s);
 	if(ucsstr){
@@ -2995,6 +3034,9 @@ wkeyhelp(KEYMENU *keymenu)
 #ifdef	MOUSE
     char  nbuf[NLINE];
 #endif
+
+    if(sendnow)
+	return;
 
 #ifdef _WINDOWS
     pico_config_menu_items (keymenu);

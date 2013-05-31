@@ -817,6 +817,7 @@ uninstall-am: uninstall-binPROGRAMS
 date.c:
 	echo "char datestamp[]="\"`date`\"";" > date.c
 	echo "char hoststamp[]="\"`hostname`\"";" >> date.c
+	cat ../patchlevel >> date.c
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

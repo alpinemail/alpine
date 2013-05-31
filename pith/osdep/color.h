@@ -17,6 +17,24 @@
 #ifndef PITH_OSDEP_COLOR_INCLUDED
 #define PITH_OSDEP_COLOR_INCLUDED
 
+/*
+ * struct that will help us determine what the quote string of a line
+ * is. The "next" field indicates the presence of a possible continuation.
+ * The idea is that if a continuation fails, we free it and check for the
+ * remaining structure left
+ */
+
+typedef enum {qsNormal, qsString, qsWord, qsChar, qsGdb, qsProg, qsText} QStrType;
+
+typedef struct QSTRING {
+	char		*value;		/* possible quote string */
+	QStrType	 qstype;	/* type of quote string  */
+	struct QSTRING	*next;		/* possible continuation */
+} QSTRING_S;
+
+#define UCH(c) ((unsigned char) (c))
+#define NBSP UCH('\240')
+#define ISspace(c) (UCH(c) == ' ' || UCH(c) == TAB || UCH(c) == NBSP)
 
 #define RGBLEN 11
 #define MAXCOLORLEN 11			/* longest string a color can be */
@@ -93,6 +111,11 @@ char	   *pico_get_last_fg_color(void);
 char	   *pico_get_last_bg_color(void);
 char	   *color_to_canonical_name(char *);
 int	    pico_count_in_color_table(void);
-
+int 	    is_indent(char *, int);
+int	    get_indent_raw_line (char **, char *, char *, int, int, int);
+int  	    line_isblank(char **, char *, char *, char *, int);
+int	    strlenis(char *);
+int	    value_is_space(char *);
+int	    advance_quote_string(char *, char *, int);
 
 #endif /* PITH_OSDEP_COLOR_INCLUDED */

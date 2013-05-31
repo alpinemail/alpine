@@ -92,7 +92,7 @@ decode_text(ATTACH_S	    *att,
     char       *err, *charset;
     int		filtcnt = 0, error_found = 0, column, wrapit;
     int         is_in_sig = OUT_SIG_BLOCK;
-    int         is_flowed_msg = 0;
+    int         is_flowed_msg = 0, add_me = 1, doraw = RAWSTRING;
     int         is_delsp_yes = 0;
     int         filt_only_c0 = 0;
     char       *parmval;
@@ -171,6 +171,15 @@ decode_text(ATTACH_S	    *att,
 						       gf_url_hilite_opt(&uh,handlesp,0));
 	}
 
+	if((flags & FM_DISPLAY)
+           && !(flags & FM_NOCOLOR)
+           && pico_usingcolor()
+           && VAR_SPECIAL_TEXT_FORE_COLOR 
+           && VAR_SPECIAL_TEXT_BACK_COLOR){
+            filters[filtcnt].filter = gf_line_test;
+            filters[filtcnt++].data = gf_line_test_opt(color_this_text, NULL);
+        }
+
 	/*
 	 * First, paint the signature.
 	 * Disclaimers noted below for coloring quotes apply here as well.
@@ -180,7 +189,7 @@ decode_text(ATTACH_S	    *att,
 	   && pico_usingcolor()
 	   && VAR_SIGNATURE_FORE_COLOR
 	   && VAR_SIGNATURE_BACK_COLOR){
-	    filters[filtcnt].filter = gf_line_test;
+	    filters[filtcnt].filter = gf_quote_test;
 	    filters[filtcnt++].data = gf_line_test_opt(color_signature,
 						       &is_in_sig);
 	}
@@ -198,9 +207,9 @@ decode_text(ATTACH_S	    *att,
 	   && pico_usingcolor()
 	   && VAR_QUOTE1_FORE_COLOR
 	   && VAR_QUOTE1_BACK_COLOR){
-	    filters[filtcnt].filter = gf_line_test;
-	    filters[filtcnt++].data = gf_line_test_opt(color_a_quote,
-						       &is_flowed_msg);
+	    add_me = 0;
+	    filters[filtcnt].filter = gf_quote_test;
+	    filters[filtcnt++].data = gf_line_test_opt(color_a_quote, &is_flowed_msg);
 	}
     }
     else if(!strucmp(att->body->subtype, "richtext")){
@@ -281,6 +290,11 @@ decode_text(ATTACH_S	    *att,
 	}
     }
 
+    if (add_me){
+      filters[filtcnt].filter = gf_quote_test;
+      filters[filtcnt++].data = gf_line_test_opt(select_quote, &doraw);
+    }
+
     /*
      * If the message is not flowed, we do the quote suppression before
      * the wrapping, because the wrapping does not preserve the quote
@@ -305,7 +319,7 @@ decode_text(ATTACH_S	    *att,
 	    dq.handlesp   = handlesp;
 	    dq.do_color   = (!(flags & FM_NOCOLOR) && pico_usingcolor());
 
-	    filters[filtcnt].filter = gf_line_test;
+	    filters[filtcnt].filter = gf_quote_test;
 	    filters[filtcnt++].data = gf_line_test_opt(delete_quotes, &dq);
 	}
 	if(ps_global->VAR_QUOTE_REPLACE_STRING
@@ -364,7 +378,7 @@ decode_text(ATTACH_S	    *att,
 	dq.handlesp   = handlesp;
 	dq.do_color   = (!(flags & FM_NOCOLOR) && pico_usingcolor());
 
-	filters[filtcnt].filter = gf_line_test;
+	filters[filtcnt].filter = gf_quote_test;
 	filters[filtcnt++].data = gf_line_test_opt(delete_quotes, &dq);
     }
 
@@ -569,7 +583,7 @@ delete_quotes(long int linenum, char *line, LT_INS_S **ins, void *local)
 {
     DELQ_S *dq;
     char   *lp;
-    int     i, lines, not_a_quote = 0;
+    int     i, lines, not_a_quote = 0, code;
     size_t  len;
 
     dq = (DELQ_S *) local;
@@ -589,6 +603,8 @@ delete_quotes(long int linenum, char *line, LT_INS_S **ins, void *local)
 	for(i = dq->indent_length; i > 0 && !not_a_quote && *lp; i--)
 	  if(*lp++ != SPACE)
 	    not_a_quote++;
+	while(isspace((unsigned char) *lp))
+	   lp++;
 	
 	/* skip over leading tags */
 	while(!not_a_quote
@@ -628,13 +644,12 @@ delete_quotes(long int linenum, char *line, LT_INS_S **ins, void *local)
 	    }
 	}
 
-	/* skip over whitespace */
-	if(!dq->is_flowed)
-	  while(isspace((unsigned char) *lp))
-	    lp++;
-
-	/* check first character to see if it is a quote */
-	if(!not_a_quote && *lp != '>')
+	len = lp - line;
+	if(strlen(tmp_20k_buf) > len)
+	  strcpy(tmp_20k_buf, tmp_20k_buf+len);
+        code =  (dq->is_flowed ? IS_FLOWED : NO_FLOWED) | DELETEQUO;
+	select_quote(linenum, lp, ins,  &code);
+	if (!not_a_quote && !tmp_20k_buf[0])
 	  not_a_quote++;
 
 	if(not_a_quote){

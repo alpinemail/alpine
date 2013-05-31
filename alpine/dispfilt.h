@@ -24,7 +24,7 @@ char	*dfilter_trigger(BODY *, char *, size_t);
 char	*expand_filter_tokens(char *, ENVELOPE *, char **, char **, char **, int *, int *, int *);
 char	*filter_session_key(void);
 char	*filter_data_file(int);
-
+char	*exec_function_rule(char *, gf_io_t, gf_io_t);
 
 
 #endif /* PINE_DISPFILT_INCLUDED */

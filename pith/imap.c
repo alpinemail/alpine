@@ -967,8 +967,18 @@ imap_get_passwd(MMLOGIN_S *m_list, char *passwd, char *user, STRLIST_S *hostlist
 	 && !strcmp(user, l->user)
 	 && l->altflag == altflag){
 	  if(passwd){
+	    if(l->invalidpwd == 0){
 	      strncpy(passwd, l->passwd, NETMAXPASSWD);
 	      passwd[NETMAXPASSWD-1] = '\0';
+	    }
+	    else{
+	      q_status_message(SM_ORDER | SM_DING, 3, 4,
+			 "Failed to login!. Re-enter password.");
+	      dprint((9, "imap_get_passwd: reseting password due to login failure.\n"));
+	      dprint((10, "imap_get_passwd: Old passwd=\"%s\"\n",
+		      passwd ? passwd : "?"));
+	      return FALSE;
+	    }
 	  }
 	  dprint((9, "imap_get_passwd: match\n"));
 	  dprint((10, "imap_get_passwd: trying passwd=\"%s\"\n",
@@ -1016,6 +1026,7 @@ imap_set_passwd(MMLOGIN_S **l, char *passwd, char *user, STRLIST_S *hostlist,
     (*l)->altflag = altflag;
     (*l)->ok_novalidate = ok_novalidate;
     (*l)->warned = warned;
+    (*l)->invalidpwd = 0;	/* assume correct password for now */
 
     if(!(*l)->user)
       (*l)->user = cpystr(user);

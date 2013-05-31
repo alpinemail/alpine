@@ -159,6 +159,8 @@ struct local_message_copy {
     unsigned  text_written:1;
 };
 
+#define CAN_EDIT(x)	(!((x)->never_allow_changing_from) && \
+			F_ON(F_ALLOW_CHANGING_FROM, (x)))
 
 #define TONAME "To"
 #define CCNAME "cc"

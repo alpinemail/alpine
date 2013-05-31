@@ -36,7 +36,7 @@ int     srpat(char *, UCS *, size_t, int);
 int     readpattern(char *, int);
 int     replace_pat(UCS *, int *);
 int     replace_all(UCS *, UCS *);
-
+int	deletepara(int, int);
 
 #define	FWS_RETURN(RV)	{				\
 			    thisflag |= CFSRCH;		\
@@ -75,6 +75,10 @@ N_("        displayed in the \"Search\" prompt between the square"),
 N_("        brackets.  This string is the default search prompt."),
 N_("~        Hitting only ~R~e~t~u~r~n or at the prompt will cause the"),
 N_("        search to be made with the default value."),
+"  ",
+N_("~        Hitting ~^~N will reinsert the last string you searched for"),
+N_("        so that you can edit it (in case you made a mistake entering the"),
+N_("        search pattern the first time)."),
 "  ",
 N_("        The text search is not case sensitive, and will examine the"),
 N_("        entire message."),
@@ -232,9 +236,18 @@ forwsearch(int f, int n)
 	    mlerase();
 	    FWS_RETURN(TRUE);
 
+	  case (CTRL|'P'):
+	    deletepara(0, 1);
+	    mlerase();
+	    FWS_RETURN(TRUE);
+
 	  case  (CTRL|'R'):        /* toggle replacement option */
 	    repl_mode = !repl_mode;
 	    break;
+
+	  case (CTRL|'X'):
+	    deltext(f,n);
+	    FWS_RETURN(TRUE);
 
 	  default:
 	    if(status == ABORT)
@@ -274,7 +287,7 @@ forwsearch(int f, int n)
 	}
 
 	if(status + curwp->w_doto >= llength(curwp->w_dotp) ||
-	   !eq(defpat[status],lgetc(curwp->w_dotp, curwp->w_doto + status).c))
+	   !eq((unsigned char)defpat[status],lgetc(curwp->w_dotp, curwp->w_doto + status).c))
 	  break;		/* do nothing! */
 	status++;
     }
@@ -600,7 +613,7 @@ srpat(char *utf8prompt, UCS *defpat, size_t defpatlen, int repl_mode)
 	UCS         *b;
 	UCS	     prompt[NPMT];
 	UCS         *promptp;
-	EXTRAKEYS    menu_pat[8];
+	EXTRAKEYS    menu_pat[10];
 
 	menu_pat[i = 0].name = "^Y";
 	menu_pat[i].label    = N_("FirstLine");
@@ -618,6 +631,11 @@ srpat(char *utf8prompt, UCS *defpat, size_t defpatlen, int repl_mode)
 	KS_OSDATASET(&menu_pat[i], KS_NONE);
 
 	if(!repl_mode){
+	    menu_pat[++i].name = "^X";     
+	    menu_pat[i].label  = N_("DelEnd");
+	    menu_pat[i].key    = (CTRL|'X');    
+	    KS_OSDATASET(&menu_pat[i], KS_NONE);
+
 	    menu_pat[++i].name = "^T";
 	    menu_pat[i].label  = N_("LineNumber");
 	    menu_pat[i].key    = (CTRL|'T');
@@ -632,6 +650,11 @@ srpat(char *utf8prompt, UCS *defpat, size_t defpatlen, int repl_mode)
 	    menu_pat[++i].name = "^O";
 	    menu_pat[i].label  = N_("End of Para");
 	    menu_pat[i].key    = (CTRL|'O');
+	    KS_OSDATASET(&menu_pat[i], KS_NONE);
+
+	    menu_pat[++i].name = "^P";
+	    menu_pat[i].label  = N_("Delete Para");
+	    menu_pat[i].key    = (CTRL|'P');
 	    KS_OSDATASET(&menu_pat[i], KS_NONE);
 
 	    menu_pat[++i].name = "^U";
@@ -769,7 +792,7 @@ readpattern(char *utf8prompt, int text_mode)
 	UCS         *b;
 	UCS	     tpat[NPAT+20];
 	UCS         *tpatp;
-	EXTRAKEYS    menu_pat[7];
+	EXTRAKEYS    menu_pat[9];
 
 	menu_pat[i = 0].name = "^Y";
 	menu_pat[i].label    = N_("FirstLine");
@@ -782,6 +805,11 @@ readpattern(char *utf8prompt, int text_mode)
 	KS_OSDATASET(&menu_pat[i], KS_NONE);
 
 	if(text_mode){
+	    menu_pat[++i].name = "^X";     
+	    menu_pat[i].label  = N_("DelEnd");
+	    menu_pat[i].key    = (CTRL|'X');    
+	    KS_OSDATASET(&menu_pat[i], KS_NONE);
+
 	    menu_pat[++i].name = "^T";
 	    menu_pat[i].label  = N_("LineNumber");
 	    menu_pat[i].key    = (CTRL|'T');
@@ -795,6 +823,11 @@ readpattern(char *utf8prompt, int text_mode)
 	    menu_pat[++i].name = "^O";
 	    menu_pat[i].label  = N_("End of Para");
 	    menu_pat[i].key    = (CTRL|'O');
+	    KS_OSDATASET(&menu_pat[i], KS_NONE);
+
+	    menu_pat[++i].name = "^P";
+	    menu_pat[i].label  = N_("Delete Para");
+	    menu_pat[i].key    = (CTRL|'P');
 	    KS_OSDATASET(&menu_pat[i], KS_NONE);
 
 	    menu_pat[++i].name = "^U";
@@ -927,7 +960,7 @@ forscan(int *wrapt,	/* boolean indicating search wrapped */
 	  c = lgetc(curline, curoff++).c;	/* get the char */
 
 	/* test it against first char in pattern */
-	if (eq(c, patrn[0]) != FALSE) {	/* if we find it..*/
+	if (eq(c, (unsigned char)patrn[0]) != FALSE) {	/* if we find it..*/
 	    /* setup match pointers */
 	    matchline = curline;
 	    matchoff = curoff;
@@ -948,7 +981,7 @@ forscan(int *wrapt,	/* boolean indicating search wrapped */
 		  return(FALSE);
 
 		/* and test it against the pattern */
-		if (eq(*patptr, c) == FALSE)
+		if (eq((unsigned char) *patptr, c) == FALSE)
 		  goto fail;
 	    }
 
@@ -1035,3 +1068,25 @@ chword(UCS *wb, UCS *cb)
 
     curwp->w_flag |= WFEDIT;
 }
+
+int
+deletepara(int f, int n) /* Delete the current paragraph */
+{
+   if(curbp->b_mode&MDVIEW)           /* don't allow this command if  */ 
+     return(rdonly());               /* we are in read only mode     */
+   
+   if(!lisblank(curwp->w_dotp))
+     gotobop(FALSE, 1);
+
+   curwp->w_markp = curwp->w_dotp;
+   curwp->w_marko = 0;
+
+   gotoeop(FALSE, 1);
+   if (curwp->w_dotp != curbp->b_linep){ /* if we are not at the end of buffer */
+     curwp->w_dotp = lforw(curwp->w_dotp); /* get one more line */
+       curwp->w_doto = 0; /* but only the beginning */
+   }
+   killregion(f,n);
+   return(TRUE);
+}
+
