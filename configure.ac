@@ -1082,6 +1082,7 @@ if test "x$alpine_GSSTYPE" != "xnone" ; then
   AC_SEARCH_LIBS(gss_init_sec_context,gss gssapi gssapi_krb5,
     [
       dnl MIT-based?
+      LIBS="$LIBS -lkrb5"
       AC_CHECK_HEADER([gssapi/gssapi_generic.h],,
 	[
 	  if test ! -d /usr/kerberos/include ; then

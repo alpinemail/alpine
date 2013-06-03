@@ -778,7 +778,7 @@ try_password_again:
 	 */
 	switch(args){
 	  case 0:
-	    snprintf(filter, sizeof(filter), filt_format);
+	    snprintf(filter, sizeof(filter), "%s", filt_format);
 	    break;
 	  case 1:
 	    snprintf(filter, sizeof(filter), filt_format, scp);

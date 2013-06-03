@@ -105,7 +105,7 @@ panic(message)
 {
     in_panic = 1;
 
-    syslog(LOG_ERR, message);	/* may not work, but try */
+    syslog(LOG_ERR, "%s", message);	/* may not work, but try */
 
 #if	0
     if(ps_global)
@@ -147,7 +147,7 @@ exceptional_exit(message, ev)
     char *message;
     int   ev;
 {
-    syslog(LOG_ALERT, message);
+    syslog(LOG_ALERT, "%s", message);
     exit(ev);
 }
 

@@ -1480,6 +1480,9 @@ url_launch(HANDLE_S *handle)
 	else
 	  quotable = 0;
 
+quotable = 0;
+escape_single_quotes = 0;
+
 	/* Build the command */
 	cmdp = cmd;
 	while(cmdp-cmd < URL_MAX_LAUNCH)

@@ -1,3 +1,7 @@
+This distribution used to contain a copy of RFCs that are relevant to the 
+implementation of IMAP support in the c-client library. These have been 
+removed, but the list of relevant RFCs is listed below.
+
 The following documents are necessary to understand the syntax rules
 most of the remaining documents.  Note that some documents refer to
 RFC 2234 which has been replaced by RFC 5234:
