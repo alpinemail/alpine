@@ -577,6 +577,12 @@ void
 read_bail(void)
 {
     dprint((1, "read_bail: cleaning up\n"));
+
+    /* Do not bail out on a tcp timeout, instead close the troublesome stream */
+    if(ps_global->tcptimeout && some_stream_is_locked()){
+      ps_global->read_bail = 1;
+      return;
+    }
     end_signals(1);
 
     /*

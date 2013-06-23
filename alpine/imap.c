@@ -1223,6 +1223,7 @@ pine_tcptimeout_noscreen(long int elapsed, long int sincelast, char *host)
 	}
     }
 
+    ps_global->tcptimeout = 0;
     return(rv);
 }
 
@@ -1243,6 +1244,7 @@ pine_tcptimeout(long int elapsed, long int sincelast, char *host)
     long rv = 1L;			/* keep trying by default */
     unsigned long ch;
 
+    ps_global->tcptimeout = 1;
 #ifdef	DEBUG
     dprint((1, "tcptimeout: waited %s seconds\n",
 	       long2string(elapsed)));
@@ -1282,7 +1284,8 @@ pine_tcptimeout(long int elapsed, long int sincelast, char *host)
 	fflush(stdout);
 	flush_input();
 	ch = read_char(7);
-	if(ch == 'y' || ch == 'Y'){
+	if(ps_global->read_bail || ch == 'y' || ch == 'Y'){
+	  ps_global->read_bail = 0;
 	  ps_global->user_says_cancel = 1;
 	  rv = 0L;
 	}
@@ -1303,6 +1306,7 @@ pine_tcptimeout(long int elapsed, long int sincelast, char *host)
     mark_status_dirty();		/* make sure it get's cleared */
 
     resume_busy_cue((rv == 1) ? 3 : 0);
+    ps_global->tcptimeout = 0;
 
     return(rv);
 }

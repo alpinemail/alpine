@@ -4897,7 +4897,6 @@ m4trace:m4/xsize.m4:7: -1- AC_DEFUN([gl_XSIZE], [
   AC_REQUIRE([AC_C_INLINE])
   AC_CHECK_HEADERS(stdint.h)
 ])
-m4trace:configure.ac:21: -3- m4_include([VERSION])
 m4trace:configure.ac:21: -1- m4_pattern_forbid([^_?A[CHUM]_])
 m4trace:configure.ac:21: -1- m4_pattern_forbid([_AC_])
 m4trace:configure.ac:21: -1- m4_pattern_forbid([^LIBOBJS$], [do not use LIBOBJS directly, use AC_LIBOBJ (see section `AC_LIBOBJ vs LIBOBJS'])
@@ -4905,12 +4904,17 @@ m4trace:configure.ac:21: -1- m4_pattern_allow([^AS_FLAGS$])
 m4trace:configure.ac:21: -1- m4_pattern_forbid([^_?m4_])
 m4trace:configure.ac:21: -1- m4_pattern_forbid([^dnl$])
 m4trace:configure.ac:21: -1- m4_pattern_forbid([^_?AS_])
+m4trace:configure.ac:21: -6- m4_include([VERSION])
 m4trace:configure.ac:21: -1- m4_pattern_allow([^SHELL$])
 m4trace:configure.ac:21: -1- m4_pattern_allow([^PATH_SEPARATOR$])
 m4trace:configure.ac:21: -1- m4_pattern_allow([^PACKAGE_NAME$])
 m4trace:configure.ac:21: -1- m4_pattern_allow([^PACKAGE_TARNAME$])
 m4trace:configure.ac:21: -1- m4_pattern_allow([^PACKAGE_VERSION$])
+m4trace:configure.ac:21: -2- m4_include([VERSION])
+m4trace:configure.ac:21: -2- _m4_warn([syntax], [file `VERSION' included several times], [])
 m4trace:configure.ac:21: -1- m4_pattern_allow([^PACKAGE_STRING$])
+m4trace:configure.ac:21: -2- m4_include([VERSION])
+m4trace:configure.ac:21: -2- _m4_warn([syntax], [file `VERSION' included several times], [])
 m4trace:configure.ac:21: -1- m4_pattern_allow([^PACKAGE_BUGREPORT$])
 m4trace:configure.ac:21: -1- m4_pattern_allow([^PACKAGE_URL$])
 m4trace:configure.ac:21: -1- m4_pattern_allow([^exec_prefix$])
@@ -4935,12 +4939,22 @@ m4trace:configure.ac:21: -1- m4_pattern_allow([^psdir$])
 m4trace:configure.ac:21: -1- m4_pattern_allow([^libdir$])
 m4trace:configure.ac:21: -1- m4_pattern_allow([^localedir$])
 m4trace:configure.ac:21: -1- m4_pattern_allow([^mandir$])
+m4trace:configure.ac:21: -2- m4_include([VERSION])
+m4trace:configure.ac:21: -2- _m4_warn([syntax], [file `VERSION' included several times], [])
+m4trace:configure.ac:21: -2- m4_include([VERSION])
+m4trace:configure.ac:21: -2- _m4_warn([syntax], [file `VERSION' included several times], [])
+m4trace:configure.ac:21: -2- m4_include([VERSION])
+m4trace:configure.ac:21: -2- _m4_warn([syntax], [file `VERSION' included several times], [])
+m4trace:configure.ac:21: -2- m4_include([VERSION])
+m4trace:configure.ac:21: -2- _m4_warn([syntax], [file `VERSION' included several times], [])
 m4trace:configure.ac:21: -1- m4_pattern_allow([^PACKAGE_NAME$])
 m4trace:configure.ac:21: -1- m4_pattern_allow([^PACKAGE_TARNAME$])
 m4trace:configure.ac:21: -1- m4_pattern_allow([^PACKAGE_VERSION$])
 m4trace:configure.ac:21: -1- m4_pattern_allow([^PACKAGE_STRING$])
 m4trace:configure.ac:21: -1- m4_pattern_allow([^PACKAGE_BUGREPORT$])
 m4trace:configure.ac:21: -1- m4_pattern_allow([^PACKAGE_URL$])
+m4trace:configure.ac:21: -2- m4_include([VERSION])
+m4trace:configure.ac:21: -2- _m4_warn([syntax], [file `VERSION' included several times], [])
 m4trace:configure.ac:21: -1- m4_pattern_allow([^DEFS$])
 m4trace:configure.ac:21: -1- m4_pattern_allow([^ECHO_C$])
 m4trace:configure.ac:21: -1- m4_pattern_allow([^ECHO_N$])
@@ -4967,6 +4981,9 @@ m4trace:configure.ac:26: -1- _AM_SET_OPTION([nostdinc])
 m4trace:configure.ac:26: -2- _AM_MANGLE_OPTION([nostdinc])
 m4trace:configure.ac:26: -1- m4_pattern_allow([^PACKAGE$])
 m4trace:configure.ac:26: -1- m4_pattern_allow([^VERSION$])
+m4trace:configure.ac:26: -2- m4_include([VERSION])
+m4trace:configure.ac:26: -2- _m4_warn([syntax], [file `VERSION' included several times], [/usr/share/aclocal-1.11/init.m4:26: AM_INIT_AUTOMAKE is expanded from...
+configure.ac:26: the top level])
 m4trace:configure.ac:26: -1- _AM_IF_OPTION([no-define], [], [AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of package])
  AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version number of package])])
 m4trace:configure.ac:26: -2- _AM_MANGLE_OPTION([no-define])
@@ -5077,10 +5094,6 @@ m4trace:configure.ac:44: -1- m4_pattern_allow([^SET_MAKE$])
 m4trace:configure.ac:45: -1- m4_pattern_allow([^LN_S$])
 m4trace:configure.ac:46: -1- m4_pattern_allow([^AWK$])
 m4trace:configure.ac:47: -1- m4_pattern_allow([^RANLIB$])
-m4trace:configure.ac:48: -1- AC_PROG_LIBTOOL
-m4trace:configure.ac:48: -1- _m4_warn([obsolete], [The macro `AC_PROG_LIBTOOL' is obsolete.
-You should run autoupdate.], [m4/libtool.m4:102: AC_PROG_LIBTOOL is expanded from...
-configure.ac:48: the top level])
 m4trace:configure.ac:48: -1- LT_INIT
 m4trace:configure.ac:48: -1- m4_pattern_forbid([^_?LT_[A-Z_]+$])
 m4trace:configure.ac:48: -1- m4_pattern_allow([^(_LT_EOF|LT_DLGLOBAL|LT_DLLAZY_OR_NOW|LT_MULTI_MODULE)$])
@@ -5299,121 +5312,43 @@ m4trace:configure.ac:60: -1- m4_pattern_allow([^INTLLIBS$])
 m4trace:configure.ac:60: -1- m4_pattern_allow([^LIBINTL$])
 m4trace:configure.ac:60: -1- m4_pattern_allow([^LTLIBINTL$])
 m4trace:configure.ac:60: -1- m4_pattern_allow([^POSUB$])
-m4trace:configure.ac:65: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:65: the top level])
-m4trace:configure.ac:73: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:73: the top level])
 m4trace:configure.ac:83: -1- m4_pattern_allow([^ENABLE_DMALLOC$])
-m4trace:configure.ac:88: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:88: the top level])
 m4trace:configure.ac:100: -1- m4_pattern_allow([^localedir$])
-m4trace:configure.ac:107: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:107: the top level])
-m4trace:configure.ac:132: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:132: the top level])
-m4trace:configure.ac:148: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:148: the top level])
-m4trace:configure.ac:164: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:164: the top level])
-m4trace:configure.ac:173: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:173: the top level])
-m4trace:configure.ac:188: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:188: the top level])
 m4trace:configure.ac:191: -1- m4_pattern_allow([^DEBUG$])
 m4trace:configure.ac:192: -1- m4_pattern_allow([^DEBUGJOURNAL$])
-m4trace:configure.ac:201: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:201: the top level])
-m4trace:configure.ac:212: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:212: the top level])
 m4trace:configure.ac:214: -1- m4_pattern_allow([^MOUSE$])
-m4trace:configure.ac:222: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:222: the top level])
 m4trace:configure.ac:224: -1- m4_pattern_allow([^USE_QUOTAS$])
-m4trace:configure.ac:231: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:231: the top level])
 m4trace:configure.ac:235: -1- m4_pattern_allow([^NEVER_ALLOW_CHANGING_FROM$])
-m4trace:configure.ac:241: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:241: the top level])
 m4trace:configure.ac:243: -1- m4_pattern_allow([^BACKGROUND_POST$])
-m4trace:configure.ac:251: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:251: the top level])
 m4trace:configure.ac:253: -1- m4_pattern_allow([^KEYBOARD_LOCK$])
-m4trace:configure.ac:261: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:261: the top level])
 m4trace:configure.ac:263: -1- m4_pattern_allow([^ENCODE_FROMS$])
-m4trace:configure.ac:272: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:272: the top level])
 m4trace:configure.ac:271: -1- m4_pattern_allow([^SENDMAIL$])
 m4trace:configure.ac:271: -1- m4_pattern_allow([^SENDMAIL$])
 m4trace:configure.ac:289: -1- m4_pattern_allow([^SENDMAIL$])
-m4trace:configure.ac:295: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:295: the top level])
 m4trace:configure.ac:301: -1- m4_pattern_allow([^SENDMAILFLAGS$])
-m4trace:configure.ac:306: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:306: the top level])
 m4trace:configure.ac:305: -1- m4_pattern_allow([^NPA_PROG$])
 m4trace:configure.ac:305: -1- m4_pattern_allow([^NPA_PROG$])
-m4trace:configure.ac:325: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:325: the top level])
 m4trace:configure.ac:332: -1- m4_pattern_allow([^SENDNEWS$])
-m4trace:configure.ac:337: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:337: the top level])
 m4trace:configure.ac:336: -1- m4_pattern_allow([^PWPROG$])
 m4trace:configure.ac:336: -1- m4_pattern_allow([^PWPROG$])
 m4trace:configure.ac:336: -1- m4_pattern_allow([^PWPROG$])
 m4trace:configure.ac:354: -1- m4_pattern_allow([^PASSWD_PROG$])
-m4trace:configure.ac:359: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:359: the top level])
 m4trace:configure.ac:358: -1- m4_pattern_allow([^SPELLPROG$])
 m4trace:configure.ac:358: -1- m4_pattern_allow([^SPELLPROG$])
 m4trace:configure.ac:358: -1- m4_pattern_allow([^SPELLPROG$])
 m4trace:configure.ac:379: -1- m4_pattern_allow([^alpine_simple_spellcheck$])
-m4trace:configure.ac:399: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:399: the top level])
 m4trace:configure.ac:398: -1- m4_pattern_allow([^ISPELLPROG$])
 m4trace:configure.ac:398: -1- m4_pattern_allow([^ISPELLPROG$])
 m4trace:configure.ac:416: -1- m4_pattern_allow([^alpine_interactive_spellcheck$])
 m4trace:configure.ac:429: -1- m4_pattern_allow([^DF_VAR_SPELLER$])
 m4trace:configure.ac:435: -1- m4_pattern_allow([^SPELLER$])
-m4trace:configure.ac:446: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:446: the top level])
 m4trace:configure.ac:458: -1- m4_pattern_allow([^SYSTEM_PINERC$])
-m4trace:configure.ac:469: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:469: the top level])
 m4trace:configure.ac:481: -1- m4_pattern_allow([^SYSTEM_PINERC_FIXED$])
-m4trace:configure.ac:493: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:493: the top level])
 m4trace:configure.ac:505: -1- m4_pattern_allow([^SYSTEM_PINE_INFO_PATH$])
 m4trace:configure.ac:509: -1- AC_DEFUN([PINEVAR], [
     dpv=$3
     AC_ARG_WITH($1,
-      AC_HELP_STRING(--with-$1=VALUE, [$4 ($3)]),
+      AS_HELP_STRING([--with-$1=VALUE],[$4 ($3)]),
       [
 	if test "x$withval" != "xno" ; then
 	  dpv=$withval
@@ -5424,7 +5359,7 @@ m4trace:configure.ac:509: -1- AC_DEFUN([PINEVAR], [
 m4trace:configure.ac:524: -1- AC_DEFUN([PINEVAR_UNQUOTED], [
     dpv=$3
     AC_ARG_WITH($1,
-      AC_HELP_STRING(--with-$1=VALUE, [$4 ($3)]),
+      AS_HELP_STRING([--with-$1=VALUE],[$4 ($3)]),
       [
 	if test "x$withval" != "xno" ; then
 	  dpv=$withval
@@ -5433,409 +5368,109 @@ m4trace:configure.ac:524: -1- AC_DEFUN([PINEVAR_UNQUOTED], [
     AC_DEFINE_UNQUOTED($2, $dpv, [Default configuration value])
   ])
 m4trace:configure.ac:537: -1- PINEVAR([mailcheck-interval], [DF_MAILCHECK], [150], [Specify default mail-check-interval])
-m4trace:configure.ac:537: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:537: the top level])
 m4trace:configure.ac:537: -1- m4_pattern_allow([^DF_MAILCHECK$])
 m4trace:configure.ac:538: -1- PINEVAR_UNQUOTED([checkpoint-interval], [CHECK_POINT_TIME], [420], [Specify default checkpoint-interval])
-m4trace:configure.ac:538: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:524: PINEVAR_UNQUOTED is expanded from...
-configure.ac:538: the top level])
 m4trace:configure.ac:538: -1- m4_pattern_allow([^CHECK_POINT_TIME$])
 m4trace:configure.ac:539: -1- PINEVAR_UNQUOTED([checkpoint-frequency], [CHECK_POINT_FREQ], [12], [State change count before checkpoint])
-m4trace:configure.ac:539: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:524: PINEVAR_UNQUOTED is expanded from...
-configure.ac:539: the top level])
 m4trace:configure.ac:539: -1- m4_pattern_allow([^CHECK_POINT_FREQ$])
 m4trace:configure.ac:540: -1- PINEVAR_UNQUOTED([display-rows], [DEFAULT_LINES_ON_TERMINAL], [24], [Initial rows on display])
-m4trace:configure.ac:540: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:524: PINEVAR_UNQUOTED is expanded from...
-configure.ac:540: the top level])
 m4trace:configure.ac:540: -1- m4_pattern_allow([^DEFAULT_LINES_ON_TERMINAL$])
 m4trace:configure.ac:541: -1- PINEVAR_UNQUOTED([display-columns], [DEFAULT_COLUMNS_ON_TERMINAL], [80], [Initial columns on display])
-m4trace:configure.ac:541: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:524: PINEVAR_UNQUOTED is expanded from...
-configure.ac:541: the top level])
 m4trace:configure.ac:541: -1- m4_pattern_allow([^DEFAULT_COLUMNS_ON_TERMINAL$])
 m4trace:configure.ac:542: -1- PINEVAR_UNQUOTED([max-display-rows], [MAX_SCREEN_ROWS], [200], [Maximum display rows])
-m4trace:configure.ac:542: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:524: PINEVAR_UNQUOTED is expanded from...
-configure.ac:542: the top level])
 m4trace:configure.ac:542: -1- m4_pattern_allow([^MAX_SCREEN_ROWS$])
 m4trace:configure.ac:543: -1- PINEVAR_UNQUOTED([max-display-columns], [MAX_SCREEN_COLS], [500], [Maximum display columns])
-m4trace:configure.ac:543: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:524: PINEVAR_UNQUOTED is expanded from...
-configure.ac:543: the top level])
 m4trace:configure.ac:543: -1- m4_pattern_allow([^MAX_SCREEN_COLS$])
 m4trace:configure.ac:544: -1- PINEVAR([fill-column], [DF_FILLCOL], [74], [Default fill column])
-m4trace:configure.ac:544: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:544: the top level])
 m4trace:configure.ac:544: -1- m4_pattern_allow([^DF_FILLCOL$])
 m4trace:configure.ac:545: -1- PINEVAR_UNQUOTED([max_fill-column], [MAX_FILLCOL], [80], [Maximum fill column])
-m4trace:configure.ac:545: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:524: PINEVAR_UNQUOTED is expanded from...
-configure.ac:545: the top level])
 m4trace:configure.ac:545: -1- m4_pattern_allow([^MAX_FILLCOL$])
 m4trace:configure.ac:546: -1- PINEVAR_UNQUOTED([debug-level], [DEFAULT_DEBUG], [2], [Specify default debug verbosity level])
-m4trace:configure.ac:546: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:524: PINEVAR_UNQUOTED is expanded from...
-configure.ac:546: the top level])
 m4trace:configure.ac:546: -1- m4_pattern_allow([^DEFAULT_DEBUG$])
 m4trace:configure.ac:547: -1- PINEVAR_UNQUOTED([debug-files], [NUMDEBUGFILES], [4], [Specify number of debug files])
-m4trace:configure.ac:547: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:524: PINEVAR_UNQUOTED is expanded from...
-configure.ac:547: the top level])
 m4trace:configure.ac:547: -1- m4_pattern_allow([^NUMDEBUGFILES$])
 m4trace:configure.ac:548: -1- PINEVAR([debug-file], [DEBUGFILE], [.pine-debug], [Specify debug file name])
-m4trace:configure.ac:548: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:548: the top level])
 m4trace:configure.ac:548: -1- m4_pattern_allow([^DEBUGFILE$])
 m4trace:configure.ac:549: -1- PINEVAR([forwarded-keyword], [FORWARDED_FLAG], ["\$Forwarded"], [IMAP (c-client) keyword to store forwarded status])
-m4trace:configure.ac:549: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:549: the top level])
 m4trace:configure.ac:549: -1- m4_pattern_allow([^FORWARDED_FLAG$])
 m4trace:configure.ac:550: -1- PINEVAR([display-overlap], [DF_OVERLAP], [2], [Lines preserved while paging])
-m4trace:configure.ac:550: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:550: the top level])
 m4trace:configure.ac:550: -1- m4_pattern_allow([^DF_OVERLAP$])
 m4trace:configure.ac:551: -1- PINEVAR([display-margin], [DF_MARGIN], [0], [Lines visible while scrolling])
-m4trace:configure.ac:551: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:551: the top level])
 m4trace:configure.ac:551: -1- m4_pattern_allow([^DF_MARGIN$])
 m4trace:configure.ac:552: -1- PINEVAR([default-fcc], [DF_DEFAULT_FCC], [sent-mail], [Default sent mail folder])
-m4trace:configure.ac:552: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:552: the top level])
 m4trace:configure.ac:552: -1- m4_pattern_allow([^DF_DEFAULT_FCC$])
 m4trace:configure.ac:553: -1- PINEVAR([default-save-folder], [DEFAULT_SAVE], [saved-messages], [Default save folder])
-m4trace:configure.ac:553: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:553: the top level])
 m4trace:configure.ac:553: -1- m4_pattern_allow([^DEFAULT_SAVE$])
 m4trace:configure.ac:554: -1- PINEVAR([default-legacy-postponed-folder], [POSTPONED_MAIL], [postponed-mail], [Pre Pine 3.90 postponed folder])
-m4trace:configure.ac:554: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:554: the top level])
 m4trace:configure.ac:554: -1- m4_pattern_allow([^POSTPONED_MAIL$])
 m4trace:configure.ac:555: -1- PINEVAR([default-postponed-folder], [POSTPONED_MSGS], [postponed-msgs], [Default postponed folder])
-m4trace:configure.ac:555: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:555: the top level])
 m4trace:configure.ac:555: -1- m4_pattern_allow([^POSTPONED_MSGS$])
 m4trace:configure.ac:556: -1- PINEVAR([default-trash-folder], [TRASH_FOLDER], [Trash], [Default Trash folder for Web Alpine])
-m4trace:configure.ac:556: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:556: the top level])
 m4trace:configure.ac:556: -1- m4_pattern_allow([^TRASH_FOLDER$])
 m4trace:configure.ac:557: -1- PINEVAR([default-interrupted-mail], [INTERRUPTED_MAIL], [.pine-interrupted-mail], [Default folder for interrupted mail])
-m4trace:configure.ac:557: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:557: the top level])
 m4trace:configure.ac:557: -1- m4_pattern_allow([^INTERRUPTED_MAIL$])
 m4trace:configure.ac:558: -1- PINEVAR([default-dead-letter-folder], [DEADLETTER], [dead.letter], [Default dead letter folder])
-m4trace:configure.ac:558: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:558: the top level])
 m4trace:configure.ac:558: -1- m4_pattern_allow([^DEADLETTER$])
 m4trace:configure.ac:559: -1- PINEVAR([default-mail-directory], [DF_MAIL_DIRECTORY], [mail], [Default mail directory])
-m4trace:configure.ac:559: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:559: the top level])
 m4trace:configure.ac:559: -1- m4_pattern_allow([^DF_MAIL_DIRECTORY$])
 m4trace:configure.ac:560: -1- PINEVAR([default-inbox-name], [INBOX_NAME], [INBOX], [Default inbox name])
-m4trace:configure.ac:560: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:560: the top level])
 m4trace:configure.ac:560: -1- m4_pattern_allow([^INBOX_NAME$])
 m4trace:configure.ac:561: -1- PINEVAR([default-signature-file], [DF_SIGNATURE_FILE], [.signature], [Default signature file])
-m4trace:configure.ac:561: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:561: the top level])
 m4trace:configure.ac:561: -1- m4_pattern_allow([^DF_SIGNATURE_FILE$])
 m4trace:configure.ac:562: -1- PINEVAR([default-elm-style-save], [DF_ELM_STYLE_SAVE], [no], [Default to Elm style save])
-m4trace:configure.ac:562: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:562: the top level])
 m4trace:configure.ac:562: -1- m4_pattern_allow([^DF_ELM_STYLE_SAVE$])
 m4trace:configure.ac:563: -1- PINEVAR([default-header-in-reply], [DF_HEADER_IN_REPLY], [no], [Include header in reply])
-m4trace:configure.ac:563: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:563: the top level])
 m4trace:configure.ac:563: -1- m4_pattern_allow([^DF_HEADER_IN_REPLY$])
 m4trace:configure.ac:564: -1- PINEVAR([default-old-style-reply], [DF_OLD_STYLE_REPLY], [no], [Default to old style reply])
-m4trace:configure.ac:564: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:564: the top level])
 m4trace:configure.ac:564: -1- m4_pattern_allow([^DF_OLD_STYLE_REPLY$])
 m4trace:configure.ac:565: -1- PINEVAR([default-use-only-domain-name], [DF_USE_ONLY_DOMAIN_NAME], [no], [Default to using only the domain name])
-m4trace:configure.ac:565: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:565: the top level])
 m4trace:configure.ac:565: -1- m4_pattern_allow([^DF_USE_ONLY_DOMAIN_NAME$])
 m4trace:configure.ac:566: -1- PINEVAR([default-save-by-sender], [DF_SAVE_BY_SENDER], [no], [Default to save by sender])
-m4trace:configure.ac:566: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:566: the top level])
 m4trace:configure.ac:566: -1- m4_pattern_allow([^DF_SAVE_BY_SENDER$])
 m4trace:configure.ac:567: -1- PINEVAR([default-sort-key], [DF_SORT_KEY], [arrival], [Default sort key])
-m4trace:configure.ac:567: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:567: the top level])
 m4trace:configure.ac:567: -1- m4_pattern_allow([^DF_SORT_KEY$])
 m4trace:configure.ac:568: -1- PINEVAR([default-addressbook-sort-rule], [DF_AB_SORT_RULE], [fullname-with-lists-last], [Default addressbook sort rule])
-m4trace:configure.ac:568: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:568: the top level])
 m4trace:configure.ac:568: -1- m4_pattern_allow([^DF_AB_SORT_RULE$])
 m4trace:configure.ac:569: -1- PINEVAR([default-folder-sort-rule], [DF_FLD_SORT_RULE], [alphabetical], [Default folder sort rule])
-m4trace:configure.ac:569: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:569: the top level])
 m4trace:configure.ac:569: -1- m4_pattern_allow([^DF_FLD_SORT_RULE$])
 m4trace:configure.ac:570: -1- PINEVAR([default-saved-message-name-rule], [DF_SAVED_MSG_NAME_RULE], [default-folder], [Default saved message name rule])
-m4trace:configure.ac:570: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:570: the top level])
 m4trace:configure.ac:570: -1- m4_pattern_allow([^DF_SAVED_MSG_NAME_RULE$])
 m4trace:configure.ac:571: -1- PINEVAR([default-fcc-rule], [DF_FCC_RULE], [default-fcc], [Default fcc rule])
-m4trace:configure.ac:571: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:571: the top level])
 m4trace:configure.ac:571: -1- m4_pattern_allow([^DF_FCC_RULE$])
 m4trace:configure.ac:572: -1- PINEVAR([default-standard-printer], [DF_STANDARD_PRINTER], [lpr], [Default standard printern])
-m4trace:configure.ac:572: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:572: the top level])
 m4trace:configure.ac:572: -1- m4_pattern_allow([^DF_STANDARD_PRINTER$])
 m4trace:configure.ac:573: -1- PINEVAR([default-ansi-printer], [ANSI_PRINTER], [attached-to-ansi], [ANSI printer definition])
-m4trace:configure.ac:573: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:573: the top level])
 m4trace:configure.ac:573: -1- m4_pattern_allow([^ANSI_PRINTER$])
 m4trace:configure.ac:574: -1- PINEVAR([default-addressbook], [DF_ADDRESSBOOK], [.addressbook], [Default addressbook name])
-m4trace:configure.ac:574: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:574: the top level])
 m4trace:configure.ac:574: -1- m4_pattern_allow([^DF_ADDRESSBOOK$])
 m4trace:configure.ac:575: -1- PINEVAR([default-local-fullname], [DF_LOCAL_FULLNAME], ["Local Support"], [Default local support fullname])
-m4trace:configure.ac:575: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:575: the top level])
 m4trace:configure.ac:575: -1- m4_pattern_allow([^DF_LOCAL_FULLNAME$])
 m4trace:configure.ac:576: -1- PINEVAR([default-local-address], [DF_LOCAL_ADDRESS], [postmaster], [Default local support address])
-m4trace:configure.ac:576: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:576: the top level])
 m4trace:configure.ac:576: -1- m4_pattern_allow([^DF_LOCAL_ADDRESS$])
 m4trace:configure.ac:577: -1- PINEVAR([default-keyboard-lock-count], [DF_KBLOCK_PASSWD_COUNT], [1], [Default keyboard lock count])
-m4trace:configure.ac:577: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:577: the top level])
 m4trace:configure.ac:577: -1- m4_pattern_allow([^DF_KBLOCK_PASSWD_COUNT$])
 m4trace:configure.ac:578: -1- PINEVAR([default-remote-addressbook-history], [DF_REMOTE_ABOOK_HISTORY], [3], [Default address book history count])
-m4trace:configure.ac:578: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:578: the top level])
 m4trace:configure.ac:578: -1- m4_pattern_allow([^DF_REMOTE_ABOOK_HISTORY$])
 m4trace:configure.ac:579: -1- PINEVAR([smime-public-cert-directory], [DF_PUBLICCERT_DIR], [.alpine-smime/public], [Default Public Cert Directory])
-m4trace:configure.ac:579: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:579: the top level])
 m4trace:configure.ac:579: -1- m4_pattern_allow([^DF_PUBLICCERT_DIR$])
 m4trace:configure.ac:580: -1- PINEVAR([smime-private-key-directory], [DF_PRIVATEKEY_DIR], [.alpine-smime/private], [Default Private Key Directory])
-m4trace:configure.ac:580: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:580: the top level])
 m4trace:configure.ac:580: -1- m4_pattern_allow([^DF_PRIVATEKEY_DIR$])
 m4trace:configure.ac:581: -1- PINEVAR([smime-cacert-directory], [DF_CACERT_DIR], [.alpine-smime/ca], [Default Cert Authority Directory])
-m4trace:configure.ac:581: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:509: PINEVAR is expanded from...
-configure.ac:581: the top level])
 m4trace:configure.ac:581: -1- m4_pattern_allow([^DF_CACERT_DIR$])
 m4trace:configure.ac:582: -1- PINEVAR_UNQUOTED([default-printer], [DF_DEFAULT_PRINTER], [ANSI_PRINTER], [Default printer])
-m4trace:configure.ac:582: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:524: PINEVAR_UNQUOTED is expanded from...
-configure.ac:582: the top level])
 m4trace:configure.ac:582: -1- m4_pattern_allow([^DF_DEFAULT_PRINTER$])
-m4trace:configure.ac:586: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:586: the top level])
-m4trace:configure.ac:601: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:601: the top level])
-m4trace:configure.ac:608: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:608: the top level])
 m4trace:configure.ac:622: -1- m4_pattern_allow([^PASSFILE$])
-m4trace:configure.ac:627: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:627: the top level])
 m4trace:configure.ac:626: -1- m4_pattern_allow([^DF_SSHPATH$])
-m4trace:configure.ac:642: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:642: the top level])
 m4trace:configure.ac:641: -1- m4_pattern_allow([^DF_SSHCMD$])
-m4trace:configure.ac:658: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:658: the top level])
-m4trace:configure.ac:721: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:721: the top level])
-m4trace:configure.ac:729: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:729: the top level])
-m4trace:configure.ac:737: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:737: the top level])
-m4trace:configure.ac:745: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:745: the top level])
-m4trace:configure.ac:767: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:767: the top level])
-m4trace:configure.ac:776: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:776: the top level])
-m4trace:configure.ac:785: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:785: the top level])
-m4trace:configure.ac:793: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:793: the top level])
-m4trace:configure.ac:803: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:803: the top level])
-m4trace:configure.ac:814: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:814: the top level])
-m4trace:configure.ac:823: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:823: the top level])
-m4trace:configure.ac:831: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:831: the top level])
-m4trace:configure.ac:841: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:841: the top level])
-m4trace:configure.ac:846: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:846: the top level])
-m4trace:configure.ac:854: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:854: the top level])
-m4trace:configure.ac:861: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:861: the top level])
-m4trace:configure.ac:871: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:871: the top level])
-m4trace:configure.ac:875: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:875: the top level])
-m4trace:configure.ac:879: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:879: the top level])
-m4trace:configure.ac:887: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:887: the top level])
-m4trace:configure.ac:897: -2- _m4_warn([obsolete], [The macro `AC_HELP_STRING' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:207: AC_HELP_STRING is expanded from...
-configure.ac:897: the top level])
-m4trace:configure.ac:918: -1- _m4_warn([obsolete], [The macro `AC_ERROR' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/oldnames.m4:34: AC_ERROR is expanded from...
-../../lib/m4sugar/m4sh.m4:639: AS_IF is expanded from...
-../../lib/autoconf/libs.m4:99: AC_CHECK_LIB is expanded from...
-configure.ac:918: the top level])
-m4trace:configure.ac:925: -1- _m4_warn([obsolete], [The macro `AC_ERROR' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/oldnames.m4:34: AC_ERROR is expanded from...
-../../lib/m4sugar/m4sh.m4:639: AS_IF is expanded from...
-../../lib/autoconf/libs.m4:99: AC_CHECK_LIB is expanded from...
-../../lib/m4sugar/m4sh.m4:639: AS_IF is expanded from...
-../../lib/autoconf/libs.m4:99: AC_CHECK_LIB is expanded from...
-../../lib/m4sugar/m4sh.m4:639: AS_IF is expanded from...
-../../lib/autoconf/libs.m4:99: AC_CHECK_LIB is expanded from...
-../../lib/m4sugar/m4sh.m4:639: AS_IF is expanded from...
-../../lib/autoconf/libs.m4:99: AC_CHECK_LIB is expanded from...
-../../lib/m4sugar/m4sh.m4:639: AS_IF is expanded from...
-../../lib/autoconf/libs.m4:99: AC_CHECK_LIB is expanded from...
-configure.ac:925: the top level])
 m4trace:configure.ac:963: -1- m4_pattern_allow([^HAS_TERMINFO$])
 m4trace:configure.ac:966: -1- m4_pattern_allow([^HAS_TERMCAP$])
 m4trace:configure.ac:990: -1- m4_pattern_allow([^ENABLE_LDAP$])
 m4trace:configure.ac:995: -1- m4_pattern_allow([^LDAP_DEPRECATED$])
-m4trace:configure.ac:1053: -1- _m4_warn([obsolete], [The macro `AC_ERROR' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/oldnames.m4:34: AC_ERROR is expanded from...
-configure.ac:1053: the top level])
-m4trace:configure.ac:1075: -1- _m4_warn([obsolete], [The macro `AC_ERROR' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/oldnames.m4:34: AC_ERROR is expanded from...
-configure.ac:1075: the top level])
 m4trace:configure.ac:1120: -1- _m4_warn([cross], [cannot check for file existence when cross compiling], [../../lib/autoconf/general.m4:2777: AC_CHECK_FILE is expanded from...
 ../../lib/m4sugar/m4sh.m4:639: AS_IF is expanded from...
 ../../lib/autoconf/headers.m4:129: _AC_CHECK_HEADER_MONGREL is expanded from...
 ../../lib/autoconf/headers.m4:67: AC_CHECK_HEADER is expanded from...
 configure.ac:1120: the top level])
-m4trace:configure.ac:1138: -1- _m4_warn([obsolete], [The macro `AC_ERROR' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/oldnames.m4:34: AC_ERROR is expanded from...
-../../lib/m4sugar/m4sh.m4:639: AS_IF is expanded from...
-../../lib/autoconf/libs.m4:47: AC_SEARCH_LIBS is expanded from...
-configure.ac:1138: the top level])
-m4trace:configure.ac:1148: -1- _m4_warn([obsolete], [The macro `AC_ERROR' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/oldnames.m4:34: AC_ERROR is expanded from...
-../../lib/m4sugar/m4sh.m4:639: AS_IF is expanded from...
-../../lib/autoconf/headers.m4:129: _AC_CHECK_HEADER_MONGREL is expanded from...
-../../lib/autoconf/headers.m4:67: AC_CHECK_HEADER is expanded from...
-configure.ac:1148: the top level])
 m4trace:configure.ac:1157: -1- m4_pattern_allow([^HAVE_REGEX_H$])
 m4trace:configure.ac:1166: -1- ACX_PTHREAD([
       AC_MSG_RESULT([yes])
@@ -5886,140 +5521,81 @@ m4trace:configure.ac:1196: -1- m4_pattern_allow([^STAT_MACROS_BROKEN$])
 m4trace:configure.ac:1197: -1- m4_pattern_allow([^HAVE_SYS_WAIT_H$])
 m4trace:configure.ac:1198: -1- m4_pattern_allow([^TIME_WITH_SYS_TIME$])
 m4trace:configure.ac:1199: -1- m4_pattern_allow([^GWINSZ_IN_SYS_IOCTL$])
-m4trace:configure.ac:1201: -1- _m4_warn([obsolete], [The macro `AC_UNISTD_H' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/headers.m4:833: AC_UNISTD_H is expanded from...
-configure.ac:1201: the top level])
 m4trace:configure.ac:1201: -1- m4_pattern_allow([^HAVE_UNISTD_H$])
 m4trace:configure.ac:1230: -2- m4_pattern_allow([^HAS_TERMIOS$])
 m4trace:configure.ac:1229: -2- m4_pattern_allow([^HAS_TERMIO$])
 m4trace:configure.ac:1229: -2- m4_pattern_allow([^HAS_SGTTY$])
-m4trace:configure.ac:1229: -1- _m4_warn([obsolete], [The macro `AC_ERROR' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/oldnames.m4:34: AC_ERROR is expanded from...
-../../lib/m4sugar/m4sh.m4:639: AS_IF is expanded from...
-../../lib/autoconf/headers.m4:129: _AC_CHECK_HEADER_MONGREL is expanded from...
-../../lib/autoconf/headers.m4:67: AC_CHECK_HEADER is expanded from...
-../../lib/m4sugar/m4sh.m4:639: AS_IF is expanded from...
-../../lib/autoconf/headers.m4:129: _AC_CHECK_HEADER_MONGREL is expanded from...
-../../lib/autoconf/headers.m4:67: AC_CHECK_HEADER is expanded from...
-../../lib/m4sugar/m4sh.m4:639: AS_IF is expanded from...
-../../lib/autoconf/headers.m4:129: _AC_CHECK_HEADER_MONGREL is expanded from...
-../../lib/autoconf/headers.m4:67: AC_CHECK_HEADER is expanded from...
-configure.ac:1229: the top level])
-m4trace:configure.ac:1246: -1- _m4_warn([obsolete], [The macro `AC_TYPE_SIGNAL' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/types.m4:746: AC_TYPE_SIGNAL is expanded from...
-configure.ac:1246: the top level])
-m4trace:configure.ac:1246: -1- m4_pattern_allow([^RETSIGTYPE$])
-m4trace:configure.ac:1247: -1- m4_pattern_allow([^size_t$])
-m4trace:configure.ac:1248: -1- m4_pattern_allow([^mode_t$])
-m4trace:configure.ac:1249: -1- m4_pattern_allow([^pid_t$])
-m4trace:configure.ac:1250: -1- m4_pattern_allow([^uid_t$])
-m4trace:configure.ac:1250: -1- m4_pattern_allow([^gid_t$])
-m4trace:configure.ac:1251: -1- m4_pattern_allow([^TM_IN_SYS_TIME$])
-m4trace:configure.ac:1253: -1- m4_pattern_allow([^HAVE_UNION_WAIT$])
-m4trace:configure.ac:1255: -1- m4_pattern_allow([^HAVE_STDINT_H$])
-m4trace:configure.ac:1255: -1- m4_pattern_allow([^HAVE_INTTYPES_H$])
-m4trace:configure.ac:1255: -1- m4_pattern_allow([^HAVE_SYS_TYPES_H$])
-m4trace:configure.ac:1255: -1- m4_pattern_allow([^SIZEOF_UNSIGNED_SHORT$])
-m4trace:configure.ac:1255: -1- m4_pattern_allow([^SIZEOF_UNSIGNED_INT$])
-m4trace:configure.ac:1255: -1- _m4_warn([obsolete], [The macro `AC_ERROR' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/oldnames.m4:34: AC_ERROR is expanded from...
-../../lib/m4sugar/m4sh.m4:639: AS_IF is expanded from...
-../../lib/autoconf/headers.m4:129: _AC_CHECK_HEADER_MONGREL is expanded from...
-../../lib/autoconf/headers.m4:67: AC_CHECK_HEADER is expanded from...
-../../lib/m4sugar/m4sh.m4:607: AS_FOR is expanded from...
-../../lib/autoconf/headers.m4:249: AC_CHECK_HEADERS is expanded from...
-../../lib/m4sugar/m4sh.m4:639: AS_IF is expanded from...
-../../lib/autoconf/headers.m4:129: _AC_CHECK_HEADER_MONGREL is expanded from...
-../../lib/autoconf/headers.m4:67: AC_CHECK_HEADER is expanded from...
-../../lib/m4sugar/m4sh.m4:607: AS_FOR is expanded from...
-../../lib/autoconf/headers.m4:249: AC_CHECK_HEADERS is expanded from...
-../../lib/m4sugar/m4sh.m4:639: AS_IF is expanded from...
-../../lib/autoconf/headers.m4:129: _AC_CHECK_HEADER_MONGREL is expanded from...
-../../lib/autoconf/headers.m4:67: AC_CHECK_HEADER is expanded from...
-../../lib/m4sugar/m4sh.m4:607: AS_FOR is expanded from...
-../../lib/autoconf/headers.m4:249: AC_CHECK_HEADERS is expanded from...
-configure.ac:1255: the top level])
-m4trace:configure.ac:1272: -1- m4_pattern_allow([^UINT16$])
-m4trace:configure.ac:1274: -1- m4_pattern_allow([^HAVE_STDINT_H$])
-m4trace:configure.ac:1274: -1- m4_pattern_allow([^HAVE_INTTYPES_H$])
-m4trace:configure.ac:1274: -1- m4_pattern_allow([^HAVE_SYS_TYPES_H$])
-m4trace:configure.ac:1274: -1- m4_pattern_allow([^SIZEOF_UNSIGNED_INT$])
-m4trace:configure.ac:1274: -1- m4_pattern_allow([^SIZEOF_UNSIGNED_LONG$])
-m4trace:configure.ac:1274: -1- _m4_warn([obsolete], [The macro `AC_ERROR' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/oldnames.m4:34: AC_ERROR is expanded from...
-../../lib/m4sugar/m4sh.m4:639: AS_IF is expanded from...
-../../lib/autoconf/headers.m4:129: _AC_CHECK_HEADER_MONGREL is expanded from...
-../../lib/autoconf/headers.m4:67: AC_CHECK_HEADER is expanded from...
-../../lib/m4sugar/m4sh.m4:607: AS_FOR is expanded from...
-../../lib/autoconf/headers.m4:249: AC_CHECK_HEADERS is expanded from...
-../../lib/m4sugar/m4sh.m4:639: AS_IF is expanded from...
-../../lib/autoconf/headers.m4:129: _AC_CHECK_HEADER_MONGREL is expanded from...
-../../lib/autoconf/headers.m4:67: AC_CHECK_HEADER is expanded from...
-../../lib/m4sugar/m4sh.m4:607: AS_FOR is expanded from...
-../../lib/autoconf/headers.m4:249: AC_CHECK_HEADERS is expanded from...
-../../lib/m4sugar/m4sh.m4:639: AS_IF is expanded from...
-../../lib/autoconf/headers.m4:129: _AC_CHECK_HEADER_MONGREL is expanded from...
-../../lib/autoconf/headers.m4:67: AC_CHECK_HEADER is expanded from...
-../../lib/m4sugar/m4sh.m4:607: AS_FOR is expanded from...
-../../lib/autoconf/headers.m4:249: AC_CHECK_HEADERS is expanded from...
-configure.ac:1274: the top level])
-m4trace:configure.ac:1291: -1- m4_pattern_allow([^UINT32$])
-m4trace:configure.ac:1293: -1- _m4_warn([obsolete], [The macro `AC_TRY_COMPILE' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/general.m4:2614: AC_TRY_COMPILE is expanded from...
-../../lib/m4sugar/m4sh.m4:639: AS_IF is expanded from...
-../../lib/autoconf/general.m4:2031: AC_CACHE_VAL is expanded from...
-../../lib/autoconf/general.m4:2052: AC_CACHE_CHECK is expanded from...
-configure.ac:1293: the top level])
-m4trace:configure.ac:1310: -1- m4_pattern_allow([^qsort_t$])
-m4trace:configure.ac:1314: -1- m4_pattern_allow([^SELECT_TYPE_ARG1$])
-m4trace:configure.ac:1314: -1- m4_pattern_allow([^SELECT_TYPE_ARG234$])
-m4trace:configure.ac:1314: -1- m4_pattern_allow([^SELECT_TYPE_ARG5$])
-m4trace:configure.ac:1316: -1- m4_pattern_allow([^HAVE_STRCOLL$])
-m4trace:configure.ac:1320: -1- m4_pattern_allow([^HAVE_VFORK_H$])
-m4trace:configure.ac:1320: -1- m4_pattern_allow([^HAVE_WORKING_VFORK$])
-m4trace:configure.ac:1320: -1- m4_pattern_allow([^vfork$])
-m4trace:configure.ac:1320: -1- m4_pattern_allow([^HAVE_WORKING_FORK$])
-m4trace:configure.ac:1367: -1- m4_pattern_allow([^POSIX_SIGNALS$])
-m4trace:configure.ac:1367: -1- m4_pattern_allow([^SYSV_SIGNALS$])
-m4trace:configure.ac:1378: -1- m4_pattern_allow([^HAVE_SYSLOG$])
-m4trace:configure.ac:1442: -1- m4_pattern_allow([^OSX_TARGET$])
-m4trace:configure.ac:1447: -1- m4_pattern_allow([^APPLEKEYCHAIN$])
-m4trace:configure.ac:1465: -1- m4_pattern_allow([^__EXTENSIONS__$])
-m4trace:configure.ac:1571: -1- m4_pattern_allow([^_WINDOWS$])
-m4trace:configure.ac:1574: -1- _m4_warn([obsolete], [The macro `AC_ERROR' is obsolete.
-You should run autoupdate.], [../../lib/autoconf/oldnames.m4:34: AC_ERROR is expanded from...
-configure.ac:1574: the top level])
-m4trace:configure.ac:1594: -1- m4_pattern_allow([^SYSTYPE$])
-m4trace:configure.ac:1595: -1- m4_pattern_allow([^C_FILESEP$])
-m4trace:configure.ac:1596: -1- m4_pattern_allow([^S_FILESEP$])
-m4trace:configure.ac:1597: -1- m4_pattern_allow([^MAILDIR$])
-m4trace:configure.ac:1598: -1- m4_pattern_allow([^MODE_READONLY$])
-m4trace:configure.ac:1601: -1- m4_pattern_allow([^C_CLIENT_TARGET$])
-m4trace:configure.ac:1602: -1- m4_pattern_allow([^C_CLIENT_WITH_IPV6$])
-m4trace:configure.ac:1619: -1- m4_pattern_allow([^SMIME$])
-m4trace:configure.ac:1620: -1- m4_pattern_allow([^SMIME_SSLCERTS$])
-m4trace:configure.ac:1669: -1- m4_pattern_allow([^C_CLIENT_CFLAGS$])
-m4trace:configure.ac:1680: -1- m4_pattern_allow([^C_CLIENT_LDFLAGS$])
-m4trace:configure.ac:1684: -1- m4_pattern_allow([^C_CLIENT_GCCOPTLEVEL$])
-m4trace:configure.ac:1687: -1- m4_pattern_allow([^C_CLIENT_SPECIALS$])
-m4trace:configure.ac:1707: -1- m4_pattern_allow([^PUBCOOKIE$])
-m4trace:configure.ac:1714: -1- m4_pattern_allow([^REGEX_BUILD$])
-m4trace:configure.ac:1716: -1- m4_pattern_allow([^WEB_BUILD$])
-m4trace:configure.ac:1717: -1- m4_pattern_allow([^WEB_BINDIR$])
-m4trace:configure.ac:1718: -1- m4_pattern_allow([^WEB_PUBCOOKIE_BUILD$])
-m4trace:configure.ac:1719: -1- m4_pattern_allow([^WEB_PUBCOOKIE_LIB$])
-m4trace:configure.ac:1720: -1- m4_pattern_allow([^WEB_PUBCOOKIE_LINK$])
-m4trace:configure.ac:1722: -1- m4_pattern_allow([^AM_CFLAGS$])
-m4trace:configure.ac:1723: -1- m4_pattern_allow([^AM_LDFLAGS$])
-m4trace:configure.ac:1725: -1- _m4_warn([obsolete], [AC_OUTPUT should be used without arguments.
-You should run autoupdate.], [])
-m4trace:configure.ac:1725: -1- m4_pattern_allow([^LIB@&t@OBJS$])
-m4trace:configure.ac:1725: -1- m4_pattern_allow([^LTLIBOBJS$])
-m4trace:configure.ac:1725: -1- AM_CONDITIONAL([am__EXEEXT], [test -n "$EXEEXT"])
-m4trace:configure.ac:1725: -1- m4_pattern_allow([^am__EXEEXT_TRUE$])
-m4trace:configure.ac:1725: -1- m4_pattern_allow([^am__EXEEXT_FALSE$])
-m4trace:configure.ac:1725: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_TRUE])
-m4trace:configure.ac:1725: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_FALSE])
-m4trace:configure.ac:1725: -1- _AC_AM_CONFIG_HEADER_HOOK(["$ac_file"])
-m4trace:configure.ac:1725: -1- _AM_OUTPUT_DEPENDENCY_COMMANDS
-m4trace:configure.ac:1725: -1- _LT_PROG_LTMAIN
+m4trace:configure.ac:1246: -1- _m4_warn([obsolete], [your code may safely assume C89 semantics that RETSIGTYPE is void.
+Remove this warning and the `AC_CACHE_CHECK' when you adjust the code.], [])
+m4trace:configure.ac:1255: -1- m4_pattern_allow([^RETSIGTYPE$])
+m4trace:configure.ac:1258: -1- m4_pattern_allow([^size_t$])
+m4trace:configure.ac:1259: -1- m4_pattern_allow([^mode_t$])
+m4trace:configure.ac:1260: -1- m4_pattern_allow([^pid_t$])
+m4trace:configure.ac:1261: -1- m4_pattern_allow([^uid_t$])
+m4trace:configure.ac:1261: -1- m4_pattern_allow([^gid_t$])
+m4trace:configure.ac:1262: -1- m4_pattern_allow([^TM_IN_SYS_TIME$])
+m4trace:configure.ac:1264: -1- m4_pattern_allow([^HAVE_UNION_WAIT$])
+m4trace:configure.ac:1266: -1- m4_pattern_allow([^HAVE_STDINT_H$])
+m4trace:configure.ac:1266: -1- m4_pattern_allow([^HAVE_INTTYPES_H$])
+m4trace:configure.ac:1266: -1- m4_pattern_allow([^HAVE_SYS_TYPES_H$])
+m4trace:configure.ac:1266: -1- m4_pattern_allow([^SIZEOF_UNSIGNED_SHORT$])
+m4trace:configure.ac:1266: -1- m4_pattern_allow([^SIZEOF_UNSIGNED_INT$])
+m4trace:configure.ac:1283: -1- m4_pattern_allow([^UINT16$])
+m4trace:configure.ac:1285: -1- m4_pattern_allow([^HAVE_STDINT_H$])
+m4trace:configure.ac:1285: -1- m4_pattern_allow([^HAVE_INTTYPES_H$])
+m4trace:configure.ac:1285: -1- m4_pattern_allow([^HAVE_SYS_TYPES_H$])
+m4trace:configure.ac:1285: -1- m4_pattern_allow([^SIZEOF_UNSIGNED_INT$])
+m4trace:configure.ac:1285: -1- m4_pattern_allow([^SIZEOF_UNSIGNED_LONG$])
+m4trace:configure.ac:1302: -1- m4_pattern_allow([^UINT32$])
+m4trace:configure.ac:1320: -1- m4_pattern_allow([^qsort_t$])
+m4trace:configure.ac:1324: -1- m4_pattern_allow([^SELECT_TYPE_ARG1$])
+m4trace:configure.ac:1324: -1- m4_pattern_allow([^SELECT_TYPE_ARG234$])
+m4trace:configure.ac:1324: -1- m4_pattern_allow([^SELECT_TYPE_ARG5$])
+m4trace:configure.ac:1326: -1- m4_pattern_allow([^HAVE_STRCOLL$])
+m4trace:configure.ac:1330: -1- m4_pattern_allow([^HAVE_VFORK_H$])
+m4trace:configure.ac:1330: -1- m4_pattern_allow([^HAVE_WORKING_VFORK$])
+m4trace:configure.ac:1330: -1- m4_pattern_allow([^vfork$])
+m4trace:configure.ac:1330: -1- m4_pattern_allow([^HAVE_WORKING_FORK$])
+m4trace:configure.ac:1377: -1- m4_pattern_allow([^POSIX_SIGNALS$])
+m4trace:configure.ac:1377: -1- m4_pattern_allow([^SYSV_SIGNALS$])
+m4trace:configure.ac:1388: -1- m4_pattern_allow([^HAVE_SYSLOG$])
+m4trace:configure.ac:1452: -1- m4_pattern_allow([^OSX_TARGET$])
+m4trace:configure.ac:1457: -1- m4_pattern_allow([^APPLEKEYCHAIN$])
+m4trace:configure.ac:1475: -1- m4_pattern_allow([^__EXTENSIONS__$])
+m4trace:configure.ac:1581: -1- m4_pattern_allow([^_WINDOWS$])
+m4trace:configure.ac:1604: -1- m4_pattern_allow([^SYSTYPE$])
+m4trace:configure.ac:1605: -1- m4_pattern_allow([^C_FILESEP$])
+m4trace:configure.ac:1606: -1- m4_pattern_allow([^S_FILESEP$])
+m4trace:configure.ac:1607: -1- m4_pattern_allow([^MAILDIR$])
+m4trace:configure.ac:1608: -1- m4_pattern_allow([^MODE_READONLY$])
+m4trace:configure.ac:1611: -1- m4_pattern_allow([^C_CLIENT_TARGET$])
+m4trace:configure.ac:1612: -1- m4_pattern_allow([^C_CLIENT_WITH_IPV6$])
+m4trace:configure.ac:1629: -1- m4_pattern_allow([^SMIME$])
+m4trace:configure.ac:1630: -1- m4_pattern_allow([^SMIME_SSLCERTS$])
+m4trace:configure.ac:1679: -1- m4_pattern_allow([^C_CLIENT_CFLAGS$])
+m4trace:configure.ac:1690: -1- m4_pattern_allow([^C_CLIENT_LDFLAGS$])
+m4trace:configure.ac:1694: -1- m4_pattern_allow([^C_CLIENT_GCCOPTLEVEL$])
+m4trace:configure.ac:1697: -1- m4_pattern_allow([^C_CLIENT_SPECIALS$])
+m4trace:configure.ac:1717: -1- m4_pattern_allow([^PUBCOOKIE$])
+m4trace:configure.ac:1724: -1- m4_pattern_allow([^REGEX_BUILD$])
+m4trace:configure.ac:1726: -1- m4_pattern_allow([^WEB_BUILD$])
+m4trace:configure.ac:1727: -1- m4_pattern_allow([^WEB_BINDIR$])
+m4trace:configure.ac:1728: -1- m4_pattern_allow([^WEB_PUBCOOKIE_BUILD$])
+m4trace:configure.ac:1729: -1- m4_pattern_allow([^WEB_PUBCOOKIE_LIB$])
+m4trace:configure.ac:1730: -1- m4_pattern_allow([^WEB_PUBCOOKIE_LINK$])
+m4trace:configure.ac:1732: -1- m4_pattern_allow([^AM_CFLAGS$])
+m4trace:configure.ac:1733: -1- m4_pattern_allow([^AM_LDFLAGS$])
+m4trace:configure.ac:1742: -1- m4_pattern_allow([^LIB@&t@OBJS$])
+m4trace:configure.ac:1742: -1- m4_pattern_allow([^LTLIBOBJS$])
+m4trace:configure.ac:1742: -1- AM_CONDITIONAL([am__EXEEXT], [test -n "$EXEEXT"])
+m4trace:configure.ac:1742: -1- m4_pattern_allow([^am__EXEEXT_TRUE$])
+m4trace:configure.ac:1742: -1- m4_pattern_allow([^am__EXEEXT_FALSE$])
+m4trace:configure.ac:1742: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_TRUE])
+m4trace:configure.ac:1742: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_FALSE])
+m4trace:configure.ac:1742: -2- m4_include([VERSION])
+m4trace:configure.ac:1742: -2- _m4_warn([syntax], [file `VERSION' included several times], [])
+m4trace:configure.ac:1742: -2- m4_include([VERSION])
+m4trace:configure.ac:1742: -2- _m4_warn([syntax], [file `VERSION' included several times], [])
+m4trace:configure.ac:1742: -1- _AC_AM_CONFIG_HEADER_HOOK(["$ac_file"])
+m4trace:configure.ac:1742: -1- _AM_OUTPUT_DEPENDENCY_COMMANDS
+m4trace:configure.ac:1742: -1- _LT_PROG_LTMAIN

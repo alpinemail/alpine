@@ -1397,93 +1397,23 @@ url_launch(HANDLE_S *handle)
 
     if(handle->h.url.tool){
 	char	*toolp, *cmdp, *p, *q, cmd[URL_MAX_LAUNCH + 4];
-	char    *left_double_quote, *right_double_quote;
-	int	 mode, quotable = 0, copied = 0, double_quoted = 0;
-	int      escape_single_quotes = 0;
+	int	 mode, copied = 0;
 	PIPE_S  *syspipe;
 
 	toolp = handle->h.url.tool;
 
-	/*
-	 * Figure out if we need to quote the URL. If there are shell
-	 * metacharacters in it we want to quote it, because we don't want
-	 * the shell to interpret them. However, if the user has already
-	 * quoted the URL in the command definition we don't want to quote
-	 * again. So, we try to see if there are a pair of unescaped
-	 * quotes surrounding _URL_ in the cmd.
-	 * If we quote when we shouldn't have, it'll cause it not to work.
-	 * If we don't quote when we should have, it's a possible security
-	 * problem (and it still won't work).
-	 *
-	 * In bash and ksh $( executes a command, so we use single quotes
-	 * instead of double quotes to do our quoting. If configured command
-	 * is double-quoted we change that to single quotes.
+	/* This code used to quote a URL to prevent arbitrary command execution
+	 * through a URL. The plan was to quote the URL with single quotes,
+	 * and this used to work. BUT some shells do not care about quoting
+	 * and interpret some characters regardless of single quotes. The
+	 * simplest solution is to escape those characters, but then some
+	 * shells will see the escape characters and some others will not.
+	 * It's a mess. There are several ways to go around this mess, 
+	 * including adding configuration options (one more!?), or forget
+	 * about shells. What we do is to forget about shells, and execute
+	 * the code as a PIPE_NOSHELL.
 	 */
-#ifdef	_WINDOWS
-	/*
-	 * It should be safe to not quote any of the characters from the
-	 * string below.  It was quoting with '?' and '&' in a URL, which is
-	 * unnecessary.  Also the quoting code below only quotes with
-	 * ' (single quote), so we'd want it to at least do double quotes
-	 * instead, for Windows.
-	 */
-	if(toolp)
-	  quotable = 0;		/* always never quote */
-	else
-#endif
-	/* quote shell specials */
-	if(strpbrk(handle->h.url.path, "&*;<>?[]|~$(){}'\"") != NULL){
-	    escape_single_quotes++;
-	    if((p = strstr(toolp, "_URL_")) != NULL){  /* explicit arg? */
-		int in_quote = 0;
 
-		/* see whether or not it is already quoted */
-
-	        quotable = 1;
-
-		for(q = toolp; q < p; q++)
-		  if(*q == '\'' && (q == toolp || q[-1] != '\\'))
-		    in_quote = 1 - in_quote;
-		
-		if(in_quote){
-		    for(q = p+5; *q; q++)
-		      if(*q == '\'' && q[-1] != '\\'){
-			  /* already single quoted, leave it alone */
-			  quotable = 0;
-			  break;
-		      }
-		}
-
-		if(quotable){
-		    in_quote = 0;
-		    for(q = toolp; q < p; q++)
-		      if(*q == '\"' && (q == toolp || q[-1] != '\\')){
-			  in_quote = 1 - in_quote;
-			  if(in_quote)
-			    left_double_quote = q;
-		      }
-		    
-		    if(in_quote){
-			for(q = p+5; *q; q++)
-			  if(*q == '\"' && q[-1] != '\\'){
-			      /* we'll replace double quotes with singles */
-			      double_quoted = 1;
-			      right_double_quote = q;
-			      break;
-			  }
-		    }
-		}
-	    }
-	    else
-	      quotable = 1;
-	}
-	else
-	  quotable = 0;
-
-quotable = 0;
-escape_single_quotes = 0;
-
-	/* Build the command */
 	cmdp = cmd;
 	while(cmdp-cmd < URL_MAX_LAUNCH)
 	  if((!*toolp && !copied)
@@ -1493,55 +1423,24 @@ escape_single_quotes = 0;
 	      if(!*toolp)
 		*cmdp++ = ' ';
 
-	      /* add single quotes */
-	      if(quotable && !double_quoted && cmdp-cmd < URL_MAX_LAUNCH)
-		*cmdp++ = '\'';
-
 	      copied = 1;
-	      /*
-	       * If the url.path contains a single quote we should escape
-	       * that single quote to remove its special meaning.
-	       * Since backslash-quote is ignored inside single quotes we
-	       * close the quotes, backslash escape the quote, then open
-	       * the quotes again. So
-	       *         'fred's car'
-	       * becomes 'fred'\''s car'
-	       */
 	      for(p = handle->h.url.path;
-		  p && *p && cmdp-cmd < URL_MAX_LAUNCH; p++){
-		  if(escape_single_quotes && *p == '\''){
-		      *cmdp++ = '\'';	/* closing quote */
-		      *cmdp++ = '\\';
-		      *cmdp++ = '\'';	/* opening quote comes from p below */
-		  }
-
+		  p && *p && cmdp-cmd < URL_MAX_LAUNCH; p++)
 		  *cmdp++ = *p;
-	      }
 
-	      if(quotable && !double_quoted && cmdp-cmd < URL_MAX_LAUNCH){
-		  *cmdp++ = '\'';
-		  *cmdp = '\0';
-	      }
+	      *cmdp = '\0';
 
 	      if(*toolp)
 		toolp += 5;		/* length of "_URL_" */
 	  }
-	  else{
-	      /* replace double quotes with single quotes */
-	      if(double_quoted &&
-		 (toolp == left_double_quote || toolp == right_double_quote)){
-		  *cmdp++ = '\'';
-		  toolp++;
-	      }
-	      else if(!(*cmdp++ = *toolp++))
+	  else
+	      if(!(*cmdp++ = *toolp++))
 		break;
-	  }
-
 
 	if(cmdp-cmd >= URL_MAX_LAUNCH)
 	  return(url_launch_too_long(rv));
 	
-	mode = PIPE_RESET | PIPE_USER | PIPE_RUNNOW | PIPE_NOSHELL;
+	mode = PIPE_RESET | PIPE_USER | PIPE_RUNNOW | PIPE_NOSHELL ;
 	if((syspipe = open_system_pipe(cmd, NULL, NULL, mode, 0, pipe_callback, pipe_report_error)) != NULL){
 	    close_system_pipe(&syspipe, NULL, pipe_callback);
 	    q_status_message(SM_ORDER, 0, 4, _("VIEWER command completed"));

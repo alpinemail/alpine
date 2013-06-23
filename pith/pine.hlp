@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 9 2013-05-29 16:02:24
+Alpine Commit 13 2013-06-21 12:51:47
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -198,6 +198,7 @@ message, as specified by original sender.
 Bugs that have been addressed include:
 <P>
 <UL>
+  <LI> Do not bail out during a tcp timeout, instead close connection and avoid crash.
   <LI> Do not use a shell to open a browser.
   <LI> Configure script did not test for crypto or pam libraries.
   <LI> Fix Cygwin separator to &quot;/&quot;.

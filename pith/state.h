@@ -139,6 +139,9 @@ struct pine {
     unsigned     def_sort_rev:1;	/* true if reverse sort is default  */ 
     unsigned     restricted:1;
 
+    unsigned     tcptimeout:1;		/* a tcp timeout is in progress  */
+    unsigned     read_bail:1;		/* we are coming back from a read bail! */
+
     unsigned	 save_msg_rule:5;
     unsigned	 fcc_rule:3;
     unsigned	 ab_sort_rule:3;
