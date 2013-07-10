@@ -4,8 +4,8 @@ static char rcsid[] = "$Id: word.c 769 2007-10-24 00:15:40Z hubert@u.washington.
 
 /*
  * ========================================================================
- * Copyright 2006-2007 University of Washington
  * Copyright 2013 Eduardo Chappa
+ * Copyright 2006-2007 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -431,40 +431,112 @@ is_user_separator(UCS c)
     return 0;
 }
 
+void
+do_quote_match(UCS *q, LINE *l, UCS *buf, size_t buflen)
+{
+    register int i, j, qb;
+    int qstart, qend, k;
+
+    /* 
+     * The method for determining the quote string is:
+     * 1) strip leading and trailing whitespace from q 
+     * 2) add all leading whitespace to buf
+     * 3) check for q
+     * 4) if q, append q to buf and any trailing whitespace
+     * 5) repeat steps 3 and 4 as necessary
+     *
+     * q in the future could be made to be an array of (UCS *)'s
+     *    (">" and whatever the user's quote_string is)
+     */
+
+    /* count leading whitespace as part of the quote */
+    *buf = '\0';
+
+    if(l == NULL)
+      return;
+
+    for(j = 0; j <= llength(l) && lgetc(l, j).c == ' ' && j+1 < buflen; j++)
+        buf[j] = lgetc(l, j).c;
+
+    buf[j] = '\0';   
+    if(*q == '\0')
+      return;
+
+    /* pare down q so it contains no leading or trailing whitespace */
+    for(i = 0; q[i] == ' '; i++);
+    qstart = i;
+    for(i = ucs4_strlen(q); i > 0 && q[i-1] == ' '; i--);
+    qend = i;
+
+    if(qend <= qstart)   
+      return;
+          
+    while(j <= llength(l)){
+        for(i = qstart; j <= llength(l) && i < qend; i++, j++)
+          if(q[i] != lgetc(l, j).c)
+            return;
+    
+        if(i >= qend){
+            if(ucs4_strlen(buf) + qend - qstart < (buflen - 1))
+              ucs4_strncat(buf, q + qstart, qend - qstart);
+        } 
+    
+        /*
+         * if we're this far along, we've matched a quote string,
+         * and should now add the following white space.
+         */
+        for(k = ucs4_strlen(buf);
+		j <= llength(l) && lgetc(l,j).c == ' ' && (k + 1 < buflen);
+            j++, k++){
+            buf[k] = lgetc(l,j).c;
+        }
+        buf[k] = '\0';
+        
+        if(j > llength(l))
+          return;
+    }
+}
 
 /*
  * Return number of quotes if whatever starts the line matches the quote string
  */
 int
-quote_match(UCS *q, LINE *l, UCS *buf, size_t buflen)
+quote_match(UCS *q, LINE *gl, UCS *bufl, size_t buflen)
 {
-    register int i, n, j, qb;
+    LINE *nl = gl != curbp->b_linep ? lforw(gl) : NULL;
+    LINE *pl = lback(gl) != curbp->b_linep ? lback(gl) : NULL;
+    UCS bufp[NSTRING], bufn[NSTRING];
+    int i, j;
+    int quoted_line = 0;
 
-    *buf = '\0';
-    if(*q == '\0')
-      return(1);
+    do_quote_match(q, pl, bufp, sizeof(bufp));	/* previous line */
+    do_quote_match(q, gl, bufl, buflen);	/* given line	 */
+    do_quote_match(q, nl, bufn, sizeof(bufn));	/* next line	 */
 
-    qb = (ucs4_strlen(q) > 1 && q[ucs4_strlen(q)-1] == ' ') ? 1 : 0;
-    for(n = 0, j = 0; ;){
-	for(i = 0; j <= llength(l) && qb ? q[i+1] : q[i]; i++, j++)
-	  if(q[i] != lgetc(l, j).c)
-	    return(n);
+    if(!ucs4_strcmp(bufp, bufl))
+      return ucs4_strlen(bufl);
 
-	n++;
-	if((!qb && q[i] == '\0') || (qb && q[i+1] == '\0')){
-	    if(ucs4_strlen(buf) + ucs4_strlen(q) + 1 < buflen){
-		ucs4_strncat(buf, q, buflen-ucs4_strlen(q)-1);
-		buf[buflen-1] = '\0';
-		if(qb && (j > llength(l) || lgetc(l, j).c != ' '))
-		  buf[ucs4_strlen(buf)-1] = '\0';
-	    }
-	}
-	if(j > llength(l))
-	  return(n);
-	else if(qb && lgetc(l, j).c == ' ')
-	  j++;
+    /* is this line quoted? */
+    if(q && *q){
+      for(i = 0; i < llength(gl) && q[i] && lgetc(gl, i).c == q[i]; i++);
+      if(!q[i])
+         quoted_line = 1;
     }
-    return(n);  /* never reached */
+
+    /* compare bufl and bufn */
+    for(i = 0; bufl[i] && bufn[i] && bufl[i] == bufn[i]; i++);
+
+    /* go back to last non-space character */
+    for(; i > 0 && bufl[i-1] == ' '; i--);
+
+    /* do bufl and bufn differ only in spaces? */
+    for(j = i; bufl[j] && bufl[j] == ' '; j++);
+
+    /* if they differ only on trailing spaces, chop bufl to agree with bufn */
+    if (!bufl[j] )
+       bufl[Pmaster && quoted_line ? (j > i ? i+1 : i) :  i] = '\0';
+
+    return ucs4_strlen(bufl);
 }
 
 

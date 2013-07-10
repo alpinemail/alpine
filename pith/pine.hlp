@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 13 2013-06-21 12:51:47
+Alpine Commit 14 2013-07-09 22:38:37
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -180,6 +180,10 @@ Additions include:
 
 <UL>
    <LI> Increase encryption of S/MIME encrypted messages.
+   <LI> Improvements in justification of paragraphs: lines that begin
+with a quote string, followed by a space were considered individual paragraphs,
+now they are considered part of a paragraph. Based on earlier joint work
+with Jeff Franklin.
    <LI> Add ability to <A HREF="h_config_folder_color">color folder names</A>, 
  <A HREF="h_config_directory_color">directory names</A>,
  and <A HREF="h_config_folder_list_color">text</A> in the FOLDER SCREEN.
