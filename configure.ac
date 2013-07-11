@@ -1119,7 +1119,7 @@ if test -n "$WEB_BUILD" ; then
   else
     AC_CHECK_HEADER(tcl.h,,
       [
-	for dir in tcl8.4 tcl8.3 tcl84 tcl83 ; do
+	for dir in tcl8.5 tcl8.4 tcl8.3 tcl84 tcl83 ; do
 	  AC_CHECK_FILE([/usr/include/$dir/tcl.h],
 	    [
 	      found=yes
@@ -1129,6 +1129,10 @@ if test -n "$WEB_BUILD" ; then
 	    break
 	  fi
 	done
+	if test "$found" != "yes" ; then
+	    WEB_BUILD=
+	    AC_MSG_NOTICE([header file tcl.h NOT found: Web Alpine will not be built])
+	fi
       ])
   fi
 fi

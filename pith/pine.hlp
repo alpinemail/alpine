@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 14 2013-07-09 22:38:37
+Alpine Commit 15 2013-07-10 23:11:10
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -205,7 +205,8 @@ Bugs that have been addressed include:
   <LI> Do not bail out during a tcp timeout, instead close connection and avoid crash.
   <LI> Do not use a shell to open a browser.
   <LI> Configure script did not test for crypto or pam libraries.
-  <LI> Fix Cygwin separator to &quot;/&quot;.
+  <LI> Configure script still built web component, even if header file tcl.h was not present.
+  <LI> Fix Cygwin directory separator from &quot;\&quot; to &quot;/&quot;.
   <LI> Crash when a non-compliant SMTP server closes a connection without a QUIT command.
   <LI> Crash when resizing the screen in a configuration screen.
 </UL>

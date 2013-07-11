@@ -379,7 +379,7 @@ typedef struct  KBSTREE {
  */
 #ifdef	maindef
 PICO	*Pmaster = NULL;		/* composer specific stuff */
-char	*version = "5.05";		/* PICO version number */
+char	*version = "5.07";		/* PICO version number */
 
 #else
 extern	PICO *Pmaster;			/* composer specific stuff */
