@@ -449,17 +449,17 @@ do_quote_match(UCS *q, LINE *l, UCS *buf, size_t buflen)
      *    (">" and whatever the user's quote_string is)
      */
 
-    /* count leading whitespace as part of the quote */
     *buf = '\0';
 
     if(l == NULL)
       return;
 
+    /* count leading whitespace as part of the quote */
     for(j = 0; j <= llength(l) && lgetc(l, j).c == ' ' && j+1 < buflen; j++)
         buf[j] = lgetc(l, j).c;
-
     buf[j] = '\0';   
-    if(*q == '\0')
+
+    if(q == NULL || *q == '\0')
       return;
 
     /* pare down q so it contains no leading or trailing whitespace */
@@ -468,8 +468,12 @@ do_quote_match(UCS *q, LINE *l, UCS *buf, size_t buflen)
     for(i = ucs4_strlen(q); i > 0 && q[i-1] == ' '; i--);
     qend = i;
 
-    if(qend <= qstart)   
+    /* for quote strings that are blanks, chop buf to the length of q */
+    if(qend <= qstart){
+      if(ucs4_strlen(q) < buflen)
+	buf[ucs4_strlen(q)] = '\0';
       return;
+    }
           
     while(j <= llength(l)){
         for(i = qstart; j <= llength(l) && i < qend; i++, j++)
