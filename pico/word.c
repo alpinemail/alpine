@@ -510,7 +510,7 @@ quote_match(UCS *q, LINE *gl, UCS *bufl, size_t buflen)
     LINE *nl = gl != curbp->b_linep ? lforw(gl) : NULL;
     LINE *pl = lback(gl) != curbp->b_linep ? lback(gl) : NULL;
     UCS bufp[NSTRING], bufn[NSTRING];
-    int i, j;
+    int i, j, qstart, qend;
     int quoted_line = 0;
 
     do_quote_match(q, pl, bufp, sizeof(bufp));	/* previous line */
@@ -522,8 +522,15 @@ quote_match(UCS *q, LINE *gl, UCS *bufl, size_t buflen)
 
     /* is this line quoted? */
     if(q && *q){
-      for(i = 0; i < llength(gl) && q[i] && lgetc(gl, i).c == q[i]; i++);
-      if(!q[i])
+      /* pare down q so it contains no leading or trailing whitespace */
+      for(i = 0; q[i] == ' '; i++);
+      qstart = i;
+      for(i = ucs4_strlen(q); i > 0 && q[i-1] == ' '; i--);
+      qend = i;
+      for(i = 0; i < llength(gl) 
+		 && i + qstart < qend 
+		 && lgetc(gl, i).c == q[i+qstart]; i++);
+      if(i + qstart == qend)
          quoted_line = 1;
     }
 
