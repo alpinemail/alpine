@@ -248,11 +248,48 @@ rfc1738_str(char *s)
 int
 rfc1738uchar(char *s)
 {
-    return((RFC1738_ESC(s))		/* "escape" */
+    int valid = (RFC1738_ESC(s))		/* "escape" */
 	     ? 2
 	     : (isalnum((unsigned char) *s)	/* alphanumeric */
 		|| strchr(RFC1738_SAFE, *s)	/* other special stuff */
-		|| strchr(RFC1738_EXTRA, *s)));
+		|| strchr(RFC1738_EXTRA, *s));
+
+    if(!valid){
+	char *t;
+	UCS ucs;
+        CBUF_S cbuf;
+
+        cbuf.cbuf[0] = '\0';
+	cbuf.cbufp = cbuf.cbuf;
+        cbuf.cbufend = cbuf.cbuf;
+
+	for(t = s; t && *t; t++){
+	   if(utf8_to_ucs4_oneatatime((unsigned char) *t & 0xff, &cbuf, &ucs, NULL)){
+	     if ((ucs >= 0x00A0 && ucs <= 0xD7FF)
+		|| (ucs >= 0xE000 && ucs <= 0xFDCF) 
+		|| (ucs >= 0xFDF0 && ucs <= 0xFFEF)
+		|| (ucs >= 0x10000 && ucs <= 0x1FFFD)
+		|| (ucs >= 0x20000 && ucs <= 0x2FFFD)
+		|| (ucs >= 0x30000 && ucs <= 0x3FFFD)
+		|| (ucs >= 0x40000 && ucs <= 0x4FFFD)
+		|| (ucs >= 0x50000 && ucs <= 0x5FFFD)
+		|| (ucs >= 0x60000 && ucs <= 0x6FFFD)
+		|| (ucs >= 0x70000 && ucs <= 0x7FFFD)
+		|| (ucs >= 0x80000 && ucs <= 0x8FFFD)
+		|| (ucs >= 0x90000 && ucs <= 0x9FFFD)
+		|| (ucs >= 0xA0000 && ucs <= 0xAFFFD)
+		|| (ucs >= 0xB0000 && ucs <= 0xBFFFD)
+		|| (ucs >= 0xC0000 && ucs <= 0xCFFFD)
+		|| (ucs >= 0xD0000 && ucs <= 0xDFFFD)
+		|| (ucs >= 0xE0000 && ucs <= 0xEFFFD)
+		|| (ucs >= 0xF0000 && ucs <= 0xFFFFD)
+		|| (ucs >= 0x100000 && ucs <= 0x10FFFD))
+                   valid = t-s+1;
+		break;
+	   }
+	}
+    }
+    return valid;
 }
 
 
