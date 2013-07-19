@@ -82,9 +82,15 @@ rfc1738_scan(char *line, int *len)
 	 * Make sure everyhing up to the colon is a known scheme...
 	 */
 	if(start && (n = colon - start) && !isdigit((unsigned char) *start)
-	   && (((n == 3
-		 && (*start == 'F' || *start == 'f')
-		 && !struncmp(start+1, "tp", 2))
+	   && (((n == 2
+		 && (*start == 'w' || *start == 'W')
+		 && (*(start+1) == 's' || *(start+1) == 'S'))
+		|| (n == 3
+		 && (((*start == 'F' || *start == 'f')
+		 	&& !struncmp(start+1, "tp", 2))
+		     ||
+		    ((*start == 'w' || *start == 'W')
+		 	&& !struncmp(start+1, "ss", 2))))
 		|| (n == 4
 		    && (((*start == 'H' || *start == 'h') 
 			 && !struncmp(start + 1, "ttp", 3))

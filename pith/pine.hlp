@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 18 2013-07-18 20:57:53
+Alpine Commit 19 2013-07-18 22:51:10
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -186,6 +186,7 @@ now they are considered part of a paragraph. Based on earlier joint work
 with Jeff Franklin.
    <LI> Extended support of recognition of UTF-8 in urls based on information from
 http://url.spec.whatwg.org.
+   <LI> Added recognition of ws and wss URIs.
    <LI> Add ability to <A HREF="h_config_folder_color">color folder names</A>, 
  <A HREF="h_config_directory_color">directory names</A>,
  and <A HREF="h_config_folder_list_color">text</A> in the FOLDER SCREEN.
