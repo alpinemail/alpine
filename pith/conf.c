@@ -5490,6 +5490,10 @@ write_pinerc(struct pine *ps, EditWhich which, int flags)
     REMDATA_S          *rd = NULL;
     PINERC_S           *prc = NULL;
     STORE_S            *so = NULL;
+#ifndef _WINDOWS
+    struct stat		sbuf;
+    char	       *slink = NULL;
+#endif
 
     dprint((2,"---- write_pinerc(%s) ----\n",
 	    (which == Main) ? "Main" : "Post"));
@@ -5867,9 +5871,45 @@ write_pinerc(struct pine *ps, EditWhich which, int flags)
 	if(so_give(&so))
 	  goto io_err;
 
-	file_attrib_copy(tmp, filename);
-	if(rename_file(tmp, filename) < 0)
-	  goto io_err;
+#ifndef _WINDOWS
+	/* if .pinerc is a symbolic link, override symbolic link */
+	if(our_lstat(filename, &sbuf) == 0){
+	  if((slink = fs_get((sbuf.st_size+1)*sizeof(char))) != NULL){
+	    int r = -1;			/* assume error */
+	    if(readlink(filename, slink, sbuf.st_size + 1) >= 0){
+	      char *slpath;
+
+	      slink[sbuf.st_size] = '\0';
+	      if(*slink == '/')
+		slpath = cpystr(slink);
+	      else{
+		char * basep;
+		basep = strrchr(filename, '/');
+	        if(basep == NULL){
+		  *basep = '\0';
+		  slpath = (char *) fs_get((strlen(filename) + strlen(slink) + 2)*sizeof(char));
+		  sprintf(slpath, "%s/%s", filename, slink);
+		  *basep = '/';
+		} else {
+		  slpath = (char *) fs_get((strlen(ps_global->home_dir) + strlen(slink) + 2)*sizeof(char));
+		  sprintf(slpath, "%s/%s", ps_global->home_dir, slink);
+		}
+	      }
+	      file_attrib_copy(tmp, slpath);
+	      r = rename_file(tmp, slpath);
+	      fs_give((void **)&slpath);
+	    }
+	    fs_give((void **)&slink);
+	    if (r < 0) goto io_err;
+	  }
+	}
+	else
+#endif /* _WINDOWS */
+	{
+	  file_attrib_copy(tmp, filename);
+	  if(rename_file(tmp, filename) < 0)
+	    goto io_err;
+	}
     }
     
     if(prc->type != Loc){
