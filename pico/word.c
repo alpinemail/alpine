@@ -517,7 +517,7 @@ quote_match(UCS *q, LINE *gl, UCS *bufl, size_t buflen)
     do_quote_match(q, gl, bufl, buflen);	/* given line	 */
     do_quote_match(q, nl, bufn, sizeof(bufn));	/* next line	 */
 
-    if(!ucs4_strcmp(bufp, bufl))
+    if(!ucs4_strcmp(bufp, bufl) || !ucs4_strcmp(bufl, bufn))
       return ucs4_strlen(bufl);
 
     /* is this line quoted? */

@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 20 2013-07-21 15:28:03
+Alpine Commit 21 2013-07-23 22:22:31
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -149,7 +149,7 @@ Alpine Commit 20 2013-07-21 15:28:03
 <BODY>                 
 <H1>Alpine Release Notes</H1>
 <DIV ALIGN=CENTER>
-Version <!--#echo var="ALPINE_VERSION"-->(<!--#echo var="ALPINE_REVISION"-->)
+Version <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)
 <BR>
 <!--chtml if pinemode="running"-->
 (built <!--#echo var=ALPINE_COMPILE_DATE-->)
@@ -169,9 +169,9 @@ is available as is a world wide web based version designed to run under the
 Apache web server.
 
 
-<H2>New in Alpine <!--#echo var="ALPINE_VERSION"-->(<!--#echo var="ALPINE_REVISION"-->)</H2>
+<H2>New in Alpine <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)</H2>
 
-Version <!--#echo var="ALPINE_VERSION"-->(<!--#echo var="ALPINE_REVISION"-->)
+Version <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)
 addresses bugs found in previous releases and has a few additions as well.
 
 <P>
@@ -180,10 +180,13 @@ Additions include:
 
 <UL>
    <LI> Increase encryption of S/MIME encrypted messages.
-   <LI> Improvements in justification of paragraphs: lines that begin
+   <LI> Pico: Improvements in justification of paragraphs: lines that begin
 with a quote string, followed by a space were considered individual paragraphs,
 now they are considered part of a paragraph. Based on earlier joint work
 with Jeff Franklin.
+   <LI> Pico: The search command in Pico allows backwards search. In order
+to search backwards, start a search with the CTRL-W command, and press
+CTRL-P to change the direction of the search.
    <LI> Unix Alpine: Allow local .pinerc file to be a symbolic link.
    <LI> Experimental extended support of recognition of UTF-8 in urls based on 
 information from <A HREF="http://url.spec.whatwg.org">http://url.spec.whatwg.org</A>.
@@ -206,13 +209,14 @@ message, as specified by original sender.
 Bugs that have been addressed include:
 <P>
 <UL>
+  <LI> Crash when a non-compliant SMTP server closes a connection without a QUIT command.
+  <LI> Crash when resizing the screen in a configuration screen.
   <LI> Do not bail out during a tcp timeout, instead close connection and avoid crash.
   <LI> Do not use a shell to open a browser.
   <LI> Configure script did not test for crypto or pam libraries.
   <LI> Configure script still built web component, even if header file tcl.h was not present.
-  <LI> Fix Cygwin directory separator from &quot;\&quot; to &quot;/&quot;.
-  <LI> Crash when a non-compliant SMTP server closes a connection without a QUIT command.
-  <LI> Crash when resizing the screen in a configuration screen.
+  <LI> Change Cygwin directory separator to &quot;/&quot;.
+  <LI> Alpine could set List- headers, contrary to RFC 2369.
 </UL>
 
 <P>

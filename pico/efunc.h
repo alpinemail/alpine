@@ -2,8 +2,8 @@
  * $Id: efunc.h 807 2007-11-09 01:21:33Z hubert@u.washington.edu $
  *
  * ========================================================================
- * Copyright 2006-2007 University of Washington
  * Copyright 2013 Eduardo Chappa
+ * Copyright 2006-2007 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -229,9 +229,9 @@ extern	void unmarkbuffer(void);
 
 /* search.c */
 extern	int forwsearch(int, int);
-extern	int readpattern(char *, int);
-extern	int forscan(int *, UCS *, LINE *, int, int);
-extern	void chword(UCS *, UCS *);
+extern	int readpattern(char *, int, int);
+extern	int forscan(int *, UCS *, int, LINE *, int, int);
+extern	void chword(UCS *, UCS *, int);
 
 /* spell.c */
 #ifdef	SPELLER

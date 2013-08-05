@@ -4,8 +4,8 @@ static char rcsid[] = "$Id: conf.c 1266 2009-07-14 18:39:12Z hubert@u.washington
 
 /*
  * ========================================================================
- * Copyright 2006-2009 University of Washington
  * Copyright 2013 Eduardo Chappa
+ * Copyright 2006-2009 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -5873,7 +5873,8 @@ write_pinerc(struct pine *ps, EditWhich which, int flags)
 
 #ifndef _WINDOWS
 	/* if .pinerc is a symbolic link, override symbolic link */
-	if(our_lstat(filename, &sbuf) == 0){
+	if(our_lstat(filename, &sbuf) == 0 
+		&& ((sbuf.st_mode & S_IFMT) == S_IFLNK)){
 	  if((slink = fs_get((sbuf.st_size+1)*sizeof(char))) != NULL){
 	    int r = -1;			/* assume error */
 	    if(readlink(filename, slink, sbuf.st_size + 1) >= 0){
@@ -8311,3 +8312,4 @@ pcpine_general_help(titlebuf)
 }
 
 #endif	/* _WINDOWS */
+

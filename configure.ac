@@ -15,14 +15,14 @@ dnl  */
 
 AC_PREREQ([2.69])
 
-AC_REVISION([Rev:1 by chappa@washington.edu])
+AC_REVISION([Rev:2 by chappa@washington.edu])
 
 dnl Alpine Version Number is in $srcdir/VERSION
 AC_INIT([alpine],[m4_normalize(m4_include(VERSION))],[chappa@washington.edu])
 
 AC_CONFIG_SRCDIR([include/system.h])
 AC_CONFIG_HEADERS([include/config.h])
-
+AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([foreign nostdinc])
 
 AM_MAINTAINER_MODE
@@ -663,7 +663,7 @@ if test "x$with_ssl" = "xno" ; then
 else
   dnl preload c-client default locations/options
   case $host in
-    *-linux-gnu)
+    *-linux-gnu*)
       if test -f /etc/fedora-release -o -f /etc/redhat-release -o -f /etc/redhat_version ; then  
         alpine_SSLTYPE="nopwd"
 	if test -d /etc/pki/tls ; then  
@@ -1029,10 +1029,33 @@ if test "x$alpine_SSLTYPE" != "xnone" ; then
   AC_SEARCH_LIBS(SSL_library_init,ssl,
     [
       LIBS="$LIBS -lssl"
+
+     AC_MSG_CHECKING([Openssl library version >= 1.0])
+     AC_RUN_IFELSE(
+	[AC_LANG_SOURCE([[
+#include <stdio.h>
+#include <openssl/ssl.h>
+int main(void) {
+
+	if (OPENSSL_VERSION_NUMBER >= 0x1000105fL)
+		exit(0);
+
+	exit(2);
+}
+	]])],
+	[
+		AC_MSG_RESULT(yes)
+	],
+	[
+		AC_MSG_ERROR(Install openssl version >= 1.0.1e)
+		exit 1
+	],
+	[
+		AC_MSG_WARN([cross compiling: not checking])
+	]
+    )
     ],
-    [
-      alpine_SSLTYPE = "none"
-    ])
+    [alpine_SSLTYPE="none"])
   if test "x$alpine_SSLTYPE" = "xnone" ; then
     AC_MSG_NOTICE([OpenSSL libraries NOT found])
   else

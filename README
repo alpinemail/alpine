@@ -1,11 +1,9 @@
-
-
 -----------------------------------------------------------------------
                 Alpine/Pico/Pilot/Web Alpine/Imapd Distribution
 -----------------------------------------------------------------------
 
-
 /* ====================================================================
+ * Copyright 2013 Eduardo Chappa
  * Copyright 2006-2009 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +15,7 @@
  * ====================================================================
 */
 
-For the latest info about Alpine, see http://www.washington.edu/alpine
+For the latest info about Alpine, see http://patches.freeiz.com/alpine/
 
 -----------------------------------------------------------------------
 DISTRIBUTION CONTENTS
@@ -57,9 +55,9 @@ If you are reading this, you have presumably succeeded in extracting
 the distribution from the compressed tar archive file, via the
 following command, or equivalent:
 
-        tar zxf alpine.tar.z
+        tar --xz -xf alpine.tar.xz
 
-Some of the instructions that follow assume that your current workding
+Some of the instructions that follow assume that your current working
 directory is the alpine-X.XX directory created by the un-tar process
 above.
 
@@ -143,5 +141,5 @@ are a component of a larger package, their installation is typically
 done by hand.
 
 --
-alpine.tar.z README
-$Id: README 1204 2009-02-02 19:54:23Z hubert@u.washington.edu $
+alpine.tar.xz README
+

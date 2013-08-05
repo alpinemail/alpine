@@ -1,9 +1,3 @@
-/********************************* NOTICE *********************************
- * In accordance to the text of the Apache License 2.0 this text notifies
- * you that this file was modified from its original version. For more
- * information on the changes see the file README.patches.
- ***************************** END of NOTICE ******************************/
-
 /*----------------------------------------------------------------------
   $Id: general.h 764 2007-10-23 23:44:49Z hubert@u.washington.edu $
   ----------------------------------------------------------------------*/
