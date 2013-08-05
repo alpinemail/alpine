@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 21 2013-07-23 22:22:31
+Alpine Commit 22 2013-08-04 22:04:58
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -179,6 +179,7 @@ Additions include:
 <P>
 
 <UL>
+   <LI> Alpine requires version 1.0.1c of Openssl to build.
    <LI> Increase encryption of S/MIME encrypted messages.
    <LI> Pico: Improvements in justification of paragraphs: lines that begin
 with a quote string, followed by a space were considered individual paragraphs,

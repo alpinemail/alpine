@@ -16419,8 +16419,8 @@ if test "$ac_res" != no; then :
   
       LIBS="$LIBS -lssl"
 
-     { $as_echo "$as_me:${as_lineno-$LINENO}: checking Openssl library version >= 1.0" >&5
-$as_echo_n "checking Openssl library version >= 1.0... " >&6; }
+     { $as_echo "$as_me:${as_lineno-$LINENO}: checking Openssl library version >= 1.0.0c" >&5
+$as_echo_n "checking Openssl library version >= 1.0.0c... " >&6; }
      if test "$cross_compiling" = yes; then :
   
 		{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: cross compiling: not checking" >&5
@@ -16435,7 +16435,7 @@ else
 #include <openssl/ssl.h>
 int main(void) {
 
-	if (OPENSSL_VERSION_NUMBER >= 0x1000105fL)
+	if (OPENSSL_VERSION_NUMBER >= 0x1000003f)
 		exit(0);
 
 	exit(2);
@@ -16449,7 +16449,7 @@ $as_echo "yes" >&6; }
 	
 else
   
-		as_fn_error $? "Install openssl version >= 1.0.1e" "$LINENO" 5
+		as_fn_error $? "Install openssl version >= 1.0.1c" "$LINENO" 5
 		exit 1
 	
 fi

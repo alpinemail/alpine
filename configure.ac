@@ -1030,14 +1030,14 @@ if test "x$alpine_SSLTYPE" != "xnone" ; then
     [
       LIBS="$LIBS -lssl"
 
-     AC_MSG_CHECKING([Openssl library version >= 1.0])
+     AC_MSG_CHECKING([Openssl library version >= 1.0.0c])
      AC_RUN_IFELSE(
 	[AC_LANG_SOURCE([[
 #include <stdio.h>
 #include <openssl/ssl.h>
 int main(void) {
 
-	if (OPENSSL_VERSION_NUMBER >= 0x1000105fL)
+	if (OPENSSL_VERSION_NUMBER >= 0x1000003f)
 		exit(0);
 
 	exit(2);
@@ -1047,7 +1047,7 @@ int main(void) {
 		AC_MSG_RESULT(yes)
 	],
 	[
-		AC_MSG_ERROR(Install openssl version >= 1.0.1e)
+		AC_MSG_ERROR(Install openssl version >= 1.0.1c)
 		exit 1
 	],
 	[
