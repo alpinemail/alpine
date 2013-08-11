@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 22 2013-08-04 22:04:58
+Alpine Commit 23 2013-08-11 11:25:41
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -185,9 +185,6 @@ Additions include:
 with a quote string, followed by a space were considered individual paragraphs,
 now they are considered part of a paragraph. Based on earlier joint work
 with Jeff Franklin.
-   <LI> Pico: The search command in Pico allows backwards search. In order
-to search backwards, start a search with the CTRL-W command, and press
-CTRL-P to change the direction of the search.
    <LI> Unix Alpine: Allow local .pinerc file to be a symbolic link.
    <LI> Experimental extended support of recognition of UTF-8 in urls based on 
 information from <A HREF="http://url.spec.whatwg.org">http://url.spec.whatwg.org</A>.
@@ -200,8 +197,7 @@ used in the display of the INDEX SCREEN.
    <LI> New option <A HREF="h_config_preserve_field"><!--#echo var="FEAT_preserve-original-fields"--></A>
 that adds the ability to preserve To: and Cc: fields when replying to a 
 message, as specified by original sender.
-   <LI> Add a _SILENT_ token to the 
-<A HREF="h_config_display_filters">list of tokens</A>
+   <LI> Add a _SILENT_ token to the <A HREF="h_config_display_filters">list of tokens</A>
  for a display filter, so that Alpine will not redraw the screen when it is unnecessary.
    <LI> Quota command includes subcommands for printing, forwarding, etc.
 </UL>

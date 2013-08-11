@@ -4,8 +4,8 @@ static char rcsid[] = "$Id: spell.c 854 2007-12-07 17:44:43Z hubert@u.washington
 
 /*
  * ========================================================================
- * Copyright 2013 Eduardo Chappa
  * Copyright 2006-2007 University of Washington
+ * Copyright 2013 Eduardo Chappa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -207,7 +207,7 @@ spell(int f, int n)
 
 	    switch(status){
 	      case TRUE:
-		chword(wb, cb, 0);		/* correct word    */
+		chword(wb, cb);			/* correct word    */
 	      case FALSE:
 		update();			/* place cursor */
 		break;
@@ -285,7 +285,7 @@ movetoword(UCS *w)
     olddotp = curwp->w_dotp;
 
     curwp->w_bufp->b_mode |= MDEXACT;		/* case sensitive */
-    while(forscan(&i, w, 0, NULL, 0, 1) == TRUE){
+    while(forscan(&i, w, NULL, 0, 1) == TRUE){
 	if(i)
 	  break;				/* wrap NOT allowed! */
 

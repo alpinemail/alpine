@@ -4,8 +4,8 @@ static char rcsid[] = "$Id: browse.c 942 2008-03-04 18:21:33Z hubert@u.washingto
 
 /*
  * ========================================================================
- * Copyright 2013 Eduardo Chappa
  * Copyright 2006-2008 University of Washington
+ * Copyright 2013 Eduardo Chappa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1595,9 +1595,8 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 	    i = 0;
 
 	    while(!i){
-		int bsearch = 0;
 
-		switch(readpattern(_("File name to find"), FALSE, bsearch)){
+		switch(readpattern(_("File name to find"), FALSE)){
 		  case HELPCH:
 		    emlwrite(_("\007No help yet!"), NULL);
 /* remove break and sleep after help text is installed */
@@ -1605,9 +1604,6 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		    break;
 		  case (CTRL|'L'):
 		    PaintBrowser(gmp, 0, &crow, &ccol);
-		    break;
-		  case (CTRL|'P'):
-		    bsearch = bsearch == 0 ? 1 : 0;
 		    break;
 		  case (CTRL|'Y'):		/* first first cell */
 		    for(tp = gmp->top; tp->prev; tp = tp->prev)
