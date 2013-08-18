@@ -18,7 +18,7 @@
 #		Internet: MRC@Washington.EDU
 #
 # Date:		7 December 1989
-# Last Edited:	12 May 2008
+# Last Edited:	August 16, 2013
 
 
 # Normal command to build IMAP toolkit:
@@ -101,6 +101,7 @@
 # osi	Apple iPhone and iPod Touch
 # osx	Mac OS X
 # oxp	Mac OS X with Pluggable Authentication Modules (PAM)
+# osx	Mac OS X Snow Leopard
 # ptx	PTX
 # pyr	Pyramid
 # qnx	QNX 4
@@ -326,14 +327,14 @@ bsf:	an
 	$(TOUCH) ip6
 	$(BUILD) BUILDTYPE=$@ IP=$(IP6) \
 	PASSWDTYPE=pam \
-	SPECIALS="SSLINCLUDE=/usr/include/openssl SSLLIB=/usr/lib SSLCERTS=/etc/ssl/certs SSLKEYS=/etc/ssl/private GSSINCLUDE=/usr/include GSSLIB=/usr/lib PAMLDFLAGS=-lpam"
+	SPECIALS="GSSINCLUDE=/usr/include GSSLIB=/usr/lib PAMLDFLAGS=-lpam"
 
 # I assume that Theo did the right thing for IPv6.  OpenBSD does not have PAM.
 
 bso:	an
 	$(TOUCH) ip6
 	$(BUILD) BUILDTYPE=$@ IP=$(IP6) \
-	SPECIALS="SSLINCLUDE=/usr/include/openssl SSLLIB=/usr/lib SSLCERTS=/etc/ssl SSLKEYS=/etc/ssl/private GSSINCLUDE=/usr/include GSSLIB=/usr/lib"
+	SPECIALS="GSSINCLUDE=/usr/include GSSLIB=/usr/lib"
 
 # Info from Joel Reicher about NetBSD SSL paths.  I assume it has PAM because pam is in NetBSD sources...
 
@@ -341,11 +342,10 @@ neb:	an
 	$(TOUCH) ip6
 	$(BUILD) BUILDTYPE=$@ IP=$(IP6) \
 	PASSWDTYPE=pam \
-	SPECIALS="SSLINCLUDE=/usr/include/openssl SSLLIB=/usr/lib SSLCERTS=/etc/openssl/certs SSLKEYS=/etc/openssl/private GSSINCLUDE=/usr/include GSSLIB=/usr/lib PAMLDFLAGS=-lpam"
+	SPECIALS="GSSINCLUDE=/usr/include GSSLIB=/usr/lib PAMLDFLAGS=-lpam"
 
 cyg:	an
 	$(BUILD) BUILDTYPE=cyg \
-	SPECIALS="SSLINCLUDE=/usr/include/openssl SSLLIB=/usr/lib SSLCERTS=/usr/ssl/certs SSLKEYS=/usr/ssl/certs"
 
 gcs:	an
 	$(BUILD) BUILDTYPE=gso \
@@ -353,16 +353,16 @@ gcs:	an
 
 ldb:	an
 	$(BUILD) BUILDTYPE=lnp IP=$(IP6) \
-	SPECIALS="SSLINCLUDE=/usr/include/openssl SSLLIB=/usr/lib SSLCERTS=/etc/ssl/certs SSLKEYS=/etc/ssl/private GSSINCLUDE=/usr/include GSSLIB=/usr/lib MAILSPOOL=/var/mail"
+	SPECIALS="GSSINCLUDE=/usr/include GSSLIB=/usr/lib MAILSPOOL=/var/mail"
 
 lfd:	an
 	$(BUILD) BUILDTYPE=lnp IP=$(IP6) \
-	SPECIALS="SSLINCLUDE=/usr/include/openssl SSLLIB=/usr/lib SSLCERTS=/etc/pki/tls/certs SSLKEYS=/etc/pki/tls/private GSSDIR=/usr/kerberos"
+	SPECIALS="GSSDIR=/usr/kerberos"
 
 ln8:	an
 	$(TOUCH) ip6
 	$(BUILD) BUILDTYPE=slx IP=$(IP6) \
-	SPECIALS="SSLINCLUDE=/usr/include/openssl SSLLIB=/usr/lib SSLCERTS=/usr/lib/ssl/certs MAILSPOOL=/var/mail"
+	SPECIALS="MAILSPOOL=/var/mail"
 
 
 # RHE5 does not have the IPv6 bug
@@ -370,17 +370,17 @@ ln8:	an
 lr5:	an
 	$(TOUCH) ip6
 	$(BUILD) BUILDTYPE=lnp IP=$(IP6) \
-	SPECIALS="SSLINCLUDE=/usr/include/openssl SSLLIB=/usr/lib SSLCERTS=/etc/pki/tls/certs SSLKEYS=/etc/pki/tls/private GSSDIR=/usr/kerberos"
+	SPECIALS="GSSDIR=/usr/kerberos"
 
 lmd:	an
 	$(BUILD) BUILDTYPE=lnp IP=$(IP6) \
-	SPECIALS="SSLINCLUDE=/usr/include/openssl SSLLIB=/usr/lib SSLCERTS=/usr/lib/ssl/certs SSLKEYS=/usr/lib/ssl/private GSSINCLUDE=/usr/include GSSLIB=/usr/lib"
+	SPECIALS="GSSINCLUDE=/usr/include GSSLIB=/usr/lib"
 
 # RHE3 definitely has the IPv6 bug
 
 lrh:	lrhok an
 	$(BUILD) BUILDTYPE=lnp IP=$(IP6) \
-	SPECIALS="SSLINCLUDE=/usr/include/openssl SSLLIB=/usr/lib SSLCERTS=/usr/share/ssl/certs SSLKEYS=/usr/share/ssl/private GSSDIR=/usr/kerberos"
+	SPECIALS="GSSDIR=/usr/kerberos"
 
 lrhok:
 	@$(SH) -c '(test ! -d /etc/pki/tls ) || make lrhwarn'
@@ -404,7 +404,7 @@ lrhwarn:
 
 lsu:	an
 	$(BUILD) BUILDTYPE=lnp IP=$(IP6) \
-	SPECIALS="SSLINCLUDE=/usr/include/openssl SSLLIB=/usr/lib SSLCERTS=/usr/share/ssl/certs SSLKEYS=/usr/share/ssl/private GSSDIR=/usr/kerberos"
+	SPECIALS="GSSDIR=/usr/kerberos"
 
 # iToy does not have Kerberos or PAM.  It doesn't have a
 # /System/Library/OpenSSL directory either, but the libcrypto shared library
@@ -412,20 +412,25 @@ lsu:	an
 
 osi:	an
 	$(TOUCH) ip6
-	$(BUILD) BUILDTYPE=osx IP=$(IP6) CC=arm-apple-darwin-gcc \
-	SPECIALS="SSLINCLUDE=/usr/include/openssl SSLLIB=/usr/lib SSLCERTS=/System/Library/OpenSSL/certs SSLKEYS=/System/Library/OpenSSL/private"
+	$(BUILD) BUILDTYPE=osx IP=$(IP6) CC=arm-apple-darwin-gcc
 
 oxp:	an
 	$(TOUCH) ip6
 	$(BUILD) BUILDTYPE=osx IP=$(IP6) EXTRAAUTHENTICATORS="$(EXTRAAUTHENTICATORS) gss" \
 	PASSWDTYPE=pam \
 	EXTRACFLAGS="$(EXTRACFLAGS) -DMAC_OSX_KLUDGE=1" \
-	SPECIALS="SSLINCLUDE=/usr/include/openssl SSLLIB=/usr/lib SSLCERTS=/System/Library/OpenSSL/certs SSLKEYS=/System/Library/OpenSSL/private GSSINCLUDE=/usr/include GSSLIB=/usr/lib PAMDLFLAGS=-lpam"
+	SPECIALS="GSSLIB=/usr/lib PAMDLFLAGS=-lpam"
+
+oxs:	an
+	$(TOUCH) ip6
+	$(BUILD) BUILDTYPE=osx IP=$(IP6) EXTRAAUTHENTICATORS="$(EXTRAAUTHENTICATORS) gss" \
+	PASSWDTYPE=pam \
+	SPECIALS="GSSINCLUDE=/usr/include GSSLIB=/usr/lib PAMDLFLAGS=-lpam"
 
 osx:	osxok an
 	$(TOUCH) ip6
 	$(BUILD) BUILDTYPE=$@ IP=$(IP6) EXTRAAUTHENTICATORS="$(EXTRAAUTHENTICATORS) gss" \
-	SPECIALS="SSLINCLUDE=/usr/include/openssl SSLLIB=/usr/lib SSLCERTS=/System/Library/OpenSSL/certs SSLKEYS=/System/Library/OpenSSL/private GSSINCLUDE=/usr/include GSSLIB=/usr/lib"
+	SPECIALS="GSSINCLUDE=/usr/include GSSLIB=/usr/lib"
 
 osxok:
 	@$(SH) -c '(test ! -f /usr/include/pam/pam_appl.h ) || make osxwarn'

@@ -146,6 +146,6 @@ STRLIST_S  *copy_strlist(STRLIST_S *);
 void	    combine_strlists(STRLIST_S **, STRLIST_S *);
 void	    free_strlist(STRLIST_S **);
 int         read_octal(char **);
-
+time_t      date_to_local_time_t(char *);
 
 #endif /* PITH_STRING_INCLUDED */

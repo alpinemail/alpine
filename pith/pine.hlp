@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 23 2013-08-11 11:25:41
+Alpine Commit 24 2013-08-18 01:59:22
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -179,6 +179,36 @@ Additions include:
 <P>
 
 <UL>
+  <LI> Opening a folder updates recent count in maildrops.
+</UL>
+
+<P>
+Bugs that have been addressed include:
+<UL>
+  <LI> Fixes to configure script so that it will not require PAM for every system.
+  <LI> Fix to configure script so that it will use CPPFLAGS instead of 
+       CPPCFLAGS, and so the --with-ssl-include-dir option take effect 
+       during the build. Fix by Ulf-Dietrich Braumann.
+  <LI> Fix in WebAlpine: do not use deprecated dereference in pointer, 
+       needs to use tcl_getstringresult() instead. Reported by Ulf-Dietrich Braumann.
+  <LI> Fix in configure script to detect location of tcl library; add
+       /usr/local in FreeBSD and fix a bug in configure script that used
+       $alpine_TCLINC instead of $alpine_TCLINC/tcl.h. Reported and fixed
+       by Werner Scheinast.
+  <LI> Move SSL configurations from UW-IMAP to configure script.
+</UL>
+<P>
+
+
+<P>
+Version 2.11 addresses bugs found in previous releases and has a few 
+additions as well.
+
+<P>
+Additions include:
+<P>
+
+<UL>
    <LI> Alpine requires version 1.0.1c of Openssl to build.
    <LI> Increase encryption of S/MIME encrypted messages.
    <LI> Pico: Improvements in justification of paragraphs: lines that begin
@@ -211,7 +241,7 @@ Bugs that have been addressed include:
   <LI> Do not bail out during a tcp timeout, instead close connection and avoid crash.
   <LI> Do not use a shell to open a browser.
   <LI> Configure script did not test for crypto or pam libraries.
-  <LI> Configure script still built web component, even if header file tcl.h was not present.
+  <LI> Configure script attempted to build web component, even if header file tcl.h was not present.
   <LI> Change Cygwin directory separator to &quot;/&quot;.
   <LI> Alpine could set List- headers, contrary to RFC 2369.
 </UL>

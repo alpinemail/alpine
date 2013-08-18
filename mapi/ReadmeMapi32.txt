@@ -7,7 +7,7 @@ alpine.  This dll should work with a PC-Pine installation, but in
 the future will be made to work with Alpine.  Registry access and
 Unicode support will have to change for that to happen.
 
-	         pmapi32 for Alpine 2.10
+	         pmapi32 for Alpine 2.11
 
 This distribution comes with two other files, instmapi.exe and
 pmapi32.dll, for use with Aline.  It is recommended that these files

@@ -1,6 +1,6 @@
 Summary: University of Washington Alpine mail user agent
 Name: alpine
-Version: 2.10
+Version: 2.11
 Release: 1
 License: Apache License
 Group: Applications/Mail

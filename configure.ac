@@ -74,7 +74,7 @@ AC_ARG_WITH(dmalloc-dir,
   [
     if test "x$withval" != "xno" ; then
       enable_dmalloc = "yes"
-      CPPFLAGS="$CPPCFLAGS -I${withval}"
+      CPPFLAGS="$CPPFLAGS -I${withval}"
       LDFLAGS="$LDFLAGS -L${withval}"
     fi
   ])
@@ -668,17 +668,26 @@ else
         alpine_SSLTYPE="nopwd"
 	if test -d /etc/pki/tls ; then  
 	  alpine_SSLDIR="/etc/pki/tls"
+	  alpine_SSLCERTS="$alpine_SSLDIR/certs"
+	  alpine_SSLKEYS="$alpine_SSLDIR/private"
+	  alpine_SSLINCLUDE="/usr/include/openssl" 
+	  alpine_SSLLIB="/usr/lib"
 	else
 	  alpine_SSLDIR="/usr/share/ssl"
 	fi
       elif test -f /etc/SuSE-release ; then
         alpine_SSLTYPE="nopwd"
-        alpine_SSLDIR="/usr/share/ssl"
-        alpine_SSLCERTS="/etc/ssl/certs"
+        alpine_SSLDIR="/etc/ssl"
+        alpine_SSLCERTS="$alpine_SSLDIR/certs"
+	alpine_SSLKEYS="$alpine_SSLDIR/private"
+	alpine_SSLINCLUDE="/usr/include/openssl" 
+	alpine_SSLLIB="/usr/lib"
       elif test -d /etc/osso-af-init ; then
         alpine_SSLTYPE="nopwd"
         alpine_SSLDIR="/usr"
         alpine_SSLCERTS="/usr/share/certs"
+	alpine_SSLINCLUDE="/usr/include/openssl"
+	alpine_SSLLIB="/usr/lib"
       else
         alpine_SSLTYPE="nopwd"
         alpine_SSLDIR="/usr"
@@ -687,7 +696,19 @@ else
       ;;
     *-apple-darwin*)
       alpine_SSLTYPE="nopwd"
-      alpine_SSLCERTS="/System/Library/OpenSSL/certs"
+      if test -d /opt/local/etc/openssl ; then
+	alpine_SSLDIR="/opt/local/etc/openssl"
+	alpine_SSLCERTS="$alpine_SSLDIR"
+	alpine_SSLKEYS="$alpine_SSLDIR"
+	alpine_SSLLIB="/usr/lib"
+	alpine_SSLINCLUDE="/usr/include/openssl"
+      elif test -d /System/Library/OpenSSL ; then
+	alpine_SSLDIR="/System/Library/OpenSSL"
+        alpine_SSLCERTS="$alpine_SSLDIR/certs"
+	alpine_SSLKEYS="$alpine_SSLDIR/private"
+	alpine_SSLLIB="/usr/lib"
+	alpine_SSLINCLUDE="/usr/include/openssl"
+      fi
       ;;
     *-openbsd*)
       alpine_SSLTYPE="nopwd"
@@ -696,7 +717,7 @@ else
       ;;
     *-sco-sysv* | *-sysv*UnixWare | *-sysv*OpenUNIX)
       alpine_SSLTYPE="sco.nopwd"
-      alpine_SSLDIR=/usr/local/ssl
+      alpine_SSLDIR="/usr/local/ssl"
       ;;
     *-*-solaris*)
       if test -d /usr/sfw/include/openssl ; then
@@ -713,7 +734,7 @@ else
       ;;
     *)
       alpine_SSLTYPE="nopwd"
-      alpine_SSLDIR=/usr/local/ssl
+      alpine_SSLDIR="/usr/local/ssl"
       ;;
   esac
 
@@ -750,7 +771,7 @@ else
     ])
   dnl setup globals so tests below work
   if test -n "$alpine_SSLINCLUDE" ; then
-    CPPCFLAGS="-I$alpine_SSLINCLUDE $CPPFLAGS"
+    CPPFLAGS="-I$alpine_SSLINCLUDE $CPPFLAGS"
   elif test -n "$alpine_SSLDIR" ; then
     CPPFLAGS="-I${alpine_SSLDIR}/include $CPPFLAGS"
   fi
@@ -851,7 +872,7 @@ if test "x$with_tcl" = "xno" ; then
   AC_MSG_NOTICE([Excluding TCL Support, and thus Web Alpine Support])
 else
   AC_ARG_WITH(tcl-lib,
-    AS_HELP_STRING([--with-tcl-lib=LIBRARY],[Specific TCL Library, like \"tcl8.5\"]),
+    AS_HELP_STRING([--with-tcl-lib=LIBRARY],[Specific TCL Library, like \"tcl8.6\"]),
     [
       if test "x$withval" != "xno" ; then 
 	alpine_TCLLIB=$withval
@@ -891,6 +912,263 @@ AC_ARG_WITH(c-client-target,
     fi
   ])
 
+
+dnl Assume PAM is *not* required and only set the systems that need it.
+alpine_PAM="none"
+
+dnl HOST-OS SPECIFIC DEFINITIONS
+dnl Tests and assignments below are mostly to coax the appropriate
+dnl build from c-client.  Most of this will go away when c-client
+dnl adopts configure
+case "$host" in
+  *-linux-gnu*|*-k*bsd*-gnu*)
+    alpine_path_delim="/"
+    alpine_mode_readonly="(0600)"
+    if test -f /etc/fedora-release ; then  
+      systype="LFD"
+      alpine_PAM="yes"
+      if test -d /etc/pki/tls ; then  
+	alpine_c_client_target="lfd"
+      else
+	alpine_c_client_target="lrh"
+      fi
+    elif test -f /etc/mandrake-release ; then
+      systype="LMD"
+      alpine_c_client_target="lmd"
+      alpine_PAM="yes"
+      alpine_SSLDIR="/usr/lib/ssl"
+      alpine_SSLCERTS="$alpine_SSLDIR/certs" 
+      alpine_SSLKEYS="$alpine_SSLDIR/private"
+      alpine_SSLINCLUDE="/usr/include/openssl" 
+      alpine_SSLLIB="/usr/lib"
+    elif test -f /etc/redhat-release -o -f /etc/redhat_version ; then
+      systype="LRH"
+      alpine_PAM="yes"
+      if test -d /etc/pki/tls ; then  
+	alpine_c_client_target="lr5"
+      else
+	alpine_c_client_target="lrh"
+	alpine_SSLDIR="/usr/share/ssl"
+	alpine_SSLCERTS="$alpine_SSLDIR/certs"
+	alpine_SSLKEYS="$alpine_SSLDIR/private"
+	alpine_SSLINCLUDE="/usr/include/openssl"
+	alpine_SSLLIB="/usr/lib"
+      fi
+    elif test -f /etc/debian_release -o -f /etc/debian_version ; then
+      if test -d /etc/osso-af-init ; then
+        systype="LN8"
+        alpine_c_client_target="ln8"
+      else
+        systype="DEB"
+        alpine_c_client_target="ldb"
+	alpine_PAM="yes"
+	alpine_SSLDIR="/etc/ssl"
+	alpine_SSLCERTS="$alpine_SSLDIR/certs"
+	alpine_SSLKEYS="$alpine_SSLDIR/private"
+	alpine_SSLINCLUDE="/usr/include/openssl" 
+	alpine_SSLLIB="/usr/lib"
+      fi
+    elif test -f /etc/SuSE-release ; then
+      systype="LSU"
+      alpine_c_client_target="lsu"
+      alpine_PAM="yes"
+    else
+      systype="LNX"
+      AC_CHECK_LIB(pam, pam_start,
+        [
+          alpine_c_client_target="lnp"
+	  alpine_PAM="yes"
+        ],
+        [
+	  if test -f /etc/shadow ; then
+	    alpine_c_client_target="slx"
+	  else
+	    alpine_c_client_target="lnx"
+	  fi
+        ])
+    fi
+    ;;
+  *-apple-darwin*)
+    systype="OSX"
+    alpine_path_delim="/"
+    alpine_mode_readonly="(0600)"
+    LIBS="$LIBS -framework Carbon -framework ApplicationServices -framework Security"
+    AM_CFLAGS="$AM_CFLAGS -Dbsd"
+    dnl SEE include/system.h
+    AC_DEFINE([OSX_TARGET],[1],[OSX TARGET])
+    case "$alpine_os_credential_cache" in
+      no)
+	;;
+      *)
+	AC_DEFINE([APPLEKEYCHAIN], [1], [Use Apple OS X key chain for credential caching])
+	;;
+    esac
+    AC_CHECK_LIB(pam, pam_start,
+      [
+	AC_CHECK_HEADER([security/pam_appl.h],
+	[
+	  alpine_PAM="yes"
+	  alpine_c_client_target="oxs"
+	],
+	[	AC_CHECK_HEADER([pam/pam_appl.h],
+		[
+		   alpine_PAM="yes"
+		   alpine_c_client_target="oxp" 
+		],
+		[
+		  alpine_PAM="none"
+		  alpine_pam_none_reason="header files not found"
+		])
+	])
+      ],
+      [
+        alpine_c_client_target="osx"
+      ])
+    ;;
+  *-*-solaris*)
+    if test x$GCC = "xyes" ; then
+      systype="GSO"
+      alpine_c_client_target="gso"
+    else
+      systype="SOC"
+      alpine_c_client_target="soc"
+      AC_DEFINE([__EXTENSIONS__], [1], [Enable extended pthread features on Solaris])
+    fi
+    alpine_path_delim="/"
+    alpine_mode_readonly="(0600)"
+    dnl possible other OS's need this.
+    dnl Use autoconf 2.61's AC_USE_SYSTEM_EXTENSIONS at some point
+    ;;
+  *-*-sunos4*)
+    systype="SUN"
+    alpine_path_delim="/"
+    alpine_mode_readonly="(0600)"
+    alpine_c_client_target="s40"
+    ;;
+  *-*-sco3.2v5*)
+    if test x$GCC = "xyes" ; then
+      systype="GO5"
+      alpine_c_client_target="go5"
+    else
+      systype="SC5"
+      alpine_c_client_target="sc5"
+    fi
+    alpine_path_delim="/"
+    alpine_mode_readonly="(0600)"
+    dnl possible other OS's need this.
+    dnl Use autoconf 2.61's AC_USE_SYSTEM_EXTENSIONS at some point
+    ;;
+  *-next-*)
+    systype="NXT"
+    alpine_path_delim="/"
+    alpine_mode_readonly="(0600)"
+    alpine_c_client_target="nx3"
+    ;;
+  *-*-netbsd*)
+    systype="NEB"
+    alpine_path_delim="/"
+    alpine_mode_readonly="(0600)"
+    alpine_c_client_target="neb"
+    alpine_SSLDIR="/etc/openssl"
+    alpine_SSLCERTS="$alpine_SSLDIR/certs"
+    alpine_SSLKEYS="$alpine_SSLDIR/private"
+    alpine_SSLINCLUDE="/usr/include/openssl"
+    alpine_SSLLIB="/usr/lib"
+    ;;
+  *-*-dragonfly*)
+    systype="DFB"
+    alpine_path_delim="/"
+    alpine_mode_readonly="(0600)"
+    alpine_c_client_target="neb"
+    alpine_SSLDIR="/etc/openssl"
+    alpine_SSLCERTS="$alpine_SSLDIR/certs"
+    alpine_SSLKEYS="$alpine_SSLDIR/private"
+    alpine_SSLINCLUDE="/usr/include/openssl"
+    alpine_SSLLIB="/usr/lib"
+    ;;
+  *-*-bsdi*)
+    systype="BSI"
+    alpine_path_delim="/"
+    alpine_mode_readonly="(0600)"
+    alpine_c_client_target="bsi"
+    ;;
+  *-*-freebsd*)
+    systype="BSF"
+    alpine_path_delim="/"
+    alpine_mode_readonly="(0600)"
+    alpine_c_client_target="bsf"
+    alpine_SSLDIR="/etc/ssl"
+    alpine_SSLCERTS="$alpine_SSLDIR/certs"
+    alpine_SSLKEYS="$alpine_SSLDIR/private"
+    alpine_SSLINCLUDE="/usr/include/openssl" 
+    alpine_SSLLIB="/usr/lib"
+    LIBS="$LIBS $LIBINTL"
+    ;;
+  *-*-openbsd*)
+    systype="BSO"
+    alpine_path_delim="/"
+    alpine_mode_readonly="(0600)"
+    alpine_c_client_target="bso"
+    alpine_SSLDIR="/etc/ssl"
+    alpine_SSLINCLUDE="/usr/include/openssl"
+    alpine_SSLLIB="/usr/lib"
+    alpine_SSLCERTS="/etc/ssl" 
+    alpine_SSLKEYS="/etc/ssl/private"
+    LIBS="$LIBS $LIBINTL"
+    ;;
+  *-*-aix5*)
+    systype="A52"
+    alpine_path_delim="/"
+    alpine_mode_readonly="(0600)"
+    alpine_c_client_target="a52"
+    ;;
+  *-*-aix4*)
+    systype="A41"
+    alpine_path_delim="/"
+    alpine_mode_readonly="(0600)"
+    alpine_c_client_target="a41"
+    ;;
+  *-*-aix3*)
+    systype="A32"
+    alpine_path_delim="/"
+    alpine_mode_readonly="(0600)"
+    alpine_c_client_target="a32"
+    ;;
+  *-*UNIX_SV | *-*-sysv5UnixWare7* | *-*OpenUNIX*)
+    systype="UW2"
+    alpine_path_delim="/"
+    alpine_mode_readonly="(0600)"
+    alpine_c_client_target="uw2"
+    ;;
+  *-*-osf5*)
+    systype="OSF"
+    alpine_path_delim="/"
+    alpine_mode_readonly="(0600)"
+    alpine_c_client_target="osf"
+    ;;
+  *-*-cygwin)
+    systype="CYG"
+    alpine_path_delim="/"
+    alpine_mode_readonly="(S_IREAD | S_IWRITE)"
+    alpine_c_client_target="cyg"
+    alpine_SSLDIR="/usr/ssl"
+    alpine_SSLCERTS="$alpine_SSLDIR/certs" 
+    alpine_SSLKEYS="$alpine_SSLDIR/certs"
+    alpine_SSLINCLUDE="/usr/include/openssl" 
+    alpine_SSLLIB="/usr/lib"
+    LIBS="$LIBS $LIBINTL"
+    ;;
+  windows* | *-*-pw32*)
+    systype="WNT"
+    alpine_path_delim="\\"
+    alpine_mode_readonly="(S_IREAD | S_IWRITE)"
+    alpine_c_client_target="wnt"
+    AC_DEFINE([_WINDOWS], [1], [Windows is just too different])
+    ;;
+  *)
+    AC_MSG_ERROR(Unrecognized system: $host)
+    ;;
+esac
 
 dnl Without IPv6?
 AC_ARG_WITH(ipv6,
@@ -1047,7 +1325,7 @@ int main(void) {
 		AC_MSG_RESULT(yes)
 	],
 	[
-		AC_MSG_ERROR(Install openssl version >= 1.0.1c)
+		AC_MSG_ERROR(Install openssl version >= 1.0.0c)
 		exit 1
 	],
 	[
@@ -1079,23 +1357,36 @@ if test "x$alpine_SSLTYPE" != "xnone" ; then
   fi
 fi
 
-dnl PAM support is needed to build c-client, and hence Alpine.
+dnl PAM support is needed to build c-client in some linux, and hence Alpine.
 if test "x$alpine_PAM" != "xnone" ; then
   AC_SEARCH_LIBS(pam_start,pam,
-    [
-      LIBS="$LIBS -lpam"
-      AC_CHECK_HEADER([security/pam_appl.h],,
+      [
+	LIBS="$LIBS -lpam"
+	AC_CHECK_HEADER([security/pam_appl.h],
 	[
-	  alpine_PAM="none"
-	  alpine_pam_none_reason="header files not found"
+	  alpine_PAM="yes"
+	],
+	dnl Only mac is incompatible, do not spread bad habits.
+	[ AC_CHECK_HEADER([pam/pam_appl.h],
+	  [
+		alpine_PAM="yes"
+		if test "x$alpine_c_client_target" != "xoxp" ; then
+		   alpine_PAM="none"
+		   alpine_pam_none_reason="header files not in security/ directory"
+		fi
+	  ],
+	  [
+		alpine_PAM="none"
+		alpine_pam_none_reason="header files not found"
+	  ])
 	])
-    ],
-    [
+      ],
+      [
 	alpine_PAM="none"
 	alpine_pam_none_reason="library files not found"
-    ])
-  if test -n "$alpine_pam_none_reason" ; then
-    AC_MSG_ERROR(No PAM support: $alpine_pam_none_reason)
+      ])
+    if test -n "$alpine_pam_none_reason" ; then
+      AC_MSG_ERROR(No PAM support: $alpine_pam_none_reason)
   fi
 fi
 
@@ -1125,14 +1416,17 @@ fi
 
 dnl check for tcl libraries for Web Alpine (HACKY)
 if test -n "$WEB_BUILD" ; then
-  AC_SEARCH_LIBS([Tcl_Eval],[$alpine_TCLLIB tcl8.5 tcl8.4 tcl8.3 tcl84 tcl83 tcl],,
+TCL_VERSIONS_DOT="tcl8.6 tcl8.5 tcl8.4 tcl8.3"
+TCL_VERSIONS_NODOT="`echo ${TCL_VERSIONS_DOT} | ${SED} 's/\.//g'`"
+TCL_VERSIONS="${TCL_VERSIONS_DOT} ${TCL_VERSIONS_NODOT} tcl"
+  AC_SEARCH_LIBS([Tcl_Eval],[$alpine_TCLLIB ${TCL_VERSIONS}],,
     [
       WEB_BUILD=
     ])
 
   dnl look for header file
   if test -n "$alpine_TCLINC" ; then
-    AC_CHECK_HEADER($alpine_TCLINC,,
+    AC_CHECK_HEADER($alpine_TCLINC/tcl.h,,
       [
 	WEB_BUILD=
       ])
@@ -1142,15 +1436,20 @@ if test -n "$WEB_BUILD" ; then
   else
     AC_CHECK_HEADER(tcl.h,,
       [
-	for dir in tcl8.5 tcl8.4 tcl8.3 tcl84 tcl83 ; do
-	  AC_CHECK_FILE([/usr/include/$dir/tcl.h],
+	for base in /usr /usr/local ; do
+	 for dir in ${TCL_VERSIONS} ; do
+	  AC_CHECK_FILE([$base/include/$dir/tcl.h],
 	    [
 	      found=yes
 	    ])
 	  if test "$found" = "yes" ; then
-	    CPPFLAGS="$CPPFLAGS -I/usr/include/$dir"
+	    CPPFLAGS="$CPPFLAGS -I$base/include/$dir"
 	    break
 	  fi
+	 done
+	 if test "$found" = "yes" ; then
+	    break
+	 fi
 	done
 	if test "$found" != "yes" ; then
 	    WEB_BUILD=
@@ -1418,200 +1717,6 @@ AC_SEARCH_LIBS([syslog], [bsd socket inet],
   ])
 
 
-dnl HOST-OS SPECIFIC DEFINITIONS
-dnl Tests and assignments below are mostly to coax the appropriate
-dnl build from c-client.  Most of this will go away when c-client
-dnl adopts configure
-case "$host" in
-  *-linux-gnu*|*-k*bsd*-gnu*)
-    alpine_path_delim="/"
-    alpine_mode_readonly="(0600)"
-    if test -f /etc/fedora-release ; then  
-      systype="LFD"
-      if test -d /etc/pki/tls ; then  
-	alpine_c_client_target="lfd"
-      else
-	alpine_c_client_target="lrh"
-      fi
-    elif test -f /etc/mandrake-release ; then
-      systype="LMD"
-      alpine_c_client_target="lmd"
-    elif test -f /etc/redhat-release -o -f /etc/redhat_version ; then
-      systype="LRH"
-      if test -d /etc/pki/tls ; then  
-	alpine_c_client_target="lr5"
-      else
-	alpine_c_client_target="lrh"
-      fi
-    elif test -f /etc/debian_release -o -f /etc/debian_version ; then
-      if test -d /etc/osso-af-init ; then
-        systype="LN8"
-        alpine_c_client_target="ln8"
-      else
-        systype="DEB"
-        alpine_c_client_target="ldb"
-      fi
-    elif test -f /etc/SuSE-release ; then
-      systype="LSU"
-      alpine_c_client_target="lsu"
-    else
-      systype="LNX"
-      AC_CHECK_LIB(pam, pam_start,
-        [
-          alpine_c_client_target="lnp"
-        ],
-        [
-	  if test -f /etc/shadow ; then
-	    alpine_c_client_target="slx"
-	  else
-	    alpine_c_client_target="lnx"
-	  fi
-        ])
-    fi
-    ;;
-  *-apple-darwin*)
-    systype="OSX"
-    alpine_path_delim="/"
-    alpine_mode_readonly="(0600)"
-    LIBS="$LIBS -framework Carbon -framework ApplicationServices -framework Security"
-    AM_CFLAGS="$AM_CFLAGS -Dbsd"
-    dnl SEE include/system.h
-    AC_DEFINE([OSX_TARGET],[1],[OSX TARGET])
-    case "$alpine_os_credential_cache" in
-      no)
-	;;
-      *)
-	AC_DEFINE([APPLEKEYCHAIN], [1], [Use Apple OS X key chain for credential caching])
-	;;
-    esac
-    AC_CHECK_LIB(pam, pam_start,
-      [
-        alpine_c_client_target="oxp"
-      ],
-      [
-        alpine_c_client_target="osx"
-      ])
-    ;;
-  *-*-solaris*)
-    if test x$GCC = "xyes" ; then
-      systype="GSO"
-      alpine_c_client_target="gso"
-    else
-      systype="SOC"
-      alpine_c_client_target="soc"
-      AC_DEFINE([__EXTENSIONS__], [1], [Enable extended pthread features on Solaris])
-    fi
-    alpine_path_delim="/"
-    alpine_mode_readonly="(0600)"
-    dnl possible other OS's need this.
-    dnl Use autoconf 2.61's AC_USE_SYSTEM_EXTENSIONS at some point
-    ;;
-  *-*-sunos4*)
-    systype="SUN"
-    alpine_path_delim="/"
-    alpine_mode_readonly="(0600)"
-    alpine_c_client_target="s40"
-    ;;
-  *-*-sco3.2v5*)
-    if test x$GCC = "xyes" ; then
-      systype="GO5"
-      alpine_c_client_target="go5"
-    else
-      systype="SC5"
-      alpine_c_client_target="sc5"
-    fi
-    alpine_path_delim="/"
-    alpine_mode_readonly="(0600)"
-    dnl possible other OS's need this.
-    dnl Use autoconf 2.61's AC_USE_SYSTEM_EXTENSIONS at some point
-    ;;
-  *-next-*)
-    systype="NXT"
-    alpine_path_delim="/"
-    alpine_mode_readonly="(0600)"
-    alpine_c_client_target="nx3"
-    ;;
-  *-*-netbsd*)
-    systype="NEB"
-    alpine_path_delim="/"
-    alpine_mode_readonly="(0600)"
-    alpine_c_client_target="neb"
-    ;;
-  *-*-dragonfly*)
-    systype="DFB"
-    alpine_path_delim="/"
-    alpine_mode_readonly="(0600)"
-    alpine_c_client_target="neb"
-    ;;
-  *-*-bsdi*)
-    systype="BSI"
-    alpine_path_delim="/"
-    alpine_mode_readonly="(0600)"
-    alpine_c_client_target="bsi"
-    ;;
-  *-*-freebsd*)
-    systype="BSF"
-    alpine_path_delim="/"
-    alpine_mode_readonly="(0600)"
-    alpine_c_client_target="bsf"
-    LIBS="$LIBS $LIBINTL"
-    ;;
-  *-*-openbsd*)
-    systype="BSO"
-    alpine_path_delim="/"
-    alpine_mode_readonly="(0600)"
-    alpine_c_client_target="bso"
-    LIBS="$LIBS $LIBINTL"
-    ;;
-  *-*-aix5*)
-    systype="A52"
-    alpine_path_delim="/"
-    alpine_mode_readonly="(0600)"
-    alpine_c_client_target="a52"
-    ;;
-  *-*-aix4*)
-    systype="A41"
-    alpine_path_delim="/"
-    alpine_mode_readonly="(0600)"
-    alpine_c_client_target="a41"
-    ;;
-  *-*-aix3*)
-    systype="A32"
-    alpine_path_delim="/"
-    alpine_mode_readonly="(0600)"
-    alpine_c_client_target="a32"
-    ;;
-  *-*UNIX_SV | *-*-sysv5UnixWare7* | *-*OpenUNIX*)
-    systype="UW2"
-    alpine_path_delim="/"
-    alpine_mode_readonly="(0600)"
-    alpine_c_client_target="uw2"
-    ;;
-  *-*-osf5*)
-    systype="OSF"
-    alpine_path_delim="/"
-    alpine_mode_readonly="(0600)"
-    alpine_c_client_target="osf"
-    ;;
-  *-*-cygwin)
-    systype="CYG"
-    alpine_path_delim="/"
-    alpine_mode_readonly="(S_IREAD | S_IWRITE)"
-    alpine_c_client_target="cyg"
-    LIBS="$LIBS $LIBINTL"
-    ;;
-  windows* | *-*-pw32*)
-    systype="WNT"
-    alpine_path_delim="\\"
-    alpine_mode_readonly="(S_IREAD | S_IWRITE)"
-    alpine_c_client_target="wnt"
-    AC_DEFINE([_WINDOWS], [1], [Windows is just too different])
-    ;;
-  *)
-    AC_MSG_ERROR(Unrecognized system: $host)
-    ;;
-esac
-
 dnl set pico newmail check directory
 if test -n "$alpine_with_local_maildir" ; then
     alpine_local_maildir=$alpine_with_local_maildir
@@ -1672,14 +1777,6 @@ else
     AC_MSG_NOTICE([* * *   in Alpine, this might be the reason for them.])
   fi
 
-  if test -n "$alpine_SSLDIR" ; then
-    c_client_specials="${c_client_specials}SSLDIR=$alpine_SSLDIR "
-  fi
-
-  if test -n "$alpine_SSLCERTS" ; then
-    c_client_specials="${c_client_specials}SSLCERTS=$alpine_SSLCERTS "
-  fi
-
   if test -n "$alpine_SSLINCLUDE" ; then
     c_client_specials="${c_client_specials}SSLINCLUDE=$alpine_SSLINCLUDE "
   fi
@@ -1688,6 +1785,17 @@ else
     c_client_specials="${c_client_specials}SSLLIB=$alpine_SSLLIB "
   fi
 
+  if test -n "$alpine_SSLDIR" ; then
+    c_client_specials="${c_client_specials}SSLDIR=$alpine_SSLDIR "
+  fi
+
+  if test -n "$alpine_SSLCERTS" ; then
+    c_client_specials="${c_client_specials}SSLCERTS=$alpine_SSLCERTS "
+  fi
+
+  if test -n "$alpine_SSLKEYS" ; then
+      c_client_specials="${c_client_specials}SSLKEYS=$alpine_SSLKEYS "
+  fi
 fi
 
 if test "x$alpine_GSSTYPE" != "xnone" ; then

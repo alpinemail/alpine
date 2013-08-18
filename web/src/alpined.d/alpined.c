@@ -334,7 +334,7 @@ char         tmp_20k_buf[20480];
 
 
 /* Internal prototypes */
-void	     peReturn(int, char *, char *);
+void	     peReturn(int, char *, const char *);
 int	     peWrite(int, char *);
 char	    *peCreateUserContext(Tcl_Interp *, char *, char *, char *);
 void	     peDestroyUserContext(struct pine **);
@@ -760,10 +760,10 @@ main(int argc, char *argv[])
 				}
 
 				switch(Tcl_Eval(interp, &buf[co])){
-				  case TCL_OK	  : peReturn(cs, "OK", interp->result); break;
-				  case TCL_ERROR  : peReturn(cs, "ERROR", interp->result); break;
-				  case TCL_BREAK  : peReturn(cs, "BREAK", interp->result); break;
-				  case TCL_RETURN : peReturn(cs, "RETURN", interp->result); break;
+				  case TCL_OK	  : peReturn(cs, "OK", Tcl_GetStringResult(interp)); break;
+				  case TCL_ERROR  : peReturn(cs, "ERROR", Tcl_GetStringResult(interp)); break;
+				  case TCL_BREAK  : peReturn(cs, "BREAK", Tcl_GetStringResult(interp)); break;
+				  case TCL_RETURN : peReturn(cs, "RETURN", Tcl_GetStringResult(interp)); break;
 				  default	  : peReturn(cs, "BOGUS", "eval returned unexpected value"); break;
 				}
 			    }
@@ -808,11 +808,11 @@ main(int argc, char *argv[])
  * peReturn - common routine to return TCL result
  */
 void
-peReturn(int sock, char *status, char *result)
+peReturn(int sock, char *status, const char *result)
 {
     if(peWrite(sock, status))
       if(peWrite(sock, "\n"))
-	peWrite(sock, result);
+	peWrite(sock, (char *) result);
 }
 
 /*

@@ -65,7 +65,6 @@ static char rcsid[] = "$Id: string.c 910 2008-01-14 22:28:38Z hubert@u.washingto
 
 void        char_to_octal_triple(int, char *);
 char       *dollar_escape_dollars(char *);
-time_t      date_to_local_time_t(char *date);
 
 
 

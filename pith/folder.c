@@ -2356,7 +2356,7 @@ update_folder_unseen_by_stream(MAILSTREAM *strm, unsigned long flags)
 {
   CONTEXT_S *ctxt;
   int ftotal, i;
-  char mailbox_name[MAILTMPLEN];
+  char mailbox_name[MAILTMPLEN], *target;
   char *cn, tmp[MAILTMPLEN];
   FOLDER_S *f;
 
@@ -2371,7 +2371,12 @@ update_folder_unseen_by_stream(MAILSTREAM *strm, unsigned long flags)
     for(i = 0; i < ftotal; i++){
       f = folder_entry(i, FOLDERS(ctxt));
       context_apply(mailbox_name, ctxt, f->name, MAILTMPLEN);
-      if(same_stream_and_mailbox(mailbox_name, strm)
+
+      if((check_for_move_mbox(mailbox_name, NULL, 0, &target)
+		&& strm->snarf.name
+		&& (!strcmp(target,strm->mailbox)
+		    || !strcmp(target,strm->original_mailbox)))
+	 || same_stream_and_mailbox(mailbox_name, strm)
          || (!IS_REMOTE(mailbox_name) && (cn=mailboxfile(tmp,mailbox_name)) && (*cn) && (!strcmp(cn, strm->mailbox) || !strcmp(cn, strm->original_mailbox)))){
 	/* if we failed earlier on this one, give it another go */
 	if(f->last_unseen_update == LUU_NOMORECHK)
