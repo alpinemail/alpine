@@ -591,8 +591,10 @@ pipe_callback(PIPE_S *syspipe, int flags, void *data)
 	    ps_global->mangled_screen = 1;
 	}
 
-	if(syspipe->mode & PIPE_RESET)
+	if(syspipe->mode & PIPE_RESET){
 	  ttyfix(1);
+	  ps_global->mangled_screen = 1;
+	}
 
 #ifdef	SIGCHLD
 	(void) signal(SIGCHLD,  SIG_DFL);
@@ -644,8 +646,10 @@ pipe_callback(PIPE_S *syspipe, int flags, void *data)
 #endif
     }
     else if(flags & OSB_POST_CLOSE){
-	if(syspipe->mode & PIPE_RESET)		/* restore our tty modes */
+	if(syspipe->mode & PIPE_RESET){		/* restore our tty modes */
 	  ttyfix(1);
+	  ps_global->mangled_screen = 1;
+	}
 
 	if(!(syspipe->mode & (PIPE_WRITE | PIPE_READ | PIPE_SILENT))){
 	    ClearScreen();			/* No I/O to forked child */

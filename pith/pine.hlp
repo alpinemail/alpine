@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 24 2013-08-18 01:59:22
+Alpine Commit 25 2013-08-19 19:58:19
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -180,6 +180,8 @@ Additions include:
 
 <UL>
   <LI> Opening a folder updates recent count in maildrops.
+  <LI> Automatically redraw screen after opening an attachment instead of
+       simply clearing it.
 </UL>
 
 <P>

@@ -4,6 +4,7 @@
 autom4te.*/*
 Make*
 make*
+pinerc*
 alpine
 pico
 rpdump
