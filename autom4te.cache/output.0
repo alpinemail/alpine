@@ -821,6 +821,7 @@ MAKE
 LN
 CP
 RM
+LIBTOOL_DEPS
 CPP
 OTOOL64
 OTOOL
@@ -11499,6 +11500,7 @@ CC="$lt_save_CC"
 
 
 # Only expand once:
+
 
 
 

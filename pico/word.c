@@ -815,11 +815,10 @@ fillpara(int f, int n)
 	swap_mark_and_dot_if_mark_comes_first();
 
 	/* determine if we're justifying quoted text or not */
-	qstr = (glo_quote_str
-		&& quote_match(glo_quote_str, 
-			       curwp->w_doto > 0 ? curwp->w_dotp->l_fp : curwp->w_dotp,
-			       qstr2, NSTRING)
-		&& *qstr2) ? qstr2 : NULL;
+	qstr = quote_match(glo_quote_str, 
+			curwp->w_doto > 0 ? curwp->w_dotp->l_fp : curwp->w_dotp,
+			qstr2, NSTRING)
+		&& *qstr2 ? qstr2 : NULL;
 
 
 	/*
@@ -843,10 +842,9 @@ fillpara(int f, int n)
 	  return(FALSE);
 
 	/* determine if we're justifying quoted text or not */
-	qstr = (glo_quote_str
-		&& quote_match(glo_quote_str, 
+	qstr = quote_match(glo_quote_str, 
 			       curwp->w_dotp, qstr2, NSTRING)
-		&& *qstr2) ? qstr2 : NULL;
+		&& *qstr2 ? qstr2 : NULL;
 
 	setmark(0,0);			/* mark last line of para */
 

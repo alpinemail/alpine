@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 25 2013-08-19 19:58:19
+Alpine Commit 26 2013-08-28 22:31:51
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -179,9 +179,13 @@ Additions include:
 <P>
 
 <UL>
-  <LI> Opening a folder updates recent count in maildrops.
+  <LI> Opening a folder updates recent count in maildrops (this already works
+       for other types of folders)
   <LI> Automatically redraw screen after opening an attachment instead of
        simply clearing it.
+  <LI> Pico: Justification works without need of a predefined quote string. 
+       This allows justification of blocks of text that are indented with 
+       spaces.
 </UL>
 
 <P>
@@ -4569,17 +4573,17 @@ F3&nbsp;&nbsp;Select&nbsp;Current&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;F4&nbsp;&nbsp;<A 
 F6&nbsp;&nbsp;<A HREF="h_common_role">Compose using a role</A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;F10&nbsp;<A HREF="h_index_collapse_expand">Collapse/Expand</A>&nbsp;Thread<BR>
 <BR>
 <!--chtml else-->
-Navigating&nbsp;the&nbsp;List&nbsp;of&nbsp;Messages&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Operations&nbsp;on&nbsp;the&nbsp;Current&nbsp;Message<BR>
--------------------------------&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;---------------------------------<BR>
-&nbsp;P&nbsp;&nbsp;&nbsp;Move&nbsp;to&nbsp;the&nbsp;previous&nbsp;message&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&gt;&nbsp;&nbsp;View&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;&nbsp;<A HREF="h_common_print">Print</A><BR>
-&nbsp;N&nbsp;&nbsp;&nbsp;Move&nbsp;to&nbsp;the&nbsp;next&nbsp;message&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R&nbsp;&nbsp;<A HREF="h_common_reply">Reply</A>&nbsp;to&nbsp;message&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;F&nbsp;&nbsp;<A HREF="h_common_reply">Forward</A><BR>
-&nbsp;-&nbsp;&nbsp;&nbsp;Show&nbsp;previous&nbsp;screen&nbsp;of&nbsp;messages&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;D&nbsp;&nbsp;<A HREF="h_common_delete">Mark&nbsp;for&nbsp;deletion</A><BR>
-Spc&nbsp;&nbsp;(space&nbsp;bar)&nbsp;Show&nbsp;next&nbsp;screen&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;U&nbsp;&nbsp;<A HREF="h_common_delete">Undelete</A>&nbsp;(remove&nbsp;deletion&nbsp;mark)<BR>
-&nbsp;J&nbsp;&nbsp;&nbsp;<A HREF="h_common_jump">Jump</A>&nbsp;to&nbsp;a&nbsp;specific&nbsp;message&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T&nbsp;&nbsp;<A HREF="h_common_take">Take&nbsp;Address</A>&nbsp;into&nbsp;Address&nbsp;Book<BR>
-&nbsp;W&nbsp;&nbsp;&nbsp;<A HREF="h_index_cmd_whereis">Whereis</A>&nbsp;--&nbsp;search&nbsp;for&nbsp;a&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S&nbsp;&nbsp;<A HREF="h_common_save">Save</A>&nbsp;into&nbsp;an&nbsp;email&nbsp;folder<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;specific&nbsp;message&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E&nbsp;&nbsp;<A HREF="h_common_save">Export</A>&nbsp;as&nbsp;a&nbsp;plain&nbsp;text&nbsp;file<BR>
-Tab&nbsp;&nbsp;<A HREF="h_common_nextnew">Next&nbsp;new</A>&nbsp;message&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;B&nbsp;&nbsp;<A HREF="h_common_bounce">Bounce</A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;&nbsp;<A HREF="h_common_flag">Flag</A><BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;<A HREF="h_common_pipe">Pipe</A>&nbsp;to&nbsp;a&nbsp;Unix&nbsp;Command<BR>
+Navigating&nbsp;the&nbsp;List&nbsp;of&nbsp;Messages&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Operations&nbsp;on&nbsp;the&nbsp;Current&nbsp;Message<BR>
+-------------------------------&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;---------------------------------<BR>
+&nbsp;P&nbsp;&nbsp;&nbsp;Move&nbsp;to&nbsp;the&nbsp;previous&nbsp;message&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&gt;&nbsp;&nbsp;View&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;&nbsp;<A HREF="h_common_print">Print</A><BR>
+&nbsp;N&nbsp;&nbsp;&nbsp;Move&nbsp;to&nbsp;the&nbsp;next&nbsp;message&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R&nbsp;&nbsp;<A HREF="h_common_reply">Reply</A>&nbsp;to&nbsp;message&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;F&nbsp;&nbsp;<A HREF="h_common_reply">Forward</A><BR>
+&nbsp;-&nbsp;&nbsp;&nbsp;Show&nbsp;previous&nbsp;screen&nbsp;of&nbsp;messages&nbsp;&nbsp;&nbsp;&nbsp;D&nbsp;&nbsp;<A HREF="h_common_delete">Mark&nbsp;for&nbsp;deletion</A><BR>
+Spc&nbsp;&nbsp;(space&nbsp;bar)&nbsp;Show&nbsp;next&nbsp;screen&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;U&nbsp;&nbsp;<A HREF="h_common_delete">Undelete</A>&nbsp;(remove&nbsp;deletion&nbsp;mark)<BR>
+&nbsp;J&nbsp;&nbsp;&nbsp;<A HREF="h_common_jump">Jump</A>&nbsp;to&nbsp;a&nbsp;specific&nbsp;message&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T&nbsp;&nbsp;<A HREF="h_common_take">Take&nbsp;Address</A>&nbsp;into&nbsp;Address&nbsp;Book<BR>
+&nbsp;W&nbsp;&nbsp;&nbsp;<A HREF="h_index_cmd_whereis">Whereis</A>&nbsp;--&nbsp;search&nbsp;for&nbsp;a&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S&nbsp;&nbsp;<A HREF="h_common_save">Save</A>&nbsp;into&nbsp;an&nbsp;email&nbsp;folder<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;specific&nbsp;message&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E&nbsp;&nbsp;<A HREF="h_common_save">Export</A>&nbsp;as&nbsp;a&nbsp;plain&nbsp;text&nbsp;file<BR>
+Tab&nbsp;&nbsp;<A HREF="h_common_nextnew">Next&nbsp;new</A>&nbsp;message&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;B&nbsp;&nbsp;<A HREF="h_common_bounce">Bounce</A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;&nbsp;<A HREF="h_common_flag">Flag</A><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;<A HREF="h_common_pipe">Pipe</A>&nbsp;to&nbsp;a&nbsp;Unix&nbsp;Command<BR>
 Miscellaneous&nbsp;Operations<BR>
 ------------------------<BR>
 &nbsp;G&nbsp;&nbsp;&nbsp;<A HREF="h_common_goto">Goto</A>&nbsp;a&nbsp;specified&nbsp;folder&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;General&nbsp;Alpine&nbsp;Commands<BR>

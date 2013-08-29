@@ -304,16 +304,14 @@ gotobop(int f, int n)
 	 * PLUS: if there's a quote string, a quoted-to-non-quoted
 	 *	 line transition.
 	 */
-	quoted = glo_quote_str ? quote_match(glo_quote_str, curwp->w_dotp, qstr, NLINE) : 0;
+	quoted = quote_match(glo_quote_str, curwp->w_dotp, qstr, NLINE);
 	qlen   = quoted ? ucs4_strlen(qstr) : 0;
 	while(lback(curwp->w_dotp) != curbp->b_linep
 	      && llength(lback(curwp->w_dotp)) > qlen
-	      && (glo_quote_str
-		  ? (quoted == quote_match(glo_quote_str,
+	      && quoted == quote_match(glo_quote_str,
 					   lback(curwp->w_dotp),
 					   qstr2, NLINE)
-		     && !ucs4_strcmp(qstr, qstr2))
-		  : 1)
+	      && !ucs4_strcmp(qstr, qstr2)
 	      && lgetc(curwp->w_dotp, qlen).c != TAB
 	      && lgetc(curwp->w_dotp, qlen).c != ' ')
 	  curwp->w_dotp = lback(curwp->w_dotp);
@@ -373,19 +371,16 @@ gotoeop(int f, int n)
 	 * PLUS: if there's a quote string, a quoted-to-non-quoted
 	 *	 line transition.
 	 */
-	quoted = glo_quote_str
-	  ? quote_match(glo_quote_str,
-			curwp->w_dotp, qstr, NLINE) : 0;
+	quoted = quote_match(glo_quote_str,
+			curwp->w_dotp, qstr, NLINE);
 	qlen   = quoted ? ucs4_strlen(qstr) : 0;
 	
 	while(curwp->w_dotp != curbp->b_linep
 	      && llength(lforw(curwp->w_dotp)) > qlen
-	      && (glo_quote_str
-		  ? (quoted == quote_match(glo_quote_str,
+	      && (quoted == quote_match(glo_quote_str,
 					   lforw(curwp->w_dotp),
 					   qstr2, NLINE)
 		     && !ucs4_strcmp(qstr, qstr2))
-		  : 1)
 	      && lgetc(lforw(curwp->w_dotp), qlen).c != TAB
 	      && lgetc(lforw(curwp->w_dotp), qlen).c != ' ')
 	  curwp->w_dotp = lforw(curwp->w_dotp);
