@@ -65,7 +65,7 @@ static char rcsid[] = "$Id: string.c 910 2008-01-14 22:28:38Z hubert@u.washingto
 
 void        char_to_octal_triple(int, char *);
 char       *dollar_escape_dollars(char *);
-
+void	    convert_string_to_utf8(char *, int);
 
 
 /*----------------------------------------------------------------------
@@ -748,6 +748,20 @@ istrncpy(char *d, char *s, int n)
 }
 
 
+void
+convert_string_to_utf8(char *buf, int bufsize)
+{
+   char *s;
+   if(strucmp("UTF-8", ps_global->display_charmap)){
+      s = convert_to_utf8(buf, ps_global->display_charmap, 0);
+      strncpy(buf, s ? s : "", bufsize);
+      buf[sizeof(buf)-1] = '\0';
+      if(s) fs_give((void **)&s);
+   }
+}
+
+
+
 char *xdays[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", NULL};
 
 char *
@@ -768,21 +782,14 @@ month_abbrev_locale(int month_num)
 	if(month_num < 1 || month_num > 12)
 	  return("xxx");
 	else{
-	    static char buf[20];
+	    static char buf[120];
 	    struct tm tm;
 
 	    memset(&tm, 0, sizeof(tm));
 	    tm.tm_year = 107;
 	    tm.tm_mon = month_num-1;
 	    our_strftime(buf, sizeof(buf), "%b", &tm);
-
-	    if(strucmp("UTF-8", ps_global->display_charmap)){
-	      char *s;
-	      s = convert_to_utf8(buf, ps_global->display_charmap, 0);
-	      strncpy(buf, s ? s : "", sizeof(buf));
-	      buf[sizeof(buf)-1] = '\0';
-	      if(s) fs_give((void **)&s);
-	    }
+	    convert_string_to_utf8(buf, sizeof(buf));
 
 	    /*
 	     * If it is all digits, then use the English
@@ -848,13 +855,14 @@ month_name_locale(int month_num)
 	if(month_num < 1 || month_num > 12)
 	  return("");
 	else{
-	    static char buf[20];
+	    static char buf[120];
 	    struct tm tm;
 
 	    memset(&tm, 0, sizeof(tm));
 	    tm.tm_year = 107;
 	    tm.tm_mon = month_num-1;
 	    our_strftime(buf, sizeof(buf), "%B", &tm);
+	    convert_string_to_utf8(buf, sizeof(buf));
 	    return(buf);
 	}
     }
@@ -882,12 +890,13 @@ day_abbrev_locale(int day_of_week)
 	if(day_of_week < 0 || day_of_week > 6)
 	  return("???");
 	else{
-	    static char buf[20];
+	    static char buf[120];
 	    struct tm tm;
 
 	    memset(&tm, 0, sizeof(tm));
 	    tm.tm_wday = day_of_week;
 	    our_strftime(buf, sizeof(buf), "%a", &tm);
+	    convert_string_to_utf8(buf, sizeof(buf));
 	    return(buf);
 	}
     }
@@ -916,12 +925,13 @@ day_name_locale(int day_of_week)
 	if(day_of_week < 0 || day_of_week > 6)
 	  return("");
 	else{
-	    static char buf[20];
+	    static char buf[120];
 	    struct tm tm;
 
 	    memset(&tm, 0, sizeof(tm));
 	    tm.tm_wday = day_of_week;
 	    our_strftime(buf, sizeof(buf), "%A", &tm);
+	    convert_string_to_utf8(buf, sizeof(buf));
 	    return(buf);
 	}
     }
@@ -1062,7 +1072,7 @@ Args: given_date -- The input string to parse
  
 Returns nothing
 
-The following date fomrats are accepted:
+The following date formats are accepted:
   WKDAY DD MM YY HH:MM:SS ZZ
   DD MM YY HH:MM:SS ZZ
   WKDAY DD MM HH:MM:SS YY ZZ
