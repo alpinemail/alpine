@@ -776,6 +776,14 @@ month_abbrev_locale(int month_num)
 	    tm.tm_mon = month_num-1;
 	    our_strftime(buf, sizeof(buf), "%b", &tm);
 
+	    if(strucmp("UTF-8", ps_global->display_charmap)){
+	      char *s;
+	      s = convert_to_utf8(buf, ps_global->display_charmap, 0);
+	      strncpy(buf, s ? s : "", sizeof(buf));
+	      buf[sizeof(buf)-1] = '\0';
+	      if(s) fs_give((void **)&s);
+	    }
+
 	    /*
 	     * If it is all digits, then use the English
 	     * words instead. Look for

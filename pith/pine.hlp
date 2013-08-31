@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 26 2013-08-28 22:31:51
+Alpine Commit 27 2013-08-30 23:54:12
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -191,12 +191,17 @@ Additions include:
 <P>
 Bugs that have been addressed include:
 <UL>
+  <LI> DATE tokens were not internally transformed to UTF-8, which made their
+       values appear garbled or incomplete in the screen. Reported by Werner 
+       Scheinast.
   <LI> Fixes to configure script so that it will not require PAM for every system.
   <LI> Fix to configure script so that it will use CPPFLAGS instead of 
        CPPCFLAGS, and so the --with-ssl-include-dir option take effect 
        during the build. Fix by Ulf-Dietrich Braumann.
   <LI> Fix in WebAlpine: do not use deprecated dereference in pointer, 
        needs to use tcl_getstringresult() instead. Reported by Ulf-Dietrich Braumann.
+  <LI> Quoted string in URL Viewers configuration variable were not 
+       unquoted before passing to viewer.
   <LI> Fix in configure script to detect location of tcl library; add
        /usr/local in FreeBSD and fix a bug in configure script that used
        $alpine_TCLINC instead of $alpine_TCLINC/tcl.h. Reported and fixed

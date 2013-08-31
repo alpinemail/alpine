@@ -1423,6 +1423,9 @@ url_launch(HANDLE_S *handle)
 	      if(!*toolp)
 		*cmdp++ = ' ';
 
+	      if(cmdp[-1] == '\'')	/* unquote old '_URL_' */
+		cmdp--;
+
 	      copied = 1;
 	      for(p = handle->h.url.path;
 		  p && *p && cmdp-cmd < URL_MAX_LAUNCH; p++)
@@ -1432,6 +1435,8 @@ url_launch(HANDLE_S *handle)
 
 	      if(*toolp)
 		toolp += 5;		/* length of "_URL_" */
+	      if(*toolp == '\'')
+		toolp++;
 	  }
 	  else
 	      if(!(*cmdp++ = *toolp++))
