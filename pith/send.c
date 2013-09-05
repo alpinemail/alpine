@@ -4419,6 +4419,17 @@ pine_rfc822_output_body(struct mail_bodystruct *body, soutr_t f, void *s)
       return(1);
 }
 
+char *
+ToLower(char *s, char *t)
+{
+ int i;
+
+ for(i = 0; s != NULL && s[i] != '\0'; i++)
+   t[i] = s[i] + ((s[i] >= 'A' && s[i] <= 'Z') ? ('a' - 'A') : 0);
+ t[i] = '\0';
+
+ return t;
+}
 
 /*
  * pine_write_body_header - another c-client clone.  This time
@@ -4441,11 +4452,11 @@ pine_write_body_header(struct mail_bodystruct *body, soutr_t f, void *s)
 
     if((so = so_get(CharStar, NULL, WRITE_ACCESS)) != NULL){
 	if(!(so_puts(so, "Content-Type: ")
-	     && so_puts(so, body_types[body->type])
+	     && so_puts(so, ToLower(body_types[body->type], tmp))
 	     && so_puts(so, "/")
-	     && so_puts(so, body->subtype
-			      ? body->subtype
-			      : rfc822_default_subtype (body->type))))
+	     && so_puts(so, ToLower(body->subtype
+				? body->subtype
+			 	: rfc822_default_subtype (body->type),tmp))))
 	  return(pwbh_finish(0, so));
 	    
 	if(body->parameter){

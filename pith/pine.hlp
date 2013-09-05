@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 27 2013-08-30 23:54:12
+Alpine Commit 29 2013-09-05 00:40:13
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -179,6 +179,9 @@ Additions include:
 <P>
 
 <UL>
+  <LI> Experimental: Write the content-type of a message in lowercase, as some
+       non-compliant servers do not understand uppercase content-type, such as
+       those of GMX.de.
   <LI> Opening a folder updates recent count in maildrops (this already works
        for other types of folders)
   <LI> Automatically redraw screen after opening an attachment instead of
@@ -191,9 +194,10 @@ Additions include:
 <P>
 Bugs that have been addressed include:
 <UL>
+  <LI> Transformation of UTF-8 to MUTF7 was not being done when creating a folder
+       in an IMAP server.
   <LI> DATE tokens were not internally transformed to UTF-8, which made their
-       values appear garbled or incomplete in the screen. Reported by Werner 
-       Scheinast.
+       values not appear complete in the screen. Reported by Werner Scheinast.
   <LI> Fixes to configure script so that it will not require PAM for every system.
   <LI> Fix to configure script so that it will use CPPFLAGS instead of 
        CPPCFLAGS, and so the --with-ssl-include-dir option take effect 

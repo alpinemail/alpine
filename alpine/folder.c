@@ -30,6 +30,7 @@ or search for a folder name.
 
 
 #include "headers.h"
+#include "../c-client/utf8aux.h"
 #include "folder.h"
 #include "keymenu.h"
 #include "status.h"
@@ -4020,7 +4021,7 @@ add_new_folder(CONTEXT_S *context, EditWhich which, int varnum, char *add_folder
 {
     char	 tmp[MAX(MAXFOLDER,6*MAX_SCREEN_COLS)+1], nickname[32], 
 		*p = NULL, *return_val = NULL, buf[MAILTMPLEN],
-		buf2[MAILTMPLEN], def_in_prompt[MAILTMPLEN];
+		buf2[MAILTMPLEN], def_in_prompt[MAILTMPLEN], orig_folder[2*MAXFOLDER+10];
     HelpType     help;
     PINERC_S    *prc = NULL;
     int          i, rc, offset, exists, cnt = 0, isdir = 0;
@@ -4040,8 +4041,7 @@ add_new_folder(CONTEXT_S *context, EditWhich which, int varnum, char *add_folder
 
     dprint((4, "\n - add_new_folder - \n"));
 
-    add_folder[0] = '\0';
-    nickname[0]   = '\0';
+    nickname[0] = orig_folder[0] = add_folder[0] = '\0';
     inbox = (varnum == V_INBOX_PATH);
 
     if(inbox || context->use & CNTXT_INCMNG){
@@ -4477,6 +4477,17 @@ get_folder_name:
 
 	removing_leading_and_trailing_white_space(&add_folder[offset]);
 
+	/* for non-local folders, transform UTF-8 to MUTF7 */
+	if(offset > 0 && add_folder[0] == '{'){
+	  unsigned char *mutf7 = utf8_to_mutf7(&add_folder[offset]);
+	  if(mutf7 != NULL){
+	    strncpy(orig_folder, &add_folder[offset], 2*MAXFOLDER+10);
+	    strncpy(&add_folder[offset], mutf7, add_folderlen-offset);
+	    add_folder[add_folderlen-1] = '\0';
+	    fs_give((void **)&mutf7);
+	  }
+	}
+
 	if(rc == 0 && !(inbox || context->use & CNTXT_INCMNG)
 	   && check_for_move_mbox(add_folder, NULL, 0L, NULL)){
 	    q_status_message(SM_ORDER, 6, 6,
@@ -4590,6 +4601,17 @@ skip_over_folder_input:
 
 	    removing_leading_and_trailing_white_space(&add_folder[offset]);
 
+	    /* for non-local folders, transform UTF-8 to MUTF7 */
+	    if(offset > 0 && add_folder[0] == '{'){
+	      unsigned char *mutf7 = utf8_to_mutf7(&add_folder[offset]);
+	      if(mutf7 != NULL){
+		strncpy(orig_folder, &add_folder[offset], 2*MAXFOLDER+10);
+		strncpy(&add_folder[offset], mutf7, add_folderlen-offset);
+		add_folder[add_folderlen-1] = '\0';
+		fs_give((void **)&mutf7);
+	      }
+	    }
+
 	    /* use default */
 	    if(rc == 0 && !add_folder[offset]){
 		q_status_message(SM_ORDER, 4, 4,
@@ -4633,7 +4655,7 @@ skip_over_folder_input:
 
     help = NO_HELP;
     if(!inbox && context->use & CNTXT_INCMNG){
-	snprintf(tmp, sizeof(tmp), _("Nickname for folder \"%s\" : "), &add_folder[offset]);
+	snprintf(tmp, sizeof(tmp), _("Nickname for folder \"%s\" : "), orig_folder[0] ? orig_folder : &add_folder[offset]);
 	tmp[sizeof(tmp)-1] = '\0';
 	while(1){
 	    int flags = OE_APPEND_CURRENT;
@@ -4896,19 +4918,19 @@ skip_over_folder_input:
 
 	if(!inbox)
 	  q_status_message1(SM_ORDER, 0, 3, "Folder \"%s\" created",
-			    add_folder);
+			    orig_folder[0] ? orig_folder : add_folder);
 	return_val = add_folder;
     }
     else if(context_isambig(add_folder)){
 	free_folder_list(context);
 	q_status_message2(SM_ORDER, 0, 3, "%s \"%s\" created",
-			  isdir ? "Directory" : "Folder", add_folder);
+			  isdir ? "Directory" : "Folder", orig_folder[0] ? orig_folder : add_folder);
 	return_val = add_folder;
     }
     else
       q_status_message1(SM_ORDER, 0, 3,
 			"Folder \"%s\" created outside current collection",
-			add_folder);
+			orig_folder[0] ? orig_folder : add_folder);
 
     if(maildropfolder)
       fs_give((void **) &maildropfolder);
