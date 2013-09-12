@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: alpine-contact@u.washington.edu\n"
+"Report-Msgid-Bugs-To: chappa@gmx.com\n"
 "POT-Creation-Date: 2008-06-03 12:14-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"

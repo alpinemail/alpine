@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 29 2013-09-05 00:40:13
+Alpine Commit 30 2013-09-12 00:34:18
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -194,6 +194,9 @@ Additions include:
 <P>
 Bugs that have been addressed include:
 <UL>
+  <LI> Save command did not warn of existence of a message with a deleted 
+       attachment in an aggregate save, unless cursor was positioned on a message 
+       with a deleted attachment. Reported by Florian Herzig.
   <LI> Transformation of UTF-8 to MUTF7 was not being done when creating a folder
        in an IMAP server.
   <LI> DATE tokens were not internally transformed to UTF-8, which made their
@@ -2586,10 +2589,7 @@ directed to the individual or group that did the adaptation.
 <P>
 
 <ADDRESS>
-   Alpine&nbsp;Development&nbsp;Team&nbsp;&lt;alpine-contact@u.washington.edu&gt;<BR>
-   Computing&nbsp;&amp;&nbsp;Communications<BR>
-   University&nbsp;of&nbsp;Washington<BR>
-   Seattle,&nbsp;WA&nbsp;98195<BR>
+   Eduardo Chappa &lt;chappa@gmx.com&gt;
 </ADDRESS>
 
 <P>

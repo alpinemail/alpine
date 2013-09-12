@@ -15,7 +15,7 @@ dnl  */
 
 AC_PREREQ([2.69])
 
-AC_REVISION([Rev:2 by chappa@washington.edu])
+AC_REVISION([Rev:3 by chappa@washington.edu])
 
 dnl Alpine Version Number is in $srcdir/VERSION
 AC_INIT([alpine],[m4_normalize(m4_include(VERSION))],[chappa@washington.edu])
@@ -669,13 +669,19 @@ else
         alpine_SSLTYPE="nopwd"
 	if test -d /etc/pki/tls ; then  
 	  alpine_SSLDIR="/etc/pki/tls"
-	  alpine_SSLCERTS="$alpine_SSLDIR/certs"
-	  alpine_SSLKEYS="$alpine_SSLDIR/private"
-	  alpine_SSLINCLUDE="/usr/include/openssl" 
-	  alpine_SSLLIB="/usr/lib"
 	else
 	  alpine_SSLDIR="/usr/share/ssl"
 	fi
+	alpine_SSLCERTS="$alpine_SSLDIR/certs"
+	alpine_SSLKEYS="$alpine_SSLDIR/private"
+	alpine_SSLINCLUDE="/usr/include/openssl" 
+	alpine_SSLLIB="/usr/lib"
+      elif test -f /etc/mandrake-release ; then
+	alpine_SSLDIR="/usr/lib/ssl"
+	alpine_SSLCERTS="$alpine_SSLDIR/certs" 
+	alpine_SSLKEYS="$alpine_SSLDIR/private"
+	alpine_SSLINCLUDE="/usr/include/openssl" 
+	alpine_SSLLIB="/usr/lib"
       elif test -f /etc/SuSE-release ; then
         alpine_SSLTYPE="nopwd"
         alpine_SSLDIR="/etc/ssl"
@@ -689,6 +695,14 @@ else
         alpine_SSLCERTS="/usr/share/certs"
 	alpine_SSLINCLUDE="/usr/include/openssl"
 	alpine_SSLLIB="/usr/lib"
+      elif test -f /etc/debian_release -o -f /etc/debian_version ; then
+        if test !-d /etc/osso-af-init ; then
+	   alpine_SSLDIR="/etc/ssl"
+	   alpine_SSLCERTS="$alpine_SSLDIR/certs"
+	   alpine_SSLKEYS="$alpine_SSLDIR/private"
+	   alpine_SSLINCLUDE="/usr/include/openssl" 
+	   alpine_SSLLIB="/usr/lib"
+        fi
       else
         alpine_SSLTYPE="nopwd"
         alpine_SSLDIR="/usr"
@@ -711,14 +725,49 @@ else
 	alpine_SSLINCLUDE="/usr/include/openssl"
       fi
       ;;
+    *-*-netbsd*)
+	alpine_SSLDIR="/etc/openssl"
+	alpine_SSLCERTS="$alpine_SSLDIR/certs"
+	alpine_SSLKEYS="$alpine_SSLDIR/private"
+	alpine_SSLINCLUDE="/usr/include/openssl"
+	alpine_SSLLIB="/usr/lib"
+      ;;
+    *-*-dragonfly*)
+	alpine_SSLDIR="/etc/openssl"
+	alpine_SSLCERTS="$alpine_SSLDIR/certs"
+	alpine_SSLKEYS="$alpine_SSLDIR/private"
+	alpine_SSLINCLUDE="/usr/include/openssl"
+	alpine_SSLLIB="/usr/lib"
+      ;;
     *-openbsd*)
-      alpine_SSLTYPE="nopwd"
-      alpine_SSLDIR="/usr"
-      alpine_SSLCERTS="/etc/ssl/certs"
+	alpine_SSLTYPE="nopwd"
+	alpine_SSLDIR="/usr"
+	alpine_SSLCERTS="/etc/ssl/certs"
+      ;;
+    *-*-freebsd*)
+	alpine_SSLDIR="/etc/ssl"
+	alpine_SSLCERTS="$alpine_SSLDIR/certs"
+	alpine_SSLKEYS="$alpine_SSLDIR/private"
+	alpine_SSLINCLUDE="/usr/include/openssl" 
+	alpine_SSLLIB="/usr/lib"
+      ;;
+    *-*-openbsd*)
+	alpine_SSLDIR="/etc/ssl"
+	alpine_SSLINCLUDE="/usr/include/openssl"
+	alpine_SSLLIB="/usr/lib"
+	alpine_SSLCERTS="/etc/ssl" 
+	alpine_SSLKEYS="/etc/ssl/private"
+      ;;
+    *-*-cygwin)
+	alpine_SSLDIR="/usr/ssl"
+	alpine_SSLCERTS="$alpine_SSLDIR/certs" 
+	alpine_SSLKEYS="$alpine_SSLDIR/certs"
+	alpine_SSLINCLUDE="/usr/include/openssl" 
+	alpine_SSLLIB="/usr/lib"
       ;;
     *-sco-sysv* | *-sysv*UnixWare | *-sysv*OpenUNIX)
-      alpine_SSLTYPE="sco.nopwd"
-      alpine_SSLDIR="/usr/local/ssl"
+	alpine_SSLTYPE="sco.nopwd"
+	alpine_SSLDIR="/usr/local/ssl"
       ;;
     *-*-solaris*)
       if test -d /usr/sfw/include/openssl ; then
@@ -744,6 +793,8 @@ else
     [
       if test "x$withval" != "xno" ; then
 	alpine_SSLDIR=$withval
+	alpine_SSLINCLUDE=$alpine_SSLDIR/include
+	alpine_SSLLIB=$alpine_SSLDIR/lib
       fi
     ])
 
@@ -937,11 +988,6 @@ case "$host" in
       systype="LMD"
       alpine_c_client_target="lmd"
       alpine_PAM="yes"
-      alpine_SSLDIR="/usr/lib/ssl"
-      alpine_SSLCERTS="$alpine_SSLDIR/certs" 
-      alpine_SSLKEYS="$alpine_SSLDIR/private"
-      alpine_SSLINCLUDE="/usr/include/openssl" 
-      alpine_SSLLIB="/usr/lib"
     elif test -f /etc/redhat-release -o -f /etc/redhat_version ; then
       systype="LRH"
       alpine_PAM="yes"
@@ -949,11 +995,6 @@ case "$host" in
 	alpine_c_client_target="lr5"
       else
 	alpine_c_client_target="lrh"
-	alpine_SSLDIR="/usr/share/ssl"
-	alpine_SSLCERTS="$alpine_SSLDIR/certs"
-	alpine_SSLKEYS="$alpine_SSLDIR/private"
-	alpine_SSLINCLUDE="/usr/include/openssl"
-	alpine_SSLLIB="/usr/lib"
       fi
     elif test -f /etc/debian_release -o -f /etc/debian_version ; then
       if test -d /etc/osso-af-init ; then
@@ -963,11 +1004,6 @@ case "$host" in
         systype="DEB"
         alpine_c_client_target="ldb"
 	alpine_PAM="yes"
-	alpine_SSLDIR="/etc/ssl"
-	alpine_SSLCERTS="$alpine_SSLDIR/certs"
-	alpine_SSLKEYS="$alpine_SSLDIR/private"
-	alpine_SSLINCLUDE="/usr/include/openssl" 
-	alpine_SSLLIB="/usr/lib"
       fi
     elif test -f /etc/SuSE-release ; then
       systype="LSU"
@@ -1070,22 +1106,12 @@ case "$host" in
     alpine_path_delim="/"
     alpine_mode_readonly="(0600)"
     alpine_c_client_target="neb"
-    alpine_SSLDIR="/etc/openssl"
-    alpine_SSLCERTS="$alpine_SSLDIR/certs"
-    alpine_SSLKEYS="$alpine_SSLDIR/private"
-    alpine_SSLINCLUDE="/usr/include/openssl"
-    alpine_SSLLIB="/usr/lib"
     ;;
   *-*-dragonfly*)
     systype="DFB"
     alpine_path_delim="/"
     alpine_mode_readonly="(0600)"
     alpine_c_client_target="neb"
-    alpine_SSLDIR="/etc/openssl"
-    alpine_SSLCERTS="$alpine_SSLDIR/certs"
-    alpine_SSLKEYS="$alpine_SSLDIR/private"
-    alpine_SSLINCLUDE="/usr/include/openssl"
-    alpine_SSLLIB="/usr/lib"
     ;;
   *-*-bsdi*)
     systype="BSI"
@@ -1098,11 +1124,6 @@ case "$host" in
     alpine_path_delim="/"
     alpine_mode_readonly="(0600)"
     alpine_c_client_target="bsf"
-    alpine_SSLDIR="/etc/ssl"
-    alpine_SSLCERTS="$alpine_SSLDIR/certs"
-    alpine_SSLKEYS="$alpine_SSLDIR/private"
-    alpine_SSLINCLUDE="/usr/include/openssl" 
-    alpine_SSLLIB="/usr/lib"
     LIBS="$LIBS $LIBINTL"
     ;;
   *-*-openbsd*)
@@ -1110,11 +1131,6 @@ case "$host" in
     alpine_path_delim="/"
     alpine_mode_readonly="(0600)"
     alpine_c_client_target="bso"
-    alpine_SSLDIR="/etc/ssl"
-    alpine_SSLINCLUDE="/usr/include/openssl"
-    alpine_SSLLIB="/usr/lib"
-    alpine_SSLCERTS="/etc/ssl" 
-    alpine_SSLKEYS="/etc/ssl/private"
     LIBS="$LIBS $LIBINTL"
     ;;
   *-*-aix5*)
@@ -1152,11 +1168,6 @@ case "$host" in
     alpine_path_delim="/"
     alpine_mode_readonly="(S_IREAD | S_IWRITE)"
     alpine_c_client_target="cyg"
-    alpine_SSLDIR="/usr/ssl"
-    alpine_SSLCERTS="$alpine_SSLDIR/certs" 
-    alpine_SSLKEYS="$alpine_SSLDIR/certs"
-    alpine_SSLINCLUDE="/usr/include/openssl" 
-    alpine_SSLLIB="/usr/lib"
     LIBS="$LIBS $LIBINTL"
     ;;
   windows* | *-*-pw32*)
@@ -1246,6 +1257,54 @@ case $alpine_termdata in
     ;;
 esac
 
+dnl is -ldl present? if so, add it
+AC_SEARCH_LIBS([dlopen], [dl dld],, [ alpine_DL="none" ])
+if test "x$alpine_DL" = "xnone" ; then
+    AC_MSG_ERROR([No library containing dlopen found])
+    exit 1	
+fi
+
+dnl Crypto support is needed 
+if test "x$alpine_SSLTYPE" != "xnone" ; then
+  AC_SEARCH_LIBS(SSLeay,crypto,, [ alpine_CRYPTO="none" ])
+  if test "x$alpine_CRYPTO" = "xnone" ; then
+     AC_MSG_ERROR(crypto library NOT found)
+     exit 1
+  fi
+fi
+
+dnl provide SSL support?
+if test "x$alpine_SSLTYPE" != "xnone" ; then
+   AC_SEARCH_LIBS(SSL_library_init,ssl,,[ alpine_SSLTYPE="none" ])
+
+  if test "x$alpine_SSLTYPE" = "xnone" ; then
+     AC_MSG_ERROR(No library containing SSL_library_init found in your path)
+     exit 1
+  fi
+
+  AC_MSG_CHECKING([Openssl library version >= 1.0.0c])
+  AC_RUN_IFELSE(
+	[AC_LANG_SOURCE([[
+#include <stdio.h>
+#include <stdlib.h>
+#include <openssl/ssl.h>
+int main(void) {
+
+	if (OPENSSL_VERSION_NUMBER >= 0x1000003f)
+		exit(0);
+
+	exit(2);
+}
+	]])],
+	[ AC_MSG_RESULT(yes) ],
+	[ alpine_SSLTYPE="none" ])
+
+    if test "x$alpine_SSLTYPE" = "xnone" ; then
+	AC_MSG_ERROR(Install openssl version >= 1.0.0c)
+	exit 1
+    fi
+fi
+
 dnl provide LDAP support?
 if test "$alpine_with_ldap" = "yes" ; then
   alpine_has_ldap=
@@ -1274,7 +1333,7 @@ if test "$alpine_with_ldap" = "yes" ; then
     AC_RUN_IFELSE(
 	[AC_LANG_SOURCE([[
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
 #include <ldap.h>
 int main(void) {
 
@@ -1300,61 +1359,6 @@ int main(void) {
 
   else
     AC_MSG_NOTICE([Cannot find LDAP functions!  Excluding LDAP support.])
-  fi
-fi
-
-dnl provide SSL support?
-if test "x$alpine_SSLTYPE" != "xnone" ; then
-  AC_SEARCH_LIBS(SSL_library_init,ssl,
-    [
-      LIBS="$LIBS -lssl"
-
-     AC_MSG_CHECKING([Openssl library version >= 1.0.0c])
-     AC_RUN_IFELSE(
-	[AC_LANG_SOURCE([[
-#include <stdio.h>
-#include <openssl/ssl.h>
-int main(void) {
-
-	if (OPENSSL_VERSION_NUMBER >= 0x1000003f)
-		exit(0);
-
-	exit(2);
-}
-	]])],
-	[
-		AC_MSG_RESULT(yes)
-	],
-	[
-		AC_MSG_ERROR(Install openssl version >= 1.0.0c)
-		exit 1
-	],
-	[
-		AC_MSG_WARN([cross compiling: not checking])
-	]
-    )
-    ],
-    [alpine_SSLTYPE="none"])
-  if test "x$alpine_SSLTYPE" = "xnone" ; then
-    AC_MSG_NOTICE([OpenSSL libraries NOT found])
-  else
-    AC_MSG_NOTICE([OpenSSL libraries FOUND])
-  fi
-fi
-
-dnl Crypto support is needed 
-if test "x$alpine_SSLTYPE" != "xnone" ; then
-  AC_SEARCH_LIBS(SSLeay,crypto,
-    [
-      LIBS="$LIBS -lcrypto"
-    ],
-    [
-      alpine_CRYPTO = "none"
-    ])
-  if test "x$alpine_CRYPTO" = "xnone" ; then
-    AC_MSG_ERROR(crypto library NOT found)
-  else
-    AC_MSG_NOTICE([crypto library found])
   fi
 fi
 
@@ -1461,7 +1465,7 @@ TCL_VERSIONS="${TCL_VERSIONS_DOT} ${TCL_VERSIONS_NODOT} tcl"
 fi
 
 dnl Local or supplied regex?
-if test x$alpine_REGEX != "xyes" ; then
+if test "x$alpine_REGEX" != "xyes" ; then
   AC_SEARCH_LIBS([regcomp],posix regexp regex re,,
     [
       if test x$alpine_REGEX = "xno" ; then
@@ -1471,7 +1475,7 @@ if test x$alpine_REGEX != "xyes" ; then
       fi
     ])
 fi
-if test x$alpine_REGEX != "xyes" ; then
+if test "x$alpine_REGEX" != "xyes" ; then
   AC_CHECK_HEADER([regex.h],,
     [
       if test x$alpine_REGEX = "xno" ; then
@@ -1482,7 +1486,7 @@ if test x$alpine_REGEX != "xyes" ; then
     ])
 fi
 AC_DEFINE(HAVE_REGEX_H,1,[Regular expression header file exists])
-if test x$alpine_REGEX = "xyes" ; then
+if test "x$alpine_REGEX" = "xyes" ; then
   CPPFLAGS="$CPPFLAGS -I${top_builddir}/regex"
   LDFLAGS="$LDFLAGS -L${top_builddir}/regex -lregex"
   REGEX_BUILD=regex
@@ -1753,6 +1757,8 @@ else
     certdir="$alpine_SSLCERTS"
   elif test -n "$alpine_SSLDIR" -a -d "${alpine_SSLDIR}/certs" ; then
     certdir="${alpine_SSLDIR}/certs"
+  elif test -n "$alpine_SSLDIR" -a -d "${alpine_SSLDIR}/ssl/certs" ; then
+    certdir="${alpine_SSLDIR}/ssl/certs"
   else
     AC_MSG_NOTICE([SSL Problem: certificate directory not found])
   fi

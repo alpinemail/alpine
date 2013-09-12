@@ -448,7 +448,7 @@
 #define PACKAGE "alpine"
 
 /* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT "alpine-contact@u.washington.edu"
+#define PACKAGE_BUGREPORT "chappa@gmx.com"
 
 /* Define to the full name of this package. */
 #define PACKAGE_NAME "alpine"

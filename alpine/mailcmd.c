@@ -2370,17 +2370,18 @@ cmd_save(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap, int aopt, CmdW
 
     dprint((4, "\n - saving message -\n"));
 
+    if(MCMD_ISAGG(aopt) && !pseudo_selected(stream, msgmap))
+      return rv;
+
     state->ugly_consider_advancing_bit = 0;
     if(F_OFF(F_SAVE_PARTIAL_WO_CONFIRM, state)
        && msgno_any_deletedparts(stream, msgmap)
        && want_to(_("Saved copy will NOT include entire message!  Continue"),
 		  'y', 'n', NO_HELP, WT_FLUSH_IN | WT_SEQ_SENSITIVE) != 'y'){
+	restore_selected(msgmap);
 	cmd_cancelled("Save message");
 	return rv;
     }
-
-    if(MCMD_ISAGG(aopt) && !pseudo_selected(stream, msgmap))
-      return rv;
 
     raw = mn_m2raw(msgmap, mn_get_cur(msgmap));
 

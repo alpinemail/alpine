@@ -1955,7 +1955,7 @@ BOOL APIENTRY DllMain(
 	fprintf(ms_global->dfd, "pmapi32.dll for Alpine Version 2.11r\n");
 	fprintf(ms_global->dfd, " Build date: %s\r\n", datestamp);
 	fprintf(ms_global->dfd,
-		" please report all bugs to alpine-contact@u.washington.edu\r\n");
+		" please report all bugs to chappa@gmx.com\r\n");
 	if(tm_now)
 	  fprintf(ms_global->dfd, 
 		  "Created: %2.2d:%2.2d:%2.2d %d/%d/%d\r\n",

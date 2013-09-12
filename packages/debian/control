@@ -1,7 +1,7 @@
 Source: alpine
 Section: non-free/mail
 Priority: optional
-Maintainer: Alpine Contact <alpine-contact@u.washington.edu>
+Maintainer: Eduardo Chappa <chappa@gmx.com>
 Standards-Version: 3.6.1.0
 Build-Depends: libncurses-dev | libncurses5-dev, libldap-dev | libldap2-dev, libssl-dev, libpam-dev | libpam0g-dev
 
