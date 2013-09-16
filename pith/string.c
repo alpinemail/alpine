@@ -752,11 +752,11 @@ void
 convert_string_to_utf8(char *buf, int bufsize)
 {
    char *s;
-   if(strucmp("UTF-8", ps_global->display_charmap)){
-      s = convert_to_utf8(buf, ps_global->display_charmap, 0);
-      strncpy(buf, s ? s : "", bufsize);
-      buf[sizeof(buf)-1] = '\0';
-      if(s) fs_give((void **)&s);
+   if(strucmp("UTF-8", ps_global->display_charmap) &&
+      (s = convert_to_utf8(buf, ps_global->display_charmap, 0)) != NULL){
+	strncpy(buf, s, bufsize);
+	buf[bufsize-1] = '\0';
+        fs_give((void **)&s);
    }
 }
 
