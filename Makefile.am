@@ -12,7 +12,7 @@
 #
 # ========================================================================
 
-EXTRA_DIST = config.rpath  VERSION README LICENSE
+EXTRA_DIST = config.rpath VERSION README LICENSE
 
 SUBDIRS = m4 po $(REGEX_BUILD) pith pico alpine $(WEB_PUBCOOKIE_BUILD) $(WEB_BUILD)
 

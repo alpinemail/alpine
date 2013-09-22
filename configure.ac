@@ -15,7 +15,7 @@ dnl  */
 
 AC_PREREQ([2.69])
 
-AC_REVISION([Rev:3 by chappa@washington.edu])
+AC_REVISION([Rev:4 by chappa@washington.edu])
 
 dnl Alpine Version Number is in $srcdir/VERSION
 AC_INIT([alpine],[m4_normalize(m4_include(VERSION))],[chappa@washington.edu])
@@ -1490,6 +1490,7 @@ if test "x$alpine_REGEX" = "xyes" ; then
   CPPFLAGS="$CPPFLAGS -I${top_builddir}/regex"
   LDFLAGS="$LDFLAGS -L${top_builddir}/regex -lregex"
   REGEX_BUILD=regex
+  REGEX_MAKEFILE="$REGEX_BUILD/Makefile"
 fi
 
 if test "x$with_pthread" != "xno" ; then
@@ -1874,7 +1875,7 @@ AC_SUBST([WEB_PUBCOOKIE_LINK])
 AC_SUBST([AM_CFLAGS])
 AC_SUBST([AM_LDFLAGS])
 
-AC_CONFIG_FILES([m4/Makefile po/Makefile.in regex/Makefile \
+AC_CONFIG_FILES([m4/Makefile po/Makefile.in $REGEX_MAKEFILE \
 	  pith/osdep/Makefile pith/charconv/Makefile pith/Makefile \
 	  pico/osdep/Makefile pico/Makefile \
 	  alpine/osdep/Makefile alpine/Makefile \

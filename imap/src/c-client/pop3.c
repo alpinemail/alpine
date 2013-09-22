@@ -567,8 +567,7 @@ long pop3_auth (MAILSTREAM *stream,NETMBX *mb,char *pwd,char *usr)
     LOCAL->netstream->dtb = ssld;
     if (!(LOCAL->netstream->stream =
 	  (*stls) (LOCAL->netstream->stream,mb->host,
-		   (mb->tlssslv23 ? NIL : NET_TLSCLIENT) |
-		   (mb->novalidate ? NET_NOVALIDATECERT : NIL)))) {
+		   SSL_METHOD(*mb) | (mb->novalidate ? NET_NOVALIDATECERT : NIL)))) {
 				/* drat, drop this connection */
       if (LOCAL->netstream) net_close (LOCAL->netstream);
       LOCAL->netstream= NIL;

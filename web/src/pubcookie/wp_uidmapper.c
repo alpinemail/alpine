@@ -10,8 +10,11 @@
  * ========================================================================
  */
 
+#define _GNU_SOURCE
 #include <system.h>
 #include <general.h>
+#include <sys/stat.h>
+#include <sys/socket.h>
 
 #include "id_table.h"
 #include "wp_uidmapper_lib.h"
@@ -137,7 +140,7 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
   atexit(socketname_cleanup);
-  chmod(ssock,sockmode);
+  fchmod(ssock,sockmode);
 
 #ifndef DGRAM_MODE
   if(listen(ssock,8)) {

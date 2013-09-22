@@ -814,6 +814,18 @@ long mail_valid_net_parse_work (char *name,NETMBX *mb,char *service)
 	  mb->trysslflag = mailssldriver? T : NIL;
 	else if (mailssldriver && !compare_cstring (s,"ssl") && !mb->tlsflag)
 	  mb->sslflag = mb->notlsflag = T;
+	else if (!compare_cstring(s, "tls1") 
+			&& !mb->tls1_1flag && !mb->tls1_2flag && !mb->dtls1flag)
+	  mb->sslflag = mb->notlsflag = mb->tls1_1flag = T;
+	else if (!compare_cstring(s, "tls1_1") 
+			&& !mb->tls1flag && !mb->tls1_2flag && !mb->dtls1flag)
+	  mb->sslflag = mb->notlsflag = mb->tls1_1flag = T;
+	else if (!compare_cstring(s, "tls1_2") 
+			&& !mb->tls1flag && !mb->tls1_1flag && !mb->dtls1flag)
+	  mb->sslflag = mb->notlsflag = mb->tls1_2flag = T;
+	else if (!compare_cstring(s, "dtls1")
+			&& !mb->tls1flag && !mb->tls1_1flag && !mb->tls1_2flag)
+	  mb->sslflag = mb->notlsflag = mb->dtls1flag = T;
 	else if (mailssldriver && !compare_cstring (s,"novalidate-cert"))
 	  mb->novalidate = T;
 				/* hack for compatibility with the past */
@@ -1222,6 +1234,9 @@ MAILSTREAM *mail_open (MAILSTREAM *stream,char *name,long options)
 	if (mb.tlsflag) strcat (tmp,"/tls");
 	if (mb.notlsflag) strcat (tmp,"/notls");
 	if (mb.sslflag) strcat (tmp,"/ssl");
+	if (mb.tls1_1flag) strcat (tmp,"/tls1_1");
+	if (mb.tls1_2flag) strcat (tmp,"/tls1_2");
+	if (mb.dtls1flag) strcat (tmp,"/dtls1");
 	if (mb.trysslflag) strcat (tmp,"/tryssl");
 	if (mb.novalidate) strcat (tmp,"/novalidate-cert");
 	strcat (tmp,"/pop3/loser}");

@@ -1719,8 +1719,7 @@ SENDSTREAM *nntp_open_full (NETDRIVER *dv,char **hostlist,char *service,
 				/* negotiate TLS */
     if (stream->netstream->stream =
 	(*stls) (stream->netstream->stream,mb.host,
-		 (mb.tlssslv23 ? NIL : NET_TLSCLIENT) |
-		 (mb.novalidate ? NET_NOVALIDATECERT:NIL)))
+		 SSL_METHOD(mb) | (mb.novalidate ? NET_NOVALIDATECERT:NIL)))
       extok = nntp_extensions (stream,(mb.secflag ? AU_SECURE : NIL) |
 			       (mb.authuser[0] ? AU_AUTHUSER : NIL));
     else {

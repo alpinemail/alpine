@@ -210,8 +210,7 @@ SENDSTREAM *smtp_open_full (NETDRIVER *dv,char **hostlist,char *service,
 				/* TLS started, negotiate it */
 	    if (!(stream->netstream->stream = (*stls)
 		  (stream->netstream->stream,mb.host,
-		   (mb.tlssslv23 ? NIL : NET_TLSCLIENT) |
-		   (mb.novalidate ? NET_NOVALIDATECERT:NIL)))){
+		   SSL_METHOD(mb) | (mb.novalidate ? NET_NOVALIDATECERT:NIL)))){
 				/* TLS negotiation failed after STARTTLS */
 	      sprintf (tmp,"Unable to negotiate TLS with this server: %.80s",
 		       mb.host);

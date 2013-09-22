@@ -179,6 +179,14 @@ Additions include:
 <P>
 
 <UL>
+  <LI> Add /tls1, /tls1_1, /tls1_2 and /dtls1 to the definition of a 
+       server to use different ways to connect using ssl, for example 
+       {server.com/tls1} will attempt to connect to server.com at the ssl 
+       imap port (port 993) and establish a connection using TLSv1. These 
+       flags can be used in conjunction with the /ssl flag, the ssl flag 
+       is redundant. Conversely, however, the /ssl flag does not imply any 
+       of these flags; the /ssl flag means SSLv3 or, if not available, 
+       SSLv2 in the SSL port.
   <LI> Experimental: Write the content-type of a message in lowercase, as some
        non-compliant servers do not understand uppercase content-type, such as
        those of GMX.de.
@@ -194,6 +202,7 @@ Additions include:
 <P>
 Bugs that have been addressed include:
 <UL>
+  <LI> WebAlpine: add _GNU_SOURCE to make pubcookie build.
   <LI> Save command did not warn of existence of a message with a deleted 
        attachment in an aggregate save, unless cursor was positioned on a message 
        with a deleted attachment. Reported by Florian Herzig.

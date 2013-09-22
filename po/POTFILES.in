@@ -90,7 +90,6 @@ pico/buffer.c
 pico/mswinver.c
 pico/word.c
 pico/bind.c
-pico/msmem.c
 pico/file.c
 pico/random.c
 pico/main.c
