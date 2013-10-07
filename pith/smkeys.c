@@ -273,14 +273,17 @@ get_x509_subject_email(X509 *x)
  * address not only in the email address field, but also in an
  * X509v3 extension field, Subject Altenative Name.
  */
-char *
+char **
 get_x509_subject_email(X509 *x)
 {
-    char *result = NULL;
+    char **result = NULL;
+    int i, n;
     STACK_OF(OPENSSL_STRING) *emails = X509_get1_email(x);
-    if (sk_OPENSSL_STRING_num(emails) > 0) {
-	/* take the first one on the stack */
-	result = cpystr(sk_OPENSSL_STRING_value(emails, 0));
+    if ((n = sk_OPENSSL_STRING_num(emails)) > 0) {
+	result = fs_get((n+1)*sizeof(char *));
+	for(i = 0; i < n; i++)
+	  result[i] = cpystr(sk_OPENSSL_STRING_value(emails, i));
+	result[i] = NULL;
     }
     X509_email_free(emails);
     return result;

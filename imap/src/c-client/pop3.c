@@ -423,6 +423,10 @@ MAILSTREAM *pop3_open (MAILSTREAM *stream)
 	       net_port (LOCAL->netstream));
       if (mb.tlsflag) strcat (tmp,"/tls");
       if (mb.tlssslv23) strcat (tmp,"/tls-sslv23");
+      if (mb.tls1) strcat (tmp,"/tls1");
+      if (mb.tls1_1) strcat (tmp,"/tls1_1");
+      if (mb.tls1_2) strcat (tmp,"/tls1_1");
+      if (mb.dtls1) strcat (tmp,"/dtls1");
       if (mb.notlsflag) strcat (tmp,"/notls");
       if (mb.sslflag) strcat (tmp,"/ssl");
       if (mb.novalidate) strcat (tmp,"/novalidate-cert");
@@ -567,7 +571,7 @@ long pop3_auth (MAILSTREAM *stream,NETMBX *mb,char *pwd,char *usr)
     LOCAL->netstream->dtb = ssld;
     if (!(LOCAL->netstream->stream =
 	  (*stls) (LOCAL->netstream->stream,mb->host,
-		   SSL_METHOD(*mb) | (mb->novalidate ? NET_NOVALIDATECERT : NIL)))) {
+		   SSL_MTHD(*mb) | (mb->novalidate ? NET_NOVALIDATECERT : NIL)))) {
 				/* drat, drop this connection */
       if (LOCAL->netstream) net_close (LOCAL->netstream);
       LOCAL->netstream= NIL;

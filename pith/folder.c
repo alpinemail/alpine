@@ -966,7 +966,8 @@ build_folder_list(MAILSTREAM **stream, CONTEXT_S *context, char *pat, char *cont
 	  ldata.stream = sp_stream_get(context->context, SP_SAME);
 
 	/* gotta open a new one? */
-	if(!ldata.stream){
+	if((F_OFF(F_CMBND_FOLDER_DISP, ps_global) 
+		|| context->update == LUU_INIT) && !ldata.stream){
 	    ldata.stream = mail_cmd_stream(context, &local_open);
 	    if(stream)
 	      *stream = ldata.stream;
@@ -978,6 +979,7 @@ build_folder_list(MAILSTREAM **stream, CONTEXT_S *context, char *pat, char *cont
 
 	if(!ldata.stream){
 	    context->use &= ~CNTXT_PARTFIND;	/* unset partial find bit */
+	    context->update = LUU_NOMORECHK;
 	    if(we_cancel)
 	      cancel_busy_cue(-1);
 
@@ -1021,6 +1023,7 @@ build_folder_list(MAILSTREAM **stream, CONTEXT_S *context, char *pat, char *cont
       set_read_predicted(0);
     }
 
+    context->update = LUU_INIT;
     if(context->dir && response.response.delim)
       context->dir->delim = response.response.delim;
 

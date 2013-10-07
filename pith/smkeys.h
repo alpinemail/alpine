@@ -48,7 +48,7 @@ X509_STORE    *get_ca_store(void);
 PERSONAL_CERT *get_personal_certs(char *d);
 X509          *get_cert_for(char *email);
 void           save_cert_for(char *email, X509 *cert);
-char          *get_x509_subject_email(X509 *x);
+char         **get_x509_subject_email(X509 *x);
 EVP_PKEY      *load_key(PERSONAL_CERT *pc, char *pass);
 CertList      *mem_to_certlist(char *contents);
 void           add_to_end_of_certlist(CertList **cl, char *name, X509 *cert);

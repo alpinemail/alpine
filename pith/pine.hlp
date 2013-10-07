@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 31 2013-09-15 20:38:27
+Alpine Commit 33 2013-10-05 22:46:52
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -179,6 +179,13 @@ Additions include:
 <P>
 
 <UL>
+  <LI> Alpine does not attempt to automatically reopen a collection that 
+       was not opened due to cancellation by the user. Instead, the user
+       must try to open it explicitly.
+  <LI> Alpine searches for a certificate that matches an email address in
+       all addresses in a certificate (instead of just the first one) but 
+       when it tries to unlock the certificate, it asks for the password 
+       for the first email address in that certificate.
   <LI> Add /tls1, /tls1_1, /tls1_2 and /dtls1 to the definition of a 
        server to use different ways to connect using ssl, for example 
        {server.com/tls1} will attempt to connect to server.com at the ssl 
@@ -19831,6 +19838,59 @@ Alpine must be linked with an SSL library for this option to be operational.
 <P>
 
 </DD>
+
+<DT>TLS1</DT>
+<DD>
+This parameter indicates that the connection to the server will be made
+over the SSL port, but using the TLSv1 protocol, instead of the usual
+SSLv3 or SSLv2 protocols.
+Alpine must be linked with an SSL library for this option to be operational.
+
+<P>
+<CENTER><SAMP>/tls1</SAMP></CENTER>
+<P>
+
+</DD>
+
+<DT>DTLS1</DT>
+<DD>
+This parameter indicates that the connection to the server will be made
+over the SSL port, but using the DTLSv1 protocol, instead of the usual
+SSLv3 or SSLv2 protocols.
+Alpine must be linked with an SSL library for this option to be operational.
+
+<P>
+<CENTER><SAMP>/dtls1</SAMP></CENTER>
+<P>
+
+</DD>
+
+<DT>TLS1_1</DT>
+<DD>
+This parameter indicates that the connection to the server will be made
+over the SSL port, but using the TLSv1.1 protocol, instead of the usual
+SSLv3 or SSLv2 protocols.
+Alpine must be linked with an SSL library for this option to be operational.
+
+<P>
+<CENTER><SAMP>/tls1_1</SAMP></CENTER>
+<P>
+
+</DD>
+
+<DT>TLS1_2</DT>
+<DD>
+This parameter indicates that the connection to the server will be made
+over the SSL port, but using the TLSv1.2 protocol, instead of the usual
+SSLv3 or SSLv2 protocols.
+Alpine must be linked with an SSL library for this option to be operational.
+
+<P>
+<CENTER><SAMP>/tls1_2</SAMP></CENTER>
+<P>
+
+</DD>
+
 
 <DT>NoValidate-Cert</DT>
 <DD>Do not validate certificates (for TLS or SSL connections) from the server.

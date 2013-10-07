@@ -815,17 +815,19 @@ long mail_valid_net_parse_work (char *name,NETMBX *mb,char *service)
 	else if (mailssldriver && !compare_cstring (s,"ssl") && !mb->tlsflag)
 	  mb->sslflag = mb->notlsflag = T;
 	else if (!compare_cstring(s, "tls1") 
-			&& !mb->tls1_1flag && !mb->tls1_2flag && !mb->dtls1flag)
-	  mb->sslflag = mb->notlsflag = mb->tls1_1flag = T;
+			&& !mb->tls1_1 && !mb->tls1_2 && !mb->dtls1)
+	  mb->sslflag = mb->notlsflag = mb->tls1 = T;
+#ifdef TLSV1_2
 	else if (!compare_cstring(s, "tls1_1") 
-			&& !mb->tls1flag && !mb->tls1_2flag && !mb->dtls1flag)
-	  mb->sslflag = mb->notlsflag = mb->tls1_1flag = T;
+			&& !mb->tls1 && !mb->tls1_2 && !mb->dtls1)
+	  mb->sslflag = mb->notlsflag = mb->tls1_1 = T;
 	else if (!compare_cstring(s, "tls1_2") 
-			&& !mb->tls1flag && !mb->tls1_1flag && !mb->dtls1flag)
-	  mb->sslflag = mb->notlsflag = mb->tls1_2flag = T;
+			&& !mb->tls1 && !mb->tls1_1 && !mb->dtls1)
+	  mb->sslflag = mb->notlsflag = mb->tls1_2 = T;
+#endif
 	else if (!compare_cstring(s, "dtls1")
-			&& !mb->tls1flag && !mb->tls1_1flag && !mb->tls1_2flag)
-	  mb->sslflag = mb->notlsflag = mb->dtls1flag = T;
+			&& !mb->tls1 && !mb->tls1_1 && !mb->tls1_2)
+	  mb->sslflag = mb->notlsflag = mb->dtls1 = T;
 	else if (mailssldriver && !compare_cstring (s,"novalidate-cert"))
 	  mb->novalidate = T;
 				/* hack for compatibility with the past */
@@ -1234,9 +1236,10 @@ MAILSTREAM *mail_open (MAILSTREAM *stream,char *name,long options)
 	if (mb.tlsflag) strcat (tmp,"/tls");
 	if (mb.notlsflag) strcat (tmp,"/notls");
 	if (mb.sslflag) strcat (tmp,"/ssl");
-	if (mb.tls1_1flag) strcat (tmp,"/tls1_1");
-	if (mb.tls1_2flag) strcat (tmp,"/tls1_2");
-	if (mb.dtls1flag) strcat (tmp,"/dtls1");
+	if (mb.tls1) strcat (tmp,"/tls1");
+	if (mb.tls1_1) strcat (tmp,"/tls1_1");
+	if (mb.tls1_2) strcat (tmp,"/tls1_2");
+	if (mb.dtls1) strcat (tmp,"/dtls1");
 	if (mb.trysslflag) strcat (tmp,"/tryssl");
 	if (mb.novalidate) strcat (tmp,"/novalidate-cert");
 	strcat (tmp,"/pop3/loser}");
@@ -6170,6 +6173,10 @@ NETSTREAM *net_open (NETMBX *mb,NETDRIVER *dv,unsigned long port,
   NETSTREAM *stream = NIL;
   char tmp[MAILTMPLEN];
   unsigned long flags = mb->novalidate ? NET_NOVALIDATECERT : 0;
+  flags |= mb->tls1 || mb->tlsflag ? NET_TRYTLS1   : 0;
+  flags |= mb->tls1_1 ? NET_TRYTLS1_1 : 0;
+  flags |= mb->tls1_2 ? NET_TRYTLS1_2 : 0;
+  flags |= mb->dtls1  ? NET_TRYDTLS1  : 0;
   if (strlen (mb->host) >= NETMAXHOST) {
     sprintf (tmp,"Invalid host name: %.80s",mb->host);
     MM_LOG (tmp,ERROR);

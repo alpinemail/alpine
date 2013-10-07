@@ -1736,7 +1736,7 @@ folder_list_text(struct pine *ps, FPROC_S *fp, gf_io_t pc, HANDLE_S **handlesp, 
 	    color_write_for_folder(pc, CLR_NORMAL);
 	}
 
-	if(shown){
+	if(shown && LUU_YES(c_list->update)){
 	    /* Run thru list formatting as necessary */
 	    if((ftotal = folder_total(FOLDERS(c_list))) != 0){
 		int use_color;
@@ -2807,6 +2807,18 @@ folder_lister_choice(SCROLL_S *sparms)
     if(cntxt){
 	
 	FPROC(sparms)->fs->context = cntxt;
+
+	if(!LUU_YES(cntxt->update)){
+	  cntxt->update = LUU_INIT;
+	  refresh_folder_list(cntxt, FPROC(sparms)->fs->no_dirs, TRUE, 
+						FPROC(sparms)->fs->cache_streamp);
+	  if(!LUU_YES(cntxt->update))
+	    q_status_message(SM_ORDER | SM_DING, 3, 3, _("Collection not updated"));
+	  else
+	    rv = 1;
+
+	  return rv;
+	}
 
 	if(cntxt->dir->status & CNTXT_NOFIND){
 	    rv = 1;		/* leave scrolltool to rebuild screen */

@@ -15,7 +15,7 @@ dnl  */
 
 AC_PREREQ([2.69])
 
-AC_REVISION([Rev:4 by chappa@washington.edu])
+AC_REVISION([Rev:5 by chappa@washington.edu])
 
 dnl Alpine Version Number is in $srcdir/VERSION
 AC_INIT([alpine],[m4_normalize(m4_include(VERSION))],[chappa@washington.edu])
@@ -696,7 +696,7 @@ else
 	alpine_SSLINCLUDE="/usr/include/openssl"
 	alpine_SSLLIB="/usr/lib"
       elif test -f /etc/debian_release -o -f /etc/debian_version ; then
-        if test !-d /etc/osso-af-init ; then
+        if test ! -d /etc/osso-af-init ; then
 	   alpine_SSLDIR="/etc/ssl"
 	   alpine_SSLCERTS="$alpine_SSLDIR/certs"
 	   alpine_SSLKEYS="$alpine_SSLDIR/private"
@@ -1303,6 +1303,10 @@ int main(void) {
 	AC_MSG_ERROR(Install openssl version >= 1.0.0c)
 	exit 1
     fi
+    AC_SEARCH_LIBS(TLSv1_2_client_method,ssl,
+	[ alpine_c_client_cflags="$alpine_c_client_cflags -DTLSV1_2"
+	  AC_DEFINE([SSL_SUPPORTS_TLSV1_2], [1], [SSL Supports TLSV1.2])
+	])
 fi
 
 dnl provide LDAP support?

@@ -1166,8 +1166,12 @@ load_private_key(PERSONAL_CERT *pcert)
 	      ps_global->smime->need_passphrase = 1;
 	    
 	    if(ps_global->smime){
-		if(ps_global->smime->passphrase_emailaddr)
-		  fs_give((void **) &ps_global->smime->passphrase_emailaddr);
+		if(ps_global->smime->passphrase_emailaddr){
+		  int i;
+		  for(i = 0; ps_global->smime->passphrase_emailaddr[i] != NULL; i++)
+		     fs_give((void **)&ps_global->smime->passphrase_emailaddr[i]);
+		  fs_give((void **) ps_global->smime->passphrase_emailaddr);
+		}
 
 		ps_global->smime->passphrase_emailaddr = get_x509_subject_email(pcert->cert);
 	    }
@@ -1213,7 +1217,8 @@ match_personal_cert_to_email(ADDRESS *a)
 {
     PERSONAL_CERT   *pcert = NULL;
     char	buf[MAXPATH];
-    char    	*email;
+    char    	**email;
+    int i, done;
 
     if(!a || !a->mailbox || !a->host)
       return NULL;
@@ -1230,12 +1235,17 @@ match_personal_cert_to_email(ADDRESS *a)
 	
 	    email = get_x509_subject_email(pcert->cert);
 
-	    if(email && strucmp(email,buf)==0){
-		fs_give((void**) &email);
-		break;
+	    done = 0;
+	    if(email != NULL){
+		for(i = 0; email[i] && strucmp(email[i], buf) != 0; i++);
+		if(email[i] != NULL) done++;
+		for(i = 0; email[i] != NULL; i++)
+		   fs_give((void **)&email[i]);
+		fs_give((void **)email);
 	    }
 
-	    fs_give((void**) &email);
+	    if(done > 0)
+	      break;
 	}
     }
     
@@ -1634,7 +1644,7 @@ do_signature_verify(PKCS7 *p7, BIO *in, BIO *out)
 
         if(signers)
             for(i=0; i<sk_X509_num(signers); i++){
-		char	*email;
+		char	**email;
                 X509	*x = sk_X509_value(signers,i);
 		X509	*cert;
 		
@@ -1644,13 +1654,16 @@ do_signature_verify(PKCS7 *p7, BIO *in, BIO *out)
     	    	email = get_x509_subject_email(x);
     	    	
 		if(email){
-		    cert = get_cert_for(email);
-		    if(cert)
-		      X509_free(cert);
-		    else
-    	    	      save_cert_for(email, x);
-
-		    fs_give((void**) &email);
+		    int i;
+		    for(i = 0; email[i] != NULL; i++){
+			cert = get_cert_for(email[i]);
+			if(cert)
+			  X509_free(cert);
+			else
+			  save_cert_for(email[i], x);
+			fs_give((void **) &email[i]);
+		    }
+		    fs_give((void **) email);
     	    	}
             }
 
@@ -2338,8 +2351,12 @@ static void
 free_smime_struct(SMIME_STUFF_S **smime)
 {
     if(smime && *smime){
-	if((*smime)->passphrase_emailaddr)
-	  fs_give((void **) &(*smime)->passphrase_emailaddr);
+	if((*smime)->passphrase_emailaddr){
+	  int i;
+	  for(i = 0; (*smime)->passphrase_emailaddr[i] != NULL; i++)
+	     fs_give((void **) &(*smime)->passphrase_emailaddr[i]);
+	  fs_give((void **) (*smime)->passphrase_emailaddr);
+	}
 
 	if((*smime)->publicpath)
 	  fs_give((void **) &(*smime)->publicpath);

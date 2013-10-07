@@ -8041,14 +8041,14 @@ get_supported_options(void)
     /*
      * Line count:
      *   Title + blank			= 2
-     *   SSL Title + SSL lines + blank	= 4
+     *   SSL Title + SSL lines + blank	= 5
      *   Auth title + blank		= 2
      *   Driver title + blank		= 2
      *   LDAP title + LDAP line 	= 2
      *   Disabled explanation + blank line = 4
      *   end				= 1
      */
-    cnt = 17;
+    cnt = 18;
     for(a = mail_lookup_auth(1); a; a = a->next)
       cnt++;
     for(d = (DRIVER *)mail_parameters(NIL, GET_DRIVERS, NIL);
@@ -8078,6 +8078,10 @@ get_supported_options(void)
       config[cnt] = cpystr(_("  TLS and SSL"));
     else
       config[cnt] = cpystr(_("  None (no TLS or SSL)"));
+#ifdef SSL_SUPPORTS_TLSV1_2
+    if(++cnt < alcnt)
+      config[cnt] = cpystr("  TLSv1.1, TLSv1.2, and DTLSv1");
+#endif
 #ifdef SMIME
     if(++cnt < alcnt)
       config[cnt] = cpystr("  S/MIME");

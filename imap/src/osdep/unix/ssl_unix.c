@@ -55,7 +55,7 @@ typedef struct ssl_stream {
 #include "sslio.h"
 
 /* Function prototypes */
-
+const SSL_METHOD *ssl_connect_mthd(int flag);
 static SSLSTREAM *ssl_start(TCPSTREAM *tstream,char *host,unsigned long flags);
 static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags);
 static int ssl_open_verify (int ok,X509_STORE_CTX *ctx);
@@ -98,8 +98,8 @@ void ssl_onceonlyinit (void)
     struct stat sbuf;
 				/* if system doesn't have /dev/urandom */
     if (stat ("/dev/urandom",&sbuf)) {
-      while ((fd = open (tmpnam (tmp),O_WRONLY|O_CREAT|O_EXCL,0600)) < 0)
-	sleep (1);
+      strcpy(tmp, "SSLXXXXXX");
+      while ((fd = mkstemp(tmp)) < 0) sleep (1);
       unlink (tmp);		/* don't need the file */
       fstat (fd,&sbuf);		/* get information about the file */
       close (fd);		/* flush descriptor */
@@ -143,7 +143,25 @@ SSLSTREAM *ssl_aopen (NETMBX *mb,char *service,char *usrbuf)
 {
   return NIL;			/* don't use this mechanism with SSL */
 }
-
+
+/* ssl_connect_mthd: returns a context pointer to the connection to
+ * a ssl server
+ */
+const SSL_METHOD *ssl_connect_mthd(int flag)
+{
+  if(flag & NET_TRYTLS1)
+   return TLSv1_client_method(); 
+#ifdef TLSV1_2
+  else if(flag & NET_TRYTLS1_1) 
+	return TLSv1_1_client_method();
+  else if(flag & NET_TRYTLS1_2) 
+	return TLSv1_2_client_method();
+#endif
+  else if(flag & NET_TRYDTLS1)
+	return DTLSv1_client_method();
+  else return SSLv23_client_method();
+}
+
 /* Start SSL/TLS negotiations
  * Accepts: open TCP stream of session
  *	    user's host name
@@ -219,9 +237,7 @@ static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags)
     (sslclientkey_t) mail_parameters (NIL,GET_SSLCLIENTKEY,NIL);
   if (ssl_last_error) fs_give ((void **) &ssl_last_error);
   ssl_last_host = host;
-  if (!(stream->context = SSL_CTX_new ((flags & NET_TLSCLIENT) ?
-				       TLSv1_client_method () :
-				       SSLv23_client_method ())))
+  if (!(stream->context = SSL_CTX_new (ssl_connect_mthd(flags))))
     return "SSL context failed";
   SSL_CTX_set_options (stream->context,0);
 				/* disable certificate validation? */

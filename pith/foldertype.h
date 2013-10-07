@@ -123,6 +123,7 @@ typedef struct context {
 	short		 i;			/* index into config list  */
     } var;
 
+    time_t	     update;			/* update state		   */
     unsigned short   use,			/* use flags (see below)   */
 		     d_line;			/* display line for labels */
     SELECTED_S       selected;

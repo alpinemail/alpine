@@ -662,10 +662,10 @@ typedef struct net_mailbox {
   unsigned int dbgflag : 1;	/* debug flag */
   unsigned int secflag : 1;	/* secure flag */
   unsigned int sslflag : 1;	/* SSL driver flag */
-  unsigned int tls1flag : 1;	/* Use TLSv1 */
-  unsigned int tls1_1flag : 1;	/* Use TLSv1.1 */
-  unsigned int tls1_2flag : 1;	/* Use TLSV1.2 */
-  unsigned int dtls1flag : 1;	/* Use DTLSv1 */
+  unsigned int tls1    : 1;	/* Use TLSv1 */
+  unsigned int tls1_1  : 1;	/* Use TLSv1.1 */
+  unsigned int tls1_2  : 1;	/* Use TLSV1.2 */
+  unsigned int dtls1   : 1;	/* Use DTLSv1 */
   unsigned int trysslflag : 1;	/* try SSL driver first flag */
   unsigned int novalidate : 1;	/* don't validate certificates */
   unsigned int tlsflag : 1;	/* TLS flag */
@@ -676,11 +676,11 @@ typedef struct net_mailbox {
   unsigned int tlssslv23 : 1;	/* force SSLv23 client method over TLS */
 } NETMBX;
 
-#define SSL_METHOD(M)  ((M).tlssslv23	 ? NIL 		\
-			: (M).tls1flag	 ? NET_TRYTLS1	\
-			: (M).tls1_1flag ? NET_TRYTLS1_1	\
-			: (M).tls1_2flag ? NET_TRYTLS1_2	\
-			: (M).dtls1flag	 ? NET_TRYDTLS1	\
+#define SSL_MTHD(M)  ((M).tlssslv23	? NIL		\
+			: (M).tls1	? NET_TRYTLS1	\
+			: (M).tls1_1	? NET_TRYTLS1_1	\
+			: (M).tls1_2	? NET_TRYTLS1_2	\
+			: (M).dtls1	? NET_TRYDTLS1	\
 			: NET_TLSCLIENT)
 
 

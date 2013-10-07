@@ -71,6 +71,10 @@ typedef struct nntp_local {
   unsigned int tlssslv23 : 1;	/* TLS using SSLv23 client method */
   unsigned int notlsflag : 1;	/* TLS not used in session */
   unsigned int sslflag : 1;	/* SSL session */
+  unsigned int tls1 : 1;	/* TLSv1 on SSL port */
+  unsigned int dtls1 : 1;	/* DTLSv1 on SSL port */
+  unsigned int tls1_1 : 1;	/* TLSv1_1 on SSL port */
+  unsigned int tls1_2 : 1;	/* TLSv1_2 on SSL port */
   unsigned int novalidate : 1;	/* certificate not validated */
   unsigned int xover : 1;	/* supports XOVER */
   unsigned int xhdr : 1;	/* supports XHDR */
@@ -663,6 +667,10 @@ MAILSTREAM *nntp_mopen (MAILSTREAM *stream)
     if (LOCAL->tlssslv23) mb.tlssslv23 = T;
     if (LOCAL->notlsflag) mb.notlsflag = T;
     if (LOCAL->sslflag) mb.sslflag = T;
+    if (LOCAL->tls1) mb.tls1 = T;
+    if (LOCAL->dtls1) mb.dtls1 = T;
+    if (LOCAL->tls1_1) mb.tls1_1 = T;
+    if (LOCAL->tls1_2) mb.tls1_2 = T;
     if (LOCAL->novalidate) mb.novalidate = T;
     if (LOCAL->nntpstream->loser) mb.loser = T;
     if (stream->secure) mb.secflag = T;
@@ -684,6 +692,10 @@ MAILSTREAM *nntp_mopen (MAILSTREAM *stream)
     if (mb.tlssslv23) strcat (tmp,"/tls-sslv23");
     if (mb.notlsflag) strcat (tmp,"/notls");
     if (mb.sslflag) strcat (tmp,"/ssl");
+    if (mb.tls1) strcat (tmp,"/tls1");
+    if (mb.tls1_1) strcat (tmp,"/tls1_1");
+    if (mb.tls1_2) strcat (tmp,"/tls1_2");
+    if (mb.dtls1) strcat (tmp,"/dtls1");
     if (mb.novalidate) strcat (tmp,"/novalidate-cert");
     if (mb.loser) strcat (tmp,"/loser");
     if (mb.secflag) strcat (tmp,"/secure");
@@ -1719,7 +1731,7 @@ SENDSTREAM *nntp_open_full (NETDRIVER *dv,char **hostlist,char *service,
 				/* negotiate TLS */
     if (stream->netstream->stream =
 	(*stls) (stream->netstream->stream,mb.host,
-		 SSL_METHOD(mb) | (mb.novalidate ? NET_NOVALIDATECERT:NIL)))
+		 SSL_MTHD(mb) | (mb.novalidate ? NET_NOVALIDATECERT:NIL)))
       extok = nntp_extensions (stream,(mb.secflag ? AU_SECURE : NIL) |
 			       (mb.authuser[0] ? AU_AUTHUSER : NIL));
     else {

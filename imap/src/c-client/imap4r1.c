@@ -81,6 +81,10 @@ typedef struct imap_local {
   unsigned int tlssslv23 : 1;	/* TLS using SSLv23 client method */
   unsigned int notlsflag : 1;	/* TLS not used in session */
   unsigned int sslflag : 1;	/* SSL session */
+  unsigned int tls1 : 1;	/* using TLSv1 over SSL */
+  unsigned int tls1_1 : 1;	/* using TLSv1_1 over SSL */
+  unsigned int tls1_2 : 1;	/* using TLSv1_2 over SSL */
+  unsigned int dtls1 : 1;	/* using DTLSv1 over SSL */
   unsigned int novalidate : 1;	/* certificate not validated */
   unsigned int filter : 1;	/* filter SEARCH/SORT/THREAD results */
   unsigned int loser : 1;	/* server is a loser */
@@ -885,7 +889,7 @@ MAILSTREAM *imap_open (MAILSTREAM *stream)
 	LOCAL->netstream->dtb = ssld;
 	if (!(LOCAL->netstream->stream =
 	      (*stls) (LOCAL->netstream->stream,mb.host,
-		       SSL_METHOD(mb) | (mb.novalidate ? NET_NOVALIDATECERT : NIL)))) {
+		       SSL_MTHD(mb) | (mb.novalidate ? NET_NOVALIDATECERT : NIL)))) {
 				/* drat, drop this connection */
 	  if (LOCAL->netstream) net_close (LOCAL->netstream);
 	  LOCAL->netstream = NIL;
@@ -911,6 +915,7 @@ MAILSTREAM *imap_open (MAILSTREAM *stream)
 	      (LOCAL->cap.auth ? imap_auth (stream,&mb,tmp,usr) :
 	       imap_login (stream,&mb,tmp,usr)))) {
 				/* failed, is there a referral? */
+    if (mb.tlsflag) LOCAL->tlsflag = T;
 	  if (ir && LOCAL->referral &&
 	      (s = (*ir) (stream,LOCAL->referral,REFAUTHFAILED))) {
 	    imap_close (stream,NIL);
@@ -935,6 +940,10 @@ MAILSTREAM *imap_open (MAILSTREAM *stream)
     if (LOCAL->netstream && !LOCAL->gotcapability) imap_capability (stream);
 				/* save state for future recycling */
     if (mb.tlsflag) LOCAL->tlsflag = T;
+    if (mb.tls1) LOCAL->tls1 = T;
+    if (mb.dtls1) LOCAL->dtls1 = T;
+    if (mb.tls1_1) LOCAL->tls1_1 = T;
+    if (mb.tls1_2) LOCAL->tls1_2 = T;
     if (mb.tlssslv23) LOCAL->tlssslv23 = T;
     if (mb.notlsflag) LOCAL->notlsflag = T;
     if (mb.sslflag) LOCAL->sslflag = T;
@@ -953,6 +962,10 @@ MAILSTREAM *imap_open (MAILSTREAM *stream)
       sprintf (tmp + strlen (tmp),":%lu",i);
     strcat (tmp,"/imap");
     if (LOCAL->tlsflag) strcat (tmp,"/tls");
+    if (LOCAL->tls1) strcat (tmp,"/tls1");
+    if (LOCAL->tls1_1) strcat (tmp,"/tls1_1");
+    if (LOCAL->tls1_2) strcat (tmp,"/tls1_2");
+    if (LOCAL->dtls1) strcat (tmp,"/dtls");
     if (LOCAL->tlssslv23) strcat (tmp,"/tls-sslv23");
     if (LOCAL->notlsflag) strcat (tmp,"/notls");
     if (LOCAL->sslflag) strcat (tmp,"/ssl");

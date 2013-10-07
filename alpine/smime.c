@@ -71,7 +71,7 @@ smime_get_passphrase(void)
 
     assert(ps_global->smime != NULL);
     snprintf(prompt, sizeof(prompt),
-            _("Enter passphrase for <%s>: "), (ps_global->smime && ps_global->smime->passphrase_emailaddr) ? ps_global->smime->passphrase_emailaddr : "unknown");
+            _("Enter passphrase for <%s>: "), (ps_global->smime && ps_global->smime->passphrase_emailaddr) ? ps_global->smime->passphrase_emailaddr[0] : "unknown");
 
     do {
         flags = OE_PASSWD | OE_DISALLOW_HELP;

@@ -683,7 +683,7 @@ typedef struct smime_stuff {
     unsigned entered_passphrase:1;	/* user entered a passphrase */
     unsigned already_auto_asked:1;	/* asked for passphrase automatically, not again */
     volatile char passphrase[100];	/* storage for the entered passphrase */
-    char    *passphrase_emailaddr;	/* pointer to allocated storage */
+    char   **passphrase_emailaddr;	/* pointer to allocated storage */
 
     /*
      * If we are using the Container type it is easiest if we
