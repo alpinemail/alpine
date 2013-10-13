@@ -252,7 +252,7 @@ msgno_dec(MAILSTREAM *stream, MSGNO_S *msgs, int flags)
 	    f -- flags to use a purge criteria
   ----*/
 void
-msgno_exclude_deleted(MAILSTREAM *stream, MSGNO_S *msgs)
+msgno_exclude_deleted(MAILSTREAM *stream, MSGNO_S *msgs, char *sequence)
 {
     long	  i, rawno;
     MESSAGECACHE *mc;
@@ -281,6 +281,7 @@ msgno_exclude_deleted(MAILSTREAM *stream, MSGNO_S *msgs)
     for(i = msgs->max_msgno; i >= 1L; i--)
       if((rawno = mn_m2raw(msgs, i)) > 0L && stream && rawno <= stream->nmsgs
 	 && (mc = mail_elt(stream, rawno))
+	 && (sequence ? mc->sequence : 1)
 	 && ((mc->valid && mc->deleted) || (!mc->valid && mc->searched))){
 	  msgno_exclude(stream, msgs, i, 0);
 	  need_isort_reset++;

@@ -73,6 +73,7 @@ lalloc(int used)
     register LINE   *lp;
     register int    size;
     EML             eml;
+    static int      displayed = 0;
 
     if((size = (used+NBLOCK-1) & ~(NBLOCK-1)) > NLINE)
       size *= 2;
@@ -80,9 +81,10 @@ lalloc(int used)
     if (size == 0)                    /* Assume that an empty */
       size = NBLOCK;                  /* line is for type-in. */
 
-    if ((lp = (LINE *) malloc(sizeof(LINE)+(size*sizeof(CELL)))) == NULL) {
+    if (displayed == 0 && (lp = (LINE *) malloc(sizeof(LINE)+(size*sizeof(CELL)))) == NULL){
 	eml.s = comatose(size);
-	emlwrite("Cannot allocate %s bytes", &eml);
+	emlwrite("Cannot allocate %s bytes (read file incomplete)", &eml);
+	displayed++;
 	return (NULL);
     }
 

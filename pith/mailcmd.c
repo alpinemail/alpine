@@ -281,7 +281,7 @@ cmd_undelete(struct pine *state, MSGNO_S *msgmap, int copts)
 
 
 int
-cmd_expunge_work(MAILSTREAM *stream, MSGNO_S *msgmap)
+cmd_expunge_work(MAILSTREAM *stream, MSGNO_S *msgmap, char *seq)
 {
     long  old_max_msgno;
     int	  rv = 0;
@@ -289,7 +289,7 @@ cmd_expunge_work(MAILSTREAM *stream, MSGNO_S *msgmap)
     old_max_msgno = mn_get_total(msgmap);
     delete_filtered_msgs(stream);
     ps_global->expunge_in_progress = 1;
-    mail_expunge(stream);
+    mail_expunge_full(stream, seq, 0);
     ps_global->expunge_in_progress = 0;
 
     dprint((2,"expunge complete cur:%ld max:%ld\n",
@@ -861,7 +861,8 @@ do_broach_folder(char *newfolder, CONTEXT_S *new_context, MAILSTREAM **streamp,
 			if(IS_NEWS(ps_global->mail_stream)
 			   && ps_global->mail_stream->rdonly)
 			  msgno_exclude_deleted(ps_global->mail_stream,
-					    sp_msgmap(ps_global->mail_stream));
+					    sp_msgmap(ps_global->mail_stream),
+					    NULL);
 
 			if(mn_get_total(ps_global->msgmap) > 0)
 			  mn_set_cur(ps_global->msgmap,
@@ -996,7 +997,7 @@ do_broach_folder(char *newfolder, CONTEXT_S *new_context, MAILSTREAM **streamp,
      * hidden from view...
      */
     if(IS_NEWS(ps_global->mail_stream) && ps_global->mail_stream->rdonly)
-      msgno_exclude_deleted(ps_global->mail_stream, ps_global->msgmap);
+      msgno_exclude_deleted(ps_global->mail_stream, ps_global->msgmap, NULL);
 
     if(we_cancel && F_OFF(F_QUELL_FILTER_MSGS, ps_global))
       cancel_busy_cue(0);

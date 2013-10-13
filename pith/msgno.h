@@ -186,7 +186,7 @@ void        msgno_reset_isort(MSGNO_S *);
 void	    msgno_give(MSGNO_S **);
 void	    msgno_inc(MAILSTREAM *, MSGNO_S *, int);
 void	    msgno_dec(MAILSTREAM *, MSGNO_S *, int);
-void	    msgno_exclude_deleted(MAILSTREAM *, MSGNO_S *);
+void	    msgno_exclude_deleted(MAILSTREAM *, MSGNO_S *, char *);
 void	    msgno_exclude(MAILSTREAM *, MSGNO_S *, long, int);
 int	    msgno_include(MAILSTREAM *, MSGNO_S *, int);
 void	    msgno_add_raw(MSGNO_S *, long);

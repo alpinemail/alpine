@@ -95,6 +95,7 @@ ffgetline(UCS buf[], size_t nbuf, size_t *charsreturned, int msg)
 {
     size_t i;
     UCS    ucs;
+    static int displayed = 0;
 
     if(charsreturned)
       *charsreturned = 0;
@@ -121,8 +122,10 @@ ffgetline(UCS buf[], size_t nbuf, size_t *charsreturned, int msg)
 	    if(charsreturned)
 	      *charsreturned = nbuf - 1;
 
-	    if(msg)
+	    if(msg && displayed == 0){
 	      emlwrite("File has long line", NULL);
+	      displayed = 1;
+	    }
 
 	    return FIOLNG;
         }

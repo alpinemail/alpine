@@ -88,7 +88,7 @@ int       cmd_forward(struct pine *, MSGNO_S *, int);
 int       cmd_bounce(struct pine *, MSGNO_S *, int);
 int       cmd_save(struct pine *, MAILSTREAM *, MSGNO_S *, int, CmdWhere);
 void      role_compose(struct pine *);
-void	  cmd_expunge(struct pine *, MAILSTREAM *, MSGNO_S *);
+int	  cmd_expunge(struct pine *, MAILSTREAM *, MSGNO_S *, int);
 int       cmd_export(struct pine *, MSGNO_S *, int, int);
 char	 *cmd_delete_action(struct pine *, MSGNO_S *, CmdWhere);
 char	 *cmd_delete_view(struct pine *, MSGNO_S *);
@@ -1207,7 +1207,7 @@ get_out:
 
           /*---------- Expunge ----------*/
       case MC_EXPUNGE :
-	cmd_expunge(state, stream, msgmap);
+	(void) cmd_expunge(state, stream, msgmap, MCMD_NONE);
 	break;
 
 
@@ -3137,18 +3137,43 @@ create_for_save_prompt(CONTEXT_S *context, char *folder, int sequence_sensitive)
 
  Result: 
  ----*/
-void
-cmd_expunge(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap)
+int
+cmd_expunge(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap, int agg)
 {
     long del_count, prefilter_del_count;
-    int we_cancel = 0;
+    int we_cancel = 0, rv = 0;
     char prompt[MAX_SCREEN_COLS+1];
+    char *sequence;
     COLOR_PAIR   *lastc = NULL;
 
     dprint((2, "\n - expunge -\n"));
 
+    del_count = 0;
+
+    sequence = MCMD_ISAGG(agg) ? selected_sequence(stream, msgmap, NULL, 0) : NULL;
+
+    if(MCMD_ISAGG(agg)){
+	long i;
+	MESSAGECACHE *mc;
+	for(i = 1L; i <= stream->nmsgs; i++){
+	    if((mc = mail_elt(stream, i)) != NULL 
+		&& mc->sequence && mc->deleted)
+		del_count++;
+	}
+	if(del_count == 0){
+	    q_status_message(SM_ORDER, 0, 4,
+			 _("No selected messages are deleted"));
+	    return 0;
+	}
+    } else {
+      if(!any_messages(msgmap, NULL, "to Expunge"))
+         return rv;
+    }
+
     if(IS_NEWS(stream) && stream->rdonly){
-	if((del_count = count_flagged(stream, F_DEL)) > 0L){
+	if(!MCMD_ISAGG(agg)) 
+	  del_count = count_flagged(stream, F_DEL);
+	if(del_count > 0L){
 	    state->mangled_footer = 1;
 	    snprintf(prompt, sizeof(prompt), "Exclude %ld message%s from %.*s", del_count,
 		    plural(del_count), sizeof(prompt)-40,
@@ -3164,7 +3189,7 @@ cmd_expunge(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap)
 		if(F_ON(F_NEWS_CROSS_DELETE, state))
 		  cross_delete_crossposts(stream);
 
-		msgno_exclude_deleted(stream, msgmap);
+		msgno_exclude_deleted(stream, msgmap, sequence);
 		clear_index_cache(stream, 0);
 
 		/*
@@ -3188,19 +3213,21 @@ cmd_expunge(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap)
 	else
 	  any_messages(NULL, "deleted", "to Exclude");
 
-	return;
+	return del_count;
     }
     else if(READONLY_FOLDER(stream)){
 	q_status_message(SM_ORDER, 0, 4,
 			 _("Can't expunge. Folder is read-only"));
-	return;
+	return del_count;
     }
 
-    prefilter_del_count = count_flagged(stream, F_DEL|F_NOFILT);
+    if(!MCMD_ISAGG(agg)){
+      prefilter_del_count = count_flagged(stream, F_DEL|F_NOFILT);
+      mail_expunge_prefilter(stream, MI_NONE);
+      del_count = count_flagged(stream, F_DEL|F_NOFILT);
+    }
 
-    mail_expunge_prefilter(stream, MI_NONE);
-
-    if((del_count = count_flagged(stream, F_DEL|F_NOFILT)) != 0){
+    if(del_count != 0){
 	int ret;
 
 	snprintf(prompt, sizeof(prompt), "Expunge %ld message%s from %.*s", del_count,
@@ -3221,7 +3248,7 @@ cmd_expunge(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap)
 	  cmd_cancelled("Expunge");
 
 	if(ret != 'y')
-	  return;
+	  return 0;
     }
 
     dprint((8, "Expunge max:%ld cur:%ld kill:%d\n",
@@ -3243,8 +3270,11 @@ cmd_expunge(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap)
 
     we_cancel = busy_cue(_("Expunging"), NULL, 1);
 
-    if(cmd_expunge_work(stream, msgmap))
+    if(cmd_expunge_work(stream, msgmap, sequence))
       state->mangled_body = 1;
+
+    if(sequence)
+      fs_give((void **)&sequence);
 
     if(we_cancel)
       cancel_busy_cue((sp_expunge_count(stream) > 0) ? 0 : -1);
@@ -3279,6 +3309,7 @@ cmd_expunge(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap)
 	  q_status_message(SM_ORDER, 0, 3,
 		     _("No messages marked deleted.  No messages expunged."));
     }
+    return del_count;
 }
 
 
@@ -7070,6 +7101,13 @@ apply_command(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap,
 	    sel_opts3[i++].label = "";
 	}
 
+	if(!is_imap_stream(stream) || LEVELUIDPLUS(stream)){	/* expunge selected messages */
+	    sel_opts3[i].ch      = 'x';
+	    sel_opts3[i].rval    = 'x';
+	    sel_opts3[i].name    = "X";
+	    sel_opts3[i++].label = N_("Expunge");
+	}
+
 	sel_opts3[i].ch      = KEY_DEL;		/* also invisible */
 	sel_opts3[i].rval    = 'd';
 	sel_opts3[i].name    = "";
@@ -7080,7 +7118,7 @@ apply_command(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap,
 	snprintf(prompt, sizeof(prompt), "%s command : ",
 		(flags & AC_FROM_THREAD) ? "THREAD" : "APPLY");
 	prompt[sizeof(prompt)-1] = '\0';
-	cmd = double_radio_buttons(prompt, q_line, sel_opts3, 'z', 'x', NO_HELP,
+	cmd = double_radio_buttons(prompt, q_line, sel_opts3, 'z', 'c', NO_HELP,
 				   RB_SEQ_SENSITIVE);
 	if(isupper(cmd))
 	  cmd = tolower(cmd);
@@ -7161,7 +7199,11 @@ apply_command(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap,
 	select_thread_stmp(state, stream, msgmap);
 	break;
 
-      case 'x' :			/* cancel */
+      case 'x' :			/* Expunge */
+	rv = cmd_expunge(state, stream, msgmap, agg);
+	break;
+
+      case 'c' :			/* cancel */
 	cmd_cancelled((flags & AC_FROM_THREAD) ? "Thread command"
 					       : "Apply command");
 	break;

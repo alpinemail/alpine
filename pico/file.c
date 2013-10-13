@@ -519,7 +519,10 @@ readin(char fname[],		/* name of file to read */
 	      }
 	      else{
 		  if(newline){
-		      lnewline();
+		      if(lnewline() == FALSE){
+			done++; 
+			continue; 
+		      }
 		      newline = 0;
 		  }
 
@@ -530,7 +533,7 @@ readin(char fname[],		/* name of file to read */
 
 		    case FIOLNG :
 		      for(linep = line; charsread-- > 0; linep++)
-			linsert(1, *linep);
+			if(linsert(1, *linep) == FALSE) done++;
 
 		      break;
 
@@ -975,8 +978,11 @@ ifile(char fname[])
 	  }
 	  else{
 	      if(newline){
-		  lnewline();
-		  newline = 0;
+		if(lnewline() == FALSE){
+		   done++;
+		   continue;
+		}
+		newline = 0;
 	      }
 
 	      switch(s){
@@ -986,7 +992,7 @@ ifile(char fname[])
 
 		case FIOLNG :
 		  for(linep = line; charsread-- > 0; linep++)
-		    linsert(1, *linep);
+		    if(linsert(1, *linep) == FALSE) done++;
 
 		  break;
 

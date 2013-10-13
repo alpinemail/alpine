@@ -4839,7 +4839,7 @@ PEFolderCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST 
 					agg_select_all(stream, msgmap, NULL, 1);
 					errstr = peApplyFlag(stream, msgmap, 'd', 0, &count);
 					if(!errstr)
-					  (void) cmd_expunge_work(stream, msgmap);
+					  (void) cmd_expunge_work(stream, msgmap, NULL);
 				    }
 				}
 				else{
@@ -4864,7 +4864,7 @@ PEFolderCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST 
 				    if(!strucmp(what,"selected")){
 					if(any_lflagged(msgmap, MN_SLCT)){
 					    if(!(errstr = peApplyFlag(stream, msgmap, 'd', 0, &count)))
-					      (void) cmd_expunge_work(stream, msgmap);
+					      (void) cmd_expunge_work(stream, msgmap, NULL);
 					}
 					else
 					  count = 0L;
@@ -4883,7 +4883,7 @@ PEFolderCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST 
 					if(!errstr && uid){
 					    /* uid is a UID here */
 					    mail_flag(stream, long2string(uid), "\\DELETED", ST_SET | ST_UID);
-					    (void) cmd_expunge_work(stream, msgmap);
+					    (void) cmd_expunge_work(stream, msgmap, NULL);
 					    count = 1L;
 					}
 				    }
@@ -5637,7 +5637,7 @@ PEMailboxCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST
 		ps_global->last_error[0] = '\0';
 		if(IS_NEWS(stream)
 		   && stream->rdonly){
-		    msgno_exclude_deleted(stream, msgmap);
+		    msgno_exclude_deleted(stream, msgmap, NULL);
 		    clear_index_cache(sp_inbox_stream(), 0);
 
 		    /*
@@ -5651,7 +5651,7 @@ PEMailboxCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST
 		      refresh_sort(ps_global->mail_stream, msgmap, FALSE);
 		}
 		else
-		  (void) cmd_expunge_work(stream, msgmap);
+		  (void) cmd_expunge_work(stream, msgmap, NULL);
 
 		Tcl_SetResult(interp, ps_global->last_error, TCL_VOLATILE);
 		return(TCL_OK);
@@ -5683,7 +5683,7 @@ PEMailboxCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST
 
 		ps_global->last_error[0] = '\0';
 		if(IS_NEWS(stream) && stream->rdonly){
-		    msgno_exclude_deleted(stream, msgmap);
+		    msgno_exclude_deleted(stream, msgmap, NULL);
 		    clear_index_cache(sp_inbox_stream(), 0);
 
 		    /*
@@ -5728,7 +5728,7 @@ PEMailboxCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST
 
 			    /* then remove them */
 			    if(n == tomove){
-				(void) cmd_expunge_work(stream, msgmap);
+				(void) cmd_expunge_work(stream, msgmap, NULL);
 			    }
 
 			    restore_selected(msgmap);
@@ -6106,7 +6106,7 @@ PEMailboxCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST
 		    return(TCL_OK);
 		}
 		else if(!strucmp(op, "excludedeleted")){
-		    msgno_exclude_deleted(ps_global->mail_stream, sp_msgmap(ps_global->mail_stream));
+		    msgno_exclude_deleted(ps_global->mail_stream, sp_msgmap(ps_global->mail_stream), NULL);
 		    return(TCL_OK);
 		}
 	    }
