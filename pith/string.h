@@ -90,6 +90,7 @@ void	    sqzspaces(char *);
 void	    sqznewlines(char *);
 void	    removing_leading_white_space(char *);
 void	    removing_trailing_white_space(char *);
+void	    replace_tabs_by_space(char *);
 void	    removing_leading_and_trailing_white_space(char *);
 int 	    removing_double_quotes(char *);
 char	   *skip_white_space(char *);

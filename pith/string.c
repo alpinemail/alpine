@@ -185,6 +185,18 @@ removing_leading_white_space(char *string)
       }
 }
 
+/* replace_embedded_tabs_by_space
+   replace any tab by only one space, when we do not want to see them
+   in the from or subject field.
+ */
+void
+replace_tabs_by_space(char *orig)
+{
+  char *s;
+
+  for(s = orig; s != NULL && *s != '\0' ; s++)
+     if(*s == '\t') *s = ' ';
+}
 
 
 /*----------------------------------------------------------------------  

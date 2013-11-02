@@ -179,6 +179,10 @@ Additions include:
 <P>
 
 <UL>
+  <LI> Upgrade UW-IMAP to Panda IMAP from 
+       <A HREF="https://github.com/jonabbey/panda-imap">https://github.com/jonabbey/panda-imap</A>.
+  <LI> Replace tabs by spaces in From and Subject fields to control for
+       size in screen of these fields. Change only in index screen display.
   <LI> Add support to selective expunge through a subcommand of the 
        select-apply commands. Read more in the <A 
        HREF="h_index_cmd_expunge">help</A> for the expunge command.

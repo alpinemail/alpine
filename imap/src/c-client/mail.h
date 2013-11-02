@@ -1,4 +1,18 @@
 /* ========================================================================
+ * Copyright 2008-2011 Mark Crispin
+ * ========================================================================
+ */
+
+/*
+ * Program:	Mailbox Access routines
+ *
+ * Author:	Mark Crispin
+ *
+ * Date:	22 November 1989
+ * Last Edited:	8 April 2011
+ *
+ * Previous versions of this file were
+ *
  * Copyright 1988-2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -7,26 +21,11 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * 
- * ========================================================================
- */
-
-/*
- * Program:	Mailbox Access routines
- *
- * Author:	Mark Crispin
- *		UW Technology
- *		University of Washington
- *		Seattle, WA  98195
- *		Internet: MRC@Washington.EDU
- *
- * Date:	22 November 1989
- * Last Edited:	16 December 2008
  */
 
 /* The Version */
 
-#define CCLIENTVERSION "2007e"
+#define CCLIENTVERSION "2010"
 
 /* Build parameters */
 
@@ -177,6 +176,8 @@
 #define SET_EXTERNALAUTHID (long) 230
 #define GET_SSLCAPATH (long) 231
 #define SET_SSLCAPATH (long) 232
+#define GET_RESTRICTIONS (long) 233
+#define SET_RESTRICTIONS (long) 234
 
 	/* 3xx: TCP/IP */
 #define GET_OPENTIMEOUT (long) 300
@@ -1839,7 +1840,7 @@ char *net_localhost (NETSTREAM *stream);
 
 long sm_subscribe (char *mailbox);
 long sm_unsubscribe (char *mailbox);
-char *sm_read (void **sdb);
+char *sm_read (char *sbname,void **sdb);
 
 void ssl_onceonlyinit (void);
 char *ssl_start_tls (char *s);

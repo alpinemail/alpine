@@ -5318,6 +5318,7 @@ subj_str(INDEXDATA_S *idata, char *str, size_t strsize, SubjKW kwtype, int openi
     iutf8ncpy(origsubj, sp, len);
 
     origsubj[len] = '\0';
+    replace_tabs_by_space(origsubj);
     removing_trailing_white_space(origsubj);
 
     /*
@@ -6184,6 +6185,7 @@ from_str(IndexColType ctype, INDEXDATA_S *idata, char *str, size_t strsize, ICE_
 	    break;
 	}
     }
+    replace_tabs_by_space(str);
 }
 
 

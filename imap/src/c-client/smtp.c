@@ -1,13 +1,5 @@
 /* ========================================================================
- * Copyright 1988-2008 University of Washington
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * 
+ * Copyright 2008 Mark Crispin
  * ========================================================================
  */
 
@@ -15,15 +7,19 @@
  * Program:	Simple Mail Transfer Protocol (SMTP) routines
  *
  * Author:	Mark Crispin
- *		Networks and Distributed Computing
- *		Computing & Communications
- *		University of Washington
- *		Administration Building, AG-44
- *		Seattle, WA  98195
- *		Internet: MRC@CAC.Washington.EDU
  *
  * Date:	27 July 1988
- * Last Edited:	28 January 2008
+ * Last Edited:	19 November 2008
+ *
+ * Previous versions of this file were
+ *
+ * Copyright 1988-2008 University of Washington
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * This original version of this file is
  * Copyright 1988 Stanford University
@@ -395,8 +391,7 @@ SENDSTREAM *smtp_close (SENDSTREAM *stream)
   if (stream) {			/* send "QUIT" */
     if (stream->netstream) {	/* do close actions if have netstream */
       smtp_send (stream,"QUIT",NIL);
-      if (stream->netstream)	/* could have been closed during "QUIT" */
-        net_close (stream->netstream);
+      if (stream->netstream) net_close (stream->netstream);
     }
 				/* clean up */
     if (stream->host) fs_give ((void **) &stream->host);
@@ -436,13 +431,13 @@ long smtp_mail (SENDSTREAM *stream,char *type,ENVELOPE *env,BODY *body)
   sprintf (smtpserver,"{%.200s/smtp%s}<none>",
     (long) mail_parameters (NIL,GET_TRUSTDNS,NIL) ?
     ((long) mail_parameters (NIL,GET_SASLUSESPTRNAME,NIL) ?
-	net_remotehost (stream->netstream) :
-	net_host (stream->netstream)) :
-	   stream->host,
-	   (stream->netstream->dtb ==
-	(NETDRIVER *) mail_parameters (NIL,GET_SSLDRIVER,NIL)) ?
-	   "/ssl" : "");
-  do {
+      net_remotehost (stream->netstream) :
+      net_host (stream->netstream)) :
+         stream->host,
+         (stream->netstream->dtb ==
+      (NETDRIVER *) mail_parameters (NIL,GET_SSLDRIVER,NIL)) ?
+         "/ssl" : "");
+  do {				/* make sure stream is in good shape */
     smtp_send (stream,"RSET",NIL);
     if (retry) {		/* need to retry with authentication? */
       NETMBX mb;
@@ -487,6 +482,7 @@ long smtp_mail (SENDSTREAM *stream,char *type,ENVELOPE *env,BODY *body)
     case SMTPOK:		/* looks good */
       break;
     default:			/* other failure */
+      smtp_send (stream,"RSET",NIL);
       return NIL;
     }
 				/* negotiate the recipients */
@@ -500,7 +496,10 @@ long smtp_mail (SENDSTREAM *stream,char *type,ENVELOPE *env,BODY *body)
     }
   } while (retry);
 				/* negotiate data command */
-  if (!(smtp_send (stream,"DATA",NIL) == SMTPREADY)) return NIL;
+  if (!(smtp_send (stream,"DATA",NIL) == SMTPREADY)) {
+    smtp_send (stream,"RSET",NIL);
+    return NIL;
+  }
 				/* send message data */
   if (!rfc822_output_full (&buf,env,body,
 			   ESMTP.eightbit.ok && ESMTP.eightbit.want)) {
@@ -508,7 +507,11 @@ long smtp_mail (SENDSTREAM *stream,char *type,ENVELOPE *env,BODY *body)
     return NIL;			/* can't do much else here */
   }
 				/* send trailing dot */
-  return (smtp_send (stream,".",NIL) == SMTPOK) ? LONGT : NIL;
+  if (smtp_send (stream,".",NIL) != SMTPOK) {
+    smtp_send (stream,"RSET",NIL);
+    return NIL;
+  }
+  return LONGT;
 }
 
 /* Simple Mail Transfer Protocol send VERBose
