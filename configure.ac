@@ -15,7 +15,7 @@ dnl  */
 
 AC_PREREQ([2.69])
 
-AC_REVISION([Rev:5 by chappa@washington.edu])
+AC_REVISION([Rev:7 by chappa@washington.edu])
 
 dnl Alpine Version Number is in $srcdir/VERSION
 AC_INIT([alpine],[m4_normalize(m4_include(VERSION))],[chappa@washington.edu])
@@ -52,6 +52,7 @@ AC_PATH_PROG(AR, ar, ar)
 AC_PATH_PROG(RM, rm, rm)
 AC_PATH_PROG(CP, cp, cp)
 AC_PATH_PROG(LN, ln, ln)
+AC_PATH_PROG(LS, ls, ls)
 AC_PATH_PROG(SED, sed, sed)
 AC_PATH_PROG(MAKE, make)
 
@@ -84,7 +85,19 @@ if test x$enable_dmalloc = "xyes" ; then
   AC_DEFINE(ENABLE_DMALLOC, 1, [Define enable dmalloc debugging])
 fi
 
-localedir="\${datadir}/locale"
+dnl set locale. Mac is special so we deal with it separately.
+case $host in
+    *apple-darwin*)
+      if test -d /opt/local ; then
+	localedir="/opt/local/share/locale"
+      else
+	localedir="\${datadir}/locale"
+      fi
+      ;;
+    *)  
+      localedir="\${datadir}/locale"
+      ;;
+esac
 AC_ARG_WITH(localedir,
   AS_HELP_STRING([--with-localedir=DIR],[Name of gettext locale directory]),
   [
@@ -711,12 +724,24 @@ else
       ;;
     *-apple-darwin*)
       alpine_SSLTYPE="nopwd"
-      if test -d /opt/local/etc/openssl ; then
-	alpine_SSLDIR="/opt/local/etc/openssl"
-	alpine_SSLCERTS="$alpine_SSLDIR"
-	alpine_SSLKEYS="$alpine_SSLDIR"
-	alpine_SSLLIB="/usr/lib"
-	alpine_SSLINCLUDE="/usr/include/openssl"
+      if test -d /usr/local/opt/openssl ; then
+	  alpine_SSLDIR="/usr/local/opt/openssl"
+	  alpine_SSLINCLUDE="$alpine_SSLDIR/include"
+	  alpine_SSLLIB="$alpine_SSLDIR/lib"
+	  alpine_SSLCERTS="$alpine_SSLDIR/certs"
+	  alpine_SSLKEYS="$alpine_SSLDIR/private"
+      elif test -d /opt/local/etc/openssl ; then
+	alpine_SSLDIR="/opt/local"
+	alpine_SSLINCLUDE="$alpine_SSLDIR/include"
+	alpine_SSLLIB="$alpine_SSLDIR/lib"
+	alpine_SSLCERTS="/opt/local/etc/openssl/certs"
+	alpine_SSLKEYS="/opt/local/etc/openssl/private"
+      elif test -d /sw/etc/ssl ; then
+	alpine_SSLDIR="/sw/etc/ssl"
+	alpine_SSLINCLUDE="/sw/include"
+	alpine_SSLLIB="/sw/lib"
+	alpine_SSLCERTS="/sw/etc/ssl/certs"
+	alpine_SSLKEYS="/sw/etc/ssl/private"
       elif test -d /System/Library/OpenSSL ; then
 	alpine_SSLDIR="/System/Library/OpenSSL"
         alpine_SSLCERTS="$alpine_SSLDIR/certs"

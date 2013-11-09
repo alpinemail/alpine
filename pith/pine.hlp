@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 34 2013-10-13 00:44:53
+Alpine Commit 37 2013-11-08 22:28:13
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -235,10 +235,11 @@ Bugs that have been addressed include:
   <LI> Quoted string in URL Viewers configuration variable were not 
        unquoted before passing to viewer.
   <LI> Fix in configure script to detect location of tcl library; add
-       /usr/local in FreeBSD and fix a bug in configure script that used
-       $alpine_TCLINC instead of $alpine_TCLINC/tcl.h. Reported and fixed
+       /usr/local in FreeBSD and fix a bug in configure script that used 
+       $alpine_TCLINC instead of $alpine_TCLINC/tcl.h. Reported and fixed 
        by Werner Scheinast.
-  <LI> Move SSL configurations from UW-IMAP to configure script.
+  <LI> Move SSL configurations from UW-IMAP to configure script, and
+       update OpenSSL configuration for mac OSX.
 </UL>
 <P>
 
