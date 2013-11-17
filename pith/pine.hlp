@@ -218,7 +218,7 @@ Additions include:
 <P>
 Bugs that have been addressed include:
 <UL>
-  <LI> Crash whe tcp connection to NNTP server was lost after connection
+  <LI> Crash when tcp connection to NNTP server was lost after connection
        had been established, but lost immediately afterwards.
   <LI> WebAlpine: add _GNU_SOURCE to make pubcookie build.
   <LI> Save command did not warn of existence of a message with a deleted 
