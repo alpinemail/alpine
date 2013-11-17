@@ -218,6 +218,8 @@ Additions include:
 <P>
 Bugs that have been addressed include:
 <UL>
+  <LI> Crash whe tcp connection to NNTP server was lost after connection
+       had been established, but lost immediately afterwards.
   <LI> WebAlpine: add _GNU_SOURCE to make pubcookie build.
   <LI> Save command did not warn of existence of a message with a deleted 
        attachment in an aggregate save, unless cursor was positioned on a message 
@@ -2676,7 +2678,7 @@ HREF="h_main_kblock">Lock&nbsp;Keyboard</A><BR>
 &nbsp;S&nbsp;&nbsp;<A 
 HREF="h_main_setup">SETUP</A>&nbsp;functions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G&nbsp;&nbsp;<A 
 HREF="h_common_goto">Goto</A>&nbsp;a&nbsp;specified&nbsp;folder<BR>
-&nbsp;Q&nbsp;&nbsp;Quit&nbsp;Alpine&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;J&nbsp;&nbsp;<A HREF="h_main_journal">Journal</A>&nbsp;of&nbsp;status&nbsp;messages<BR>
+&nbsp;Q&nbsp;&nbsp;Quit&nbsp;Alpine&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;J&nbsp;&nbsp;<A HREF="h_main_journal">Journal</A>&nbsp;of&nbsp;status&nbsp;messages<BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;&nbsp;<A 
 HREF="h_common_role">Compose&nbsp;message&nbsp;using&nbsp;a&nbsp;role</a><BR>
 <!--chtml endif-->
@@ -7665,7 +7667,7 @@ a folder name used in a previous Save.
 <!--chtml if pinemode="function_key"-->
 <PRE>
 Navigating the List of Messages               General Alpine Commands
--------------------------------               ---------------------
+-------------------------------               -----------------------
  F5   Move to previous message                 F1   Show this help text
  F6   Move to next message
  F7   Show previous screen of messages
@@ -7681,7 +7683,7 @@ Message Selection Commands
 <!--chtml else-->
 <PRE>
 Navigating the List of Messages               General Alpine Commands
--------------------------------               ---------------------
+-------------------------------               -----------------------
   P  Move to previous message                  ?  Show this help text
   N  Move to next message
   -  Show previous screen of messages
@@ -7924,7 +7926,7 @@ F12 WhereIs
 <!--chtml else-->
 <PRE>
 Navigation                     General Alpine Commands
------------------------        ---------------------
+-------------------------      -----------------------
  P  Prev Address                ?  Display this help text
  N  Next Address                E  Exit without selecting anything
  -  Previous page               %  Print
@@ -7974,7 +7976,7 @@ F12 WhereIs
 <!--chtml else-->
 <PRE>
 Navigation                     General Alpine Commands
------------------------        ---------------------
+-------------------------      -----------------------
  P  Prev Rule                   ?  Display this help text
  N  Next Rule                   E  Exit without selecting anything
  -  Previous page               %  Print
@@ -8036,7 +8038,7 @@ F12 WhereIs
 <!--chtml else-->
 <PRE>
 Navigation                     General Alpine Commands
------------------------        ---------------------
+-------------------------      -----------------------
  P  Prev Priority               ?  Display this help text
  N  Next Priority               E  Exit without selecting anything
  -  Previous page               %  Print
@@ -8097,7 +8099,7 @@ F12 WhereIs
 <!--chtml else-->
 <PRE>
 Navigation                     General Alpine Commands
------------------------        ---------------------
+-------------------------      -----------------------
  P  Prev Keyword                ?  Display this help text
  N  Next Keyword                E  Exit without selecting anything
  -  Previous page               %  Print
@@ -8150,7 +8152,7 @@ F12 WhereIs
 <!--chtml else-->
 <PRE>
 Navigation                     General Alpine Commands
------------------------        ---------------------
+-------------------------      -----------------------
  P  Prev Character Set          ?  Display this help text
  N  Next Character Set          E  Exit without selecting anything
  -  Previous page               %  Print
@@ -8204,7 +8206,7 @@ F12 WhereIs
 <!--chtml else-->
 <PRE>
 Navigation                     General Alpine Commands
------------------------        ---------------------
+-------------------------      -----------------------
  P  Prev Charset                ?  Display this help text
  N  Next Charset                E  Exit without selecting anything
  -  Previous page               %  Print
@@ -8262,7 +8264,7 @@ F12 WhereIs
 <!--chtml else-->
 <PRE>
 Navigation                     General Alpine Commands
------------------------        ---------------------
+-------------------------      -----------------------
  P  Prev Keyword                ?  Display this help text
  N  Next Keyword                E  Exit without selecting anything
  -  Previous page               %  Print
@@ -8320,7 +8322,7 @@ F12 WhereIs
 <!--chtml else-->
 <PRE>
 Navigation                     General Alpine Commands
------------------------        ---------------------
+-------------------------      -----------------------
  P  Prev Folder                 ?  Display this help text
  N  Next Folder                ^C  exit without changing anything
  -  Previous page               %  Print
@@ -8383,7 +8385,7 @@ F12 Whereis (search role nicknames)
 <!--chtml else-->
 <PRE>
 Navigation                     General Alpine Commands
------------------------        ---------------------
+-------------------------      -----------------------
  P  Prev Role                     ?  Display this help text
  N  Next Role                     E  Exit without a selection
  -  Previous page
@@ -8444,7 +8446,7 @@ F12 Whereis
 <!--chtml else-->
 <PRE>
 Navigation                     General Alpine Commands
------------------------        ---------------------
+-------------------------      -----------------------
  P  Previous addrbook          ?  Display this help text
  N  Next addrbook
  -  Previous page
@@ -9069,7 +9071,7 @@ F12 Whereis (search role nicknames)
 <!--chtml else-->
 <PRE>
 Navigation                     General Alpine Commands
------------------------        ---------------------
+-------------------------      -----------------------
  P  Prev Role                     ?  Display this help text
  N  Next Role                     E  Back to MAIN Alpine menu
  -  Previous page
@@ -9378,7 +9380,7 @@ F12 Whereis (search rule nicknames)
 <!--chtml else-->
 <PRE>
 Navigation                     General Alpine Commands
------------------------        ---------------------
+-------------------------      -----------------------
  P  Prev rule                     ?  Display this help text
  N  Next rule                     E  Back to MAIN Alpine menu
  -  Previous page
@@ -9546,7 +9548,7 @@ F12 Whereis (search rule nicknames)
 <!--chtml else-->
 <PRE>
 Navigation                     General Alpine Commands
------------------------        ---------------------
+-------------------------      -----------------------
  P  Prev rule                     ?  Display this help text
  N  Next rule                     E  Back to MAIN Alpine menu
  -  Previous page
@@ -9675,7 +9677,7 @@ F12 Whereis (search rule nicknames)
 <!--chtml else-->
 <PRE>
 Navigation                     General Alpine Commands
------------------------        ---------------------
+-------------------------      -----------------------
  P  Prev rule                     ?  Display this help text
  N  Next rule                     E  Back to MAIN Alpine menu
  -  Previous page
@@ -9814,7 +9816,7 @@ F12 Whereis (search filter nicknames)
 <!--chtml else-->
 <PRE>
 Navigation                     General Alpine Commands
------------------------        ---------------------
+-------------------------      -----------------------
  P  Prev Filter                   ?  Display this help text
  N  Next Filter                   E  Back to MAIN Alpine menu
  -  Previous page
@@ -10013,7 +10015,7 @@ F12 Whereis (search rule nicknames)
 <!--chtml else-->
 <PRE>
 Navigation                     General Alpine Commands
------------------------        ---------------------
+-------------------------      -----------------------
  P  Prev rule                     ?  Display this help text
  N  Next rule                     E  Back to MAIN Alpine menu
  -  Previous page
@@ -10162,7 +10164,7 @@ F12 Whereis (search directory server titles)
 <!--chtml else-->
 <PRE>
 Navigation                     General Alpine Commands
------------------------        ---------------------
+-------------------------      -----------------------
  P  Prev Directory Server         ?  Display this help text
  N  Next Directory Server         E  Back to MAIN Alpine menu
  -  Previous page
@@ -10352,7 +10354,7 @@ Spc  (space bar) Show next page           E  Export to file
                                           U  Import from file to folder
 
 FOLDER LIST Screen Commands              General Alpine Command
----------------------------              ---------------------
+---------------------------              -----------------------
  A  Add a folder                          O  Show all other available commands
  G  Specify a folder to go to             ?  Show Help text
  I  Show MESSAGE INDEX of current folder  M  MAIN MENU Screen
@@ -10744,7 +10746,7 @@ folders and select one to open.
 <!--chtml if pinemode="function_key"-->
 <PRE>
 Navigating the List of Folders             General Alpine Commands
-------------------------------             ---------------------
+------------------------------             -----------------------
  P   Move to previous folder               ?   Show this help text
  N   Move to next folder
  -   Show previous screen of folders
@@ -10759,7 +10761,7 @@ Folder Selection Commands
 <!--chtml else-->
 <PRE>
 Navigating the List of Folders             General Alpine Commands
-------------------------------             ---------------------
+------------------------------             -----------------------
 F5   Move to previous folder               F1  Show this help text
 F6   Move to next folder
 F7   Show previous screen of folders
@@ -10810,7 +10812,7 @@ UnSbscrbe command.
 <!--chtml if pinemode="function_key"-->
 <PRE>
 Navigating the List of Newsgroups          General Alpine Commands
----------------------------------          ---------------------
+---------------------------------          -----------------------
 F5   Move to previous group                F1   Show this help text
 F6   Move to next group
 F7   Show previous screen of groups
@@ -10826,7 +10828,7 @@ F4  Subscribe to the currently highlighted newsgroup
 <!--chtml else-->
 <PRE>
 Navigating the List of Newsgroups          General Alpine Commands
----------------------------------          ---------------------
+---------------------------------          -----------------------
  P   Move to previous group                ?   Show this help text
  N   Move to next group
  -   Show previous screen of groups
@@ -10873,7 +10875,7 @@ the available newsgroups and select one to post news to.
 <!--chtml if pinemode="function_key"-->
 <PRE>
 Navigating the List of Newsgroups          General Alpine Commands
----------------------------------          ---------------------
+---------------------------------          -----------------------
 F5   Move to previous group                F1  Show this help text
 F6   Move to next group
 F7   Show previous screen of groups
@@ -10888,7 +10890,7 @@ F4   Select the currently highlighted newsgroup
 <!--chtml else-->
 <PRE>
 Navigating the List of Newsgroups          General Alpine Commands
----------------------------------          ---------------------
+---------------------------------          -----------------------
  P   Move to previous group                ?  Show this help text
  N   Move to next group
  -   Show previous screen of groups
@@ -10918,7 +10920,7 @@ folders and select one to use for saving the current message.
 <!--chtml if pinemode="function_key"-->
 <PRE>
 Navigating the List of Folders             General Alpine Commands
-------------------------------             ---------------------
+------------------------------             -----------------------
 F5   Move to previous folder               F1  Show this help text
 F6   Move to next folder
 F7   Show previous screen of folders
@@ -10934,7 +10936,7 @@ F11  AddNew folder (just like Select, but you type in a new folder name)
 <!--chtml else-->
 <PRE>
 Navigating the List of Folders             General Alpine Commands
-------------------------------             ---------------------
+------------------------------             -----------------------
  P   Move to previous folder               ?  Show this help text
  N   Move to next folder
  -   Show previous screen of folders
@@ -10969,7 +10971,7 @@ current message.
 <!--chtml if pinemode="function_key"-->
 <PRE>
 Navigating the List of Folders             General Alpine Commands
-------------------------------             ---------------------
+------------------------------             -----------------------
 F5   Move to previous folder               F1  Show this help text
 F6   Move to next folder
 F7   Show previous screen of folders
@@ -10985,7 +10987,7 @@ F11  AddNew folder (just like Select, but you type in a new folder name)
 <!--chtml else-->
 <PRE>
 Navigating the List of Folders             General Alpine Commands
-------------------------------             ---------------------
+------------------------------             -----------------------
  P   Move to previous folder               ?  Show this help text
  N   Move to next folder
  -   Show previous screen of folders
@@ -11020,7 +11022,7 @@ in a Pattern.
 <!--chtml if pinemode="function_key"-->
 <PRE>
 Navigating the List of Folders             General Alpine Commands
-------------------------------             ---------------------
+------------------------------             -----------------------
 F5   Move to previous folder               F1  Show this help text
 F6   Move to next folder
 F7   Show previous screen of folders
@@ -11036,7 +11038,7 @@ F11  AddNew folder (just like Select, but you type in a new folder name)
 <!--chtml else-->
 <PRE>
 Navigating the List of Folders             General Alpine Commands
-------------------------------             ---------------------
+------------------------------             -----------------------
  P   Move to previous folder               ?  Show this help text
  N   Move to next folder
  -   Show previous screen of folders
@@ -11070,7 +11072,7 @@ folders and select one to use as a Stay-Open folder.
 <!--chtml if pinemode="function_key"-->
 <PRE>
 Navigating the List of Folders             General Alpine Commands
-------------------------------             ---------------------
+------------------------------             -----------------------
 F5   Move to previous folder               F1  Show this help text
 F6   Move to next folder
 F7   Show previous screen of folders
@@ -11086,7 +11088,7 @@ F11  AddNew folder (just like Select, but you type in a new folder name)
 <!--chtml else-->
 <PRE>
 Navigating the List of Folders             General Alpine Commands
-------------------------------             ---------------------
+------------------------------             -----------------------
  P   Move to previous folder               ?  Show this help text
  N   Move to next folder
  -   Show previous screen of folders
@@ -11121,7 +11123,7 @@ matching this filter will be moved.
 <!--chtml if pinemode="function_key"-->
 <PRE>
 Navigating the List of Folders             General Alpine Commands
-------------------------------             ---------------------
+------------------------------             -----------------------
 F5   Move to previous folder               F1  Show this help text
 F6   Move to next folder
 F7   Show previous screen of folders
@@ -11137,7 +11139,7 @@ F11  AddNew folder (just like Select, but you type in a new folder name)
 <!--chtml else-->
 <PRE>
 Navigating the List of Folders             General Alpine Commands
-------------------------------             ---------------------
+------------------------------             -----------------------
  P   Move to previous folder               ?  Show this help text
  N   Move to next folder
  -   Show previous screen of folders
@@ -11185,9 +11187,9 @@ F12 Whereis (search address book titles)
 <!--chtml else-->
 <PRE>
 Navigation                     General Alpine Commands
------------------------        ---------------------
- P  Prev Address Book             ?  Display this help text
- N  Next Address Book             E  Back to MAIN Alpine menu
+-----------------------        -----------------------
+ P  Prev Address Book           ?  Display this help text
+ N  Next Address Book           E  Back to MAIN Alpine menu
  -  Previous page
 Spc (space bar) Next page
  W  WhereIs (search for word in address book titles)
@@ -11276,7 +11278,7 @@ F12 Whereis (search for word)
 <!--chtml else-->
 <PRE>
 Navigation                       General Alpine Commands
------------------------          ---------------------
+-----------------------          -----------------------
  P  Previous Entry                ?  Display this help text
  N  Next Entry                    O  Show all other available commands
  -  Previous page                 &lt;  Back to MAIN Alpine menu
@@ -11356,7 +11358,7 @@ F3  Select                              F6  Zoom (or unZoom)
 F5  Select Current                      F7  Apply Command to Selection  
 <!--chtml else-->
 Address Book Navigation        General Alpine Commands
------------------------        ---------------------
+-----------------------        -----------------------
  P  Prev Address                  ?  Display this help text
  N  Next Address                  O  Show all other available commands
  -  Previous page of address book M  Back to MAIN MENU
@@ -11690,7 +11692,7 @@ contain entries for users on multiple machines within the organization.
 <!--chtml if pinemode="function_key"-->
 <PRE>
 Navigating the List of Messages               General Alpine Commands
--------------------------------               ---------------------
+-------------------------------               -----------------------
 F5   Move to previous entry                   F1  Show this help text
 F6   Move to next entry
 F7   Show previous screen of address book
@@ -11705,8 +11707,8 @@ F4   Select the currently highlighted entry
 <!--chtml else-->
 <PRE>
 Navigating the List of Messages               General Alpine Commands
--------------------------------               ---------------------
- P   Move to previous entry                   ?  Show this help text
+-------------------------------               -----------------------
+ P   Move to previous entry                    ?  Show this help text
  N   Move to next entry
  -   Show previous screen of address book
 Spc  (space bar) Show next screen of address book
@@ -11750,7 +11752,7 @@ help text.
 <!--chtml if pinemode="function_key"-->
 <PRE>
 Navigating the List of Address Books       General Alpine Commands
--------------------------------            ---------------------
+------------------------------------       -----------------------
 F4   View the highlighted address book
 F5   Move to previous address book         F1  Show this help text
 F6   Move to next address book
@@ -11767,7 +11769,7 @@ F9   Change to ListMode
 <!--chtml else-->
 <PRE>
 Navigating the List of Address Books       General Alpine Commands
--------------------------------            ---------------------
+------------------------------------       -----------------------
  &gt;   View the highlighted address book
  P   Move to previous address book         ?  Show this help text
  N   Move to next address book
@@ -11826,7 +11828,7 @@ help text.
 <!--chtml if pinemode="function_key"-->
 <PRE>
 Navigating the List of Messages                 General Alpine Commands
--------------------------------                 ---------------------
+-------------------------------                 -----------------------
 F5   Move to previous entry                     F1  Show this help text
 F6   Move to next entry
 F7   Show previous screen of address book
@@ -11842,7 +11844,7 @@ F9   Change to ListMode
 <!--chtml else-->
 <PRE>
 Navigating the List of Messages                 General Alpine Commands
--------------------------------                 ---------------------
+-------------------------------                 -----------------------
  P   Move to previous entry                     ?  Show this help text
  N   Move to next entry
  -   Show previous screen of address book
@@ -11900,7 +11902,7 @@ help text.
 <!--chtml if pinemode="function_key"-->
 <PRE>
 Navigating the List of Messages                 General Alpine Commands
--------------------------------                 ---------------------
+-------------------------------                 -----------------------
 F5   Move to previous entry                     F1  Show this help text
 F6   Move to next entry
 F7   Show previous screen of address book
@@ -11917,7 +11919,7 @@ F9   Set or Unset the highlighted entry
 <!--chtml else-->
 <PRE>
 Navigating the List of Messages                 General Alpine Commands
--------------------------------                 ---------------------
+-------------------------------                 -----------------------
  P   Move to previous entry                     ?  Show this help text
  N   Move to next entry
  -   Show previous screen of address book
@@ -11964,7 +11966,7 @@ help text.
 <!--chtml if pinemode="function_key"-->
 <PRE>
 Navigating the List of Messages                 General Alpine Commands
--------------------------------                 ---------------------
+-------------------------------                 -----------------------
 F5   Move to previous entry                     F1  Show this help text
 F6   Move to next entry
 F7   Show previous screen of address book
@@ -11979,7 +11981,7 @@ F4   Select the currently highlighted entry
 <!--chtml else-->
 <PRE>
 Navigating the List of Messages                 General Alpine Commands
--------------------------------                 ---------------------
+-------------------------------                 -----------------------
  P   Move to previous entry                     ?  Show this help text
  N   Move to next entry
  -   Show previous screen of address book
@@ -12020,7 +12022,7 @@ help text.
 <!--chtml if pinemode="function_key"-->
 <PRE>
 Navigating the List of Messages                 General Alpine Commands
--------------------------------                 ---------------------
+-------------------------------                 -----------------------
 F5   Move to previous entry                     F1  Show this help text
 F6   Move to next entry
 F7   Show previous screen of address book
@@ -12035,7 +12037,7 @@ F4   Select the currently highlighted entry
 <!--chtml else-->
 <PRE>
 Navigating the List of Messages                 General Alpine Commands
--------------------------------                 ---------------------
+-------------------------------                 -----------------------
  P   Move to previous entry                     ?  Show this help text
  N   Move to next entry
  -   Show previous screen of address book

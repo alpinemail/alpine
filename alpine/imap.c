@@ -1246,8 +1246,8 @@ pine_tcptimeout(long int elapsed, long int sincelast, char *host)
 
     ps_global->tcptimeout = 1;
 #ifdef	DEBUG
-    dprint((1, "tcptimeout: waited %s seconds\n",
-	       long2string(elapsed)));
+    dprint((1, "tcptimeout: waited %s seconds, server: %s\n",
+	       long2string(elapsed), host));
     if(debugfile)
       fflush(debugfile);
 #endif

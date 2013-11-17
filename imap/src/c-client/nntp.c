@@ -1750,6 +1750,7 @@ SENDSTREAM *nntp_open_full (NETDRIVER *dv,char **hostlist,char *service,
     mm_log ("Unable to negotiate TLS with this server",ERROR);
     return NIL;
   }
+  if(stream && !stream->netstream) stream = nntp_close(stream);
   if (stream) {			/* have a session? */
     if (mb.user[0]) {		/* yes, have user name? */
       if ((long) mail_parameters (NIL,GET_TRUSTDNS,NIL)) {
