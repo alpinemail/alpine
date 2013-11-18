@@ -85,7 +85,7 @@ if test x$enable_dmalloc = "xyes" ; then
   AC_DEFINE(ENABLE_DMALLOC, 1, [Define enable dmalloc debugging])
 fi
 
-dnl set locale. Mac is special so we deal with it separately.
+dnl Set default locale dir.
 case $host in
     *apple-darwin*)
       if test -d /opt/local ; then
@@ -93,6 +93,9 @@ case $host in
       else
 	localedir="\${datadir}/locale"
       fi
+      ;;
+    *-*-cygwin)
+	localedir="/usr/share"
       ;;
     *)  
       localedir="\${datadir}/locale"

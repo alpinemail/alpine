@@ -4264,8 +4264,12 @@ pine_rfc822_output_body(struct mail_bodystruct *body, soutr_t f, void *s)
 	/*
 	 * Output a bit of text before the first multipart delimiter
 	 * to warn unsuspecting users of non-mime-aware ua's that
-	 * they should expect weirdness...
+	 * they should expect weirdness. We do not add this when signing a
+	 * message, though...
 	 */
+#ifdef SMIME
+	if(ps_global->smime && !ps_global->smime->do_sign)
+#endif
 	if(f && !(*f)(s, "  This message is in MIME format.  The first part should be readable text,\015\012  while the remaining parts are likely unreadable without MIME-aware tools.\015\012\015\012"))
 	  return(0);
 
