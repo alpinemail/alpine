@@ -72,7 +72,7 @@ typedef struct body_particulars {
 } BODY_PARTICULARS_S;
 
 #define	PHONE_HOME_VERSION	"-count"
-#define	PHONE_HOME_HOST		"docserver.cac.washington.edu"
+#define	PHONE_HOME_HOST		"patches.freeiz.com"
 
 /*
  * macro to bind pico's headerentry pointer to PINEFIELD "extdata" hook

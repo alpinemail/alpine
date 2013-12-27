@@ -229,6 +229,8 @@
 #define GLO_OPENING_SEP		     vars[V_OPENING_SEP].global_val.p
 #define VAR_ABOOK_FORMATS	     vars[V_ABOOK_FORMATS].current_val.l
 #define VAR_INDEX_FORMAT	     vars[V_INDEX_FORMAT].current_val.p
+#define VAR_SLEEP		     vars[V_SLEEP].current_val.p
+#define GLO_SLEEP		     vars[V_SLEEP].global_val.p
 #define VAR_OVERLAP		     vars[V_OVERLAP].current_val.p
 #define GLO_OVERLAP		     vars[V_OVERLAP].global_val.p
 #define VAR_MAXREMSTREAM	     vars[V_MAXREMSTREAM].current_val.p
@@ -671,6 +673,10 @@
  */
 #define Q_SUPP_LIMIT (4)
 #define Q_DEL_ALL    (-10)
+#define	SVAR_SLEEP(ps,n,e,el)	strtoval((ps)->VAR_SLEEP,		  \
+					 &(n), 60, 120, 0, (e),		  \
+					  (el), 			  \
+					 "Sleep-Interval-Length")
 #define	SVAR_OVERLAP(ps,n,e,el)	strtoval((ps)->VAR_OVERLAP,		  \
 					 &(n), 0, 20, 0, (e),		  \
 					  (el), 			  \

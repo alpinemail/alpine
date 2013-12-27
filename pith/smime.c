@@ -1292,8 +1292,7 @@ body_to_bio(BODY *body)
      * Now need to truncate by two characters since the above
      * appends CRLF.
      */
-    if(ps_global->smime && !ps_global->smime->do_sign
-	&& (len=BIO_ctrl_pending(bio)) > 1){
+    if((len=BIO_ctrl_pending(bio)) > 1){
 	BUF_MEM *biobuf = NULL;
 
 	BIO_get_mem_ptr(bio, &biobuf);
@@ -1606,9 +1605,10 @@ do_signature_verify(PKCS7 *p7, BIO *in, BIO *out)
     long err;
     
 #if 0
-    dump_bio_to_file(in,"/tmp/verified-data");
+    if (in)
+       dump_bio_to_file(in,"/tmp/verified-data");
 #endif
-    
+
     if(!s_cert_store){
 	q_status_message(SM_ORDER | SM_DING, 2, 2,
 		_("Couldn't verify S/MIME signature: No CA Certs were loaded"));

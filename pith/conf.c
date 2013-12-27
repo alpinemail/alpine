@@ -74,7 +74,7 @@ char    *skip_over_this_var(char *, char *);
 char    *native_nl(char *);
 void     set_color_val(struct variable *, int);
 int      copy_localfile_to_remotefldr(RemType, char *, char *, char *, char **);
-char    *backcompat_convert_from_utf8(char *, size_t, char *);
+char    *backcompat_convert_from_utf8(char **, size_t, char *);
 #ifdef	_WINDOWS
 char    *transformed_color(char *);
 int      convert_pc_gray_names(struct pine *, PINERC_S *, EditWhich);
@@ -339,6 +339,8 @@ CONF_TXT_T cf_text_margin[] =		"Number of lines from top and bottom of screen wh
 CONF_TXT_T cf_text_stat_msg_delay[] =	"The number of seconds to sleep after writing a status message";
 
 CONF_TXT_T cf_text_busy_cue_rate[] =	"Number of times per-second to update busy cue messages";
+
+CONF_TXT_T cf_text_psleep[] =	"UNIX ONLY (except MAC OSX): When an attachment is opened, this variable controls the number\n#of seconds to wait between checks if the user has ended viewing the attachment.\n#minimun value: 60 seconds, maximum value: 600 seconds (10 minutes). Default: 60 seconds";
 
 CONF_TXT_T cf_text_mailcheck[] =	"The approximate number of seconds between checks for new mail";
 
@@ -616,6 +618,8 @@ static struct variable variables[] = {
 	NULL,			cf_text_stat_msg_delay},
 {"busy-cue-rate",			0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	NULL,			cf_text_busy_cue_rate},
+{"mailcap-check-interval",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
+	NULL,			cf_text_psleep},
 {"mail-check-interval",			0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	NULL,			cf_text_mailcheck},
 {"mail-check-interval-noncurrent",	0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
@@ -1615,6 +1619,7 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     GLO_LOCAL_FULLNAME		= cpystr(DF_LOCAL_FULLNAME);
     GLO_LOCAL_ADDRESS		= cpystr(DF_LOCAL_ADDRESS);
     GLO_OVERLAP			= cpystr(DF_OVERLAP);
+    GLO_SLEEP			= cpystr("60");
     GLO_MAXREMSTREAM		= cpystr(DF_MAXREMSTREAM);
     GLO_MARGIN			= cpystr(DF_MARGIN);
     GLO_FILLCOL			= cpystr(DF_FILLCOL);
@@ -2068,6 +2073,13 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
 	    }
 	}
     }
+
+    set_current_val(&vars[V_SLEEP], TRUE, TRUE);
+    ps->sleep = i = 60;
+    if(SVAR_SLEEP(ps, i, tmp_20k_buf, SIZEOF_20KBUF))
+      init_error(ps, SM_ORDER | SM_DING, 3, 5, tmp_20k_buf);
+    else
+      ps->sleep = i;
 
     set_current_val(&vars[V_OVERLAP], TRUE, TRUE);
     ps->viewer_overlap = i = atoi(DF_OVERLAP);
@@ -5482,7 +5494,9 @@ write_pinerc(struct pine *ps, EditWhich which, int flags)
 {
     char               *p, *dir, *tmp = NULL, *pinrc;
     char               *pval, **lval;
+    char	       *linep = NULL, *lineq = NULL;
     int                 bc = 1;
+    int			buflen;
     PINERC_LINE        *pline;
     struct variable    *var;
     time_t		mtime;
@@ -5494,6 +5508,8 @@ write_pinerc(struct pine *ps, EditWhich which, int flags)
     struct stat		sbuf;
     char	       *slink = NULL;
 #endif
+
+#define MAXPLINESIZE 10000
 
     dprint((2,"---- write_pinerc(%s) ----\n",
 	    (which == Main) ? "Main" : "Post"));
@@ -5718,6 +5734,10 @@ write_pinerc(struct pine *ps, EditWhich which, int flags)
        !so_puts(so, native_nl(cf_text_comment)))
       goto io_err;
 
+    linep = fs_get((MAXPLINESIZE+1)*sizeof(char));
+    lineq = fs_get((MAXPLINESIZE+1)*sizeof(char));
+    buflen = MAXPLINESIZE;
+
     /* Write out what was in the .pinerc */
     for(pline = prc->pinerc_lines;
 	pline && (pline->is_var || pline->line); pline++){
@@ -5750,26 +5770,40 @@ write_pinerc(struct pine *ps, EditWhich which, int flags)
 		    int i = 0;
 
 		    for(i = 0; lval[i]; i++){
-			snprintf(tmp_20k_buf, 10000, "%s%s%s%s%s",
+			if(strlen(var->name) 
+			     + (lval[i][0] ? strlen(lval[i]) : 5) > buflen){
+			  buflen = strlen(var->name) 
+					+ (lval[i][0] ? strlen(lval[i]) : 5);
+			  fs_resize((void **)&linep, (buflen+1)*sizeof(char));
+			  fs_resize((void **)&lineq, (buflen+1)*sizeof(char));
+			}
+			snprintf(linep, buflen+1, "%s%s%s%s%s",
 				(i) ? "\t" : var->name,
 				(i) ? "" : "=",
 				lval[i][0] ? lval[i] : quotes,
 				lval[i+1] ? "," : "", NEWLINE);
-			tmp_20k_buf[10000-1] = '\0';
-			if(!so_puts(so, bc ? backcompat_convert_from_utf8(tmp_20k_buf+10000, SIZEOF_20KBUF-10000, tmp_20k_buf) : tmp_20k_buf))
+			linep[buflen] = '\0';
+			if(!so_puts(so, bc ? backcompat_convert_from_utf8(&lineq, buflen+1, linep) : linep))
 			  goto io_err;
 		    }
 		}
 		else{
-		    snprintf(tmp_20k_buf, 10000, "%s=%s%s%s%s",
+		    if(strlen(var->name) 
+			     + (pval[0] ? strlen(pval) : 5) > buflen){
+			  buflen = strlen(var->name) 
+					+ (pval[0] ? strlen(pval) : 5);
+			  fs_resize((void **)&linep, (buflen+1)*sizeof(char));
+			  fs_resize((void **)&lineq, (buflen+1)*sizeof(char));
+		    }
+		    snprintf(linep, buflen+1, "%s=%s%s%s%s",
 			    var->name,
 			    (pline->is_quoted && pval[0] != '\"')
 			      ? "\"" : "",
 			    pval,
 			    (pline->is_quoted && pval[0] != '\"')
 			      ? "\"" : "", NEWLINE);
-		    tmp_20k_buf[10000-1] = '\0';
-		    if(!so_puts(so, bc ? backcompat_convert_from_utf8(tmp_20k_buf+10000, SIZEOF_20KBUF-10000, tmp_20k_buf) : tmp_20k_buf))
+		    linep[buflen] = '\0';
+		    if(!so_puts(so, bc ? backcompat_convert_from_utf8(&lineq, buflen+1, linep) : linep))
 		      goto io_err;
 		}
 	    }
@@ -5846,20 +5880,32 @@ write_pinerc(struct pine *ps, EditWhich which, int flags)
 	    int i = 0;
 
 	    for(i = 0; lval[i] ; i++){
-		snprintf(tmp_20k_buf, 10000, "%s%s%s%s%s",
+		if(strlen(var->name) 
+			     + (lval[i][0] ? strlen(lval[i]) : 5) > buflen){
+			  buflen = strlen(var->name) 
+					+ (lval[i][0] ? strlen(lval[i]) : 5);
+			  fs_resize((void **)&linep, (buflen+1)*sizeof(char));
+			  fs_resize((void **)&lineq, (buflen+1)*sizeof(char));
+		}
+		snprintf(linep, buflen+1, "%s%s%s%s%s",
 			(i) ? "\t" : var->name,
 			(i) ? "" : "=",
 			lval[i],
 			lval[i+1] ? "," : "", NEWLINE);
-		tmp_20k_buf[10000-1] = '\0';
-		if(!so_puts(so, bc ? backcompat_convert_from_utf8(tmp_20k_buf+10000, SIZEOF_20KBUF-10000, tmp_20k_buf) : tmp_20k_buf))
+		linep[buflen] = '\0';
+		if(!so_puts(so, bc ? backcompat_convert_from_utf8(&lineq, buflen+1, linep) : linep))
 		  goto io_err;
 	    }
 	}
 	else{
 	    char *pconverted;
 
-	    pconverted = bc ? backcompat_convert_from_utf8(tmp_20k_buf, SIZEOF_20KBUF, pval) : pval;
+	    if(strlen(pval) > buflen){ 
+		buflen = strlen(pval) + 1;
+		fs_resize((void **)&linep, (buflen+1)*sizeof(char));
+		fs_resize((void **)&lineq, (buflen+1)*sizeof(char));
+	    }
+	    pconverted = bc ? backcompat_convert_from_utf8(&lineq, buflen+1, pval) : pval;
 
 	    if(!so_puts(so, var->name) || !so_puts(so, "=") ||
 	       !so_puts(so, pconverted) || !so_puts(so, NEWLINE))
@@ -5962,6 +6008,9 @@ write_pinerc(struct pine *ps, EditWhich which, int flags)
 	fs_give((void **)&tmp);
     }
 
+    if(linep) fs_give((void **)&linep);
+    if(lineq) fs_give((void **)&lineq);
+
     return(0);
 
   io_err:
@@ -5979,6 +6028,9 @@ write_pinerc(struct pine *ps, EditWhich which, int flags)
 	fs_give((void **)&tmp);
     }
 
+    if(linep) fs_give((void **)&linep);
+    if(lineq) fs_give((void **)&lineq);
+
     return(-1);
 }
 
@@ -5988,9 +6040,10 @@ write_pinerc(struct pine *ps, EditWhich which, int flags)
  * running this pine and an old pre-alpine pine on the same config
  * file we attempt to convert the values of the config variables
  * to the user's character set before writing.
+ * parameters: char **buf. Memory of size_t buflen allocated by caller.
  */
 char *
-backcompat_convert_from_utf8(char *buf, size_t buflen, char *srcstr)
+backcompat_convert_from_utf8(char **buf, size_t buflen, char *srcstr)
 {
     char *converted = NULL;
     char *p;
@@ -6002,8 +6055,11 @@ backcompat_convert_from_utf8(char *buf, size_t buflen, char *srcstr)
 	its_ascii = 0;
 
     /* if it is ascii, go with that */
-    if(its_ascii)
-      converted = srcstr;
+    if(its_ascii){
+      strncpy(*buf, srcstr, buflen);
+      converted = *buf;
+      (*buf)[buflen-1] = '\0';
+    }
     else{
 	char *trythischarset = NULL;
 
@@ -6026,16 +6082,18 @@ backcompat_convert_from_utf8(char *buf, size_t buflen, char *srcstr)
 	    memset(&dst, 0, sizeof(dst));
 	    if(utf8_cstext(&src, trythischarset, &dst, 0)){
 		if(dst.data){
-		    strncpy(buf, (char *) dst.data, buflen);
-		    buf[buflen-1] = '\0';
+		    strncpy(*buf, (char *) dst.data, buflen);
+		    (*buf)[buflen-1] = '\0';
 		    fs_give((void **) &dst.data);
-		    converted = buf;
 		}
 	    }
 	}
 
-	if(!converted)
-	  converted = srcstr;
+	if(!converted){
+	  strncpy(*buf, srcstr, buflen);
+	  (*buf)[buflen-1] = '\0';
+	  converted = *buf;
+        }
     }
 
     return(converted);
@@ -7654,6 +7712,8 @@ config_help(int var, int feature)
 	return(h_config_incoming_second_interv);
       case V_INCCHECKLIST :
 	return(h_config_incoming_list);
+      case V_SLEEP :
+	return(h_config_psleep);
       case V_OVERLAP :
 	return(h_config_viewer_overlap);
       case V_MAXREMSTREAM :

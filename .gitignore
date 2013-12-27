@@ -1,6 +1,7 @@
 *.[ao]
 *~
 *m4
+rem
 m4/*
 m4/Makefile.in
 autom4te.*/*

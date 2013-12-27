@@ -246,7 +246,7 @@ exec_mailcap_cmd(MCAP_CMD_S *mc_cmd, char *image_file, int needsterminal)
 #else
     char   *command = NULL,
 	   *result_file = NULL,
-	   *p, *cmd;
+	   *p, *cmd, *q, *psef;
     char  **r_file_h;
     PIPE_S *syspipe;
     int     mode;
@@ -257,11 +257,24 @@ exec_mailcap_cmd(MCAP_CMD_S *mc_cmd, char *image_file, int needsterminal)
       cmd = mc_cmd->command;
     else
       return;
-    l = 32 + strlen(cmd) + 2*strlen(image_file);
+
+#ifdef PSEFCMD
+    psef = fs_get((60 + strlen(PSEFCMD) + strlen(image_file))*sizeof(char));
+    sprintf(psef, "PSEF=`%s | /bin/grep \"%s\" | /bin/grep -v grep`", PSEFCMD, image_file);
+
+    q = fs_get((80 + 2*strlen(psef))*sizeof(char)); /* bigger than 62 */
+    sprintf(q, "/bin/sh -c '(%s; while test -n \"$PSEF\" ; do %s ; sleep %d ; done)' ;", psef, psef, ps_global->sleep);
+    fs_give((void **) &psef);
+#else
+    q = cpystr("");
+#endif /* PSEFCMD */
+
+    l = 32 + strlen(cmd) + 2*strlen(image_file) + strlen(q);
     p = command = (char *)fs_get((l+1) * sizeof(char));
     if(!needsterminal)  /* put in background if it doesn't need terminal */
       *p++ = '(';
-    snprintf(p, l+1-(p-command), "%s ; rm -f %s", cmd, image_file);
+    snprintf(p, l+1-(p-command), "%s ; %s rm -f %s", cmd, q, image_file);
+    fs_give((void **)&q);
     command[l] = '\0';
     p += strlen(p);
     if(!needsterminal && (p-command)+5 < l){

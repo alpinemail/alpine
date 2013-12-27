@@ -267,12 +267,12 @@ BEGIN
 #else
             VALUE "FileDescription", "Alpine\0"
 #endif
-            VALUE "FileVersion", "2.19.3VALUE "FileVersion", "2.19.3VALUE "FileVersion", "2.11\0"" "alpine 2.19.3"" "alpine 2.19.3"
+            VALUE "FileVersion", "2.19.3\0"
             VALUE "InternalName", "alpine\0"
             VALUE "LegalCopyright", "Copyright 2006-2009\0"
             VALUE "OriginalFilename", "alpine.exe\0"
             VALUE "ProductName", "alpine\0"
-            VALUE "ProductVersion", "2.19.3VALUE "ProductVersion", "2.19.3VALUE "ProductVersion", "2.11\0"" "alpine 2.19.3"" "alpine 2.19.3"
+            VALUE "ProductVersion", "2.19.3\0"
         END
     END
     BLOCK "VarFileInfo"

@@ -15,7 +15,7 @@ dnl  */
 
 AC_PREREQ([2.69])
 
-AC_REVISION([Rev:7 by chappa@washington.edu])
+AC_REVISION([Rev:8 by chappa@washington.edu])
 
 dnl Alpine Version Number is in $srcdir/VERSION
 AC_INIT([alpine],[m4_normalize(m4_include(VERSION))],[chappa@washington.edu])
@@ -83,6 +83,39 @@ AC_ARG_WITH(dmalloc-dir,
 
 if test x$enable_dmalloc = "xyes" ; then
   AC_DEFINE(ENABLE_DMALLOC, 1, [Define enable dmalloc debugging])
+fi
+
+dnl set ps command, this test is fragile, but it should mostly work
+ALPINE_psefcmd="/bin/ps auxww"
+ALPINE_psfailed="0"
+ALPINE_PSTEST="-"
+AC_ARG_WITH(ps-cmd,
+  AS_HELP_STRING([--with-ps-cmd="CMD"],[Use this command to check running commands. Default: /bin/ps auxww]),
+  [
+    if test "x$withval" = "xno" -o "x$withval" = "xyes" -o "x$withval" = "x" ; then
+	withval=$ALPINE_psefcmd
+    fi
+    ALPINE_PSTEST=`$withval | $EGREP "$withval" | $EGREP -v $EGREP`
+    if test -n "$ALPINE_PSTEST" ; then
+       ALPINE_psefcmd="$withval"
+    else
+       ALPINE_psfailed="1"
+       if test "x$ALPINE_psefcmd" != "x$withval" ; then
+          AC_MSG_WARN(failed command $withval. Trying $ALPINE_psefcmd)
+       fi
+    fi
+  ])
+if test "$ALPINE_psfailed" = "1" -o "$ALPINE_PSTEST" = "-" ; then
+   withval="$ALPINE_psefcmd"
+   ALPINE_PSTEST=`$withval | $EGREP "$withval" | $EGREP -v $EGREP`
+   if test -z "$ALPINE_PSTEST" ; then
+      ALPINE_psfailed="1"
+   else
+      ALPINE_psfailed="0"
+   fi
+fi
+if test "$ALPINE_psfailed" = "0" ; then
+  AC_DEFINE_UNQUOTED([PSEFCMD], "$ALPINE_psefcmd", [ps command which outputs list of running commands])
 fi
 
 dnl Set default locale dir.
@@ -727,12 +760,16 @@ else
       ;;
     *-apple-darwin*)
       alpine_SSLTYPE="nopwd"
+dnl Originally this is where certs are, and they might still be there, even
+dnl after installing Homebrew, MacPorts or Fink. We will use it if we cannot
+dnl find it anywhere else.
+      alpine_SSLCERTS_ORIG="/System/Library/OpenSSL/certs"
       if test -d /usr/local/opt/openssl ; then
-	  alpine_SSLDIR="/usr/local/opt/openssl"
-	  alpine_SSLINCLUDE="$alpine_SSLDIR/include"
-	  alpine_SSLLIB="$alpine_SSLDIR/lib"
-	  alpine_SSLCERTS="$alpine_SSLDIR/certs"
-	  alpine_SSLKEYS="$alpine_SSLDIR/private"
+	alpine_SSLDIR="/usr/local/opt/openssl"
+	alpine_SSLINCLUDE="$alpine_SSLDIR/include"
+	alpine_SSLLIB="$alpine_SSLDIR/lib"
+	alpine_SSLCERTS="$alpine_SSLDIR/certs"
+	alpine_SSLKEYS="$alpine_SSLDIR/private"
       elif test -d /opt/local/etc/openssl ; then
 	alpine_SSLDIR="/opt/local"
 	alpine_SSLINCLUDE="$alpine_SSLDIR/include"
@@ -1520,7 +1557,7 @@ fi
 AC_DEFINE(HAVE_REGEX_H,1,[Regular expression header file exists])
 if test "x$alpine_REGEX" = "xyes" ; then
   CPPFLAGS="$CPPFLAGS -I${top_builddir}/regex"
-  LDFLAGS="$LDFLAGS -L${top_builddir}/regex -lregex"
+  LDFLAGS="$LDFLAGS -L${top_builddir}/regex"
   REGEX_BUILD=regex
   REGEX_MAKEFILE="$REGEX_BUILD/Makefile"
 fi
@@ -1792,6 +1829,8 @@ else
     certdir="${alpine_SSLDIR}/certs"
   elif test -n "$alpine_SSLDIR" -a -d "${alpine_SSLDIR}/ssl/certs" ; then
     certdir="${alpine_SSLDIR}/ssl/certs"
+  elif test -n "$alpine_SSLCERTS_ORIG" -a -d "$alpine_SSLCERTS_ORIG" ; then
+    certdir="$alpine_SSLCERTS_ORIG"
   else
     AC_MSG_NOTICE([SSL Problem: certificate directory not found])
   fi
@@ -1829,8 +1868,8 @@ else
     c_client_specials="${c_client_specials}SSLDIR=$alpine_SSLDIR "
   fi
 
-  if test -n "$alpine_SSLCERTS" ; then
-    c_client_specials="${c_client_specials}SSLCERTS=$alpine_SSLCERTS "
+  if test -n "$certdir" ; then
+    c_client_specials="${c_client_specials}SSLCERTS=$certdir "
   fi
 
   if test -n "$alpine_SSLKEYS" ; then

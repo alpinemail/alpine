@@ -767,24 +767,35 @@ reply_quote_initials(char *name)
 {
     char *s = name,
          *w = name;
-    
+    int i, j;
+    CBUF_S cbuf;
+    UCS ucs;
+
+    cbuf.cbuf[i = 0] = '\0';
+    cbuf.cbufp = cbuf.cbuf;
+    cbuf.cbufend = cbuf.cbuf;
+
     /* while there are still characters to look at */
     while(s && *s){
 	/* skip to next initial */
-	while(*s && isspace((unsigned char) *s))
+	while(*s && (unsigned char) *s == ' ')
 	  s++;
 	
-	/* skip over cruft like single quotes */
-	while(*s && !isalnum((unsigned char) *s))
-	  s++;
+        if(!utf8_to_ucs4_oneatatime((unsigned char) *s++ & 0xff, &cbuf, &ucs, NULL)){
+	  i++;
+	  continue;
+        }
 
-	/* copy initial */
-	if(*s)
-	  *w++ = *s++;
+	/* copy cbuf */
+	for(j = 0; j <= i; j++) *w++ =  cbuf.cbuf[j];
 	
 	/* skip to end of this piece of name */
-	while(*s && !isspace((unsigned char) *s))
+	while(*s && (unsigned char) *s != ' ')
 	  s++;
+
+        cbuf.cbuf[i = 0] = '\0';
+        cbuf.cbufp = cbuf.cbuf;
+        cbuf.cbufend = cbuf.cbuf;
     }
 
     if(w)

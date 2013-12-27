@@ -218,6 +218,20 @@ Additions include:
 <P>
 Bugs that have been addressed include:
 <UL>
+  <LI> Fix _INIT_ token for reply quote string to include support for 8-bit
+       in personal names. Reported by Lev Gorenstein.
+  <LI> When writing the .pinerc file, lines were truncated if they were longer
+       than 10,000 characters. This could cause data corruption, so now lines
+       are allowed to be of any length.
+  <LI> In Unix Alpine (but not in MAC OSX) fix a problem that made Alpine 
+       remove attachments before they were open by a mailcap viewer. It 
+       requires that the user has an equivalent to a command such as "ps 
+       auxww" to list the list of processes, and check if there is any 
+       program using the attachment. The default is "/bin/ps auxww", but 
+       it can be changed at compile time with the option --with-ps-cmd. 
+       See the help of the variable 
+       <a href="h_config_psleep"><!--#echo var="VAR_mailcap-check-interval"--></a> 
+       for more information.
   <LI> S/MIME: signed messages that contained an attachment would not validate.
   <LI> Crash when tcp connection to NNTP server was lost after connection
        had been established, but lost immediately afterwards.
@@ -234,7 +248,8 @@ Bugs that have been addressed include:
        CPPCFLAGS, and so the --with-ssl-include-dir option take effect 
        during the build. Fix by Ulf-Dietrich Braumann.
   <LI> Fix in WebAlpine: do not use deprecated dereference in pointer, 
-       needs to use tcl_getstringresult() instead. Reported by Ulf-Dietrich Braumann.
+       needs to use tcl_getstringresult() instead. Reported by 
+       Ulf-Dietrich Braumann.
   <LI> Quoted string in URL Viewers configuration variable were not 
        unquoted before passing to viewer.
   <LI> Fix in configure script to detect location of tcl library; add
@@ -243,6 +258,7 @@ Bugs that have been addressed include:
        by Werner Scheinast.
   <LI> Move SSL configurations from UW-IMAP to configure script, and
        update OpenSSL configuration for mac OSX.
+  <LI> Remove -lregex from linker flags when building --with-supplied-regex.
 </UL>
 <P>
 
@@ -3584,6 +3600,7 @@ There are also additional details on
 <li><a href="h_config_image_viewer">OPTION: <!--#echo var="VAR_image-viewer"--></a>
 <li><a href="h_config_inbox_path">OPTION: <!--#echo var="VAR_inbox-path"--></a>
 <li><a href="h_config_archived_folders">OPTION: <!--#echo var="VAR_incoming-archive-folders"--></a>
+<li><a href="h_config_psleep">OPTION: <!--#echo var="VAR_mailcap-check-interval"--></a>
 <li><a href="h_config_incoming_interv">OPTION: <!--#echo var="VAR_incoming-check-interval"--></a>
 <li><a href="h_config_incoming_second_interv">OPTION: <!--#echo var="VAR_incoming-check-interval-secondary"--></a>
 <li><a href="h_config_incoming_list">OPTION: <!--#echo var="VAR_incoming-check-list"--></a>
@@ -20566,6 +20583,47 @@ attempt to open a network connection used for monitoring for Unseen
 messages in Incoming Folders. The default is 5.
 If a connection has not completed within this many seconds Alpine will
 give up and consider it a failed connection.
+<P>
+<UL>   
+<LI><A HREF="h_finding_help">Finding more information and requesting help</A>
+</UL><P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+====== h_config_psleep ======
+<HTML>
+<HEAD>
+<TITLE>OPTION: <!--#echo var="VAR_mailcap-check-interval"--> (UNIX Alpine only)</TITLE>
+</HEAD>
+<BODY>
+<H1>OPTION: <!--#echo var="VAR_mailcap-check-interval"--> (UNIX Alpine only)</H1>
+
+<P>
+In the good old days a mailcap viewer was used to examine an 
+attachment before saving it, and after viewing the attachment control 
+would return to the operating system when the viewer was closed. Therefore, 
+when the mailcap viewer returned control to the operating system, it 
+could be assumed that the user who opened the attachment was done
+examining it, and the copy of the attachment that was used, could be removed.
+
+<P>
+However, today this assumption is not longer valid. Some viewers return 
+control to the operating system before they actually read the attachment
+to be examined. This causes Alpine to delete the attachment before it 
+is read by the viewer, causing the viewer to fail opening the attachment.
+
+<P>
+In order to work around this problem, Alpine checks, after the viewer has 
+returned control to the operating system, if there is any process that is 
+using the attachment. This variable controls the number of seconds that 
+must elapse between checks. Once it is found that no process is using the 
+attachment, this is removed.
+
+<P>
+The minimum value for this variable is 60 (checks will be made once per 
+minute), and the maximum value is 600 (checks will be made once every 10 
+minutes). The default value is 60.
+
 <P>
 <UL>   
 <LI><A HREF="h_finding_help">Finding more information and requesting help</A>
