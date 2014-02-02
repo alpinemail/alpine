@@ -5,7 +5,7 @@ static char rcsid[] = "$Id: help.c 1032 2008-04-11 00:30:04Z hubert@u.washington
 /*
  * ========================================================================
  * Copyright 2006-2008 University of Washington
- * Copyright 2013 Eduardo Chappa
+ * Copyright 2013-2014 Eduardo Chappa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -414,7 +414,8 @@ help_processor(int cmd, MSGNO_S *msgmap, SCROLL_S *sparms)
 	 help_name[0] = '\0';
 	 for(t = h_texts; t->help_text != NO_HELP; t++)
 	   if(t->help_text == ((HELP_SCROLL_S *)sparms->proc.data.p)->help_source){
-	     strcpy(help_name,t->tag);
+	     strncpy(help_name, t->tag, sizeof(help_name)-1);
+	     help_name[sizeof(help_name)-1] = '\0';
 	     break;
 	   }
 	 if(help_name[0])

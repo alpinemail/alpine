@@ -3,7 +3,7 @@
 #        T H E   A L P I N E    M E S S A G E   S Y S T E M
 #
 #/* ========================================================================
-# * Copyright 2013 Eduardo Chappa
+# * Copyright 2013-2014 Eduardo Chappa
 # * Copyright 2006-2008 University of Washington
 # *
 # * Licensed under the Apache License, Version 2.0 (the "License");
@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 40 2013-11-18 00:05:17
+Alpine Commit 42 2014-02-02 00:15:19
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -154,7 +154,7 @@ Version <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)
 <!--chtml if pinemode="running"-->
 (built <!--#echo var=ALPINE_COMPILE_DATE-->)
 <!--chtml endif-->
-<BR>Copyright 2013 Eduardo Chappa
+<BR>Copyright 2013-2014 Eduardo Chappa
 <BR>Copyright 2006-2008 University of Washington
 </DIV>
 
@@ -682,7 +682,7 @@ page at
 <CENTER><A HREF="http://www.washington.edu/alpine/credits.html">http://www.washington.edu/alpine/credits</A></CENTER>
 
 <P>
-Alpine Copyright 2013 Eduardo Chappa,
+Alpine Copyright 2013-2014 Eduardo Chappa,
 Copyright 2006-2008 University of Washington.
 
 <P>
@@ -1553,7 +1553,7 @@ Version <!--#echo var="ALPINE_VERSION"-->
 <BR>(built <!--#echo var=ALPINE_COMPILE_DATE-->)
 <!--chtml endif-->
 </DIV>
-<CENTER>Copyright 2013 Eduardo Chappa,
+<CENTER>Copyright 2013-2014 Eduardo Chappa,
 <BR>Copyright 2006-2008 University of Washington.
 </CENTER>
 

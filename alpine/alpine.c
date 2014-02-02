@@ -4,8 +4,8 @@ static char rcsid[] = "$Id: alpine.c 1266 2009-07-14 18:39:12Z hubert@u.washingt
 
 /*
  * ========================================================================
+ * Copyright 2013-2014 Eduardo Chappa
  * Copyright 2006-2008 University of Washington
- * Copyright 2013 Eduardo Chappa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

@@ -5,7 +5,7 @@ static char rcsid[] = "$Id: mailcmd.c 1266 2009-07-14 18:39:12Z hubert@u.washing
 /*
  * ========================================================================
  * Copyright 2006-2009 University of Washington
- * Copyright 2013 Eduardo Chappa
+ * Copyright 2013-2014 Eduardo Chappa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -7813,7 +7813,8 @@ select_by_text(MAILSTREAM *stream, MSGNO_S *msgmap, long int msgno, SEARCHSET **
 	break;
 
       case 'h' :
-	strcpy(tmp, "Name of HEADER to match : ");
+	strncpy(tmp, "Name of HEADER to match : ", sizeof(tmp)-1);
+	tmp[sizeof(tmp)-1] = '\0';
 	flags = OE_APPEND_CURRENT;
 	namehdr[0] = '\0';
 	r = 'x';

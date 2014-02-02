@@ -704,6 +704,11 @@ MAILSTREAM *nntp_mopen (MAILSTREAM *stream)
 			       (stream->debug ? NOP_DEBUG : NIL)))) return NIL;
   }
 
+  if(!nstream->netstream){
+    mm_log (nstream->reply,ERROR);
+    nntp_close (nstream);	/* punt stream */
+    return NIL;
+  }
 				/* always zero messages if halfopen */
   if (stream->halfopen) i = j = k = rnmsgs = nmsgs = 0;
 				/* otherwise open the newsgroup */

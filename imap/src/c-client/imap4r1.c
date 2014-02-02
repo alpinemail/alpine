@@ -360,7 +360,7 @@ void *imap_parameters (long function,void *value)
     if (((IMAPLOCAL *) ((MAILSTREAM *) value)->local)->cap.namespace &&
 	!((IMAPLOCAL *) ((MAILSTREAM *) value)->local)->namespace)
       imap_send (((MAILSTREAM *) value),"NAMESPACE",NIL);
-    value = (void *) ((IMAPLOCAL *) ((MAILSTREAM *) value)->local)->namespace;
+    value = (void *) &((IMAPLOCAL *) ((MAILSTREAM *) value)->local)->namespace;
     break;
   case GET_THREADERS:
     value = (void *)

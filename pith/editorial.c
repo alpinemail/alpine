@@ -4,7 +4,7 @@ static char rcsid[] = "$Id: editorial.c 768 2007-10-24 00:10:03Z hubert@u.washin
 
 /* ========================================================================
  * Copyright 2006-2007 University of Washington
- * Copyright 2013 Eduardo Chappa
+ * Copyright 2013-2014 Eduardo Chappa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

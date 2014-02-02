@@ -5,7 +5,7 @@ static char rcsid[] = "$Id: imap.c 1266 2009-07-14 18:39:12Z hubert@u.washington
 /*
  * ========================================================================
  * Copyright 2006-2009 University of Washington
- * Copyright 2013 Eduardo Chappa
+ * Copyright 2013-2014 Eduardo Chappa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2051,25 +2051,20 @@ passfile_name(char *pinerc, char *path, size_t len)
 int 
 line_get(char *tmp, size_t len, char **textp)
 {
-  char *s, c;
+  char *s;
 
   tmp[0] = '\0';
-  if (*textp == NULL)
+  if (*textp == NULL || strlen(*textp) >= len - 1
+	|| (s = strchr(*textp, '\n')) == NULL)
     return 0;
-  s = strchr(*textp, '\n');
-  if(s != NULL){
-     *s = '\0';
-     if(*(s-1) == '\r')
-	*(s-1) = '\0';
-     if(strlen(*textp) < len - 1)
-	strcpy(tmp, *textp);
-     else
-	return 0;
-     strcat(tmp, "\n");
-     *textp = s+1;
-  }
-  else
-     return 0;
+
+  *s = '\0';
+  if(*(s-1) == '\r')
+    *(s-1) = '\0';
+
+  strcpy(tmp, *textp);
+  strcat(tmp, "\n");
+  *textp = s+1;
 
   return 1;
 }
@@ -2602,7 +2597,8 @@ write_passfile(pinerc, l)
     }
 
 #ifdef SMIME
-    strcpy(tmp2, tmp);
+   strncpy(tmp2, tmp, sizeof(tmp2)-1);
+   tmp2[sizeof(tmp2)-1] = '\0';
 #endif /* SMIME */
 
     for(n = 0; l; l = l->next, n++){
