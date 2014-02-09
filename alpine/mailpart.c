@@ -2137,6 +2137,15 @@ display_attachment(long int msgno, ATTACH_S *a, int flags)
 		 ? a->body->subtype : "unk");
     }
 
+    /* We are creating a temporary name. This is just a prefix. If you
+     * need the original name, use the save command, so if the prefix
+     * is too long, shorten it.
+     */
+    if (strlen(prefix) > 9){
+	prefix[9]  = '-';
+	prefix[10] = '\0';
+    }
+
     filename = temp_nam_ext(NULL, prefix, ext);
 
     if(!filename){

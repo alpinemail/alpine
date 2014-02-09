@@ -207,7 +207,7 @@ spell(int f, int n)
 
 	    switch(status){
 	      case TRUE:
-		chword(wb, cb);			/* correct word    */
+		chword(wb, cb, 0);		/* correct word    */
 	      case FALSE:
 		update();			/* place cursor */
 		break;
@@ -285,7 +285,7 @@ movetoword(UCS *w)
     olddotp = curwp->w_dotp;
 
     curwp->w_bufp->b_mode |= MDEXACT;		/* case sensitive */
-    while(forscan(&i, w, NULL, 0, 1) == TRUE){
+    while(forscan(&i, w, 0, NULL, 0, 1) == TRUE){
 	if(i)
 	  break;				/* wrap NOT allowed! */
 

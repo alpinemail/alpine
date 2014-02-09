@@ -7230,10 +7230,6 @@ html_element_collector(FILTER_S *fd, int ch)
 	else if(ED(fd)->proc_inst){
 	    return(1);			/* return without display... */
 	}
-	else if(!strucmp(ED(fd)->element,"STYLE") && ED(fd)->badform){
-	    dprint((2, "-- html error: empty tag with STYLE parameter!"));
-	    return(1);
-	}
 	else if(!ED(fd)->quoted || ED(fd)->badform){
 	    ELPROP_S *ep;
 

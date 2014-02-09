@@ -32,11 +32,16 @@ int	eq(UCS, UCS);
 int	expandp(UCS *, UCS *, int);
 int	readnumpat(char *);
 void	get_pat_cases(UCS *, UCS *);
-int     srpat(char *, UCS *, size_t, int);
-int     readpattern(char *, int);
-int     replace_pat(UCS *, int *);
-int     replace_all(UCS *, UCS *);
-
+int     srpat(char *, UCS *, size_t, int, int);
+int     readpattern(char *, int, int);
+int     replace_pat(UCS *, int *, int);
+int     replace_all(UCS *, UCS *, int);
+void	reverse_line(LINE *);
+void	reverse_buffer(void);
+void	reverse_ucs4(UCS *);
+void	reverse_all(UCS *, int);
+void	supdate(UCS *, int);
+char   *sucs4_to_utf8_cpystr(UCS *, int);
 
 #define	FWS_RETURN(RV)	{				\
 			    thisflag |= CFSRCH;		\
@@ -109,12 +114,13 @@ eq(UCS bc, UCS pc)
 int
 forwsearch(int f, int n)
 {
-  int              status;
+  int              status, bsearch;
   int              wrapt = FALSE, wrapt2 = FALSE;
   int              repl_mode = FALSE;
   UCS              defpat[NPAT];
   int              search = FALSE;
   EML              eml;
+
 
     /* resolve the repeat count */
     if (n == 0)
@@ -124,14 +130,15 @@ forwsearch(int f, int n)
       FWS_RETURN(0);
 
     defpat[0] = '\0';
+    bsearch = 0;		/* search forward by default */
 
     /* ask the user for the text of a pattern */
     while(1){
 
 	if (gmode & MDREPLACE)
-	  status = srpat("Search", defpat, NPAT, repl_mode);
+	  status = srpat("Search", defpat, NPAT, repl_mode, bsearch);
 	else
-	  status = readpattern("Search", TRUE);
+	  status = readpattern("Search", TRUE, bsearch);
 
 	switch(status){
 	  case TRUE:                         /* user typed something */
@@ -156,6 +163,10 @@ forwsearch(int f, int n)
 	  case (CTRL|'L'):			/* redraw requested */
 	    pico_refresh(FALSE, 1);
 	    update();
+	    break;
+
+	  case (CTRL|'P'):
+	    bsearch = bsearch == 0 ? 1 : 0;
 	    break;
 
 	  case  (CTRL|'V'):
@@ -258,6 +269,8 @@ forwsearch(int f, int n)
 	}
     }
 
+    reverse_all(defpat, bsearch);
+
     /*
      * This code is kind of dumb.  What I want is successive C-W 's to 
      * move dot to successive occurences of the pattern.  So, if dot is
@@ -270,19 +283,19 @@ forwsearch(int f, int n)
     while(1){
 	if(defpat[status] == '\0'){
 	    forwchar(0, 1);
-	    break;		/* find next occurence! */
+	    break;
 	}
 
 	if(status + curwp->w_doto >= llength(curwp->w_dotp) ||
 	   !eq(defpat[status],lgetc(curwp->w_dotp, curwp->w_doto + status).c))
-	  break;		/* do nothing! */
+	  break;
 	status++;
     }
 
     /* search for the pattern */
     
     while (n-- > 0) {
-	if((status = forscan(&wrapt,defpat,NULL,0,PTBEG)) == FALSE)
+	if((status = forscan(&wrapt,defpat, bsearch, NULL,0,PTBEG)) == FALSE)
 	  break;
     }
 
@@ -301,7 +314,7 @@ forwsearch(int f, int n)
 	fs_give((void **) &utf8);
     }
     else if((gmode & MDREPLACE) && repl_mode == TRUE){
-        status = replace_pat(defpat, &wrapt2);    /* replace pattern */
+        status = replace_pat(defpat, &wrapt2, bsearch);    /* replace pattern */
 	if (wrapt == TRUE || wrapt2 == TRUE){
 	    eml.s = (status == ABORT) ? "cancelled but wrapped" : "Wrapped";
 	    emlwrite("Replacement %s", &eml);
@@ -314,13 +327,18 @@ forwsearch(int f, int n)
 	emlwrite("", NULL);
     }
 
+    reverse_all(defpat, bsearch);
+    if(curwp->w_doto == -1){
+      curwp->w_doto  = 0;
+      curwp->w_flag |= WFMOVE;
+    }
     FWS_RETURN(status);
 }
 
 
 /* Replace a pattern with the pattern the user types in one or more times. */
 int
-replace_pat(UCS *defpat, int *wrapt)
+replace_pat(UCS *defpat, int *wrapt, int bsearch)
 {
   register         int status;
   UCS              lpat[NPAT], origpat[NPAT];	/* case sensitive pattern */
@@ -331,7 +349,9 @@ replace_pat(UCS *defpat, int *wrapt)
   UCS              prompt[NPMT];
   UCS             *promptp;
 
-    forscan(wrapt, defpat, NULL, 0, PTBEG);    /* go to word to be replaced */
+    if(bsearch)
+	curwp->w_doto -= ucs4_strlen(defpat) - 1;
+    forscan(wrapt, defpat, bsearch, NULL, 0, PTBEG);    /* go to word to be replaced */
 
     lpat[0] = '\0';
 
@@ -344,6 +364,13 @@ replace_pat(UCS *defpat, int *wrapt)
 
     while(1) {
 
+	/* we need to reverse the buffer back to its original state, so that 
+	 * the user will not see that we reversed it under them. The cursor
+	 * is at the beginning of the reverse string, that is at the end
+	 * of the string. Move it back to the beginning.
+	 */
+
+	reverse_all(defpat, bsearch);		 /* reverse for normal view */
 	update();
 	(*term.t_rev)(1);
 	get_pat_cases(origpat, defpat);
@@ -402,6 +429,8 @@ replace_pat(UCS *defpat, int *wrapt)
 
 	curwp->w_flag |= WFMOVE;
 
+	reverse_all(defpat, bsearch); /* reverse for internal use */
+
 	switch(status){
 
 	  case TRUE :
@@ -416,10 +445,10 @@ replace_pat(UCS *defpat, int *wrapt)
 	    }
 
 	    if (repl_all){
-		status = replace_all(defpat, lpat);
+		status = replace_all(defpat, lpat, bsearch);
 	    }
 	    else{
-		chword(defpat, lpat);	/* replace word    */
+		chword(defpat, lpat, bsearch);	/* replace word    */
 		update();
 		status = TRUE;
 	    }
@@ -470,7 +499,7 @@ replace_pat(UCS *defpat, int *wrapt)
 	    }
 	    else{
 		mlerase();
-		chword(defpat, origpat);
+		chword(defpat, origpat, bsearch);
 	    }
 
 	    update();
@@ -501,7 +530,7 @@ get_pat_cases(UCS *realpat, UCS *searchpat)
 /* Ask the user about every occurence of orig pattern and replace it with a 
    repl pattern if the response is affirmative. */   
 int
-replace_all(UCS *orig, UCS *repl)
+replace_all(UCS *orig, UCS *repl, int bsearch)
 {
   register         int status = 0;
   UCS             *b;
@@ -514,10 +543,20 @@ replace_all(UCS *orig, UCS *repl)
   int		   stop_offset = curwp->w_doto;
   EML              eml;
 
+  /* similar to replace_pat. When we come here, if bsearch is set,
+   * the cursor is at the end of the match, so we must bring it back
+   * to the beginning.
+   */
+  if(bsearch){
+    curwp->w_doto -= ucs4_strlen(orig) - 1;
+    curwp->w_flag |= WFMOVE;
+  }
+  stop_offset = curwp->w_doto;
   while (1)
-    if (forscan(&wrapt, orig, stop_line, stop_offset, PTBEG)){
+    if (forscan(&wrapt, orig, bsearch, stop_line, stop_offset, PTBEG)){
         curwp->w_flag |= WFMOVE;            /* put cursor back */
 
+	reverse_all(orig, bsearch); /* undo reverse buffer and pattern */
         update();
 	(*term.t_rev)(1);
 	get_pat_cases(realpat, orig);
@@ -562,10 +601,10 @@ replace_all(UCS *orig, UCS *repl)
 
 	if (status == TRUE){
 	    n++;
-	    chword(realpat, repl);		     /* replace word    */
+	    chword(realpat, repl, bsearch);	     /* replace word    */
 	    update();
 	}else{
-	    chword(realpat, realpat);	       /* replace word by itself */
+	    chword(realpat, realpat, bsearch);	       /* replace word by itself */
 	    update();
 	    if(status == ABORT){		/* if cancelled return */
 		eml.s = comatose(n);
@@ -593,14 +632,14 @@ replace_all(UCS *orig, UCS *repl)
 
 /* Read a replacement pattern.  Modeled after readpattern(). */
 int
-srpat(char *utf8prompt, UCS *defpat, size_t defpatlen, int repl_mode)
+srpat(char *utf8prompt, UCS *defpat, size_t defpatlen, int repl_mode, int bsearch)
 {
 	register int s;
 	int	     i = 0;
 	UCS         *b;
 	UCS	     prompt[NPMT];
 	UCS         *promptp;
-	EXTRAKEYS    menu_pat[8];
+	EXTRAKEYS    menu_pat[9];
 
 	menu_pat[i = 0].name = "^Y";
 	menu_pat[i].label    = N_("FirstLine");
@@ -643,13 +682,24 @@ srpat(char *utf8prompt, UCS *defpat, size_t defpatlen, int repl_mode)
 	    KS_OSDATASET(&menu_pat[i], KS_NONE);
 	}
 
+	menu_pat[++i].name = "^P";
+	menu_pat[i].label  = bsearch ? N_("Forward") : N_("Backward") ;
+	menu_pat[i].key    = (CTRL|'P');
+	KS_OSDATASET(&menu_pat[i], KS_NONE);
+
 	menu_pat[++i].name = NULL;
 
 	b = utf8_to_ucs4_cpystr(utf8prompt);
 	if(b){
 	    ucs4_strncpy(prompt, b, NPMT);
 	    prompt[NPMT-1] = '\0';
-	    fs_give((void **) &b);
+	    if(bsearch){
+	      fs_give((void **) &b);
+	      b = utf8_to_ucs4_cpystr(N_(" backward"));
+	      if(b) ucs4_strncat(prompt, b, ucs4_strlen(b));
+	      prompt[NPMT-1] = '\0';
+	    }
+	    if(b) fs_give((void **) &b);
 	}
 
 	promptp = &prompt[ucs4_strlen(prompt)];
@@ -762,14 +812,14 @@ readnumpat(char *utf8prompt)
 
 
 int
-readpattern(char *utf8prompt, int text_mode)
+readpattern(char *utf8prompt, int text_mode, int bsearch)
 {
 	register int s;
 	int	     i;
 	UCS         *b;
 	UCS	     tpat[NPAT+20];
 	UCS         *tpatp;
-	EXTRAKEYS    menu_pat[7];
+	EXTRAKEYS    menu_pat[8];
 
 	menu_pat[i = 0].name = "^Y";
 	menu_pat[i].label    = N_("FirstLine");
@@ -803,13 +853,24 @@ readpattern(char *utf8prompt, int text_mode)
 	    KS_OSDATASET(&menu_pat[i], KS_NONE);
 	}
 
+	menu_pat[++i].name = "^P";
+	menu_pat[i].label  = bsearch ? N_("Forward") : N_("Backward") ;
+	menu_pat[i].key    = (CTRL|'P');
+	KS_OSDATASET(&menu_pat[i], KS_NONE);
+
 	menu_pat[++i].name = NULL;
 
 	b = utf8_to_ucs4_cpystr(utf8prompt);
 	if(b){
 	    ucs4_strncpy(tpat, b, NPAT+20);
 	    tpat[NPAT+20-1] = '\0';
-	    fs_give((void **) &b);
+	    if(bsearch){
+	      fs_give((void **) &b);
+	      b = utf8_to_ucs4_cpystr(N_(" backward"));
+	      if(b) ucs4_strncat(tpat, b, ucs4_strlen(b));
+	      tpat[NPAT+20-1] = '\0';
+	    }
+	    if(b) fs_give((void **) &b);
 	}
 
 	tpatp = &tpat[ucs4_strlen(tpat)];
@@ -853,11 +914,82 @@ readpattern(char *utf8prompt, int text_mode)
 	return(s);
 }
 
+/* given a line, reverse its content */
+void reverse_line(LINE *l)
+{
+  int i, j, a;
+  UCS u;
 
-/* search forward for a <patrn>	*/
+  if(l == NULL) return;
+  j = llength(l) - 1;
+  for(i = 0; i < j; i++, j--){
+     u             = lgetc(l, j).c;	/* reverse the text */
+     lgetc(l, j).c = lgetc(l, i).c;
+     lgetc(l, i).c = u;
+     a             = lgetc(l, j).a;	/* and the attribute */
+     lgetc(l, j).a = lgetc(l, i).a;
+     lgetc(l, i).a = a;
+  }
+}
+
+void
+reverse_all(UCS *pat, int bsearch)
+{
+  if(bsearch != 0){
+     reverse_buffer();
+     reverse_ucs4(pat);
+  }
+}
+
+void
+reverse_buffer(void)
+{
+  LINE *l;
+
+ for(l = lforw(curbp->b_linep); l != curbp->b_linep; l = lforw(l))
+    reverse_line(l);
+
+  /* reverse links in buffer */
+  l = curbp->b_linep;
+  do {
+    lforw(l) = lback(l);
+    l = lforw(l);
+  } while(l != curbp->b_linep);
+
+  l = curbp->b_linep;
+  do {
+     lback(lforw(l)) = l;
+     l = lforw(l);
+  } while (l != curbp->b_linep);
+
+  curwp->w_doto = llength(curwp->w_dotp) - 1 - curwp->w_doto;
+}
+
+
+
+/* given a UCS4 string reverse its content */
+void reverse_ucs4(UCS *s)
+{
+  int i, j;
+  UCS u;
+
+  j = ucs4_strlen(s) - 1;
+  for(i = 0; i < j; i++, j--){
+     u    = s[j];
+     s[j] = s[i];
+     s[i] = u;
+  }
+}
+
+
+/* search forward for a <patrn>.
+ * A backward search is a forward search in backward lines with backward
+ * patterns
+ */
 int
 forscan(int *wrapt,	/* boolean indicating search wrapped */
 	UCS *patrn,	/* string to scan for */
+	int bsearch,	/* search backwards */
 	LINE *limitp,	/* stop searching if reached */
 	int limito,	/* stop searching if reached */
 	int leavep)	/* place to leave point
@@ -877,6 +1009,13 @@ forscan(int *wrapt,	/* boolean indicating search wrapped */
     LINE *stopline;	/* line to stop search */
 
     *wrapt = FALSE;
+
+    /* if bsearch is set we return the match at the beginning of the
+     * matching string, so we make this algorithm return the end of
+     * the string, so that when we reverse we be at the beginning.
+     */
+    if(bsearch)
+	leavep = leavep == PTBEG ? PTEND : PTBEG;
 
     /*
      * the idea is to set the character to end the search at the 
@@ -919,12 +1058,17 @@ forscan(int *wrapt,	/* boolean indicating search wrapped */
 
 	/* get the current character resolving EOLs */
 	if (curoff == llength(curline)) {	/* if at EOL */
-	    curline = lforw(curline);	/* skip to next line */
-	    curoff = 0;
+	    curline = lforw(curline); /* skip to next line */
+	    curoff  = 0;
 	    c = '\n';			/* and return a <NL> */
 	}
+	else if(curoff == -1){
+	  stopoff = curoff = 0;
+	  continue;
+	  c = '\n';
+	}
 	else
-	  c = lgetc(curline, curoff++).c;	/* get the char */
+	    c = lgetc(curline, curoff++).c;	/* get the char */
 
 	/* test it against first char in pattern */
 	if (eq(c, patrn[0]) != FALSE) {	/* if we find it..*/
@@ -1025,13 +1169,37 @@ expandp(UCS *srcstr,		/* string to expand */
 /* 
  * chword() - change the given word, wp, pointed to by the curwp->w_dot 
  *            pointers to the word in cb
+ * if bsearch is set, then cb is supposed to come unreversed, while
+ * the buffer is supposed to be reversed, so we must reverse cb before
+ * inserting it.
  */
 void
-chword(UCS *wb, UCS *cb)
+chword(UCS *wb, UCS *cb, int bsearch)
 {
-    ldelete((long) ucs4_strlen(wb), NULL);		/* not saved in kill buffer */
-    while(*cb != '\0')
-      linsert(1, *cb++);
+    UCS *u;
+    ldelete(ucs4_strlen(wb), NULL);	/* not saved in kill buffer */
+    if(bsearch) reverse_ucs4(cb);
+    for(u = cb; *u != '\0'; u++)
+      linsert(1, *u);
+    if(bsearch) reverse_ucs4(cb);
 
     curwp->w_flag |= WFEDIT;
+}
+
+void
+ supdate(UCS *pat, int bsearch)
+{
+  reverse_all(pat, bsearch); /* undo reverse buffer and pattern */
+  update();
+  reverse_all(pat, bsearch); /* reverse buffer and pattern */
+}
+
+char *
+sucs4_to_utf8_cpystr(UCS *orig, int bsearch)
+{
+  char *utf8;
+  if(bsearch) reverse_ucs4(orig);
+  utf8 = ucs4_to_utf8_cpystr(orig);
+  if(bsearch) reverse_ucs4(orig);
+  return utf8;
 }

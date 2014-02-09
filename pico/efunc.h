@@ -229,9 +229,9 @@ extern	void unmarkbuffer(void);
 
 /* search.c */
 extern	int forwsearch(int, int);
-extern	int readpattern(char *, int);
-extern	int forscan(int *, UCS *, LINE *, int, int);
-extern	void chword(UCS *, UCS *);
+extern	int readpattern(char *, int, int);
+extern	int forscan(int *, UCS *, int, LINE *, int, int);
+extern	void chword(UCS *, UCS *, int);
 
 /* spell.c */
 #ifdef	SPELLER

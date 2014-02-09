@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 42 2014-02-02 00:15:19
+Alpine Commit 43 2014-02-09 15:14:42
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -179,6 +179,10 @@ Additions include:
 <P>
 
 <UL>
+  <LI> Style tag in body of html message causes Alpine to not write its content
+       until a new &lt;/style&gt;
+  <LI> Pico: New subcommand of the search command, allows to reverse the
+       direction of search.
   <LI> Upgrade UW-IMAP to Panda IMAP from 
        <A HREF="https://github.com/jonabbey/panda-imap">https://github.com/jonabbey/panda-imap</A>.
   <LI> Replace tabs by spaces in From and Subject fields to control for
@@ -213,6 +217,8 @@ Additions include:
   <LI> Pico: Justification works without need of a predefined quote 
        string. This allows justification of blocks of text that are 
        indented with spaces.
+  <LI> Check bounds and tie strings off to improve security. Contributed 
+       by James Jerkins.
 </UL>
 
 <P>

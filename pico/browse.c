@@ -71,6 +71,7 @@ struct fcell {
  */
 static struct bmaster {
     struct fcell *head;				/* first cell in list  */
+    struct fcell *bottom;			/* last cell in list  */
     struct fcell *top;				/* cell in top left    */
     struct fcell *current;			/* currently selected  */
     int    longest;				/* longest file name (in screen width) */
@@ -98,7 +99,7 @@ void   percdircells(struct bmaster *);
 int    PlaceCell(struct bmaster *, struct fcell *, int *, int *);
 void   zotfcells(struct fcell *);
 void   zotmaster(struct bmaster **);
-struct fcell *FindCell(struct bmaster *, char *);
+struct fcell *FindCell(struct bmaster *, char *, int);
 int    sisin(char *, char *);
 void   p_chdir(struct bmaster *);
 void   BrowserAnchor(char *);
@@ -316,6 +317,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
     UCS c, new_c;
     int status, i, j;
     int row, col, crow, ccol;
+    int bsearch;	/* search forward by default */
     char *p, *envp, child[NLINE], tmp[NLINE];
     struct bmaster *mp;
     struct fcell *tp;
@@ -344,7 +346,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
     
     tp = NULL;
     if(fn && *fn){
-	if((tp = FindCell(gmp, fn)) != NULL){
+	if((tp = FindCell(gmp, fn, 0)) != NULL){
 	    gmp->current = tp;
 	    PlaceCell(gmp, gmp->current, &row, &col);
 	}
@@ -904,12 +906,15 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		    if(tp == gmp->head)
 		      gmp->head = tp->next;
 
+		    if(tp == gmp->bottom)
+		      gmp->bottom = tp->prev;
+
 		    tp->fname = NULL;
 		    tp->next = tp->prev = NULL;
 		    if(tp != gmp->current)
 		      free((char *) tp);
 
-		    if((tp = FindCell(gmp, gmp->current->fname)) != NULL){
+		    if((tp = FindCell(gmp, gmp->current->fname, 0)) != NULL){
 			gmp->current = tp;
 			PlaceCell(gmp, gmp->current, &row, &col);
 		    }
@@ -1140,7 +1145,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 
 			    zotmaster(&gmp);
 			    gmp = mp;
-			    if((tp = FindCell(gmp, child)) != NULL){
+			    if((tp = FindCell(gmp, child, 0)) != NULL){
 				gmp->current = tp;
 				PlaceCell(gmp, gmp->current, &row, &col);
 			    }
@@ -1267,7 +1272,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 
 			    zotmaster(&gmp);
 			    gmp = mp;
-			    if((tp = FindCell(gmp, child)) != NULL){
+			    if((tp = FindCell(gmp, child, 0)) != NULL){
 				gmp->current = tp;
 				PlaceCell(gmp, gmp->current, &row, &col);
 			    }
@@ -1376,7 +1381,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 			    zotmaster(&gmp);
 			    gmp = mp;
 
-			    if((tp = FindCell(gmp, ++p)) != NULL){
+			    if((tp = FindCell(gmp, ++p, 0)) != NULL){
 				gmp->current = tp;
 				PlaceCell(gmp, gmp->current, &row, &col);
 			    }
@@ -1488,7 +1493,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		tp  = NULL;
 
 		if(*child){
-		    if((tp = FindCell(gmp, child)) != NULL){
+		    if((tp = FindCell(gmp, child, 0)) != NULL){
 			gmp->current = tp;
 			PlaceCell(gmp, gmp->current, &row, &col);
 		    }
@@ -1592,11 +1597,11 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 	  case 'w':				/* Where is */
 	  case 'W':
 	  case (CTRL|'W'):
-	    i = 0;
+	    bsearch = i = 0;
 
 	    while(!i){
 
-		switch(readpattern(_("File name to find"), FALSE)){
+		switch(readpattern(_("File name to find"), FALSE, bsearch)){
 		  case HELPCH:
 		    emlwrite(_("\007No help yet!"), NULL);
 /* remove break and sleep after help text is installed */
@@ -1604,6 +1609,9 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		    break;
 		  case (CTRL|'L'):
 		    PaintBrowser(gmp, 0, &crow, &ccol);
+		    break;
+		  case (CTRL|'P'):
+		    bsearch = ++bsearch % 2;
 		    break;
 		  case (CTRL|'Y'):		/* first first cell */
 		    for(tp = gmp->top; tp->prev; tp = tp->prev)
@@ -1665,7 +1673,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		    if(pat && pat[0])
 		      utf8 = ucs4_to_utf8_cpystr(pat);
 
-		    if(utf8 && (tp = FindCell(gmp, utf8)) != NULL){
+		    if(utf8 && (tp = FindCell(gmp, utf8, bsearch)) != NULL){
 			PlaceCell(gmp, gmp->current, &row, &col);
 			PaintCell(row, col, gmp->cpf, gmp->current, 0);
 			gmp->current = tp;
@@ -1772,7 +1780,7 @@ getfcells(char *dname, int fb_flags)
 	mp->dname[sizeof(mp->dname)-1] = '\0';
     }
 
-    mp->head = mp->top = NULL;
+    mp->bottom = mp->head = mp->top = NULL;
     mp->cpf = mp->fpl = 0;
     mp->longest = 5;				/* .. must be labeled! */
     mp->flags = fb_flags;
@@ -1865,6 +1873,7 @@ getfcells(char *dname, int fb_flags)
 	    mp->head = mp->top = mp->current = ncp;
 	}
 	else{
+	    mp->bottom = ncp;
 	    tcp->next = ncp;
 	    ncp->prev = tcp;
 	}
@@ -2403,7 +2412,7 @@ zotmaster(struct bmaster **mp)
  *            the given string wrapping around if necessary
  */
 struct fcell *
-FindCell(struct bmaster *mp, char *utf8string)
+FindCell(struct bmaster *mp, char *utf8string, int bsearch)
 {
     struct fcell *tp, *fp;
 
@@ -2411,21 +2420,21 @@ FindCell(struct bmaster *mp, char *utf8string)
       return(NULL);
 
     fp = NULL;
-    tp = mp->current->next;
+    tp = bsearch ? mp->current->prev : mp->current->next;
     
     while(tp && !fp){
 	if(sisin(tp->fname, utf8string))
 	  fp = tp;
 	else
-	  tp = tp->next;
+	  tp = bsearch ? tp->prev : tp->next;
     }
 
-    tp = mp->head;
+    tp = bsearch ? mp->bottom : mp->head;
     while(tp != mp->current && !fp){
 	if(sisin(tp->fname, utf8string))
 	  fp = tp;
 	else
-	  tp = tp->next;
+	  tp = bsearch ? tp->prev : tp->next;
     }
 
     return(fp);
