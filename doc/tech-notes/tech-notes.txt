@@ -1,7 +1,7 @@
 
                              Alpine Technical Notes
 
-   Version 2.19.5, February 2014
+   Version 2.19.6, February 2014
 
 Table of Contents
 

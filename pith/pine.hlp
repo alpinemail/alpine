@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 43 2014-02-09 15:14:42
+Alpine Commit 44 2014-02-09 21:12:14
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -154,6 +154,8 @@ Version <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)
 <!--chtml if pinemode="running"-->
 (built <!--#echo var=ALPINE_COMPILE_DATE-->)
 <!--chtml endif-->
+
+<BR>
 <BR>Copyright 2013-2014 Eduardo Chappa
 <BR>Copyright 2006-2008 University of Washington
 </DIV>
@@ -657,7 +659,7 @@ accessible via the &quot;?&quot; key (or Ctrl-G in text-input contexts).
 The most current source of information about Alpine,
 including new version availability, is the web page at
 <P>
-<CENTER><SAMP><A HREF="http://www.washington.edu/alpine/">http://www.washington.edu/alpine/</A></SAMP></CENTER>
+<CENTER><SAMP><A HREF="http://patches.freeiz.com/alpine/">http://patches.freeiz.com/alpine/</A></SAMP></CENTER>
 </DD>
 </DL>
 
@@ -679,17 +681,16 @@ Alpine mailbox and <A HREF="http://www.washington.edu/imap/">IMAP</A> server
 access is provided by the IMAP Toolkit Environment (c-client library)
 version <!--#echo var="C_CLIENT_VERSION"-->.
 <P> 
-Alpine was developed by the Office of Computing &amp; Communications at
-the University of Washington in Seattle.  A more complete list of
-principal players and key contributors can be found on the credits Web
-page at
+Alpine was developed until 2009 by the Office of Computing 
+&amp; Communications at the University of Washington in Seattle.  
+Since then, the effort of developing Alpine has been continued by
+a community of volunteers who dedicate their time to make a good software
+even better!
+software 
 
 <P>
-<CENTER><A HREF="http://www.washington.edu/alpine/credits.html">http://www.washington.edu/alpine/credits</A></CENTER>
-
-<P>
-Alpine Copyright 2013-2014 Eduardo Chappa,
-Copyright 2006-2008 University of Washington.
+Alpine Copyright 2013-2014 Eduardo Chappa, 
+<BR> Copyright 2006-2008 University of Washington.
 
 <P>
 Additional legal notices can be found <A HREF="h_news_legal">here</A>
@@ -1718,14 +1719,10 @@ to browse the release notes.  These include changes since the last release,
 configuration information, the history of the Alpine
 project, credits, and legal notices.
 
-Alpine files and documentation are available via FTP or WWW:
+Alpine releases are available via the world wide web at
 <P>
 <CENTER><SAMP><A 
-HREF="ftp://ftp.cac.washington.edu/alpine/">ftp://ftp.cac.washington.edu/alpine/</A>
-</SAMP></CENTER>
-or
-<CENTER><SAMP><A 
-HREF="http://www.washington.edu/alpine/">http://www.washington.edu/alpine/</A></SAMP
+HREF="http://patches.freeiz.com/alpine/release/">http://patches.freeiz.com/alpine/release/</A></SAMP
 ></CENTER>
 <P>
 
@@ -2627,16 +2624,6 @@ difficulty is not a local configuration problem, you might look at the
 help section explaining where to look for
 <A HREF="h_finding_help">more information</A> and where to 
 get assistance.
-<P>
-
-Please note: Alpine has been adapted to several other operating systems
-besides those directly supported by the University of Washington; see:
-<P>
-<CENTER><A HREF="http://www.washington.edu/alpine/overview/non-UW.html">http://www.washington.edu/alpine/overview/non-UW.html</A></CENTER>
-
-<P>
-Inquiries about these other ports (e.g., VMS and AmigaDOS) should be
-directed to the individual or group that did the adaptation. 
 <P>
 
 <ADDRESS>
