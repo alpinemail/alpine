@@ -4,8 +4,8 @@ static char rcsid[] = "$Id: search.c 1266 2009-07-14 18:39:12Z hubert@u.washingt
 
 /*
  * ========================================================================
+ * Copyright 2013 Eduardo Chappa
  * Copyright 2006-2008 University of Washington
- * Copyright 2013-2014 Eduardo Chappa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -306,7 +306,7 @@ forwsearch(int f, int n)
 
       x[0] = '\0';
 
-      utf8 = ucs4_to_utf8_cpystr(defpat ? defpat : x); 
+      utf8 = sucs4_to_utf8_cpystr(defpat ? defpat : x, bsearch); 
       /* TRANSLATORS: reporting the result of a failed search */
       eml.s = utf8;
       emlwrite(_("\"%s\" not found"), &eml);
@@ -448,8 +448,22 @@ replace_pat(UCS *defpat, int *wrapt, int bsearch)
 		status = replace_all(defpat, lpat, bsearch);
 	    }
 	    else{
+		if(bsearch)
+		  curwp->w_doto -= ucs4_strlen(defpat) - 1;
 		chword(defpat, lpat, bsearch);	/* replace word    */
-		update();
+		/* after substitution the cursor is past the end of the
+		 * replaced string, so we backdown in backward search,
+		 * to make it appear at the beginning of the replaced string.
+		 * We make this choice in case the next search is backward,
+		 * because if we put the cursor at the end, the next backward
+		 * search might hit the substituted string, and we want to
+		 * avoid that, because we probably do not want to substitute
+		 * the new string, but old text.
+		 */
+		if(bsearch && (lback(curwp->w_dotp) != curbp->b_linep
+				|| curwp->w_doto > 0))
+		  curwp->w_doto--;
+		supdate(defpat, bsearch);
 		status = TRUE;
 	    }
 
@@ -495,14 +509,16 @@ replace_pat(UCS *defpat, int *wrapt, int bsearch)
 	  default:
 	    if(status == ABORT){
 	      emlwrite(_("Replacement Cancelled"), NULL);
+	      reverse_all(defpat, bsearch); /* undo reverse buffer and pattern */
 	      pico_refresh(FALSE, 1);
+	      reverse_all(defpat, bsearch); /* reverse buffer and pattern */
 	    }
 	    else{
 		mlerase();
 		chword(defpat, origpat, bsearch);
 	    }
 
-	    update();
+	    supdate(defpat, bsearch);
 	    return(FALSE);
 	}
     }
@@ -575,6 +591,7 @@ replace_all(UCS *orig, UCS *repl, int bsearch)
 	promptp = &prompt[ucs4_strlen(prompt)];
 
 	expandp(orig, promptp, NPMT-(promptp-prompt));
+	reverse_all(orig, bsearch); /* reverse for internal use */
 	prompt[NPMT-1] = '\0';
 	promptp += ucs4_strlen(promptp);
 
@@ -599,13 +616,17 @@ replace_all(UCS *orig, UCS *repl, int bsearch)
 
 	status = mlyesno(prompt, TRUE);		/* ask user */
 
+	if(bsearch){
+	   curwp->w_doto -= ucs4_strlen(realpat) - 1;
+	   curwp->w_flag |= WFMOVE;
+	}
 	if (status == TRUE){
 	    n++;
-	    chword(realpat, repl, bsearch);	     /* replace word    */
-	    update();
+	    chword(realpat, repl, bsearch);	/* replace word    */
+	    supdate(realpat, bsearch);
 	}else{
-	    chword(realpat, realpat, bsearch);	       /* replace word by itself */
-	    update();
+	    chword(realpat, realpat, bsearch);	/* replace word by itself */
+	    supdate(realpat, bsearch);
 	    if(status == ABORT){		/* if cancelled return */
 		eml.s = comatose(n);
 		emlwrite("Replace All cancelled after %s changes", &eml);
@@ -616,7 +637,7 @@ replace_all(UCS *orig, UCS *repl, int bsearch)
     else{
 	char *utf8;
 
-	utf8 = ucs4_to_utf8_cpystr(orig);
+	utf8 = sucs4_to_utf8_cpystr(orig, bsearch);
 	if(utf8){
 	  eml.s = utf8;
 	  emlwrite(_("No more matches for \"%s\""), &eml);
@@ -1025,7 +1046,7 @@ forscan(int *wrapt,	/* boolean indicating search wrapped */
      * first, test to see if we are at the end of the line, 
      * otherwise start searching on the next character. 
      */
-    if(curwp->w_doto == llength(curwp->w_dotp)){
+     if(curwp->w_doto == llength(curwp->w_dotp)){
 	/*
 	 * dot is not on end of a line
 	 * start at 0 offset of the next line
@@ -1034,11 +1055,11 @@ forscan(int *wrapt,	/* boolean indicating search wrapped */
 	stopline = curline = lforw(curwp->w_dotp);
 	if (curwp->w_dotp == curbp->b_linep)
 	  *wrapt = TRUE;
-    }
-    else{
+     }
+     else{
 	stopoff = curoff  = curwp->w_doto;
 	stopline = curline = curwp->w_dotp;
-    }
+     }
 
     /* scan each character until we hit the head link record */
 
@@ -1047,7 +1068,7 @@ forscan(int *wrapt,	/* boolean indicating search wrapped */
      */
     while (curline){
 
-	if (curline == curbp->b_linep)
+	if(curline == curbp->b_linep)
 	  *wrapt = TRUE;
 
 	/* save the current position in case we need to
@@ -1080,10 +1101,10 @@ forscan(int *wrapt,	/* boolean indicating search wrapped */
 	    /* scan through patrn for a match */
 	    while (*++patptr != '\0') {
 		/* advance all the pointers */
-		if (matchoff == llength(matchline)) {
+		if (matchoff >= llength(matchline)) {
 		    /* advance past EOL */
 		    matchline = lforw(matchline);
-		    matchoff = 0;
+		    matchoff  = 0;
 		    c = '\n';
 		} else
 		  c = lgetc(matchline, matchoff++).c;
@@ -1100,7 +1121,7 @@ forscan(int *wrapt,	/* boolean indicating search wrapped */
 	    /* reset the global "." pointers */
 	    if (leavep == PTEND) {	/* at end of string */
 		curwp->w_dotp = matchline;
-		curwp->w_doto = matchoff;
+		curwp->w_doto = matchoff - 1;
 	    }
 	    else {		/* at begining of string */
 		curwp->w_dotp = lastline;
@@ -1109,7 +1130,6 @@ forscan(int *wrapt,	/* boolean indicating search wrapped */
 
 	    curwp->w_flag |= WFMOVE; /* flag that we have moved */
 	    return(TRUE);
-
 	}
 
 fail:;			/* continue to search */

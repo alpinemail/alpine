@@ -56,7 +56,6 @@ static int             app_RAND_write_file(const char *file);
 static void            smime_init(void);
 static const char     *openssl_error_string(void);
 static void            create_local_cache(char *base, BODY *b);
-static BIO            *raw_part_to_bio(long msgno, const char *section);
 static long            rfc822_output_func(void *b, char *string);
 static int             load_private_key(PERSONAL_CERT *pcert);
 static void            setup_pkcs7_body_for_signature(BODY *b, char *description,
@@ -1469,50 +1468,6 @@ end:
 
 
 /*
- * Plonk the contents (mime headers and body) of the given
- * section of a message to a BIO_s_mem BIO object.
- */
-static BIO *
-raw_part_to_bio(long msgno, const char *section)
-{
-    unsigned long len;
-    char	 *text;
-    BIO          *bio;
-
-    bio = BIO_new(BIO_s_mem());
-
-    if(bio){
-
-	(void) BIO_reset(bio);
-
-        /* First grab headers of the chap */
-        text = mail_fetch_mime(ps_global->mail_stream, msgno, (char*) section, &len, 0);
-
-        if(text){
-	    BIO_write(bio, text, len);
-
-            /** Now grab actual body */
-            text = mail_fetch_body (ps_global->mail_stream, msgno, (char*) section, &len, 0);
-            if(text){
-		BIO_write(bio, text, len);
-	    }
-	    else{
-		BIO_free(bio);
-		bio = NULL;
-	    }
-
-	}
-	else{
-	    BIO_free(bio);
-	    bio = NULL;
-	}
-    }
-
-    return bio;
-}
-
-
-/*
     Get (and decode) the body of the given section of msg
  */
 static STORE_S*
@@ -1684,6 +1639,40 @@ free_smime_body_sparep(void **sparep)
     }
 }
 
+/* Big comment, explaining the mess that exists out there
+
+  When Alpine sends a message, it constructs that message, computes the 
+  signature, but then it forgets the message it signed and reconstructs it 
+  again. Since it signs a message containing a notice about "mime aware 
+  tools", but it does not send that we do not include that in the part that 
+  is signed, and that takes care of much of the problems.
+ 
+  Another problem is what is received from the servers. All servers tested 
+  seem to transmit the message that was signed intact and Alpine can check 
+  the signature correctly. That is not a problem. The problem arises when 
+  the message includes attachments. In this case different servers send 
+  different things, so it will be up to us to figure out what is the text 
+  that was actually signed. Confused? here is the story:
+ 
+  When a message containing and attachment is sent by Alpine, UW-IMAP, 
+  Panda-IMAP, Gmail, and local reading of folders send exactly the message 
+  that was sent by Alpine, but GMX.com, Exchange, and probably other servers 
+  add a trailing \r\n in the message, so when validating the signature, 
+  these messages will not validate. There are several things that can be 
+  done.
+ 
+  1. Add a trailing \r\n to any message that contains attachments, sign that 
+     and send that. In this way, all messages will validate with all 
+     servers.
+  
+  2. Compatibility mode: If a message has an attachment, contains a trailing 
+     \r\n and does not validate (sent by an earlier version of Alpine), 
+     remove the trailing \r\n and try to revalidate again.
+
+  3. We do not add \r\n to validate a message that we sent, because that 
+     would only work in Alpine, and not in any other client. That would not 
+     be a good thing to do.
+ */
 
 /*
  * Given a multipart body of type multipart/signed, attempt to verify it.
@@ -1696,55 +1685,77 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
     BIO	    *in = NULL;
     PART    *p;
     int	     result, modified_the_body = 0;
-    char     newSec[100];
+    unsigned long mimelen, bodylen;
+    char     newSec[100], *mimetext, *bodytext;
     char    *what_we_did;
 
     dprint((9, "do_detached_signature_verify(msgno=%ld type=%d subtype=%s section=%s)", msgno, b->type, b->subtype ? b->subtype : "NULL", (section && *section) ? section : (section != NULL) ? "Top" : "NULL"));
     smime_init();
 
     snprintf(newSec, sizeof(newSec), "%s%s1", section ? section : "", (section && *section) ? "." : "");
-    in = raw_part_to_bio(msgno, newSec);
 
-    if(in){
+    mimetext = mail_fetch_mime(ps_global->mail_stream, msgno, (char*) newSec, &mimelen, 0);
 
-	snprintf(newSec, sizeof(newSec), "%s%s2", section ? section : "", (section && *section) ? "." : "");
-        p7 = get_pkcs7_from_part(msgno, newSec);
+    if(mimetext)
+       bodytext = mail_fetch_body (ps_global->mail_stream, msgno, (char*) newSec, &bodylen, 0);
 
-        if(!p7)
-          goto end;
+    if (mimetext == NULL || bodytext ==  NULL)
+       return modified_the_body;
 
-    	result = do_signature_verify(p7, in, NULL);
+    snprintf(newSec, sizeof(newSec), "%s%s2", section ? section : "", (section && *section) ? "." : "");
 
-        if(b->subtype)
-	  fs_give((void**) &b->subtype);
+    if((p7 = get_pkcs7_from_part(msgno, newSec)) == NULL)
+       return modified_the_body;
 
-        b->subtype = cpystr(OUR_PKCS7_ENCLOSURE_SUBTYPE);
-        b->encoding = ENC8BIT;
+    /* first try with what get got */
+    if((in = BIO_new(BIO_s_mem())) == NULL)
+       return modified_the_body;
 
-    	if(b->description)
-	  fs_give ((void**) &b->description);
+    (void) BIO_reset(in);
+    BIO_write(in, mimetext, mimelen);
+    BIO_write(in, bodytext, bodylen);
 
-   	what_we_did = result ? 	_("This message was cryptographically signed.") :
-	    	    	    	_("This message was cryptographically signed but the signature could not be verified.");
-
-	b->description = cpystr(what_we_did);
-
-    	b->sparep = p7;
-	p7 = NULL;
-
-    	p = b->nested.part;
-	
-	/* p is signed plaintext */
-	if(p && p->next)
-	  mail_free_body_part(&p->next); /* hide the pkcs7 from the viewer */
-
+    /* Try compatibility with the past and check if this message
+       validates when we remove the last two characters
+     */
+    if(((result = do_signature_verify(p7, in, NULL)) == 0)
+	&& bodylen > 2 
+	&& (strncmp(bodytext+bodylen-2,"\r\n", 2) == 0)){
 	BIO_free(in);
+        if((in = BIO_new(BIO_s_mem())) == NULL)
+          return modified_the_body;
 
-	modified_the_body = 1;
+	(void) BIO_reset(in);
+	BIO_write(in, mimetext, mimelen);
+	BIO_write(in, bodytext, bodylen-2);
+
+	result = do_signature_verify(p7, in, NULL);
     }
 
-end:
-    PKCS7_free(p7);
+    BIO_free(in);
+    if(b->subtype)
+	fs_give((void**) &b->subtype);
+
+    b->subtype = cpystr(OUR_PKCS7_ENCLOSURE_SUBTYPE);
+    b->encoding = ENC8BIT;
+
+    if(b->description)
+	fs_give ((void**) &b->description);
+
+    what_we_did = result ? _("This message was cryptographically signed.") :
+			   _("This message was cryptographically signed but the signature could not be verified.");
+
+    b->description = cpystr(what_we_did);
+
+    b->sparep = p7;
+
+    p = b->nested.part;
+	
+    /* p is signed plaintext */
+    if(p && p->next)
+	mail_free_body_part(&p->next); /* hide the pkcs7 from the viewer */
+
+    modified_the_body = 1;
 
     return modified_the_body;
 }

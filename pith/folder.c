@@ -1410,6 +1410,17 @@ unsigned char *folder_name_decoded(unsigned char *mailbox)
   return s;
 }
 
+/* mutf7 encoded name of a folder, from its name in utf8.
+ * memory freed by caller.
+ */
+unsigned char *folder_name_encoded(unsigned char *mailbox)
+{
+  unsigned char *s;
+  s = (char *) utf8_to_mutf7(mailbox);
+  if (s == NULL) s = cpystr(mailbox);
+  return s;
+}
+
 int
 mail_list_in_collection(char **mailbox, char *ref, char *name, char *tail)
 {

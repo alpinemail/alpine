@@ -4287,6 +4287,11 @@ pine_rfc822_output_body(struct mail_bodystruct *body, soutr_t f, void *s)
 					/* output trailing cookie */
 	snprintf (t = tmp, sizeof(tmp), "--%s--",cookie);
 	tmp[sizeof(tmp)-1] = '\0';
+#ifdef SMIME
+	if(ps_global->smime && ps_global->smime->do_sign 
+		&& strlen(tmp) < sizeof(tmp)-2)
+	   strncat(tmp, "\r\n", 2);
+#endif
 	if(lmc.so && !lmc.all_written){
 	    so_puts(lmc.so, t);
 	    so_puts(lmc.so, "\015\012");

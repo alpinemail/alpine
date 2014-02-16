@@ -81,7 +81,7 @@ static void     tinfodelete(void);
 extern int      tput();
 extern int      tputs(char *, int, int (*)(int));
 extern char    *tgoto(char *, int, int);
-extern char    *tigetstr ();
+extern char    *tigetstr (char *);
 extern int      setupterm(char *, int, int *);
 extern int      tigetnum(char *);
 extern int      tigetflag(char *);

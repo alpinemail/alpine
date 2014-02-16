@@ -3264,7 +3264,7 @@ streams_died(void)
     int rv = 0;
     int         i;
     MAILSTREAM *m;
-    char       *folder;
+    unsigned char *folder;
 
     for(i = 0; i < ps_global->s_pool.nstream; i++){
 	m = ps_global->s_pool.streams[i];
@@ -3273,7 +3273,7 @@ streams_died(void)
 		if(!sp_noticed_dead_stream(m)){
 		    rv++;
 		    sp_set_noticed_dead_stream(m, 1);
-		    folder = STREAMNAME(m);
+		    folder = folder_name_decoded((unsigned char *)STREAMNAME(m));
 		    q_status_message1(SM_ORDER | SM_DING, 3, 3,
 			  _("MAIL FOLDER \"%s\" CLOSED DUE TO ACCESS ERROR"),
 			  short_str(pretty_fn(folder) ? pretty_fn(folder) : "?",
@@ -3287,6 +3287,7 @@ streams_died(void)
 			if(pith_opt_icon_text)
 			  (*pith_opt_icon_text)(tmp_20k_buf, IT_MCLOSED);
 		    }
+		    if(folder) fs_give((void **)&folder);
 		}
 	    }
 	    else{

@@ -3229,10 +3229,12 @@ cmd_expunge(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap, int agg)
 
     if(del_count != 0){
 	int ret;
+	unsigned char *fname = folder_name_decoded((unsigned char *)state->cur_folder);
 
 	snprintf(prompt, sizeof(prompt), "Expunge %ld message%s from %.*s", del_count,
 		plural(del_count), sizeof(prompt)-40,
-		pretty_fn(state->cur_folder));
+		pretty_fn((char *) fname));
+	if(fname) fs_give((void **)&fname);
 	prompt[sizeof(prompt)-1] = '\0';
 	state->mangled_footer = 1;
 
@@ -3301,10 +3303,13 @@ cmd_expunge(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap, int agg)
 	  refresh_sort(stream, msgmap, SRT_NON);
     }
     else{
-	if(del_count)
+	if(del_count){
+	  unsigned char *fname = folder_name_decoded((unsigned char *)state->cur_folder);
 	  q_status_message1(SM_ORDER, 0, 3,
 			    _("No messages expunged from folder \"%s\""),
-			    pretty_fn(state->cur_folder));
+			    pretty_fn((char *) fname));
+	  if(fname) fs_give((void **)&fname);
+	}
 	else if(!prefilter_del_count)
 	  q_status_message(SM_ORDER, 0, 3,
 		     _("No messages marked deleted.  No messages expunged."));
@@ -3441,8 +3446,10 @@ void
 expunge_and_close_begins(int flags, char *folder)
 {
     if(!(flags & EC_NO_CLOSE)){
-	q_status_message1(SM_INFO, 0, 1, "Closing \"%.200s\"...", folder);
+	unsigned char *fname = folder_name_decoded((unsigned char *)folder);
+	q_status_message1(SM_INFO, 0, 1, "Closing \"%.200s\"...", (char *) fname);
 	flush_status_messages(1);
+	if(fname) fs_give((void **)&fname);
     }
 }
 
@@ -5323,6 +5330,7 @@ broach_folder(int qline, int allow_list, int *notrealinbox, CONTEXT_S **context)
     char        expanded[MAXPATH+1],
                 prompt[MAX_SCREEN_COLS+1],
                *last_folder, *p;
+    unsigned char *f1, *f2, *f3;
     static HISTORY_S *history = NULL;
     CONTEXT_S  *tc, *tc2;
     ESCKEY_S    ekey[9];
@@ -5487,9 +5495,28 @@ broach_folder(int qline, int allow_list, int *notrealinbox, CONTEXT_S **context)
 	    }
 	}
 
+	/* is there any other way to do this? The point is that we
+	 * are trying to hide mutf7 from the user, and use the utf8
+	 * equivalent. So we create a variable f to take place of
+	 * newfolder, including content and size. f2 is copy of f1
+	 * that has to freed. Sigh!
+	 */
+	f3 = cpystr(newfolder);
+	f1 = fs_get(sizeof(newfolder));
+	f2 = folder_name_decoded(f3);
+	if(f3) fs_give((void **)&f3);
+	strncpy(f1, f2, sizeof(newfolder));
+	f1[sizeof(newfolder)-1] = '\0';
+	if(f2) fs_give((void **)&f2);
+
 	flags = OE_APPEND_CURRENT;
-        rc = optionally_enter(newfolder, qline, 0, sizeof(newfolder),
+        rc = optionally_enter(f1, qline, 0, sizeof(newfolder),
 			      prompt, ekey, help, &flags);
+
+	f2 = folder_name_encoded(f1);
+	strncpy(newfolder, f2, sizeof(newfolder));
+	if(f1) fs_give((void **)&f1);
+	if(f2) fs_give((void **)&f2);
 
 	ps_global->mangled_footer = 1;
 

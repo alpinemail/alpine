@@ -130,5 +130,6 @@ void	    refresh_folder_list(CONTEXT_S *, int, int, MAILSTREAM **);
 int	    folder_complete_internal(CONTEXT_S *, char *, size_t, int *, int);
 void        folder_delete(int, FLIST *);
 unsigned char *folder_name_decoded(unsigned char *);
+unsigned char *folder_name_encoded(unsigned char *);
 
 #endif /* PITH_FOLDER_INCLUDED */

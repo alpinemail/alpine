@@ -338,7 +338,6 @@ AM_CPPFLAGS = -I@top_builddir@/include -I@top_srcdir@/include -DLOCALEDIR=\"$(lo
 CLEANFILES = date.c
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
-	rm -f date.c
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
