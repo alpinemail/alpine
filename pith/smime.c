@@ -4,6 +4,7 @@ static char rcsid[] = "$Id: smime.c 1176 2008-09-29 21:16:42Z hubert@u.washingto
 
 /*
  * ========================================================================
+ * Copyright 2013-2014 Eduardo Chappa
  * Copyright 2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -55,7 +56,7 @@ static void            openssl_extra_randomness(void);
 static int             app_RAND_write_file(const char *file);
 static void            smime_init(void);
 static const char     *openssl_error_string(void);
-static void            create_local_cache(char *base, BODY *b);
+static void            create_local_cache(char *h, char *base, BODY *b);
 static long            rfc822_output_func(void *b, char *string);
 static int             load_private_key(PERSONAL_CERT *pcert);
 static void            setup_pkcs7_body_for_signature(BODY *b, char *description,
@@ -64,7 +65,7 @@ static BIO            *body_to_bio(BODY *body);
 static BIO            *bio_from_store(STORE_S *store);
 static STORE_S        *get_part_contents(long msgno, const char *section);
 static PKCS7         *get_pkcs7_from_part(long msgno, const char *section);
-static int            do_signature_verify(PKCS7 *p7, BIO *in, BIO *out);
+static int            do_signature_verify(PKCS7 *p7, BIO *in, BIO *out, int silent);
 static int            do_detached_signature_verify(BODY *b, long msgno, char *section);
 static PERSONAL_CERT *find_certificate_matching_pkcs7(PKCS7 *p7);
 static int            do_decoding(BODY *b, long msgno, const char *section);
@@ -1081,7 +1082,7 @@ dump_bio_to_file(BIO *in, char *filename)
  * manufactured body.
  */
 static void
-create_local_cache(char *base, BODY *b)
+create_local_cache(char *h, char *base, BODY *b)
 {
     if(b->type==TYPEMULTIPART){
         PART *p;
@@ -1098,9 +1099,10 @@ create_local_cache(char *base, BODY *b)
 #endif
 
         for(p=b->nested.part; p; p=p->next)
-          create_local_cache(base, (BODY*) p);
+          create_local_cache(h, base, (BODY*) p);
     }
     else{
+	cpytxt(&b->mime.text, h+b->mime.offset, b->mime.text.size);
         cpytxt(&b->contents.text, base + b->contents.offset, b->size.bytes);
     }
 }
@@ -1160,11 +1162,9 @@ load_private_key(PERSONAL_CERT *pcert)
 		ps_global->smime->entered_passphrase = 0;
 	    }
 	    
-	    /* Indicate to the UI that we need re-entry (see mailcmd.c:process_cmd())*/
-	    if(ps_global->smime)
-	      ps_global->smime->need_passphrase = 1;
-	    
 	    if(ps_global->smime){
+	    /* Indicate to the UI that we need re-entry (see mailcmd.c:process_cmd())*/
+		ps_global->smime->need_passphrase = 1;
 		if(ps_global->smime->passphrase_emailaddr){
 		  int i;
 		  for(i = 0; ps_global->smime->passphrase_emailaddr[i] != NULL; i++)
@@ -1550,9 +1550,10 @@ get_pkcs7_from_part(long msgno,const char *section)
  * p7  - the pkcs7 object to verify
  * in  - the plain data to verify (NULL if not detached)
  * out - BIO to which to write the opaque data
+ * silent - if non zero, do not print errors, only print success.
  */
 static int
-do_signature_verify(PKCS7 *p7, BIO *in, BIO *out)
+do_signature_verify(PKCS7 *p7, BIO *in, BIO *out, int silent)
 {
     STACK_OF(X509) *otherCerts = NULL;
     int	result;
@@ -1565,7 +1566,7 @@ do_signature_verify(PKCS7 *p7, BIO *in, BIO *out)
 #endif
 
     if(!s_cert_store){
-	q_status_message(SM_ORDER | SM_DING, 2, 2,
+	if(!silent) q_status_message(SM_ORDER | SM_DING, 2, 2,
 		_("Couldn't verify S/MIME signature: No CA Certs were loaded"));
 
     	return -1;
@@ -1586,44 +1587,36 @@ do_signature_verify(PKCS7 *p7, BIO *in, BIO *out)
 	    
 	    PKCS7_verify(p7, otherCerts, s_cert_store, in, out, PKCS7_NOVERIFY);
 	}
-
-	q_status_message1(SM_ORDER | SM_DING, 3, 3,
+	if (!silent) q_status_message1(SM_ORDER | SM_DING, 3, 3,
 		_("Couldn't verify S/MIME signature: %s"), (char*) openssl_error_string());
     }
 
     /* now try to extract the certificates of any signers */
     {
-        STACK_OF(X509)	*signers;
-        int	i;
+	STACK_OF(X509)	*signers;
+	int	i;
 
-        signers = PKCS7_get0_signers(p7, NULL, 0);
-
-        if(signers)
-            for(i=0; i<sk_X509_num(signers); i++){
+	if((signers = PKCS7_get0_signers(p7, NULL, 0)) != NULL)
+	    for(i=0; i<sk_X509_num(signers); i++){
 		char	**email;
-                X509	*x = sk_X509_value(signers,i);
-		X509	*cert;
-		
-                if(!x)
-                  continue;
+		X509	*x, *cert;
 
-    	    	email = get_x509_subject_email(x);
-    	    	
-		if(email){
+		if((x = sk_X509_value(signers,i)) == NULL)
+		  continue;
+
+		if((email = get_x509_subject_email(x)) != NULL){
 		    int i;
 		    for(i = 0; email[i] != NULL; i++){
-			cert = get_cert_for(email[i]);
-			if(cert)
+			if((cert = get_cert_for(email[i])) != NULL)
 			  X509_free(cert);
 			else
 			  save_cert_for(email[i], x);
 			fs_give((void **) &email[i]);
 		    }
 		    fs_give((void **) email);
-    	    	}
-            }
-
-        sk_X509_free(signers);
+		}
+	    }
+	sk_X509_free(signers);
     }
 
     return result;
@@ -1639,7 +1632,8 @@ free_smime_body_sparep(void **sparep)
     }
 }
 
-/* Big comment, explaining the mess that exists out there
+/* Big comment, explaining the mess that exists out there, and how we deal
+   with it, and also how we solve the problems that are created this way.
 
   When Alpine sends a message, it constructs that message, computes the 
   signature, but then it forgets the message it signed and reconstructs it 
@@ -1672,6 +1666,19 @@ free_smime_body_sparep(void **sparep)
   3. We do not add \r\n to validate a message that we sent, because that 
      would only work in Alpine, and not in any other client. That would not 
      be a good thing to do.
+
+  PART II
+
+  Now we have to deal with encrypted and signed messages. The problem is that 
+  c-client makes all its pointers point to "on disk" content, but since we 
+  decrypted the data earlier, we have to make sure of two things. One is that we 
+  saved that data (so we do not have to decrypt it again) and second that we can 
+  use it.
+
+  In order to save the data we use create_local_cache, so that we do not
+  have to redecrypt the message. Once this is saved, c-client functions will
+  find it and send it to us in mail_fetch_mime and mail_fetch_body.
+
  */
 
 /*
@@ -1704,11 +1711,8 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
 
     snprintf(newSec, sizeof(newSec), "%s%s2", section ? section : "", (section && *section) ? "." : "");
 
-    if((p7 = get_pkcs7_from_part(msgno, newSec)) == NULL)
-       return modified_the_body;
-
-    /* first try with what get got */
-    if((in = BIO_new(BIO_s_mem())) == NULL)
+    if((p7 = get_pkcs7_from_part(msgno, newSec)) == NULL 
+	|| (in = BIO_new(BIO_s_mem())) == NULL)
        return modified_the_body;
 
     (void) BIO_reset(in);
@@ -1716,20 +1720,18 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
     BIO_write(in, bodytext, bodylen);
 
     /* Try compatibility with the past and check if this message
-       validates when we remove the last two characters
+     * validates when we remove the last two characters. Silence
+     * any failures first.
      */
-    if(((result = do_signature_verify(p7, in, NULL)) == 0)
+    if(((result = do_signature_verify(p7, in, NULL, 1)) == 0)
 	&& bodylen > 2 
 	&& (strncmp(bodytext+bodylen-2,"\r\n", 2) == 0)){
-	BIO_free(in);
-        if((in = BIO_new(BIO_s_mem())) == NULL)
-          return modified_the_body;
+	BUF_MEM *biobuf = NULL;
 
-	(void) BIO_reset(in);
-	BIO_write(in, mimetext, mimelen);
-	BIO_write(in, bodytext, bodylen-2);
-
-	result = do_signature_verify(p7, in, NULL);
+	BIO_get_mem_ptr(in, &biobuf);
+	if(biobuf)
+	  BUF_MEM_grow(biobuf, mimelen + bodylen - 2);
+	result = do_signature_verify(p7, in, NULL, 0);
     }
 
     BIO_free(in);
@@ -1945,6 +1947,8 @@ do_decoding(BODY *b, long msgno, const char *section)
 	b->sparep = p7;
     }
 
+    dprint((1, "type_is_signed = %d, type_is_enveloped = %d", PKCS7_type_is_signed(p7), PKCS7_type_is_enveloped(p7)));
+
     if(PKCS7_type_is_signed(p7)){
     	int 	sigok;
 	
@@ -1952,12 +1956,11 @@ do_decoding(BODY *b, long msgno, const char *section)
 	(void) BIO_reset(out);
 	BIO_puts(out, "MIME-Version: 1.0\r\n"); /* needed so rfc822_parse_msg_full believes it's MIME */
 
-    	sigok = do_signature_verify(p7, NULL, out);
-    	
-	/* shouldn't really duplicate these messages */
-   	what_we_did = sigok ? 	_("This message was cryptographically signed.") :
-	    	    	    	_("This message was cryptographically signed but the signature could not be verified.");
-	
+    	sigok = do_signature_verify(p7, NULL, out, 0);
+
+	what_we_did = sigok ? _("This message was cryptographically signed.") :
+			      _("This message was cryptographically signed but the signature could not be verified.");
+
 	/* make sure it's null terminated */
 	BIO_write(out, null, 1);
     }
@@ -2041,9 +2044,11 @@ do_decoding(BODY *b, long msgno, const char *section)
             bstart += 4; /* skip over CRLF*2 */
 
             INIT(&s, mail_string, bstart, strlen(bstart));
-            rfc822_parse_msg_full(&env, &body, h, bstart-h-2, &s, BADHOST, 0, 0);
+            rfc822_parse_msg_full(&env, &body, h, (bstart-h)-2, &s, BADHOST, 0, 0);
             mail_free_envelope(&env); /* Don't care about this */
 
+	    body->mime.offset    = 0;
+	    body->mime.text.size = 0;
             /*
              * Now convert original body (application/pkcs7-mime)
              * to a multipart body with one sub-part (the decrypted body).
@@ -2087,7 +2092,7 @@ do_decoding(BODY *b, long msgno, const char *section)
              * IMPORTANT BIT: set the body->contents.text.data elements to contain the decrypted
              * data. Otherwise, it'll try to load it from the original data. Eek.
              */
-            create_local_cache(bstart, &b->nested.part->body);
+            create_local_cache(bstart-b->nested.part->body.mime.offset, bstart, &b->nested.part->body);
 
             modified_the_body = 1;
         }

@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 45 2014-02-15 22:27:53
+Alpine Commit 46 2014-02-17 01:15:10
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -241,6 +241,9 @@ Bugs that have been addressed include:
        <a href="h_config_psleep"><!--#echo var="VAR_mailcap-check-interval"--></a> 
        for more information.
   <LI> S/MIME: signed messages that contained an attachment would not validate.
+  <LI> S/MIME: signed and encrypted messages from Thunderbird would not 
+       validate. Thanks to Andreas Schamanek for testing, debugging and 
+       advising during the process of fixing this problem.
   <LI> Crash when tcp connection to NNTP server was lost after connection
        had been established, but lost immediately afterwards.
   <LI> WebAlpine: add _GNU_SOURCE to make pubcookie build.
