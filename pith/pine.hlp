@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 46 2014-02-17 01:15:10
+Alpine Commit 47 2014-02-20 00:06:00
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -244,6 +244,9 @@ Bugs that have been addressed include:
   <LI> S/MIME: signed and encrypted messages from Thunderbird would not 
        validate. Thanks to Andreas Schamanek for testing, debugging and 
        advising during the process of fixing this problem.
+  <LI> S/MIME: Forwarding messages with multipart content-type failed to be signed
+       with &quot;Error writing pipe&quot; message. Reported by Andreas Schamanek
+       and Stefan Mueller.
   <LI> Crash when tcp connection to NNTP server was lost after connection
        had been established, but lost immediately afterwards.
   <LI> WebAlpine: add _GNU_SOURCE to make pubcookie build.

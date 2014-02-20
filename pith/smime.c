@@ -1113,7 +1113,9 @@ rfc822_output_func(void *b, char *string)
 {
     BIO *bio = (BIO *) b;
 
-    return((BIO_puts(bio, string) > 0) ? 1L : 0L);
+    return(string ? *string ? (BIO_puts(bio, string) >  0 ? 1L : 0L) 
+			    : (BIO_puts(bio, string) >= 0 ? 1L : 0L)  
+		  : 0L);
 }
 
 
