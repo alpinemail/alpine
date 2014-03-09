@@ -2,8 +2,8 @@
  * $Id: conftype.h 1155 2008-08-21 18:33:21Z hubert@u.washington.edu $
  *
  * ========================================================================
- * Copyright 2006-2008 University of Washington
  * Copyright 2013-2014 Eduardo Chappa
+ * Copyright 2006-2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -670,11 +670,19 @@ typedef enum {Main, Post, None} EditWhich;
 
 typedef enum {Directory, Container, Keychain, Nada} SmimeHolderType;
 
+typedef enum {Public, Private, CACert} WhichCerts;
+
+typedef struct certdata {
+  unsigned   deleted:1;		/* certificate is marked deleted		 */
+  unsigned   renew:1;		/* we must renew this list, set at top cert	 */
+} CertData;
+
 typedef struct certlist {
     char            *name;
     void            *x509_cert;		/* this is type (X509 *) */
+    CertData	    data;
     struct certlist *next;
-}CertList;
+} CertList;
 
 typedef struct smime_stuff {
     unsigned inited:1;
@@ -690,24 +698,51 @@ typedef struct smime_stuff {
      * If we are using the Container type it is easiest if we
      * read in and maintain a list of certs and then write them
      * out all at once. For Directory type we just leave the data
-     * in the individual files and read or write the individual
-     * files when needed, so we don't have a list of all the certs.
+     * in the individual files and read the list of files in the
+     * directory.
      */
     SmimeHolderType publictype;
     char           *publicpath;
     char           *publiccontent;
+    CertList	   *publiccertdata;
     CertList       *publiccertlist;
 
     SmimeHolderType privatetype;
     char           *privatepath;
     char           *privatecontent;
+    CertList	   *privatecertdata;
     void           *personal_certs;	/* this is type (PERSONAL_CERT *) */
 
     SmimeHolderType catype;
     char           *capath;
     char           *cacontent;
+    CertList	   *cacertdata;
+    CertList	   *cacertlist;
 
 } SMIME_STUFF_S;
+
+#define DATACERT(X) (((X) == Public ? ps_global->smime->publiccertdata		\
+			 : ((X) == Private ? ps_global->smime->privatecertdata	\
+			   : ((X) == CACert ? ps_global->smime->cacertdata : NULL))))
+
+#define PATHCERTDIR(X) (((X) == Public ? ps_global->smime->publicpath	\
+			  : ((X) == Private ? ps_global->smime->privatepath	\
+			    : ((X) == CACert ? ps_global->smime->capath : NULL))))
+
+#define SMHOLDERTYPE(X) (((X) == Public ? ps_global->smime->publictype	\
+			  : ((X) == Private ? ps_global->smime->privatetype	\
+			    : ((X) == CACert ? ps_global->smime->catype : Nada))))
+
+#define SMCERTLIST(X) (((X) == Public ? ps_global->smime->publiccertlist	\
+			  : ((X) == Private ? ps_global->smime->privatecertdata	\
+			    : ((X) == CACert ? ps_global->smime->cacertlist : NULL))))
+
+#define EXTCERT(X)  (((X) == Public ? ".crt"		\
+			  : ((X) == Private ? ".key"	\
+				: ((X) == CACert ? ".crt" : NULL))))
+
+#define DELETEDCERT(X) ((X)->data.deleted)
+#define RENEWCERT(X)   ((X)->data.renew)
 
 #endif /* SMIME */
 

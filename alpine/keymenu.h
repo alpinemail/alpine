@@ -216,6 +216,12 @@ struct key_menu {
 #define MC_QUOTA	803
 #define MC_ADDHEADER	804
 
+
+/* Commands for S/MIME screens */
+#define MC_TRUST	900
+#define MC_PUBLIC	901
+#define MC_PRIVATE	902
+
 /*
  * Some standard Key/Command Bindings 
  */
@@ -549,7 +555,9 @@ struct key_menu {
 #define SMIME_PARENT_KEY	2
 #define DECRYPT_KEY		(VIEW_PIPE_KEY + 7)
 #define SECURITY_KEY		(DECRYPT_KEY + 1)
-
+#define TRUST_KEY		3
+#define PUBLIC_KEY		6
+#define PRIVATE_KEY		7
 
 extern struct key_menu	cancel_keymenu,
 			ab_keymenu,
@@ -647,7 +655,11 @@ extern struct key_menu	cancel_keymenu,
 			take_export_keymenu_sm,
 			take_export_keymenu_lm,
 			config_smime_helper_keymenu,
-			smime_info_keymenu;
+			config_smime_add_certs_keymenu,
+			smime_info_keymenu,
+			config_smime_manage_certs_menu_keymenu,
+			config_smime_manage_certs_work_keymenu,
+			smime_certificate_info_keymenu;
 
 extern struct key rev_msg_keys[];
 

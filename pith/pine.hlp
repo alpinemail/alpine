@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 47 2014-02-20 00:06:00
+Alpine Commit 48 2014-03-09 14:26:45
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -187,6 +187,9 @@ Additions include:
        direction of search.
   <LI> Upgrade UW-IMAP to Panda IMAP from 
        <A HREF="https://github.com/jonabbey/panda-imap">https://github.com/jonabbey/panda-imap</A>.
+  <LI> S/MIME: When a signed message is received from a user whose 
+       certificate has not been imported, should the certificate fail to
+       validate, the user will be shown a warning, and asked how to proceed.
   <LI> Replace tabs by spaces in From and Subject fields to control for
        size in screen of these fields. Change only in index screen display.
   <LI> Add support to selective expunge through a subcommand of the 
@@ -247,6 +250,7 @@ Bugs that have been addressed include:
   <LI> S/MIME: Forwarding messages with multipart content-type failed to be signed
        with &quot;Error writing pipe&quot; message. Reported by Andreas Schamanek
        and Stefan Mueller.
+  <LI> S/MIME: Certificates are lost when using a pinerc file outside of the home directory.
   <LI> Crash when tcp connection to NNTP server was lost after connection
        had been established, but lost immediately afterwards.
   <LI> WebAlpine: add _GNU_SOURCE to make pubcookie build.
@@ -3834,6 +3838,9 @@ There are also additional details on
 <li><a href="h_config_smime_transfer_priv_to_dir">S/MIME: Transfer Private Keys to Directory</a>
 <li><a href="h_config_smime_transfer_pub_to_con">S/MIME: Transfer Public Certs to Container</a>
 <li><a href="h_config_smime_transfer_pub_to_dir">S/MIME: Transfer Public Certs to Directory</a>
+<li><a href="h_config_smime_public_certificates">S/MIME: Manage Public Certificates</a>
+<li><a href="h_config_smime_private_keys">S/MIME: Manage Private Keys</a>
+<li><a href="h_config_smime_certificate_authorities">S/MIME: Manage Certificate Authorities</a>
 <li><a href="h_index_cmd_sort">Sort Command</a>
 <li><a href="h_compose_spell">Spell Check Command</a>
 <li><a href="h_common_suspend">Suspend Command</a>
@@ -34028,8 +34035,6 @@ Some limitations:
    <LI> Because the implementation currently uses OpenSSL, there is only a very
 	limited integration with the Mac OS Keychain (the storing and access of
 	public certificates).
-   <LI> There is no way to view or manipulate the lists of certificates from
-	within Alpine.
 </UL>
 <P>
 The S/MIME configuration screen is reached by going to the Main Menu and typing
@@ -34780,6 +34785,256 @@ This might be useful if you decide to switch from using a cert container to usin
 the Keychain to store your public certs.
 <P>
 <UL>   
+<LI><A HREF="h_mainhelp_smime">General S/MIME help</A>
+</UL><P>
+<P>
+<UL>   
+<LI><A HREF="h_finding_help">Finding more information and requesting help</A>
+</UL><P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+====== h_config_smime_public_certificates =====
+<HTML>
+<HEAD>
+<TITLE>S/MIME: Manage Public Certificates</TITLE>
+</HEAD>
+<BODY>
+<H1>S/MIME: Manage Public Certificates</H1>
+
+UNIX Alpine only.
+<P>
+This menu item allows you to manage your public certificates, this
+may include your own public certificate, but it normally includes
+certificates of people you correspond with. These certificates are
+saved by Alpine automatically when they are found in signed messages
+that you receive. This interface allows you to manage them, by
+giving you the option to delete them, or trust them (in the case
+of self-signed certificates).
+
+<P>
+Please note that Alpine will not validate a message that was sent to you
+using a self-signed certificate, unless you decide to trust that certificate.
+Internally, a certificate is trusted by copying it to the
+<A HREF="h_config_smime_certificate_authorities">Certificate Authorities</A> 
+collection. If you decide that you want to stop trusting a self-signed
+certificate, you must delete such certificate from such collection.
+<P>
+The <B>I</B> Import command available in this screen allows you to 
+import a command to this collection.
+<P>
+<UL>   
+<LI><A HREF="h_mainhelp_smime">General S/MIME help</A>
+</UL><P>
+<P>
+<UL>   
+<LI><A HREF="h_finding_help">Finding more information and requesting help</A>
+</UL><P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+====== h_config_smime_private_keys =====
+<HTML>
+<HEAD>
+<TITLE>S/MIME: Manage Private Keys</TITLE>
+</HEAD>
+<BODY>
+<H1>S/MIME: Manage Private Keys</H1>
+
+UNIX Alpine only.
+<P>
+This option allows you to manage your private key. Normally a person has only
+one key, in the same way that a person only has one valid passport, or ID card,
+at any given time. This option allows you to manage private keys. You can
+delete them or import them. Additionally, you can view information
+about your public certificate, such as the issuer and the dates of validity
+of such certificate, among others.
+
+<P>
+If you have more than one e-mail address for which you want to use the 
+same private key, you must add all those addresses to the private key at 
+the moment that the key is generated. When you receive a signed message using 
+a key generated for several e-mail addresses, Alpine will save a 
+certificate for each e-mail address included in such certificate.
+<P>
+The <B>I</B> Import command available in this screen allows you to 
+import a command to this collection.
+<P>
+<UL>   
+<LI><A HREF="h_mainhelp_smime">General S/MIME help</A>
+</UL><P>
+<P>
+<UL>   
+<LI><A HREF="h_finding_help">Finding more information and requesting help</A>
+</UL><P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+====== h_config_smime_certificate_authorities =====
+<HTML>
+<HEAD>
+<TITLE>S/MIME: Manage Certificate Authorities</TITLE>
+</HEAD>
+<BODY>
+<H1>S/MIME: Manage Certificate Authorities</H1>
+
+UNIX Alpine only.
+<P>
+This collection contains certificates that are needed to validate the 
+certificate of another person, and therefore contains certificates that 
+you trust. Typically a certificate is signed by another entity, called a 
+certificate authority. This option allows you to manage which certificates 
+you trust, allowing you to import them and to delete them or view information
+about each certificate, such as the issuer and the dates of validity
+of such certificate.
+<P>
+The <B>I</B> Import command available in this screen allows you to 
+import a command to this collection.
+<P>
+<UL>   
+<LI><A HREF="h_mainhelp_smime">General S/MIME help</A>
+</UL><P>
+<P>
+<UL>   
+<LI><A HREF="h_finding_help">Finding more information and requesting help</A>
+</UL><P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+====== h_certificate_information =====
+<HTML>
+<HEAD>
+<TITLE>S/MIME: Certificate Information Screen</TITLE>
+</HEAD>
+<BODY>
+<H1>S/MIME: Certificate Information Screen</H1>
+
+UNIX Alpine only.
+<P>
+The CERTIFICATE INFORMATION screen shows you information contained in a certificate
+such as its owner, e-mail address, issuer, and interval of validity, 
+among others.
+<P>
+In the case of public certificates, this screen shows you if there was a
+failure when attempting to validate such message. If the certificate is
+self-signed, then the <B>T</B> Trust command will be available, which
+you can use to trust such certificate and make Alpine not fail validating 
+signatures signed with such certificate.
+<P>
+You can also mark a certificate deleted, with the <B>D</B> command, or 
+remove the deleted mark with the <B>U</B> undelete command.
+<P>
+In the case of your private key, Alpine shows you the information
+from your public key. Additionally, Alpine allows you to see public
+and private information about your key, with the <B>B</B> and
+<B>R</B> commands respectively.
+<UL>   
+<LI><A HREF="h_mainhelp_smime">General S/MIME help</A>
+</UL><P>
+<P>
+<UL>   
+<LI><A HREF="h_finding_help">Finding more information and requesting help</A>
+</UL><P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+====== h_config_smime_manage_public_menu =====
+<HTML>
+<HEAD>
+<TITLE>S/MIME: Menu of Commands to Manage Public Certificates</TITLE>
+</HEAD>
+<BODY>
+<H1>S/MIME: Commands that Manage Public Certificates</H1>
+
+UNIX Alpine only.
+<P>
+This screen allows you to manage your public certificates. Available commands and
+a short description of what they do follows.
+<UL>
+<LI> <B>I</B> Imports a public certificate to this collection.
+<LI> <B>V</B> View information about a certificate such as the name of the person the
+certificate was issued to, its dates of validity, and validity status.
+<LI> <B>D</B> Marks a certificate deleted.
+<LI> <B>U</B> Removes the deletion mark on a certificate.
+<LI> <B>X</B> Removes all certificates marked deleted permanently (cannot be undone).
+<LI> <B>T</B> This command is only available for self-signed certificates, and allows you to
+trust a certificate by copying it to the collection of trusted certificates.
+</UL>
+<P>
+All commands provide feedback to let you know about their success or failure.
+<P>
+<UL>   
+<LI><A HREF="h_mainhelp_smime">General S/MIME help</A>
+</UL><P>
+<P>
+<UL>   
+<LI><A HREF="h_finding_help">Finding more information and requesting help</A>
+</UL><P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+====== h_config_smime_manage_private_menu =====
+<HTML>
+<HEAD>
+<TITLE>S/MIME: Menu of Commands to Manage Private Keys</TITLE>
+</HEAD>
+<BODY>
+<H1>S/MIME: Commands that Manage Private Keys</H1>
+
+UNIX Alpine only.
+<P>
+This screen allows you to manage your private key. Available commands and
+a short description of what they do follows.
+<UL>
+<LI> <B>I</B> Imports a new public key to this collection.
+<LI> <B>V</B> View information about the public certificate corresponding to this
+key.
+<LI> <B>D</B> Marks a key to be deleted.
+<LI> <B>U</B> Removes the deletion mark on a key.
+<LI> <B>X</B> Removes all keys marked deleted permanently (cannot be undone).
+Note that expunging a private key does not remove the public key, which must
+be removed separately.
+</UL>
+<P>
+All commands provide feedback to let you know about their success or failure.
+<P>
+<UL>   
+<LI><A HREF="h_mainhelp_smime">General S/MIME help</A>
+</UL><P>
+<P>
+<UL>   
+<LI><A HREF="h_finding_help">Finding more information and requesting help</A>
+</UL><P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+====== h_config_smime_manage_cacerts_menu =====
+<HTML>
+<HEAD>
+<TITLE>S/MIME: Menu of Commands to Manage Certificate Authorities</TITLE>
+</HEAD>
+<BODY>
+<H1>S/MIME: Commands that Manage Certificate Authorities</H1>
+
+UNIX Alpine only.
+<P>
+This screen allows you to manage your collection of certificates that you
+trust. Available commands and a short description of what they do follows.
+<UL>
+<LI> <B>I</B> Imports a trusted certificate to this collection. This is
+done by reading the certificate and validating it. Once a certificate
+is found to be valid, it is saved, adding the extension &quot;.crt&quot;
+to the certificate, if necessary.
+<LI> <B>V</B> View information about this certificate, such as its issuer 
+and validity dates.
+<LI> <B>D</B> Marks a certificate to be deleted.
+<LI> <B>U</B> Removes the deletion mark on a certificate.
+<LI> <B>X</B> Removes all certificates marked deleted permanently (cannot be undone).
+</UL>
+<P>
+All commands provide feedback to let you know about their success or failure.
+<P>
+<UL>
 <LI><A HREF="h_mainhelp_smime">General S/MIME help</A>
 </UL><P>
 <P>

@@ -4,6 +4,7 @@ static char rcsid[] = "$Id: smkeys.c 1266 2009-07-14 18:39:12Z hubert@u.washingt
 
 /*
  * ========================================================================
+ * Copyright 2013-2014 Eduardo Chappa
  * Copyright 2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,6 +31,7 @@ static char rcsid[] = "$Id: smkeys.c 1266 2009-07-14 18:39:12Z hubert@u.washingt
 #include "../pith/tempfile.h"
 #include "../pith/busy.h"
 #include "../pith/osdep/lstcmpnt.h"
+#include "../pith/util.h"
 #include "smkeys.h"
 
 #ifdef APPLEKEYCHAIN
@@ -42,9 +44,120 @@ static char rcsid[] = "$Id: smkeys.c 1266 2009-07-14 18:39:12Z hubert@u.washingt
 
 /* internal prototypes */
 static char     *emailstrclean(char *string);
-static int       add_certs_in_dir(X509_LOOKUP *lookup, char *path);
 static int       certlist_to_file(char *filename, CertList *certlist);
 static int       mem_add_extra_cacerts(char *contents, X509_LOOKUP *lookup);
+
+/* smime_expunge_cert.
+ * Return values: < 0 there was an error.
+ *                >=0 the number of messages expunged
+ */
+int
+smime_expunge_cert(WhichCerts ctype)
+{
+  int count; 
+  CertList *cl, *dummy, *data;
+  char *path, *ext, buf[MAXPATH+1];
+
+  if(DATACERT(ctype)== NULL)
+    return -1;
+
+  /* data cert is the way we unify certificate management across functions, but it is
+   * not where we really save the information in the case ctype is equal to Private.
+   * What we will do is to update the datacert, and in the case of ctype equal to Private
+   * use the updated certdata to update the personal_certs data.
+   */
+
+  path = PATHCERTDIR(ctype);
+  ext  = EXTCERT(ctype);
+
+  if(path){
+    /* add a fake certificate at the beginning of the list */
+    dummy = fs_get(sizeof(CertList));
+    memset((void *)dummy, 0, sizeof(CertList));
+    dummy->next = DATACERT(ctype);
+
+    for(cl = dummy, count = 0; cl && cl->next;){
+	if(cl->next->data.deleted == 0){
+	   cl = cl->next;
+	   continue;
+	}
+
+	build_path(buf, path, cl->next->name, sizeof(buf));
+	if(ctype == Private && strlen(buf) + strlen(EXTCERT(Private)) < sizeof(buf))
+	  strcat(buf, EXTCERT(Private));
+
+	if(our_unlink(buf) < 0)
+	    q_status_message1(SM_ORDER, 3, 3, _("Error removing certificate %s"), cl->next->name);
+ 	else {
+	   count++;	/* count it! */
+	   data = cl->next;
+	   cl->next = data->next;
+	   if(data->name) fs_give((void **)&data->name);
+	   fs_give((void **)&data);
+	}
+    }
+  } else
+	q_status_message1(SM_ORDER, 3, 3, _("Error removing certificate %s"), cl->name);
+
+  switch(ctype){
+     case Private: ps_global->smime->privatecertdata = dummy->next; break;
+     case Public : ps_global->smime->publiccertdata = dummy->next; break;
+     case CACert : ps_global->smime->cacertdata = dummy->next; break;
+	default  : break;
+  }
+  fs_give((void **)&dummy);
+  if(count > 0)
+    q_status_message2(SM_ORDER, 3, 3, _("Removed %s certificate%s"), comatose(count), plural(count));
+  else
+    q_status_message(SM_ORDER, 3, 3, _("Error: No certificates were removed"));
+  return count;
+}
+
+void
+mark_cert_deleted(WhichCerts ctype, char *email, unsigned state)
+{
+  CertList *cl;
+  char tmp[200];
+
+  snprintf(tmp, sizeof(tmp), "%s%s", email, ctype == Private ? "" : ".crt");
+  tmp[sizeof(tmp)-1] = '\0';
+  for(cl = DATACERT(ctype); cl != NULL && strcmp(cl->name, tmp); cl = cl->next);
+  cl->data.deleted = state;
+}
+
+unsigned
+get_cert_deleted(WhichCerts ctype, char *email)
+{
+  CertList *cl;
+
+  for(cl = DATACERT(ctype); cl != NULL && strcmp(cl->name, email); cl = cl->next);
+  return (cl && cl->data.deleted) ? 1 : 0;
+}
+
+void
+get_fingerprint(X509 *cert, const EVP_MD *type, char *buf, size_t maxLen)
+{
+    unsigned char md[128];
+    char    *b;
+    unsigned int len, i;
+
+    len = sizeof(md);
+
+    X509_digest(cert, type, md, &len);
+
+    b = buf;
+    *b = 0;
+    for(i=0; i<len; i++){
+	if(b-buf+3>=maxLen)
+	  break;
+
+	if(i != 0)
+	  *b++ = ':';
+
+	snprintf(b, maxLen - (b-buf), "%02x", md[i]);
+	b+=2;
+    }
+}
 
 
 /*
@@ -87,24 +200,36 @@ emailstrclean(char *string)
 /*
  * Add a lookup for each "*.crt" file in the given directory.
  */
-static int
-add_certs_in_dir(X509_LOOKUP *lookup, char *path)
+int
+add_certs_in_dir(X509_LOOKUP *lookup, char *path, char *ext, CertList **cdata)
 {
     char buf[MAXPATH];
     struct direct *d;
     DIR	*dirp;
+    CertList *cert, *cl;
     int  ret = 0;
 
-    dirp = opendir(path);
-    if(dirp){
-
+    if((dirp = opendir(path)) != NULL){
         while(!ret && (d=readdir(dirp)) != NULL){
-            if(srchrstr(d->d_name, ".crt")){
+            if(srchrstr(d->d_name, ext)){
     	    	build_path(buf, path, d->d_name, sizeof(buf));
 
     	    	if(!X509_LOOKUP_load_file(lookup, buf, X509_FILETYPE_PEM)){
 		    q_status_message1(SM_ORDER, 3, 3, _("Error loading file %s"), buf);
 		    ret = -1;
+		} else {
+		  if(cdata){
+		     cert = fs_get(sizeof(CertList));
+		     memset((void *)cert, 0, sizeof(CertList));
+		     cert->name = cpystr(d->d_name);
+		     if(*cdata == NULL)
+			*cdata = cert;
+		     else{
+		        for (cl = *cdata; cl && cl->next; cl = cl->next);
+		           cl->next = cert;
+		     }
+		  }
+
 		}
             }
 
@@ -151,7 +276,7 @@ get_ca_store(void)
     }
     else if(ps_global->smime && ps_global->smime->catype == Directory
 	    && ps_global->smime->capath){
-	if(add_certs_in_dir(lookup, ps_global->smime->capath) < 0){
+	if(add_certs_in_dir(lookup, ps_global->smime->capath, ".crt", &ps_global->smime->cacertdata) < 0){
 	    X509_STORE_free(store);
 	    return NULL;
 	}
@@ -298,14 +423,16 @@ get_x509_subject_email(X509 *x)
  * the email address that has come from the certificate.
  *
  * The argument email is destroyed.
+ * 
+ * args: ctype says where the user wants to save the certificate
  */
 void
-save_cert_for(char *email, X509 *cert)
+save_cert_for(char *email, X509 *cert, WhichCerts ctype)
 {
-    if(!ps_global->smime)
+    if(!ps_global->smime || ctype == Private)
       return;
 
-    dprint((9, "save_cert_for(%s)", email ? email : "?"));
+    dprint((9, "save_cert_for(%s, %s)", email ? email : "?", ctype == Public ? _("Public") : ctype == Private ? _("Private") : "CACert"));
     emailstrclean(email);
 
     if(ps_global->smime->publictype == Keychain){
@@ -354,20 +481,22 @@ save_cert_for(char *email, X509 *cert)
     else if(ps_global->smime->publictype == Container){
 	REMDATA_S *rd = NULL;
 	char       path[MAXPATH];
+	char	  *upath = PATHCERTDIR(ctype);
 	char      *tempfile = NULL;
 	int        err = 0;
 
 	add_to_end_of_certlist(&ps_global->smime->publiccertlist, email, X509_dup(cert));
 
-	if(!ps_global->smime->publicpath)
+	if(!upath)
 	  return;
 
-	if(IS_REMOTE(ps_global->smime->publicpath)){
-	    rd = rd_create_remote(RemImap, ps_global->smime->publicpath, REMOTE_SMIME_SUBTYPE,
+	if(IS_REMOTE(upath)){
+	    rd = rd_create_remote(RemImap, upath, REMOTE_SMIME_SUBTYPE,
 				  NULL, "Error: ",
 				  _("Can't access remote smime configuration."));
-	    if(!rd)
+	    if(!rd){
 	      return;
+	    }
 	    
 	    (void) rd_read_metadata(rd);
 
@@ -419,7 +548,7 @@ save_cert_for(char *email, X509 *cert)
 	    path[sizeof(path)-1] = '\0';
 	}
 	else{
-	    strncpy(path, ps_global->smime->publicpath, sizeof(path)-1);
+	    strncpy(path, upath, sizeof(path)-1);
 	    path[sizeof(path)-1] = '\0';
 	}
 
@@ -436,7 +565,7 @@ save_cert_for(char *email, X509 *cert)
 		}
 	    }
 
-	    if(!err && IS_REMOTE(ps_global->smime->publicpath)){
+	    if(!err && IS_REMOTE(upath)){
 		int   e, we_cancel;
 		char datebuf[200];
 
@@ -479,11 +608,11 @@ save_cert_for(char *email, X509 *cert)
 	}
     }
     else if(ps_global->smime->publictype == Directory){
+	char   *path = PATHCERTDIR(ctype);
 	char    certfilename[MAXPATH];
 	BIO    *bio_out;
 
-	build_path(certfilename, ps_global->smime->publicpath,
-		   email, sizeof(certfilename));
+	build_path(certfilename, path, email, sizeof(certfilename));
 	strncat(certfilename, ".crt", sizeof(certfilename)-1-strlen(certfilename));
 	certfilename[sizeof(certfilename)-1] = 0;
 
@@ -505,7 +634,7 @@ save_cert_for(char *email, X509 *cert)
  * The caller should free the cert.
  */
 X509 *
-get_cert_for(char *email)
+get_cert_for(char *email, WhichCerts ctype)
 {
     char       *path;
     char	certfilename[MAXPATH];
@@ -516,8 +645,10 @@ get_cert_for(char *email)
     if(!ps_global->smime)
       return cert;
 
-    dprint((9, "get_cert_for(%s)", email ? email : "?"));
+    dprint((9, "get_cert_for(%s, %s)", email ? email : "?", "none yet"));
 
+    if(ctype == Private)	/* there is no private certificate info */
+      ctype = Public;		/* return public information instead    */
     strncpy(emailaddr, email, sizeof(emailaddr)-1);
     emailaddr[sizeof(emailaddr)-1] = 0;
     
@@ -585,23 +716,20 @@ get_cert_for(char *email)
 
 #endif /* APPLEKEYCHAIN */
     }
-    else if(ps_global->smime->publictype == Container){
-	if(ps_global->smime->publiccertlist){
+    else if(SMHOLDERTYPE(ctype) == Container){
 	    CertList *cl;
 
-	    for(cl = ps_global->smime->publiccertlist; cl; cl = cl->next){
+	    for(cl = SMCERTLIST(ctype); cl; cl = cl->next){
 		if(cl->name && !strucmp(emailaddr, cl->name))
 		  break;
 	    }
 
 	    if(cl)
 	      cert = X509_dup((X509 *) cl->x509_cert);
-	}
     }
-    else if(ps_global->smime->publictype == Directory){
-	path = ps_global->smime->publicpath;
-	build_path(certfilename, path, emailaddr, sizeof(certfilename));
-	strncat(certfilename, ".crt", sizeof(certfilename)-1-strlen(certfilename));
+    else if(SMHOLDERTYPE(ctype) == Directory){
+	build_path(certfilename, PATHCERTDIR(ctype), emailaddr, sizeof(certfilename));
+	strncat(certfilename, EXTCERT(ctype), sizeof(certfilename)-1-strlen(certfilename));
 	certfilename[sizeof(certfilename)-1] = 0;
 	    
 	if((in = BIO_new_file(certfilename, "r"))!=0){
@@ -642,7 +770,7 @@ mem_to_personal_certs(char *contents)
 
 	    if(strncmp(EMAILADDRLEADER, line, strlen(EMAILADDRLEADER)) == 0){
 		name = line + strlen(EMAILADDRLEADER);
-		cert = get_cert_for(name);
+		cert = get_cert_for(name, Public);
 		keytext = p;
 
 		/* advance p past this record */

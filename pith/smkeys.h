@@ -2,6 +2,7 @@
  * $Id: smkeys.h 1074 2008-06-04 00:08:43Z hubert@u.washington.edu $
  *
  * ========================================================================
+ * Copyrighr 2013-2014 Eduardo Chappa
  * Copyright 2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,10 +45,11 @@ typedef struct personal_cert {
 
 
 /* exported protoypes */
+int	       add_certs_in_dir(X509_LOOKUP *lookup, char *path, char *ext, CertList **cdata);
 X509_STORE    *get_ca_store(void);
 PERSONAL_CERT *get_personal_certs(char *d);
-X509          *get_cert_for(char *email);
-void           save_cert_for(char *email, X509 *cert);
+X509          *get_cert_for(char *email, WhichCerts ctype);
+void           save_cert_for(char *email, X509 *cert, WhichCerts ctype);
 char         **get_x509_subject_email(X509 *x);
 EVP_PKEY      *load_key(PERSONAL_CERT *pc, char *pass);
 CertList      *mem_to_certlist(char *contents);
@@ -55,7 +57,10 @@ void           add_to_end_of_certlist(CertList **cl, char *name, X509 *cert);
 void           free_certlist(CertList **cl);
 PERSONAL_CERT *mem_to_personal_certs(char *contents);
 void           free_personal_certs(PERSONAL_CERT **pc);
-
+void	       get_fingerprint(X509 *cert, const EVP_MD *type, char *buf, size_t maxLen);
+void	       mark_cert_deleted(WhichCerts ctype, char *email, unsigned state);
+unsigned       get_cert_deleted(WhichCerts ctype, char *email);
+int	       smime_expunge_cert(WhichCerts ctype);
 
 #endif /* PITH_SMKEYS_INCLUDED */
 #endif /* SMIME */

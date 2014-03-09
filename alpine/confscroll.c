@@ -3147,7 +3147,7 @@ update_option_screen(struct pine *ps, OPT_SCREEN_S *screen, Pos *cursor_pos)
 	    }
 
 	    value = (ctmp->flags & CF_INHERIT) ? INHERIT : ctmp->value;
-	    dprint((1, "value = %s", ctmp->value));
+
 	    if(value){
 		char *p;
 		int   i, j;

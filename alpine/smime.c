@@ -4,6 +4,7 @@ static char rcsid[] = "$Id: smime.c 1074 2008-06-04 00:08:43Z hubert@u.washingto
 
 /*
  * ========================================================================
+ * Copyright 2013-2014 Eduardo Chappa
  * Copyright 2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,20 +42,24 @@ static char rcsid[] = "$Id: smime.c 1074 2008-06-04 00:08:43Z hubert@u.washingto
 #include "setup.h"
 #include "smime.h"
 
-
 /* internal prototypes */
 void     format_smime_info(int pass, BODY *body, long msgno, gf_io_t pc);
 void     print_separator_line(int percent, int ch, gf_io_t pc);
 void     output_cert_info(X509 *cert, gf_io_t pc);
 void     output_X509_NAME(X509_NAME *name, gf_io_t pc);
 void     side_by_side(STORE_S *left, STORE_S *right, gf_io_t pc);
-void     get_fingerprint(X509 *cert, const EVP_MD *type, char *buf, size_t maxLen);
 STORE_S *wrap_store(STORE_S *in, int width);
 void     smime_config_init_display(struct pine *, CONF_S **, CONF_S **);
 void     revert_to_saved_smime_config(struct pine *ps, SAVED_CONFIG_S *vsave);
 SAVED_CONFIG_S *save_smime_config_vars(struct pine *ps);
 void     free_saved_smime_config(struct pine *ps, SAVED_CONFIG_S **vsavep);
 int      smime_helper_tool(struct pine *, int, CONF_S **, unsigned);
+int      smime_public_certs_tool(struct pine *, int, CONF_S **, unsigned);
+void 	 manage_certificates(struct pine *, WhichCerts);
+void     smime_manage_certs_init (struct pine *, CONF_S **, CONF_S **, WhichCerts, int);
+void	 display_certificate_information(struct pine *, X509 *, char *, WhichCerts);
+int	 manage_certs_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags);
+int	 manage_certificate_info_tool(int, MSGNO_S *, SCROLL_S *);
 
 
 /*
@@ -456,6 +461,7 @@ side_by_side(STORE_S *left, STORE_S *right, gf_io_t pc)
     STORE_S *right_wrapped;
     char    buf_l[256];
     char    buf_r[256];
+    char    *l, *r;
     char    *b;
     int i;
     int w = ps_global->ttyo->screen_cols/2 - 1;
@@ -471,10 +477,9 @@ side_by_side(STORE_S *left, STORE_S *right, gf_io_t pc)
 
     for(;;){
     
-    	if(!so_fgets(left_wrapped, buf_l, sizeof(buf_l)))
-	  break;
-
-    	if(!so_fgets(right_wrapped, buf_r, sizeof(buf_r)))
+    	l = so_fgets(left_wrapped, buf_l, sizeof(buf_l));
+        r = so_fgets(right_wrapped, buf_r, sizeof(buf_r));
+	if(l == NULL && r == NULL)
 	  break;
     
 	for(i=0, b=buf_l; i<w && *b && *b!='\r' && *b!='\n'; i++,b++){
@@ -486,9 +491,10 @@ side_by_side(STORE_S *left, STORE_S *right, gf_io_t pc)
 
 	if(buf_r[0]){
     	    while(i<w){
-	    	pc(' ');
+		pc(' ');
 		i++;
 	    }
+	    pc(' ');
 
 	    for(i=0, b=buf_r; i<w && *b && *b!='\r' && *b!='\n'; i++,b++)
 	      pc(*b);
@@ -500,33 +506,6 @@ side_by_side(STORE_S *left, STORE_S *right, gf_io_t pc)
     so_give(&left_wrapped);
     so_give(&right_wrapped);
 }
-
-
-void
-get_fingerprint(X509 *cert, const EVP_MD *type, char *buf, size_t maxLen)
-{
-    unsigned char md[128];
-    char    *b;
-    unsigned int len, i;
-
-    len = sizeof(md);
-
-    X509_digest(cert, type, md, &len);
-
-    b = buf;
-    *b = 0;
-    for(i=0; i<len; i++){
-    	if(b-buf+3>=maxLen)
-	  break;
-	
-	if(i != 0)
-	  *b++ = ':';
-
-	snprintf(b, maxLen - (b-buf), "%02x", md[i]);
-    	b+=2;
-    }
-}
-
 
 /*
  * Wrap the text in the given store to the given width.
@@ -779,9 +758,11 @@ smime_config_init_display(struct pine *ps, CONF_S **ctmp, CONF_S **first_line)
     new_confline(ctmp);
     (*ctmp)->flags |= CF_NOSELECT | CF_B_LINE;
 
+    for(i = 0; i < sizeof(tmp) && i < (ps->ttyo ? ps->ttyo->screen_cols : sizeof(tmp)); i++)
+	tmp[i] = '-';
     new_confline(ctmp);
     (*ctmp)->flags |= CF_NOSELECT;
-    (*ctmp)->value = cpystr("---------------------------------------------------------------------------");
+    (*ctmp)->value = cpystr(tmp);
 
     new_confline(ctmp);
     (*ctmp)->flags |= CF_NOSELECT;
@@ -789,7 +770,7 @@ smime_config_init_display(struct pine *ps, CONF_S **ctmp, CONF_S **first_line)
 
     new_confline(ctmp);
     (*ctmp)->flags |= CF_NOSELECT;
-    (*ctmp)->value = cpystr("---------------------------------------------------------------------------");
+    (*ctmp)->value = cpystr(tmp);
 
     new_confline(ctmp);
     (*ctmp)->flags |= CF_NOSELECT | CF_B_LINE;
@@ -867,8 +848,405 @@ smime_config_init_display(struct pine *ps, CONF_S **ctmp, CONF_S **first_line)
     (*ctmp)->varmem         = 8;
 
 #endif /* APPLEKEYCHAIN */
+
+    new_confline(ctmp)->var = vtmp;
+    (*ctmp)->flags |= CF_NOSELECT | CF_B_LINE;
+
+    new_confline(ctmp);
+    (*ctmp)->flags |= CF_NOSELECT;
+    (*ctmp)->value = cpystr(tmp);
+
+    new_confline(ctmp);
+    (*ctmp)->flags |= CF_NOSELECT;
+    (*ctmp)->value = cpystr(_("Manage your own certificates"));
+
+    new_confline(ctmp);
+    (*ctmp)->flags |= CF_NOSELECT;
+    (*ctmp)->value = cpystr(tmp);
+
+    new_confline(ctmp)->var = vtmp;
+    (*ctmp)->flags |= CF_NOSELECT | CF_B_LINE;
+
+    /* manage public certificates */
+    new_confline(ctmp);
+    (*ctmp)->tool           = smime_helper_tool;
+    (*ctmp)->keymenu        = &config_smime_manage_certs_menu_keymenu;
+    (*ctmp)->help           = h_config_smime_public_certificates;
+    (*ctmp)->value          = cpystr(_("Manage Public Certificates"));
+    (*ctmp)->varmem         = 9;
+
+    /* manage private keys */
+    new_confline(ctmp);
+    (*ctmp)->tool           = smime_helper_tool;
+    (*ctmp)->keymenu        = &config_smime_manage_certs_menu_keymenu;
+    (*ctmp)->help           = h_config_smime_private_keys;
+    (*ctmp)->value          = cpystr(_("Manage Private Keys"));
+    (*ctmp)->varmem         = 10;
+
+    /* manage Certificate Authorities */
+    new_confline(ctmp);
+    (*ctmp)->tool           = smime_helper_tool;
+    (*ctmp)->keymenu        = &config_smime_manage_certs_menu_keymenu;
+    (*ctmp)->help           = h_config_smime_certificate_authorities;
+    (*ctmp)->value          = cpystr(_("Manage Certificate Authorities"));
+    (*ctmp)->varmem         = 11;
 }
 
+void display_certificate_information(struct pine *ps, X509 *cert, char *email, WhichCerts ctype)
+{
+    STORE_S  *store;
+    SCROLL_S  scrollargs;
+    int cmd, offset, i;
+    int pub_cert, priv_cert, new_store;
+    long error;
+    BIO *out = NULL;
+
+    cmd = offset = pub_cert = priv_cert = 0;
+    new_store = 1;
+    ps->next_screen = SCREEN_FUN_NULL;
+    do {
+      /* MC_PRIVATE and MC_PUBLIC cancel each other, 
+       * they can not be active at the same time
+       */
+      switch(cmd){
+	case MC_PRIVATE:
+	   pub_cert = 0;
+	   priv_cert = ++priv_cert % 2;
+	   smime_certificate_info_keymenu.keys[PUBLIC_KEY].label  = N_("Public Key");
+	   smime_certificate_info_keymenu.keys[PRIVATE_KEY].label = priv_cert ? N_("No Priv Key") : N_("Pivate Key");
+	   break;
+
+	case MC_PUBLIC:
+	   priv_cert = 0;
+	   pub_cert = ++pub_cert % 2;
+	   smime_certificate_info_keymenu.keys[PRIVATE_KEY].label = priv_cert ? N_("No Priv Key") : N_("Pivate Key");
+	   smime_certificate_info_keymenu.keys[PUBLIC_KEY].label  = N_("Public Key");
+	   break;
+
+	case MC_TRUST:
+	   save_cert_for(email, cert, CACert);
+	   renew_store();
+	   break;
+
+	case MC_DELETE:
+	   if (get_cert_deleted(ctype, email) != 0)
+	      q_status_message(SM_ORDER, 1, 3, _("Certificate already deleted"));
+	   else{
+	      mark_cert_deleted(ctype, email, 1);
+	      q_status_message(SM_ORDER, 1, 3, _("Certificate marked deleted"));
+	   }
+	   break;
+
+	case MC_UNDELETE:
+	   if (get_cert_deleted(ctype, email) != 0)
+	      q_status_message(SM_ORDER, 1, 3, _("Certificate not marked deleted"));
+	   else{
+	      mark_cert_deleted(ctype, email, 0);
+	      q_status_message(SM_ORDER, 1, 3, _("Certificate will not be deleted"));
+	   }
+	   break;
+
+	default: break;
+      }
+
+      if((pub_cert || priv_cert) 
+	&& (out = print_private_key_information(email, priv_cert)) == NULL)
+	  q_status_message(SM_ORDER, 1, 3, _("Problem Reading Private Certificate Information"));
+
+      if(new_store){
+	store = so_get(CharStar, NULL, EDIT_ACCESS);
+	view_writec_init(store, NULL, HEADER_ROWS(ps),
+        	HEADER_ROWS(ps) + ps->ttyo->screen_rows - (HEADER_ROWS(ps)+ FOOTER_ROWS(ps)));
+
+	snprintf(tmp_20k_buf, SIZEOF_20KBUF,"%s",  _("Certificate Information"));
+	gf_puts_uline(tmp_20k_buf, view_writec);
+	gf_puts(NEWLINE, view_writec);
+	print_separator_line(100, '-', view_writec);
+
+	output_cert_info(cert, view_writec);
+	gf_puts(NEWLINE, view_writec);
+
+	if(smime_validate_cert(cert, &error) < 0){
+	  const char *errorp = X509_verify_cert_error_string(error);
+	  snprintf(tmp_20k_buf, SIZEOF_20KBUF,_("Error validating certificate: %s"), errorp);
+        } else
+	  snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s", _("Certificate validated without errors"));
+
+	gf_puts_uline(tmp_20k_buf, view_writec);
+	gf_puts(NEWLINE, view_writec);
+
+	if(out != NULL){	/* print private key information */
+	  unsigned char ch[2];
+
+	  gf_puts(NEWLINE, view_writec);
+	  ch[1] = '\0';
+	  while(BIO_read(out, ch, 1) >= 1)
+	    gf_puts(ch, view_writec); 
+	  gf_puts(NEWLINE, view_writec);
+	  q_status_message1(SM_ORDER, 1, 3, _("%s information shown at bottom of certificate information"), pub_cert ? _("Public") : _("Private"));
+	  BIO_free_all(out);
+	  out = NULL;
+	}
+	view_writec_destroy();
+	new_store = 0;
+      }
+
+      memset(&scrollargs, 0, sizeof(SCROLL_S));
+		      
+      scrollargs.text.text  = so_text(store);
+      scrollargs.text.src   = CharStar;
+      scrollargs.text.desc  = "certificate information";
+      scrollargs.body_valid = 1;
+
+      if(offset){             /* resize?  preserve paging! */
+	scrollargs.start.on         = Offset;
+	scrollargs.start.loc.offset = offset;
+	scrollargs.body_valid = 0;
+	offset = 0L;
+      }
+
+      scrollargs.use_indexline_color = 1;
+
+      scrollargs.bar.title   = _("CERTIFICATE INFORMATION");
+      scrollargs.proc.tool   = manage_certificate_info_tool;
+      scrollargs.resize_exit = 1;
+      scrollargs.help.text   = h_certificate_information;
+      scrollargs.help.title  = _("HELP FOR MESSAGE TEXT VIEW");
+      scrollargs.keys.what   = FirstMenu;
+      scrollargs.keys.menu   = &smime_certificate_info_keymenu;
+      setbitmap(scrollargs.keys.bitmap);
+      if(ctype != Public || error != X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT)
+	  clrbitn(TRUST_KEY, scrollargs.keys.bitmap);
+      if(ctype != Private){
+	  clrbitn(PUBLIC_KEY,  scrollargs.keys.bitmap);
+	  clrbitn(PRIVATE_KEY, scrollargs.keys.bitmap);
+      }
+
+      cmd = scrolltool(&scrollargs);
+
+      switch(cmd){
+	case MC_RESIZE : 
+	case MC_PRIVATE:
+	case MC_PUBLIC : if(scrollargs.start.on == Offset)
+			   offset = scrollargs.start.loc.offset;
+			 new_store = 1;
+		default: break;
+      }
+      if(new_store)
+	so_give(&store);
+   } while (cmd != MC_EXIT);
+   ps->mangled_screen = 1;
+}
+
+/* 
+ * This is silly, we just need this function so that we can tell scrolltool
+ * that some commands are recognized. We use scrolltool because we do not
+ * want to rewrite output_cert_info.
+ */
+int
+manage_certificate_info_tool(int cmd, MSGNO_S *msgmap, SCROLL_S *sparms)
+{
+  int rv;
+  switch(cmd){
+     case MC_DELETE:
+     case MC_UNDELETE:
+     case MC_PRIVATE:
+     case MC_PUBLIC:
+     case MC_TRUST: rv = 1; break;
+	default: rv = 0; break;
+  }
+ return rv;
+}
+
+
+int
+manage_certs_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
+{
+    int rv = 0;
+    char *file, *ext;
+    char tmp[200], buf[MAXPATH], *path;
+    X509 *cert = NULL;
+    BIO *in;
+    WhichCerts ctype = (*cl)->d.s.ctype;
+    SMIME_STUFF_S *smime = ps->smime;
+
+    switch(cmd){
+      case MC_CHOICE:
+	   if(PATHCERTDIR(ctype) == NULL)
+	     return 0;
+	   
+	   if((cert = get_cert_for((*cl)->value+3, ctype)) == NULL){
+	      q_status_message(SM_ORDER, 1, 3, _("Problem Reading Certificate"));
+	      rv = 0;
+	   }
+	   else{
+	      display_certificate_information(ps, cert, (*cl)->value+3, ctype);
+	      rv = 10 + (*cl)->varmem;
+	   }
+	   break;
+
+      case MC_DELETE:
+	   if ((*cl)->d.s.deleted != 0)
+	      q_status_message(SM_ORDER, 1, 3, _("Certificate already deleted"));
+	   else{
+	      (*cl)->d.s.deleted = 1;
+	      rv = 10 + (*cl)->varmem;		/* forces redraw */
+	      mark_cert_deleted(ctype, (*cl)->value+3, 1);
+	      q_status_message(SM_ORDER, 1, 3, _("Certificate marked deleted"));
+	   }
+	   break;
+
+      case MC_UNDELETE:
+	   if ((*cl)->d.s.deleted == 0)
+	      q_status_message(SM_ORDER, 1, 3, _("Certificate not marked deleted"));
+	   else{
+	      (*cl)->d.s.deleted = 0;
+	      mark_cert_deleted(ctype, (*cl)->value+3, 0);
+	      rv = 10 + (*cl)->varmem;		/* forces redraw */
+	      q_status_message(SM_ORDER, 1, 3, _("Certificate will not be deleted"));
+	   }
+	   break;
+
+      case MC_EXPUNGE:
+	{ CertList *cl;
+
+	  for(cl = DATACERT(ctype); cl != NULL && DELETEDCERT(cl) == 0; cl = cl->next);
+	  if(cl != NULL && DELETEDCERT(cl) != 0)
+	    smime_expunge_cert(ctype);
+	  else
+	    q_status_message(SM_ORDER, 3, 3, _("No certificates marked deleted"));
+	  rv = 10;	/* forces redraw */
+	  break;
+	}
+      case MC_IMPORT: 
+	import_certificate(ctype);
+	rv = 10;	/* forces redraw */
+	break;
+
+      case MC_EXIT:
+	rv = config_exit_cmd(flags);
+	break;
+
+      default:
+	rv = -1;
+	break;
+    }
+
+    BIO_free(in);
+    X509_free(cert);
+    return rv;
+}
+
+void smime_manage_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line, WhichCerts ctype, int fline)
+{
+    char            tmp[200];
+    char	   *ext;
+    CertList	   *data;
+    int		    i;
+
+    smime_init();
+
+    data = DATACERT(ctype);
+    ext  = EXTCERT(ctype);
+
+    if(data == NULL || RENEWCERT(data))
+      renew_cert_data(&data, ctype);
+
+    for(i = 0; i < sizeof(tmp) && i < (ps->ttyo ? ps->ttyo->screen_cols : sizeof(tmp)); i++)
+	tmp[i] = '-';
+    new_confline(ctmp);
+    (*ctmp)->flags |= CF_NOSELECT;
+    (*ctmp)->value = cpystr(tmp);
+
+    (*ctmp)->keymenu   = &config_text_keymenu;
+
+    new_confline(ctmp);
+    (*ctmp)->flags |= CF_NOSELECT;
+    sprintf(tmp, _("List of %scertificates"), ctype == Public ? _("public ")
+		: (ctype == Private ? _("private ") 
+		: (ctype == CACert ? _("certificate authority ") : "unknown (?) ")));
+    (*ctmp)->value = cpystr(tmp);
+
+    for(i = 0; i < sizeof(tmp) && i < (ps->ttyo ? ps->ttyo->screen_cols : sizeof(tmp)); i++)
+    tmp[i] = '-';
+    new_confline(ctmp);
+    (*ctmp)->flags |= CF_NOSELECT;
+    (*ctmp)->value = cpystr(tmp);
+
+    new_confline(ctmp);
+    (*ctmp)->flags |= CF_NOSELECT | CF_B_LINE;
+
+    if(data){
+      CertList *cl; int i;
+      PERSONAL_CERT *pc;
+
+      for(cl = data, i = 0; cl; cl = cl->next)
+	 if(cl->name){
+	    char *s, *t;
+
+	    new_confline(ctmp);
+	    (*ctmp)->d.s.ctype  = ctype;
+	    (*ctmp)->d.s.deleted = get_cert_deleted(ctype, cl->name);
+	    (*ctmp)->tool       = manage_certs_tool;
+	    (*ctmp)->keymenu    = &config_smime_manage_certs_work_keymenu;
+	    (*ctmp)->varmem     = i++;
+	    (*ctmp)->help	= ctype == Public ? h_config_smime_manage_public_menu
+					: (ctype == Private ? h_config_smime_manage_private_menu
+							   : h_config_smime_manage_cacerts_menu);
+	    snprintf(tmp, sizeof(tmp), " %s\t%s", (*ctmp)->d.s.deleted ? "D" : " ", cl->name);
+	    (*ctmp)->value      = cpystr(tmp);
+	    for(s = (*ctmp)->value; s && (t = strstr(s, ext)) != NULL; s = t+1);
+	    if(s) *(s-1) = '\0';
+	    if(i == fline+1 && first_line && !*first_line)
+	       *first_line = *ctmp;
+	 }
+    }
+    else {
+       new_confline(ctmp);
+       (*ctmp)->d.s.ctype  = ctype;
+       (*ctmp)->tool       = manage_certs_tool;
+       (*ctmp)->keymenu    = &config_smime_add_certs_keymenu;
+       (*ctmp)->value      = cpystr(_("  \tNo certificates found, press \"RETURN\" to add one."));
+       if(first_line && !*first_line)
+	 *first_line = *ctmp;
+    }
+}
+
+void manage_certificates(struct pine *ps, WhichCerts ctype)
+{
+    OPT_SCREEN_S    screen;
+    int             ew, readonly_warning = 0, rv = 10, fline;
+
+    dprint((9, "manage_certificates(ps, %s)", ctype == Public ? _("Public") : (ctype == Private ? _("Private") : (ctype == CACert ? _("certificate authority") : _("unknown")))));
+    ps->next_screen = SCREEN_FUN_NULL;
+
+    do {
+      CONF_S *ctmp = NULL, *first_line = NULL;
+
+      fline = rv >= 10 ? rv - 10 : 0;
+
+      smime_init();
+
+      smime_manage_certs_init(ps, &ctmp, &first_line, ctype, fline);
+
+      if(ctmp == NULL){
+	ps->mangled_screen = 1;
+        smime_deinit();
+        return;
+      }
+
+      memset(&screen, 0, sizeof(screen));
+      screen.deferred_ro_warning = readonly_warning;
+      rv = conf_scroll_screen(ps, &screen, first_line,
+			       _("MANAGE CERTIFICATES"),
+			      /* TRANSLATORS: Print something1 using something2.
+				 configuration is something1 */
+			      _("configuration"), 0);
+    } while (rv != 0);
+
+    ps->mangled_screen = 1;
+    smime_deinit();
+}
 
 int
 smime_helper_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
@@ -968,6 +1346,10 @@ smime_helper_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
 	    break;
 #endif /* APPLEKEYCHAIN */
 
+	  case  9: manage_certificates(ps, Public) ; break;
+	  case 10: manage_certificates(ps, Private); break;
+	  case 11: manage_certificates(ps, CACert) ; break;
+
 	  default:
 	    rv = -1;
 	    break;
@@ -977,6 +1359,15 @@ smime_helper_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
 
       case MC_EXIT:
 	rv = config_exit_cmd(flags);
+	break;
+
+      case MC_IMPORT:
+	{ WhichCerts ctype;
+	  /* keep this selection consistent with the codes above */
+	  ctype = (*cl)->varmem == 9 ? Public 
+			: ((*cl)->varmem == 10 ? Private : CACert); 
+	  rv = import_certificate(ctype);
+	}
 	break;
 
       default:

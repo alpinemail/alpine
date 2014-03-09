@@ -304,6 +304,46 @@ static ESCKEY_S flag_text_opt[] = {
     {-1, 0, NULL, NULL}
 };
 
+void 
+alpine_get_password(char *prompt, char *pass, size_t len)
+{
+  int rc, flags;
+  do {    /* transform this to a (*pith_)() function */
+   flags = OE_PASSWD | OE_DISALLOW_HELP;
+   pass[0] = '\0';
+   rc =  optionally_enter(pass, -FOOTER_ROWS(ps_global), 0, len,
+                               prompt, NULL, NO_HELP, &flags);
+  } while (rc!=0 && rc!=1 && rc>0);
+}
+
+int smime_import_certificate(char *filename, char *full_filename, size_t len)
+{
+   int   r = 1;
+   static HISTORY_S *history = NULL;
+   static ESCKEY_S eopts[] = {
+	{ctrl('T'), 10, "^T", N_("To Files")},
+	{-1, 0, NULL, NULL},
+	{-1, 0, NULL, NULL}};
+
+   if(F_ON(F_ENABLE_TAB_COMPLETE,ps_global)){
+      eopts[r].ch    =  ctrl('I');
+      eopts[r].rval  = 11;
+      eopts[r].name  = "TAB";
+      eopts[r].label = N_("Complete");
+   }
+
+   eopts[++r].ch = -1;
+
+   filename[0] = '\0';
+   full_filename[0] = '\0';
+
+   r = get_export_filename(ps_global, filename, NULL, full_filename,
+              len, "certificate", "IMPORT", eopts, NULL,
+              -FOOTER_ROWS(ps_global), GE_IS_IMPORT, &history);
+
+   return r;
+}
+
 
 /*----------------------------------------------------------------------
          The giant switch on the commands for index and viewing

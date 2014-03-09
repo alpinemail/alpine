@@ -45,20 +45,15 @@ static char rcsid[] = "$Id: smime.c 1176 2008-09-29 21:16:42Z hubert@u.washingto
 
 #include <openssl/buffer.h>
 
-
-typedef enum {Public, Private, CACert} WhichCerts;
-
-
 /* internal prototypes */
 static void            forget_private_keys(void);
 static int             app_RAND_load_file(const char *file);
 static void            openssl_extra_randomness(void);
 static int             app_RAND_write_file(const char *file);
-static void            smime_init(void);
 static const char     *openssl_error_string(void);
+static int             load_private_key(PERSONAL_CERT *pcert);
 static void            create_local_cache(char *h, char *base, BODY *b);
 static long            rfc822_output_func(void *b, char *string);
-static int             load_private_key(PERSONAL_CERT *pcert);
 static void            setup_pkcs7_body_for_signature(BODY *b, char *description,
 						      char *type, char *filename);
 static BIO            *body_to_bio(BODY *body);
@@ -73,10 +68,14 @@ static void           free_smime_struct(SMIME_STUFF_S **smime);
 static void           setup_storage_locations(void);
 static int            copy_dir_to_container(WhichCerts which);
 static int            copy_container_to_dir(WhichCerts which);
-
+int		      smime_path(char *rpath, char *fpath, size_t len);
+int		      smime_extract_and_save_cert(PKCS7 *p7);
+int		      same_cert(X509 *, X509 *);
+CertList *	      certlist_from_personal_certs(PERSONAL_CERT *pc);
 
 int  (*pith_opt_smime_get_passphrase)(void);
-
+int  (*pith_smime_import_certificate)(char *, char *, size_t);
+char *(*pith_enter_password)(char *prompt, char *, size_t);
 
 static X509_STORE   *s_cert_store;
 
@@ -84,6 +83,189 @@ static X509_STORE   *s_cert_store;
 static int seeded = 0;
 static int egdsocket = 0;
 
+
+int
+import_certificate(WhichCerts ctype)
+{
+   int   r = 1; 
+   char  filename[MAXPATH+1], full_filename[MAXPATH+1], buf[MAXPATH+1];
+
+   if(pith_smime_import_certificate == NULL)
+     q_status_message(SM_ORDER, 0, 2,
+                      _("import of certificates not implemented yet!"));
+
+   smime_init();
+
+   r = (*pith_smime_import_certificate)(filename, full_filename, sizeof(filename) - 20);
+   if(r < 0){
+      switch(r){
+          default:
+          case -1:
+            cmd_cancelled("Import certificate");
+            break;
+
+          case -2:
+            q_status_message1(SM_ORDER, 0, 2,
+                      _("Can't import certificate outside of %s"),
+		      ps_global->VAR_OPER_DIR);
+            break;
+      }
+   } else if (ctype == Private){
+	char prompt[500], *s, *t;
+	char pass[MAILTMPLEN+1];
+	BIO *in;
+	EVP_PKEY *key = NULL;
+	PERSONAL_CERT *pc;
+
+	if(!ps_global->smime->privatecertdata){
+	  ps_global->smime->privatecertdata = fs_get(sizeof(CertList));
+	  memset((void *)DATACERT(ctype), 0, sizeof(CertList));
+	}
+
+        if(!(in = BIO_new_file(full_filename, "r")))
+          return -1;
+
+	for(s = t = filename; (t = strstr(s, ".key")) != NULL; s = t + 1);
+	if(s) *(s-1) = 0;
+
+	snprintf(prompt, sizeof(prompt),
+            _("Enter passphrase for <%s>: "), s ? s : filename);
+
+	pass[0] = '\0';
+	if(pith_enter_password)
+	  (*pith_enter_password)(prompt, (char *)pass, sizeof(pass));
+
+        if((key = PEM_read_bio_PrivateKey(in, NULL, NULL, pass)) != NULL){
+	  if(SMHOLDERTYPE(ctype) == Directory){
+	    STORE_S *in_cert, *out_cert;
+	    char c;
+
+	    build_path(buf, PATHCERTDIR(ctype), filename, sizeof(buf));
+	    if(strcmp(buf + strlen(buf) - 4, EXTCERT(ctype)) != 0 && strlen(buf) + 4 < sizeof(buf))
+	       strcat(buf, EXTCERT(ctype));
+
+	    in_cert  = so_get(FileStar, full_filename, READ_ACCESS | READ_FROM_LOCALE);
+	    out_cert = so_get(FileStar, buf, WRITE_ACCESS | WRITE_TO_LOCALE);
+
+	    if(in_cert != NULL && out_cert != NULL){
+	      while(so_readc(&c, in_cert) > 0)
+		so_writec(c, out_cert);
+	      q_status_message(SM_ORDER, 1, 3, _("Certificate saved"));
+	    }
+	    else
+	      q_status_message(SM_ORDER, 1, 3, _("Error saving certificate"));
+	    
+	    so_give(&in_cert);
+	    so_give(&out_cert);
+	  }
+	  if(ps_global->smime->publiccertdata)
+	     ps_global->smime->publiccertdata->data.renew = 1;
+	}
+	else
+	  q_status_message(SM_ORDER, 1, 3, _("Problem unlocking key (not a certificate and/or wrong password)"));
+        BIO_free(in);
+   } else  if (ctype == CACert){
+      BIO *ins;
+      X509 *cert;
+
+      if((ins = BIO_new_file(full_filename, "r")) != NULL){
+	if((cert = PEM_read_bio_X509(ins, NULL, NULL, NULL)) != NULL){
+	  if(SMHOLDERTYPE(ctype) == Directory){
+	    STORE_S *in_cert, *out_cert;
+	    char c;
+
+	    build_path(buf, PATHCERTDIR(ctype), filename, sizeof(buf));
+	    if(strcmp(buf + strlen(buf) - 4, ".crt") != 0 && strlen(buf) + 4 < sizeof(buf))
+	       strcat(buf, EXTCERT(ctype));
+
+	    in_cert  = so_get(FileStar, full_filename, READ_ACCESS | READ_FROM_LOCALE);
+	    out_cert = so_get(FileStar, buf, WRITE_ACCESS | WRITE_TO_LOCALE);
+
+	    if(in_cert != NULL && out_cert != NULL){
+	      while(so_readc(&c, in_cert) > 0)
+		so_writec(c, out_cert);
+	      q_status_message(SM_ORDER, 1, 3, _("Certificate saved"));
+	    }
+	    else
+	      q_status_message(SM_ORDER, 1, 3, _("Error saving certificate"));
+	    
+	    so_give(&in_cert);
+	    so_give(&out_cert);
+	  }
+	  X509_free(cert);	/* not needed anymore */
+	}
+	else
+	  q_status_message(SM_ORDER, 1, 3, _("Error in certificate file (not a certificate?)"));
+	BIO_free(ins);
+      }
+      renew_store();
+   } else { /* ctype == Public. save certificate, but first validate that it is one */
+      BIO *ins;
+      X509 *cert;
+
+      if((ins = BIO_new_file(full_filename, "r")) != NULL){
+	if((cert = PEM_read_bio_X509(ins, NULL, NULL, NULL)) != NULL){
+	  char **email = get_x509_subject_email(cert);
+	  int i;
+
+	  for(i = 0; email[i] != NULL; i++){
+	    save_cert_for(email[i], cert, Public);
+	    fs_give((void **)&email[i]);
+	  }
+	  fs_give((void **)email);
+	  X509_free(cert);
+	  if(ps_global->smime->publiccertdata)
+	     ps_global->smime->publiccertdata->data.renew = 1;
+	}
+	else
+	  q_status_message(SM_ORDER, 1, 3, _("Error in certificate file (not a certificate?)"));
+	BIO_free(ins);
+      }
+   }
+   if(DATACERT(ctype)) RENEWCERT(DATACERT(ctype)) = 1;
+   ps_global->mangled_screen = 1;
+   return 0;
+}
+
+/* itype: information type to add: 0 - public, 1 - private.
+ * Memory freed by caller
+ */
+BIO *
+print_private_key_information(char *email, int itype)
+{
+  BIO *out;
+  PERSONAL_CERT *pc;
+
+  if(ps_global->smime == NULL 
+	|| ps_global->smime->personal_certs == NULL 
+	|| (itype != 0 && itype != 1))
+    return NULL;
+
+  for(pc = ps_global->smime->personal_certs;
+        pc != NULL && strcmp(pc->name, email) != 0; pc = pc->next);
+  if(pc->key == NULL
+	&& !load_private_key(pc)
+	&& ps_global->smime
+	&& ps_global->smime->need_passphrase){
+	if (*pith_opt_smime_get_passphrase)
+	   (*pith_opt_smime_get_passphrase)();
+	load_private_key(pc);
+  }
+
+  if(pc->key == NULL)
+     return NULL;
+
+  out = BIO_new(BIO_s_mem());
+  if(itype == 0)		/* 0 means public */
+    EVP_PKEY_print_public(out, pc->key, 0, NULL);
+  else if (itype == 1)		/* 1 means private */
+    EVP_PKEY_print_private(out, pc->key, 0, NULL);
+
+  if(F_OFF(F_REMEMBER_SMIME_PASSPHRASE,ps_global))
+    forget_private_keys();
+
+  return out;
+}
 
 /*
  * Forget any cached private keys
@@ -115,6 +297,41 @@ forget_private_keys(void)
 	  *p++ = '\0';
     }
 }
+
+/* modelled after signature_path in reply.c, but uses home dir instead of the
+ * directory where the .pinerc is located, since according to documentation,
+ * the .alpine-smime directories are subdirectories of the home directory
+ */
+
+int smime_path(char *rpath, char *fpath, size_t len)
+{
+    *fpath = '\0';
+    if(rpath && *rpath){
+        size_t spl = strlen(rpath);
+
+	*fpath = '\0';
+        if(IS_REMOTE(rpath)){
+            if(spl < len - 1)
+              strncpy(fpath, rpath, len-1);
+            fpath[len-1] = '\0';
+        }
+        else if(is_absolute_path(rpath)){
+            strncpy(fpath, rpath, len-1);
+            fpath[len-1] = '\0';
+            fnexpand(fpath, len);
+        }
+        else if(ps_global->VAR_OPER_DIR){
+            if(strlen(ps_global->VAR_OPER_DIR) + spl < len - 1)
+              build_path(fpath, ps_global->VAR_OPER_DIR, rpath, len);
+        }
+	else if(ps_global->home_dir){
+            if(strlen(ps_global->home_dir) + spl < len - 1)
+              build_path(fpath, ps_global->home_dir, rpath, len);
+	}
+    }
+    return fpath && *fpath ? 1 : 0;
+}
+
 
 
 /*
@@ -216,6 +433,66 @@ app_RAND_write_file(const char *file)
     return 1;
 }
 
+CertList *
+certlist_from_personal_certs(PERSONAL_CERT *pc)
+{
+   CertList *cl;
+
+   if(pc == NULL)
+     return NULL;
+
+   cl = fs_get(sizeof(CertList));
+   memset((void *)cl, 0, sizeof(CertList));
+   cl->name = cpystr(pc->name);
+   cl->next = certlist_from_personal_certs(pc->next);
+
+   return cl;
+}
+
+
+void
+renew_cert_data(CertList **data, WhichCerts ctype)
+{
+  smime_init();
+  if(ctype == Private){
+     if(data){
+	PERSONAL_CERT *pc = (PERSONAL_CERT *)ps_global->smime->personal_certs;
+	if(*data)
+	  free_certlist(data);
+	free_personal_certs(&pc);
+	ps_global->smime->personal_certs = (void *) get_personal_certs(ps_global->smime->privatepath);
+        *data = certlist_from_personal_certs((PERSONAL_CERT *)ps_global->smime->personal_certs);
+	if(data && *data)
+	    RENEWCERT(*data) = 0;
+        ps_global->smime->privatecertdata = (CertList *) *data;
+     }
+     if(ps_global->smime->privatecertdata)
+       RENEWCERT(ps_global->smime->privatecertdata) = 0;
+  } else {
+    X509_LOOKUP    *lookup = NULL;
+    X509_STORE     *store = NULL;
+
+    if((store = X509_STORE_new()) != NULL)
+       if ((lookup = X509_STORE_add_lookup(store, X509_LOOKUP_file())) == NULL){
+          X509_STORE_free(store);
+          store = NULL;
+       }
+    else{
+       if(PATHCERTDIR(ctype)){
+         free_certlist(data);
+         add_certs_in_dir(lookup, PATHCERTDIR(ctype), EXTCERT(ctype), data);
+	 if(data && *data)
+	    RENEWCERT(*data) = 0;
+         if(ctype == Public)
+            ps_global->smime->publiccertdata = *data;
+         else
+            ps_global->smime->cacertdata = *data;
+       }
+    }
+  }
+}
+
+
 
 /* Installed as an atexit() handler to save the random data */
 void
@@ -226,9 +503,18 @@ smime_deinit(void)
     free_smime_struct(&ps_global->smime);
 }
 
+/* we renew the store when it has changed */
+void renew_store(void)
+{
+    if(ps_global->smime->inited){
+       if(s_cert_store != NULL)
+	 X509_STORE_free(s_cert_store);
+	s_cert_store = get_ca_store();
+    }
+}
 
 /* Initialise openssl stuff if needed */
-static void
+void
 smime_init(void)
 {
     if(F_OFF(F_DONT_DO_SMIME, ps_global) && !(ps_global->smime && ps_global->smime->inited)){
@@ -254,6 +540,73 @@ smime_init(void)
 }
 
 
+/* validate a certificate. Return value : 0 for no error, -1 for error.
+ * In the latter case, set the openssl smime error in *error.
+ */
+int smime_validate_cert(X509 *cert, long *error)
+{
+   X509_STORE_CTX *csc;
+
+   ERR_clear_error();
+   *error = 0;
+   if((csc = X509_STORE_CTX_new()) != NULL){
+     X509_STORE_set_flags(s_cert_store, 0);
+     if(X509_STORE_CTX_init(csc,s_cert_store,cert,NULL)
+	&& X509_verify_cert(csc) <= 0)
+	*error   = X509_STORE_CTX_get_error(csc);
+     X509_STORE_CTX_free(csc);
+   }
+   return *error ? -1 : 0;
+}
+
+PERSONAL_CERT *
+get_personal_certs(char *path)
+{
+    PERSONAL_CERT *result = NULL;
+    char buf2[MAXPATH];
+    struct dirent *d;
+    DIR *dirp;
+
+    ps_global->smime->privatepath = cpystr(path);
+    dirp = opendir(path);
+    if(dirp){
+	while((d=readdir(dirp)) != NULL){
+	    X509 *cert;
+	    size_t ll;
+
+	    if((ll=strlen(d->d_name)) && ll > 4 && !strcmp(d->d_name+ll-4, ".key")){
+
+		/* copy file name to temp buffer */
+		strncpy(buf2, d->d_name, sizeof(buf2)-1);
+		buf2[sizeof(buf2)-1] = '\0';
+		/* chop off ".key" trailier */
+		buf2[strlen(buf2)-4] = 0;
+		/* Look for certificate */
+		cert = get_cert_for(buf2, Public);
+
+		if(cert){
+		    PERSONAL_CERT *pc;
+
+		    /* create a new PERSONAL_CERT, fill it in */
+
+		    pc = (PERSONAL_CERT *) fs_get(sizeof(*pc));
+		    pc->cert = cert;
+		    pc->name = cpystr(buf2);
+
+		    /* Try to load the key with an empty password */
+		    pc->key = load_key(pc, "");
+
+		    pc->next = result;
+		    result = pc;
+		}
+	    }
+	}
+	closedir(dirp);
+    }
+    return result;
+}
+
+
 static void
 setup_storage_locations(void)
 {
@@ -275,7 +628,7 @@ setup_storage_locations(void)
 	publiccertcontainer = 1;
 	contents = NULL;
 	path[0] = '\0';
-	if(!signature_path(ps_global->VAR_PUBLICCERT_CONTAINER, path, MAXPATH))
+	if(!smime_path(ps_global->VAR_PUBLICCERT_CONTAINER, path, MAXPATH))
 	  publiccertcontainer = 0;
 
 	if(publiccertcontainer && !IS_REMOTE(path)
@@ -313,7 +666,7 @@ setup_storage_locations(void)
 	ps_global->smime->publictype = Directory;
 
 	path[0] = '\0';
-	if(!(signature_path(ps_global->VAR_PUBLICCERT_DIR, path, MAXPATH)
+	if(!(smime_path(ps_global->VAR_PUBLICCERT_DIR, path, MAXPATH)
 	     && !IS_REMOTE(path)))
 	  ps_global->smime->publictype = Nada;
 	else if(can_access(path, ACCESS_EXISTS)){
@@ -337,7 +690,7 @@ setup_storage_locations(void)
 	privatekeycontainer = 1;
 	contents = NULL;
 	path[0] = '\0';
-	if(!signature_path(ps_global->VAR_PRIVATEKEY_CONTAINER, path, MAXPATH))
+	if(!smime_path(ps_global->VAR_PRIVATEKEY_CONTAINER, path, MAXPATH))
 	  privatekeycontainer = 0;
 
 	if(privatekeycontainer && !IS_REMOTE(path)
@@ -377,7 +730,7 @@ setup_storage_locations(void)
 	ps_global->smime->privatetype = Directory;
 
 	path[0] = '\0';
-	if(!(signature_path(ps_global->VAR_PRIVATEKEY_DIR, path, MAXPATH)
+	if(!(smime_path(ps_global->VAR_PRIVATEKEY_DIR, path, MAXPATH)
 	     && !IS_REMOTE(path)))
 	  ps_global->smime->privatetype = Nada;
 	else if(can_access(path, ACCESS_EXISTS)){
@@ -387,52 +740,8 @@ setup_storage_locations(void)
 	    }
 	}
 
-	if(ps_global->smime->privatetype == Directory){
-	    char buf2[MAXPATH];
-	    struct dirent *d;
-	    DIR *dirp;
-
-	    ps_global->smime->privatepath = cpystr(path);
-	    dirp = opendir(path);
-	    if(dirp){
-
-		while((d=readdir(dirp)) != NULL){
-		    X509 *cert;
-		    size_t ll;
-
-		    if((ll=strlen(d->d_name)) && ll > 4 && !strcmp(d->d_name+ll-4, ".key")){
-
-			/* copy file name to temp buffer */
-			strncpy(buf2, d->d_name, sizeof(buf2)-1);
-			buf2[sizeof(buf2)-1] = '\0';
-			/* chop off ".key" trailier */
-			buf2[strlen(buf2)-4] = 0;
-			/* Look for certificate */
-			cert = get_cert_for(buf2);
-
-			if(cert){
-			    PERSONAL_CERT *pc;
-
-			    /* create a new PERSONAL_CERT, fill it in */
-
-			    pc = (PERSONAL_CERT *) fs_get(sizeof(*pc));
-			    pc->cert = cert;
-			    pc->name = cpystr(buf2);
-
-			    /* Try to load the key with an empty password */
-			    pc->key = load_key(pc, "");
-
-			    pc->next = result;
-			    result = pc;
-			}
-		    }
-		}
-
-		closedir(dirp);
-	    }
-	}
-
-	ps_global->smime->personal_certs = result;
+	if(ps_global->smime->privatetype == Directory)
+	   ps_global->smime->personal_certs = get_personal_certs(path);
     }
 
     /* extra cacerts in a container */
@@ -441,7 +750,7 @@ setup_storage_locations(void)
 	cacertcontainer = 1;
 	contents = NULL;
 	path[0] = '\0';
-	if(!signature_path(ps_global->VAR_CACERT_CONTAINER, path, MAXPATH))
+	if(!smime_path(ps_global->VAR_CACERT_CONTAINER, path, MAXPATH))
 	  cacertcontainer = 0;
 
 	if(cacertcontainer && !IS_REMOTE(path)
@@ -474,7 +783,7 @@ setup_storage_locations(void)
 	ps_global->smime->catype = Directory;
 
 	path[0] = '\0';
-	if(!(signature_path(ps_global->VAR_CACERT_DIR, path, MAXPATH)
+	if(!(smime_path(ps_global->VAR_CACERT_DIR, path, MAXPATH)
 	     && !IS_REMOTE(path)))
 	  ps_global->smime->catype = Nada;
 	else if(can_access(path, ACCESS_EXISTS)){
@@ -598,7 +907,7 @@ copy_dir_to_container(WhichCerts which)
      * If there is a legit directory to read from set up the
      * container file to write to.
      */
-    if(signature_path(configdir, srcpath, MAXPATH) && !IS_REMOTE(srcpath)){
+    if(smime_path(configdir, srcpath, MAXPATH) && !IS_REMOTE(srcpath)){
 
 	if(IS_REMOTE(configpath)){
 	    rd = rd_create_remote(RemImap, configpath, REMOTE_SMIME_SUBTYPE,
@@ -829,7 +1138,7 @@ copy_container_to_dir(WhichCerts which)
 	fs_give((void **) &ps_global->smime->publicpath);
 
 	path[0] = '\0';
-	if(!(signature_path(ps_global->VAR_PUBLICCERT_DIR, path, MAXPATH)
+	if(!(smime_path(ps_global->VAR_PUBLICCERT_DIR, path, MAXPATH)
 	     && !IS_REMOTE(path))){
 	    q_status_message(SM_ORDER, 3, 3, _("Directory is not defined"));
 	    return -1;
@@ -859,7 +1168,7 @@ copy_container_to_dir(WhichCerts which)
 	fs_give((void **) &ps_global->smime->privatepath);
 
 	path[0] = '\0';
-	if(!(signature_path(ps_global->VAR_PRIVATEKEY_DIR, path, MAXPATH)
+	if(!(smime_path(ps_global->VAR_PRIVATEKEY_DIR, path, MAXPATH)
 	     && !IS_REMOTE(path))){
 	    q_status_message(SM_ORDER, 3, 3, _("Directory is not defined"));
 	    return -1;
@@ -889,7 +1198,7 @@ copy_container_to_dir(WhichCerts which)
 	fs_give((void **) &ps_global->smime->capath);
 
 	path[0] = '\0';
-	if(!(signature_path(ps_global->VAR_CACERT_DIR, path, MAXPATH)
+	if(!(smime_path(ps_global->VAR_CACERT_DIR, path, MAXPATH)
 	     && !IS_REMOTE(path))){
 	    q_status_message(SM_ORDER, 3, 3, _("Directory is not defined"));
 	    return -1;
@@ -1342,7 +1651,7 @@ encrypt_file(char *fp, char *text)
   cipher = EVP_aes_256_cbc();
   encerts = sk_X509_new_null();
   
-  if((cert = get_cert_for(pcert->name)) != NULL)
+  if((cert = get_cert_for(pcert->name, Public)) != NULL)
      sk_X509_push(encerts, cert);
   else
      goto end;
@@ -1414,7 +1723,7 @@ encrypt_outgoing_message(METAENV *header, BODY **bodyP)
 
                 snprintf(buf, sizeof(buf), "%s@%s", a->mailbox, a->host);
 
-                cert = get_cert_for(buf);
+                cert = get_cert_for(buf, Public);
                 if(cert)
                   sk_X509_push(encerts,cert);
                 else{
@@ -1545,6 +1854,88 @@ get_pkcs7_from_part(long msgno,const char *section)
     return p7;
 }
 
+int same_cert(X509 *x, X509 *cert)
+{
+   char    bufcert[256],  bufx[256];
+   int rv = 0;
+
+   get_fingerprint(cert, EVP_md5(), bufcert, sizeof(bufcert));
+   get_fingerprint(x, EVP_md5(), bufx, sizeof(bufx));
+   if(strcmp(bufx, bufcert) == 0)
+     rv = 1;
+
+   return rv;
+}
+
+
+/* extract and save certificates from a PKCS7 package. The ctype variable
+ * tells us if we want to extract it to a public/ or a ca/ directory. The
+ * later makes sense only for recoverable errors (errors that can be fixed
+ * by saving to the ca/ directory before we verify the signature).
+ * Return value:
+ *	0 - no errors (in public/) no need to try again, 
+ *          or validated self signed certificate (in ca/)
+ *	1 - self signed certificate was saved in public/, try again to validate it
+ *	2 - user was prompted about self-signed certificate, but certificate was not saved
+ *    < 0 - certificate error is not recoverable, don't even think about it.
+ */
+
+int smime_extract_and_save_cert(PKCS7 *p7)
+{
+    STACK_OF(X509) *signers;
+    X509 *x, *cert;
+    char **email;
+    int i, j, rv;
+    long error;
+
+    if((signers = PKCS7_get0_signers(p7, NULL, 0)) == NULL)
+      return -1;
+
+    rv = 0;		/* assume no error */
+    for(i = 0; i < sk_X509_num(signers); i++){
+	if((x = sk_X509_value(signers,i)) == NULL)
+	    continue;
+
+	if((email = get_x509_subject_email(x)) != NULL){
+	  for(j = 0; email[j] != NULL; j++){
+	     if((cert = get_cert_for(email[j], Public)) == NULL || same_cert(x, cert) == 0)
+	        save_cert_for(email[j], x, Public);
+
+	     if(smime_validate_cert(cert, &error) < 0){
+		const char *error_string = X509_verify_cert_error_string(error);
+		dprint((1, "Certificate verify error code %lu for <%s>", error, email[j]));
+		switch(error){
+		  case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
+		  case X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN:
+			  rv = 2;	/* recoverable error */
+			  break;
+		  default : rv = -1;	/* not recoverable error */
+			  break; 
+		}
+		sprintf(tmp_20k_buf, "%s <%s>: %s", _("Error in certificate for "), email[j], error_string);
+		q_status_message(SM_ORDER | SM_DING, 2, 2, tmp_20k_buf);
+#if 0
+		   if(pith_opt_action_certificate_error)
+			switch((*pith_opt_action_certificate_error)(cert_error)){
+			    case 1  : save_cert_for(email[j], x, CACert);
+				      renew_store();
+				      rv = 0;
+				      break;
+			    case 0  : 
+			    default : break;
+			}
+#endif
+	     }
+	     X509_free(cert);
+	  }
+	  fs_give((void **) &email[i]);
+	}
+	fs_give((void **) email);
+    }
+    sk_X509_free(signers);
+
+    return rv;
+}
 
 /*
  * Try to verify a signature.
@@ -1558,21 +1949,18 @@ static int
 do_signature_verify(PKCS7 *p7, BIO *in, BIO *out, int silent)
 {
     STACK_OF(X509) *otherCerts = NULL;
-    int	result;
+    int result;
     const char *data;
     long err;
     
-#if 0
-    if (in)
-       dump_bio_to_file(in,"/tmp/verified-data");
-#endif
-
     if(!s_cert_store){
 	if(!silent) q_status_message(SM_ORDER | SM_DING, 2, 2,
 		_("Couldn't verify S/MIME signature: No CA Certs were loaded"));
 
     	return -1;
     }
+
+    smime_extract_and_save_cert(p7);
 
     result = PKCS7_verify(p7, otherCerts, s_cert_store, in, out, 0);
     
@@ -1591,34 +1979,6 @@ do_signature_verify(PKCS7 *p7, BIO *in, BIO *out, int silent)
 	}
 	if (!silent) q_status_message1(SM_ORDER | SM_DING, 3, 3,
 		_("Couldn't verify S/MIME signature: %s"), (char*) openssl_error_string());
-    }
-
-    /* now try to extract the certificates of any signers */
-    {
-	STACK_OF(X509)	*signers;
-	int	i;
-
-	if((signers = PKCS7_get0_signers(p7, NULL, 0)) != NULL)
-	    for(i=0; i<sk_X509_num(signers); i++){
-		char	**email;
-		X509	*x, *cert;
-
-		if((x = sk_X509_value(signers,i)) == NULL)
-		  continue;
-
-		if((email = get_x509_subject_email(x)) != NULL){
-		    int i;
-		    for(i = 0; email[i] != NULL; i++){
-			if((cert = get_cert_for(email[i])) != NULL)
-			  X509_free(cert);
-			else
-			  save_cert_for(email[i], x);
-			fs_give((void **) &email[i]);
-		    }
-		    fs_give((void **) email);
-		}
-	    }
-	sk_X509_free(signers);
     }
 
     return result;
@@ -1880,7 +2240,7 @@ decrypt_file(char *fp, int *rv)
   if((key = pcert->key) == NULL)
     goto end;
 
-  recip = get_cert_for(pcert->name);
+  recip = get_cert_for(pcert->name, Public);
   out = BIO_new(BIO_s_mem());
   (void) BIO_reset(out);
 
@@ -2382,6 +2742,15 @@ free_smime_struct(SMIME_STUFF_S **smime)
 
 	if((*smime)->publiccertlist)
 	  free_certlist(&(*smime)->publiccertlist);
+
+	if((*smime)->publiccertdata)
+	  free_certlist(&(*smime)->publiccertdata);
+
+	if((*smime)->privatecertdata)
+	  free_certlist(&(*smime)->privatecertdata);
+
+	if((*smime)->cacertdata)
+	  free_certlist(&(*smime)->cacertdata);
 
 	if((*smime)->publiccontent)
 	  fs_give((void **) &(*smime)->publiccontent);

@@ -224,5 +224,14 @@ extern char *(*pith_opt_user_agent_prefix)(void);
  */
 extern int (*pith_opt_smime_get_passphrase)(void);
 
+/*
+ * Required call to interface for input of file to import.
+ */
+extern int (*pith_smime_import_certificate)(char *, char *, size_t);
+
+/*
+ * Required call to ask user to enter a password, with a given char * prompt
+ */
+extern void (*pith_enter_password)(char *, char *, size_t);
 
 #endif /* PITH_OPTIONS_INCLUDED */

@@ -25,6 +25,7 @@
 
 /* exported protoypes */
 int    smime_get_passphrase(void);
+int    smime_certificate_error_ask(int error);
 void   smime_info_screen(struct pine *ps);
 void   smime_config_screen(struct pine *, int edit_exceptions);
 int    smime_related_var(struct pine *, struct variable *);

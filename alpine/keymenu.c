@@ -4,8 +4,8 @@ static char rcsid[] = "$Id: keymenu.c 1074 2008-06-04 00:08:43Z hubert@u.washing
 
 /*
  * ========================================================================
- * Copyright 2006-2008 University of Washington
  * Copyright 2013-2014 Eduardo Chappa
+ * Copyright 2006-2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2616,6 +2616,92 @@ struct key config_smime_helper_keys[] =
 	HOMEKEY_MENU,
 	ENDKEY_MENU};
 INST_KEY_MENU(config_smime_helper_keymenu, config_smime_helper_keys);
+
+struct key config_smime_manage_certs_menu_keys[] = 
+       {HELP_MENU,
+	WHEREIS_MENU,
+	EXIT_SETUP_MENU,
+	{"S", "[" N_("Select") "]", {MC_CHOICE,3,{'s',ctrl('M'),ctrl('J')}}, KS_NONE},
+	{"I", N_("Import Cert"), {MC_IMPORT,1,{'i'}}, KS_NONE},
+	NULL_MENU,
+	PREV_MENU,
+	NEXT_MENU,
+	PREVPAGE_MENU,
+	NEXTPAGE_MENU,
+	HOMEKEY_MENU,
+	ENDKEY_MENU};
+INST_KEY_MENU(config_smime_manage_certs_menu_keymenu, config_smime_manage_certs_menu_keys);
+
+struct key config_smime_add_certs_keys[] = 
+       {HELP_MENU,
+	NULL_MENU,
+	EXIT_SETUP_MENU,
+	{"I", N_("Import Cert"), {MC_IMPORT,3,{'i', ctrl('M'), ctrl('J')}}, KS_NONE},
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU};
+INST_KEY_MENU(config_smime_add_certs_keymenu, config_smime_add_certs_keys);
+
+struct key config_smime_manage_certs_work_keys[] = 
+       {HELP_MENU,
+	OTHER_MENU,
+	EXIT_SETUP_MENU,
+	{"V", "[" N_("View Info") "]", {MC_CHOICE,3,{'v',ctrl('M'),ctrl('J')}}, KS_NONE},
+	{"I", N_("Import Cert"), {MC_IMPORT,1,{'i'}}, KS_NONE},
+	NULL_MENU,
+	{"D", N_("Delete"), {MC_DELETE,1,{'d'}}, KS_NONE},
+	{"U", N_("Undelete"), {MC_UNDELETE,1,{'u'}}, KS_NONE},
+	{"X", N_("Expunge"), {MC_EXPUNGE,1,{'x'}}, KS_NONE},
+	NULL_MENU,
+	NULL_MENU,
+	WHEREIS_MENU,
+
+	PREV_MENU,
+	NEXT_MENU,
+	PREVPAGE_MENU,
+	NEXTPAGE_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	HOMEKEY_MENU,
+	ENDKEY_MENU};
+INST_KEY_MENU(config_smime_manage_certs_work_keymenu, config_smime_manage_certs_work_keys);
+
+struct key smime_certificate_info_keys[] =
+       {HELP_MENU,
+	OTHER_MENU,
+	{"E",N_("Exit Viewer"),{MC_EXIT,1,{'e'}},KS_EXITMODE},
+	{"T",N_("Trust Cert"), {MC_TRUST,1,{'t'}},KS_NONE},
+	{"D",N_("Delete"),     {MC_DELETE,1,{'d'}},KS_NONE},
+	{"U",N_("Undelete"),   {MC_UNDELETE,1,{'u'}},KS_NONE},
+	{"B",N_("Public Key"), {MC_PUBLIC,1,{'b'}},KS_NONE},
+	{"R",N_("Private Key"),{MC_PRIVATE,1,{'r'}},KS_NONE},
+	NULL_MENU,
+	NULL_MENU,
+	FWDEMAIL_MENU,
+	{"S", N_("Save"), {MC_SAVETEXT,1,{'s'}}, KS_SAVE},
+
+	HELP_MENU,
+	OTHER_MENU,
+	PREVPAGE_MENU,
+	NEXTPAGE_MENU,
+	PRYNTTXT_MENU,
+	WHEREIS_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	HOMEKEY_MENU,
+	ENDKEY_MENU};
+INST_KEY_MENU(smime_certificate_info_keymenu, smime_certificate_info_keys);
 
 
 /*

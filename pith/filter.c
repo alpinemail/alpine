@@ -11284,7 +11284,7 @@ gf_local_nvtnl(FILTER_S *f, int flg)
 		GF_PUTC(f->next, '\015');
 		GF_PUTC(f->next, '\012');
 	    }
-	    else
+	    else if(c != '\015')   /* do not copy isolated \015 into source */
 	      GF_PUTC(f->next, c);
 	}
 

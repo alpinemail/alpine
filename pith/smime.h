@@ -2,6 +2,7 @@
  * $Id: smime.h 1074 2008-06-04 00:08:43Z hubert@u.washington.edu $
  *
  * ========================================================================
+ * Copyright 2013-2014 Eduardo Chappa
  * Copyright 2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,6 +32,7 @@
 
 
 /* exported protoypes */
+int	       smime_validate_cert(X509 *cert, long *error);
 int	       encrypt_file(char *fp, char *text);
 char 	      *decrypt_file(char *fp, int *rv);
 int            is_pkcs7_body(BODY *b);
@@ -40,7 +42,13 @@ void           free_smime_body_sparep(void **sparep);
 int            sign_outgoing_message(METAENV *header, BODY **bodyP, int dont_detach);
 void           gf_puts_uline(char *txt, gf_io_t pc);
 PERSONAL_CERT *find_certificate_matching_recip_info(PKCS7_RECIP_INFO *ri);
+PERSONAL_CERT *get_personal_certs(char *path);
+void           smime_init(void);
 void           smime_deinit(void);
+void	       renew_store(void);
+void	       renew_cert_data(CertList **data, WhichCerts ctype);
+BIO	      *print_private_key_information(char *email, int itype);
+
 SMIME_STUFF_S *new_smime_struct(void);
 int            copy_publiccert_dir_to_container(void);
 int            copy_publiccert_container_to_dir(void);
@@ -52,6 +60,7 @@ int            copy_cacert_container_to_dir(void);
 int            copy_publiccert_container_to_keychain(void);
 int            copy_publiccert_keychain_to_container(void);
 #endif /* APPLEKEYCHAIN */
+int	       import_certificate(WhichCerts);
 
 
 #endif /* PITH_SMIME_INCLUDED */

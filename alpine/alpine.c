@@ -188,7 +188,9 @@ main(int argc, char **argv)
     pith_opt_pretty_feature_name   = pretty_feature_name;
     pith_opt_closing_stream        = titlebar_stream_closing;
     pith_opt_current_expunged	   = mm_expunged_current;
+    pith_enter_password		   = alpine_get_password;
 #ifdef	SMIME
+    pith_smime_import_certificate  = smime_import_certificate;
     pith_opt_smime_get_passphrase  = smime_get_passphrase;
 #endif
 #ifdef	ENABLE_LDAP
