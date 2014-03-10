@@ -181,28 +181,16 @@ Additions include:
 <P>
 
 <UL>
-  <LI> Style tag in body of html message causes Alpine to not write its content
-       until a new &lt;/style&gt;
-  <LI> Pico: New subcommand of the search command, allows to reverse the
-       direction of search.
   <LI> Upgrade UW-IMAP to Panda IMAP from 
        <A HREF="https://github.com/jonabbey/panda-imap">https://github.com/jonabbey/panda-imap</A>.
-  <LI> S/MIME: When a signed message is received from a user whose 
-       certificate has not been imported, should the certificate fail to
-       validate, the user will be shown a warning, and asked how to proceed.
+  <LI> S/MIME: Add screen to manage certificates.
   <LI> Replace tabs by spaces in From and Subject fields to control for
        size in screen of these fields. Change only in index screen display.
   <LI> Add support to selective expunge through a subcommand of the 
        select-apply commands. Read more in the <A 
        HREF="h_index_cmd_expunge">help</A> for the expunge command.
-  <LI> Alpine does not attempt to automatically reopen a collection 
-       that was not opened due to cancellation by the user. 
-       Instead, the user must try to open it explicitly.
-  <LI> Alpine searches for a certificate that matches an email address in
-       all addresses in a certificate (instead of just the first 
-       one) but when it tries to unlock the certificate, it asks 
-       for the password for the first email address in that 
-       certificate.
+  <LI> Pico: New subcommand of the search command, allows to reverse the
+       direction of search.
   <LI> Add /tls1, /tls1_1, /tls1_2 and /dtls1 to the definition of a 
        server to use different ways to connect using ssl, for 
        example {server.com/tls1} will attempt to connect to 
@@ -212,6 +200,16 @@ Additions include:
        Conversely, however, the /ssl flag does not imply any of 
        these flags; the /ssl flag means SSLv3 or, if not available, 
        SSLv2 in the SSL port.
+  <LI> Alpine does not attempt to automatically reopen a collection 
+       that was not opened due to cancellation by the user. 
+       Instead, the user must try to open it explicitly.
+  <LI> Alpine searches for a certificate that matches an email address in
+       all addresses in a certificate (instead of just the first 
+       one) but when it tries to unlock the certificate, it asks 
+       for the password for the first email address in that 
+       certificate.
+  <LI> Style tag in body of html message causes Alpine to not write its content
+       until a new &lt;/style&gt;
   <LI> Experimental: Write the content-type of a message in 
        lowercase, as some non-compliant servers do not understand 
        uppercase content-type, such as those of GMX.de.

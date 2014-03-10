@@ -223,7 +223,7 @@ replace_all(UCS *oldword, int oldword_len, UCS *newword)
     assert(curwp->w_marko == curwp->w_doto);
 
     curwp->w_bufp->b_mode |= MDEXACT;           /* case sensitive */
-    while(forscan(&wrap, oldword, NULL, 0, 1))
+    while(forscan(&wrap, oldword, 0, NULL, 0, 1))
     {
         if(wrap)
             break;                              /* wrap NOT allowed! */

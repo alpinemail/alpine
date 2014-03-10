@@ -13,7 +13,8 @@
  */
 
 #define VER_MAJOR 2
-#define VER_MINOR 1
+#define VER_MINOR 19
+
 extern char datestamp[];
 
 
@@ -33,7 +34,7 @@ mswin_majorver()
 int
 mswin_minorver()
 {
-    return(VER_MINOR);
+    return(VER_MINOR 19);
 }
 
 
