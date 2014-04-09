@@ -2980,6 +2980,7 @@ free_smime_struct(SMIME_STUFF_S **smime)
 	    (*smime)->personal_certs = NULL;
 	}
 
+#ifdef PASSFILE
 	if((*smime)->pwdcert){
 	    PERSONAL_CERT *pc;
 
@@ -2987,6 +2988,7 @@ free_smime_struct(SMIME_STUFF_S **smime)
 	    free_personal_certs(&pc);
 	    (*smime)->pwdcert = NULL;
 	}
+#endif /* PASSFILE */
 
 	if((*smime)->privatecontent)
 	  fs_give((void **) &(*smime)->privatecontent);

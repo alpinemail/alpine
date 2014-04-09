@@ -135,8 +135,8 @@ N_(" -erase_stored_passwords\tEliminate any stored passwords"),
 N_(" -passfile <fully_qualified_filename>\tSet the password file to something other"),
 N_("\t\tthan the default"),
 #ifdef SMIME
-N_(" -pwdcertdir <fully_qualified_filename>\tSet the directory to store a personal"),
-N_("\t\tkey and certificates to encrypt and decrypt your password file."),
+N_(" -pwdcertdir <fully_qualified_path>\tSet the directory to store a personal"),
+N_("\t\tkey and certificate to encrypt and decrypt your password file."),
 #endif /* SMIME inside PASSFILE */
 #endif	/* PASSFILE */
 

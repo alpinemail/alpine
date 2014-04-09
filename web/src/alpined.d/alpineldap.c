@@ -106,7 +106,9 @@ main(argc, argv)
     pine_state = new_pine_struct();
     ps_global  = pine_state;
     vars = ps_global->vars;
+#ifdef DEBUG
     debug = 0;
+#endif /* DEBUG */
 
     for(i = 1 ; i < argc; i++){
         if(*argv[i] == '-'){

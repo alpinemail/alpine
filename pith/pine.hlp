@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 52 2014-04-08 23:57:42
+Alpine Commit 53 2014-04-09 16:52:40
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -184,15 +184,15 @@ Additions include:
   <LI> Upgrade UW-IMAP to Panda IMAP from 
        <A HREF="https://github.com/jonabbey/panda-imap">https://github.com/jonabbey/panda-imap</A>.
   <LI> S/MIME: Add screen to manage certificates.
-  <LI> Replace tabs by spaces in From and Subject fields to control for
-       size in screen of these fields. Change only in index screen display.
   <LI> Add support to selective expunge through a subcommand of the 
        select-apply commands. Read more in the <A 
        HREF="h_index_cmd_expunge">help</A> for the expunge command.
   <LI> Pico: New subcommand of the search command, allows to reverse the
        direction of search.
-  <LI> If a password file is defined, and S/MIME is enabled, the key that is
-       used to encrypt the password file is saved under the name password_file_key.
+  <LI> If a password file is defined, and S/MIME is enabled, the key and
+       certificate used to encrypt the password file are saved in 
+       the ~/.alpine-smime/.pwd directory, or in the directory specified
+       by the -pwdcertdir command line option.
   <LI> Add /tls1, /tls1_1, /tls1_2 and /dtls1 to the definition of a 
        server to use different ways to connect using ssl, for 
        example {server.com/tls1} will attempt to connect to 
@@ -224,6 +224,8 @@ Additions include:
        indented with spaces.
   <LI> Check bounds and tie strings off to improve security. Contributed 
        by James Jerkins.
+  <LI> Replace tabs by spaces in From and Subject fields to control for
+       size in screen of these fields. Change only in index screen display.
 </UL>
 
 <P>
@@ -257,6 +259,7 @@ Bugs that have been addressed include:
   <LI> Crash when tcp connection to NNTP server was lost after connection
        had been established, but lost immediately afterwards.
   <LI> WebAlpine: add _GNU_SOURCE to make pubcookie build.
+  <LI> WebAlpine: fail to build with debug disabled. Fix from Sam Hathaway.
   <LI> Save command did not warn of existence of a message with a deleted 
        attachment in an aggregate save, unless cursor was positioned on a message 
        with a deleted attachment. Reported by Florian Herzig.
