@@ -27,14 +27,17 @@
 #include <openssl/rand.h>
 #include <openssl/err.h>
 
+#ifdef PASSFILE
+#define DF_PASSWORD_DIR ".alpine-smime/.pwd"
+#endif
 
 #define OUR_PKCS7_ENCLOSURE_SUBTYPE "x-pkcs7-enclosure"
 
 
 /* exported protoypes */
 int	       smime_validate_cert(X509 *cert, long *error);
-int	       encrypt_file(char *fp, char *text);
-char 	      *decrypt_file(char *fp, int *rv);
+int	       encrypt_file(char *fp, char *text, PERSONAL_CERT *pc);
+char 	      *decrypt_file(char *fp, int *rv, PERSONAL_CERT *pc);
 int            is_pkcs7_body(BODY *b);
 int            fiddle_smime_message(BODY *b, long msgno);
 int            encrypt_outgoing_message(METAENV *header, BODY **bodyP);
@@ -45,6 +48,7 @@ PERSONAL_CERT *find_certificate_matching_recip_info(PKCS7_RECIP_INFO *ri);
 PERSONAL_CERT *get_personal_certs(char *path);
 void           smime_init(void);
 void           smime_deinit(void);
+void           smime_reinit(void);
 void	       renew_store(void);
 void	       renew_cert_data(CertList **data, WhichCerts ctype);
 BIO	      *print_private_key_information(char *email, int itype);
@@ -61,7 +65,9 @@ int            copy_publiccert_container_to_keychain(void);
 int            copy_publiccert_keychain_to_container(void);
 #endif /* APPLEKEYCHAIN */
 int	       import_certificate(WhichCerts);
-
+#ifdef PASSFILE                                       
+void           setup_pwdcert(void);
+#endif /* PASSFILE */
 
 #endif /* PITH_SMIME_INCLUDED */
 #endif /* SMIME */

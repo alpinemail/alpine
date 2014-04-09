@@ -518,7 +518,7 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* Password cache file (NOT secure. NOT recommended) */
+/* Password cache file (recommended if S/MIME is enabled and configured) */
 #undef PASSFILE
 
 /* Program users use to change their password */

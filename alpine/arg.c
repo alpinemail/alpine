@@ -58,6 +58,10 @@ static char args_err_missing_aux[] =		N_("missing argument for option \"-aux\"")
 #ifdef	PASSFILE
 static char args_err_missing_passfile[] =	N_("missing argument for option \"-passfile\"");
 static char args_err_non_abs_passfile[] =	N_("argument to \"-passfile\" should be fully-qualified");
+#ifdef SMIME
+static char args_err_missing_pwdcertdir[] =	N_("missing argument for option \"-pwdcertdir\"");
+static char args_err_non_abs_pwdcertdir[] =	N_("argument to \"-pwdcertdir\" should be fully-qualified");
+#endif /* SMIME inside PASSFILE */
 #endif
 static char args_err_missing_sort[] =		N_("missing argument for option \"-sort\"");
 static char args_err_missing_flag_arg[] =	N_("missing argument for flag \"%c\"");
@@ -130,6 +134,10 @@ N_(" -erase_stored_passwords\tEliminate any stored passwords"),
 #ifdef	PASSFILE
 N_(" -passfile <fully_qualified_filename>\tSet the password file to something other"),
 N_("\t\tthan the default"),
+#ifdef SMIME
+N_(" -pwdcertdir <fully_qualified_filename>\tSet the directory to store a personal"),
+N_("\t\tkey and certificates to encrypt and decrypt your password file."),
+#endif /* SMIME inside PASSFILE */
 #endif	/* PASSFILE */
 
 #ifdef	LOCAL_PASSWD_CACHE
@@ -290,6 +298,31 @@ Loop: while(--ac > 0)
 
 		  goto Loop;
 	      }
+#ifdef SMIME
+	      else if(strcmp(*av, "pwdcertdir") == 0){
+		  if(--ac){
+		      if((str = *++av) != NULL){
+			  if(!is_absolute_path(str)){
+			      display_args_err(_(args_err_non_abs_pwdcertdir),
+					       NULL, 1);
+			      ++usage;
+			  }
+			  else{
+			      if(pine_state->pwdcertdir)
+				fs_give((void **)&pine_state->pwdcertdir);
+
+			      pine_state->pwdcertdir = cpystr(str);
+			  }
+		      }
+		  }
+		  else{
+		      display_args_err(_(args_err_missing_pwdcertdir), NULL, 1);
+		      ++usage;
+		  }
+
+		  goto Loop;
+	      }
+#endif  /* SMIME inside PASSFILE */
 #endif	/* PASSFILE */
 
 #ifdef  LOCAL_PASSWD_CACHE

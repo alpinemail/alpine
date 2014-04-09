@@ -15,7 +15,7 @@ dnl  */
 
 AC_PREREQ([2.69])
 
-AC_REVISION([Rev:9 by chappa@washington.edu])
+AC_REVISION([Rev:13 by chappa@washington.edu])
 
 dnl Alpine Version Number is in $srcdir/VERSION
 AC_INIT([alpine],[m4_normalize(m4_include(VERSION))],[chappa@washington.edu])
@@ -633,7 +633,7 @@ PINEVAR_UNQUOTED(default-printer, DF_DEFAULT_PRINTER, [ANSI_PRINTER], [Default p
 
 dnl set PASSFILE?
 AC_ARG_WITH(passfile,
-  AS_HELP_STRING([--with-passfile=FILENAME],[Password cache file (NOT secure, NOT recommended)]),
+  AS_HELP_STRING([--with-passfile=FILENAME],[Password cache file (recommended when S/MIME is enabled and configured)]),
     [
       case "$withval" in
 	no)
@@ -645,6 +645,7 @@ AC_ARG_WITH(passfile,
 	  ;;
       esac
     ])
+
 
 dnl os-specific credential cache?
 AC_ARG_WITH(local-password-cache,
@@ -669,7 +670,7 @@ if test -n "$alpine_PASSFILE" ; then
       AC_MSG_NOTICE([--with-passfile definition overrides OS-Specific password caching])
       ;;
   esac
-  AC_DEFINE_UNQUOTED([PASSFILE], "$alpine_PASSFILE", [Password cache file (NOT secure. NOT recommended)])
+  AC_DEFINE_UNQUOTED([PASSFILE], "$alpine_PASSFILE", [Password cache file (recommended if S/MIME is enabled and configured)])
 fi
 
 dnl set DF_SSHPATH?
@@ -1393,7 +1394,7 @@ if test "$alpine_with_ldap" = "yes" ; then
     ])
 
   if test "$alpine_has_ldap" = "yes" ; then
-    AC_MSG_NOTICE([Including LDAP Support])
+    AC_MSG_NOTICE([* * * Including LDAP Support])
     AC_DEFINE([ENABLE_LDAP], [], [Enable LDAP query support])
 
     dnl we use deprecated functions (ldap_get_values)
@@ -1837,6 +1838,7 @@ else
 
   if test "x$with_smime" != "xno" ; then
     if test -n "$certdir" ; then
+      AC_MSG_NOTICE([* * * S/MIME support enabled])
       AC_DEFINE([SMIME], [], [Enable S/MIME code])
       AC_DEFINE_UNQUOTED([SMIME_SSLCERTS],"$certdir",[Directory where S/MIME CACerts are located])
     fi

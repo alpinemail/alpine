@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 48 2014-03-09 14:26:45
+Alpine Commit 52 2014-04-08 23:57:42
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -191,6 +191,8 @@ Additions include:
        HREF="h_index_cmd_expunge">help</A> for the expunge command.
   <LI> Pico: New subcommand of the search command, allows to reverse the
        direction of search.
+  <LI> If a password file is defined, and S/MIME is enabled, the key that is
+       used to encrypt the password file is saved under the name password_file_key.
   <LI> Add /tls1, /tls1_1, /tls1_2 and /dtls1 to the definition of a 
        server to use different ways to connect using ssl, for 
        example {server.com/tls1} will attempt to connect to 
@@ -248,7 +250,10 @@ Bugs that have been addressed include:
   <LI> S/MIME: Forwarding messages with multipart content-type failed to be signed
        with &quot;Error writing pipe&quot; message. Reported by Andreas Schamanek
        and Stefan Mueller.
-  <LI> S/MIME: Certificates are lost when using a pinerc file outside of the home directory.
+  <LI> S/MIME: Certificates are lost when using a pinerc file outside of the 
+       home directory.
+  <LI> S/MIME: accessing the S/MIME configuration screen would deinitialize
+       SMIME making it not possible to sign or encrypt messages.
   <LI> Crash when tcp connection to NNTP server was lost after connection
        had been established, but lost immediately afterwards.
   <LI> WebAlpine: add _GNU_SOURCE to make pubcookie build.
@@ -649,7 +654,7 @@ Changes included:
 Details on changes in previous (prerelease) versions of Alpine
 may be found at the following URL:
 <P>
-<CENTER><SAMP><A HREF="http://www.washington.edu/alpine/changes.html">http://www.washington.edu/alpine/changes.html</A></SAMP></CENTER>
+<CENTER><SAMP><A HREF="http://patches.freeiz.com/alpine/release/">http://patches.freeiz.com/alpine/release/</A></SAMP></CENTER>
 <P>
 
 <HR WIDTH="75%"><P>
@@ -685,27 +690,25 @@ General Alpine configuration information can be found
 <A HREF="h_news_config">here</A>.
 <P>
 This is revision (<!--#echo var="ALPINE_REVISION"-->) of the Alpine software.
-Alpine mailbox and <A HREF="http://www.washington.edu/imap/">IMAP</A> server
+Alpine mailbox and <A HREF="https://github.com/jonabbey/panda-imap/">IMAP</A> server
 access is provided by the IMAP Toolkit Environment (c-client library)
 version <!--#echo var="C_CLIENT_VERSION"-->.
 <P> 
 Alpine was developed until 2009 by the Office of Computing 
 &amp; Communications at the University of Washington in Seattle.  
 Since then, the effort of developing Alpine has been continued by
-a community of volunteers who dedicate their time to make a good software
-even better!
-software 
+a community of volunteers who make a good software even better!
 
 <P>
 Alpine Copyright 2013-2014 Eduardo Chappa, 
 <BR> Copyright 2006-2008 University of Washington.
 
 <P>
-Additional legal notices can be found <A HREF="h_news_legal">here</A>
-or at the web URL:
+Additional legal notices can be found <A HREF="h_news_legal">here</A>,
+or instead you can find the Apache License, version 2.0 at the web URL:
 
 <P>
-<CENTER><A HREF="http://www.washington.edu/alpine/overview/legal.html">http://www.washington.edu/alpine/overview/legal</A></CENTER>
+<CENTER><A HREF="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</A></CENTER>
 
 <P>
 &lt;End of Release Notes&gt;
@@ -1362,6 +1365,11 @@ listing of changes in Alpine <!--#echo var="ALPINE_VERSION"-->
 <B>especially</B> if a &quot;problem&quot; you are encountering is actually 
 a change in the way an aspect of Alpine works.  There, you will also find notes 
 on Alpine configuration.<P>
+
+  <LI> The main site for Alpine contains information on configuring and solving problems
+       with Alpine, it can be found at
+
+<CENTER><A HREF="http://patches.freeiz.com/alpine/">http://patches.freeiz.com/alpine/</A></CENTER>  
 
   <LI> The Alpine Information Center (maintained by the University of
 	   Washington) World Wide Web site contains, among other things
@@ -20017,6 +20025,18 @@ example.
 <P>
 </DD>
 
+<DT>Loser</DT>
+<DD>This option makes sense only for IMAP servers that do not perform
+a SEARCH command correctly. If your filtering rules
+fail to filter some messages, that should have been filtered, then this
+option will make Alpine download all data necessary to perform that search.
+There is a performance penalty when using this option. Downloading the
+data to perfom the search will take longer than requesting the IMAP
+server to perform the filtering, but the filtering will be done correctly.
+<P>
+</DD>
+
+
 <DT>Service</DT>
 <DD>This parameter requires an associated value.  The default value is
 &quot;IMAP&quot; which indicates communication with the server based
@@ -29315,11 +29335,11 @@ When this feature is set (the default) Alpine will select possible web hostnames
 from the displayed text and display them in boldface for selection.  
 This can be useful when you receive messages referencing World Wide Web 
 sites without the use of complete URLs; for example, specifying only 
-&quot;www.washington.edu/alpine/&quot; (which will <B>not</B> become a 
+&quot;www.patches.freeiz.com/alpine/&quot; (which will <B>not</B> become a 
 selectable 
 item by setting <A HREF="h_config_enable_view_url">&quot;<!--#echo var="FEAT_enable-msg-view-urls"-->&quot;</A>) 
 rather than explicitly
-&quot;http://www.washington.edu/alpine/&quot;.  
+&quot;http://www.patches.freeiz.com/alpine/&quot;.  
 <P>
 The first available hostname is displayed in inverse.  This is the
 &quot;selected&quot; hostname.  Pressing RETURN will cause Alpine to display

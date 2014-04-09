@@ -178,6 +178,10 @@ free_pine_struct(struct pine **pps)
 #ifdef PASSFILE
     if((*pps)->passfile)
       fs_give((void **)&(*pps)->passfile);
+#ifdef SMIME
+    if((*pps)->pwdcertdir)
+      fs_give((void **)&(*pps)->pwdcertdir);
+#endif /* SMIME inside PASSFILE */
 #endif /* PASSFILE */
 
     if((*pps)->hdr_colors)

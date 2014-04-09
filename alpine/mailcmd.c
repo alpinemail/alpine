@@ -116,8 +116,6 @@ char     *choose_a_keyword(void);
 int	  select_sort(struct pine *, int, SortOrder *, int *);
 int       print_index(struct pine *, MSGNO_S *, int);
 
-
-
 /*
  * List of Select options used by apply_* functions...
  */
@@ -304,16 +302,25 @@ static ESCKEY_S flag_text_opt[] = {
     {-1, 0, NULL, NULL}
 };
 
-void 
+int alpine_get_data_prompt(char *prompt, char *value, size_t len)
+{
+  int rv, flags;
+  flags = OE_DISALLOW_HELP;
+  value[0] = '\0';
+  rv =  optionally_enter(value, -FOOTER_ROWS(ps_global), 0, len,
+                               prompt, NULL, NO_HELP, &flags);
+  return rv;
+}
+
+int 
 alpine_get_password(char *prompt, char *pass, size_t len)
 {
-  int rc, flags;
-  do {    /* transform this to a (*pith_)() function */
-   flags = OE_PASSWD | OE_DISALLOW_HELP;
-   pass[0] = '\0';
-   rc =  optionally_enter(pass, -FOOTER_ROWS(ps_global), 0, len,
+  int rv, flags;
+  flags = OE_PASSWD | OE_DISALLOW_HELP;
+  pass[0] = '\0';
+  rv =  optionally_enter(pass, -FOOTER_ROWS(ps_global), 0, len,
                                prompt, NULL, NO_HELP, &flags);
-  } while (rc!=0 && rc!=1 && rc>0);
+  return rv;
 }
 
 int smime_import_certificate(char *filename, char *full_filename, size_t len)

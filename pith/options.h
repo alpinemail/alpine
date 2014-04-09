@@ -232,6 +232,11 @@ extern int (*pith_smime_import_certificate)(char *, char *, size_t);
 /*
  * Required call to ask user to enter a password, with a given char * prompt
  */
-extern void (*pith_enter_password)(char *, char *, size_t);
+extern int (*pith_smime_enter_password)(char *, char *, size_t);
+
+/*
+ * used to ask for data to users
+ */
+extern int (*pith_opt_get_data_prompt)(char *, char *, size_t);
 
 #endif /* PITH_OPTIONS_INCLUDED */

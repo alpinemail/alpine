@@ -34,6 +34,7 @@ static char rcsid[] = "$Id: smime.c 1074 2008-06-04 00:08:43Z hubert@u.washingto
 #include "../pith/store.h"
 #include "../pith/conf.h"
 #include "../pith/list.h"
+#include "../pith/mailcmd.h"
 #include "radio.h"
 #include "keymenu.h"
 #include "mailview.h"
@@ -351,7 +352,29 @@ output_cert_info(X509 *cert, gf_io_t pc)
 	gf_puts_uline("Serial Number", spc);
 	gf_puts(NEWLINE, spc);
 
-	snprintf(buf, sizeof(buf), "%ld", ASN1_INTEGER_get(cert->cert_info->serialNumber));
+	{ 
+	  ASN1_INTEGER *bs;
+	  long l;
+	  const char *neg;
+	  int i;
+
+	  bs = X509_get_serialNumber(cert);
+	  if (bs->length <= (int)sizeof(long)){
+	     l = ASN1_INTEGER_get(bs);
+             if (bs->type == V_ASN1_NEG_INTEGER){
+	        l = -l;
+	        neg="-";
+	     }
+             else
+                neg="";
+	     snprintf(buf, sizeof(buf), " %s%lu (%s0x%lx)", neg, l, neg, l);
+	  } else {
+	      snprintf(buf, sizeof(buf), "%s", bs->type == V_ASN1_NEG_INTEGER ? "(Negative)" : "");
+	      for (i = 0; i < bs->length; i++)
+		  snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "%02x%s", bs->data[i],
+				i+1 == bs->length ? "" : ":");
+	  }
+	}
 	gf_puts(buf, spc);
 	gf_puts(NEWLINE, spc);
 	gf_puts(NEWLINE, spc);
@@ -550,6 +573,13 @@ smime_config_screen(struct pine *ps, int edit_exceptions)
     dprint((9, "smime_config_screen()"));
     ps->next_screen = SCREEN_FUN_NULL;
 
+    /* 
+     * this is necessary because we need to know the correct paths
+     * to configure certificates and keys, and we could get here
+     * without having done that before we reach this place.
+     */
+    smime_reinit();
+
     if(ps->fix_fixed_warning)
       offer_to_fix_pinerc(ps);
 
@@ -608,7 +638,7 @@ smime_config_screen(struct pine *ps, int edit_exceptions)
     }
 
     free_saved_smime_config(ps, &vsave);
-    smime_deinit();
+    smime_reinit();
 }
 
 
@@ -926,6 +956,7 @@ void display_certificate_information(struct pine *ps, X509 *cert, char *email, W
 	case MC_TRUST:
 	   save_cert_for(email, cert, CACert);
 	   renew_store();
+	   new_store = 1;
 	   break;
 
 	case MC_DELETE:
@@ -1063,12 +1094,8 @@ int
 manage_certs_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
 {
     int rv = 0;
-    char *file, *ext;
-    char tmp[200], buf[MAXPATH], *path;
     X509 *cert = NULL;
-    BIO *in;
     WhichCerts ctype = (*cl)->d.s.ctype;
-    SMIME_STUFF_S *smime = ps->smime;
 
     switch(cmd){
       case MC_CHOICE:
@@ -1111,15 +1138,31 @@ manage_certs_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
 	{ CertList *cl;
 
 	  for(cl = DATACERT(ctype); cl != NULL && DELETEDCERT(cl) == 0; cl = cl->next);
-	  if(cl != NULL && DELETEDCERT(cl) != 0)
+	  if(cl != NULL && DELETEDCERT(cl) != 0){
 	    smime_expunge_cert(ctype);
-	  else
+	    rv = 10;		/* forces redraw */
+	  }
+	  else{
 	    q_status_message(SM_ORDER, 3, 3, _("No certificates marked deleted"));
-	  rv = 10;	/* forces redraw */
+	    rv = 0;
+	  }
 	  break;
 	}
       case MC_IMPORT: 
-	import_certificate(ctype);
+	rv = import_certificate(ctype);
+	if(rv < 0){
+	  switch(rv){
+	    default:
+	    case -1:
+	       cmd_cancelled("Import certificate");
+	    break;
+ 
+	    case -2:
+	      q_status_message1(SM_ORDER, 0, 2, _("Can't import certificate outside of %s"),
+				ps_global->VAR_OPER_DIR);
+	    break;
+	  }
+	}
 	rv = 10;	/* forces redraw */
 	break;
 
@@ -1132,7 +1175,6 @@ manage_certs_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
 	break;
     }
 
-    BIO_free(in);
     X509_free(cert);
     return rv;
 }
@@ -1231,7 +1273,7 @@ void manage_certificates(struct pine *ps, WhichCerts ctype)
 
       if(ctmp == NULL){
 	ps->mangled_screen = 1;
-        smime_deinit();
+	smime_reinit();
         return;
       }
 
@@ -1245,7 +1287,7 @@ void manage_certificates(struct pine *ps, WhichCerts ctype)
     } while (rv != 0);
 
     ps->mangled_screen = 1;
-    smime_deinit();
+    smime_reinit();
 }
 
 int

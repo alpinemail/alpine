@@ -55,7 +55,7 @@ If you are reading this, you have presumably succeeded in extracting
 the distribution from the compressed tar archive file, via the
 following command, or equivalent:
 
-        tar --xz -xf alpine.tar.xz
+        tar -Jxf alpine.tar.xz
 
 Some of the instructions that follow assume that your current working
 directory is the alpine-X.XX directory created by the un-tar process

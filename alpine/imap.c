@@ -4,8 +4,8 @@ static char rcsid[] = "$Id: imap.c 1266 2009-07-14 18:39:12Z hubert@u.washington
 
 /*
  * ========================================================================
- * Copyright 2006-2009 University of Washington
  * Copyright 2013-2014 Eduardo Chappa
+ * Copyright 2006-2009 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2041,7 +2041,6 @@ passfile_name(char *pinerc, char *path, size_t len)
 	return(NULL);
 #endif
 }
-
 #endif	/* PASSFILE */
 
 
@@ -2374,17 +2373,18 @@ read_passfile(pinerc, l)
     };
 
 #ifdef SMIME
+    smime_init();
+    if(ps_global->smime->pwdcert == NULL)
+       setup_pwdcert();
     tmp2[0] = '\0';
     fgets(tmp2, sizeof(tmp2), fp);
+    fclose(fp);
     if(strcmp(tmp2, "-----BEGIN PKCS7-----\n")){
-       fclose(fp);
-       if(encrypt_file(tmp, NULL))
+       if(encrypt_file(tmp, NULL, ps_global->smime->pwdcert))
 	  encrypted++;
     }
-    else{
-       fclose(fp);
+    else
        encrypted++;
-    }
 
     /* 
      * if password file is encrypted we attemtp to decrypt. We ask the 
@@ -2399,7 +2399,7 @@ read_passfile(pinerc, l)
      * unencrypted and rewritten again.
      */
     if(encrypted){
-	text = text2 = decrypt_file(tmp, &i);
+	text = text2 = decrypt_file(tmp, &i, ps_global->smime->pwdcert);
 	switch(i){
 	   case 1 : save_password = 1;
 		    break;
@@ -2631,7 +2631,7 @@ write_passfile(pinerc, l)
 
     fclose(fp);
 #ifdef SMIME
-    if(encrypt_file(tmp2, text) == 0){
+    if(encrypt_file(tmp2, text, ps_global->smime->pwdcert) == 0){
 	if((fp = our_fopen(tmp2, "wb")) != NULL){
 	   fputs(text, fp);
 	   fclose(fp);

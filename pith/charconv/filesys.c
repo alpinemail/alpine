@@ -663,7 +663,6 @@ our_getenv(char *env_variable)
 #endif /* !_WINDOWS */
 }
 
-
 int
 our_access(char *path, int mode)
 {

@@ -60,10 +60,12 @@ typedef struct conf_line {
 	    struct flag_table **ftbl;	/* address of start of table */
 	    struct flag_table  *fp;	/* pointer into table for each row */
 	} f;
+#ifdef SMIME
 	struct smime_data {
 	   WhichCerts ctype;
 	   int	      deleted;
 	} s;
+#endif /* SMIME */
 	struct context_and_screen {
 	    CONTEXT_S  *ct;
 	    CONT_SCR_S *cs;

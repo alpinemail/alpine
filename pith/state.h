@@ -271,6 +271,9 @@ struct pine {
 #endif
 #ifdef PASSFILE
                 *passfile,
+#ifdef SMIME
+		*pwdcertdir,
+#endif /* SMIME inside PASSFILE */
 #endif /* PASSFILE */
                 *pinerc,	/* Location of user's pinerc */
                 *exceptions,	/* Location of user's exceptions */

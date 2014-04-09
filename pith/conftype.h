@@ -693,6 +693,9 @@ typedef struct smime_stuff {
     unsigned already_auto_asked:1;	/* asked for passphrase automatically, not again */
     volatile char passphrase[100];	/* storage for the entered passphrase */
     char   **passphrase_emailaddr;	/* pointer to allocated storage */
+#ifdef PASSFILE
+    void   *pwdcert;			/* this has type (PERSONAL_CERT *) */
+#endif /* PASSFILE */
 
     /*
      * If we are using the Container type it is easiest if we

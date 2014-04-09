@@ -63,7 +63,8 @@ typedef enum {View, MsgIndx, ThrdIndx} CmdWhere;
 
 
 /* exported protoypes */
-void	    alpine_get_password(char *, char *, size_t);
+int	    alpine_get_data_prompt(char *, char *, size_t);
+int	    alpine_get_password(char *, char *, size_t);
 int	    smime_import_certificate(char *, char *, size_t);
 int	    process_cmd(struct pine *, MAILSTREAM *, MSGNO_S *, int, CmdWhere, int *);
 char	   *pretty_command(UCS);
