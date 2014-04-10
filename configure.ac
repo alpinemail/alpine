@@ -769,7 +769,7 @@ dnl find it anywhere else.
 	alpine_SSLDIR="/usr/local/opt/openssl"
 	alpine_SSLINCLUDE="$alpine_SSLDIR/include"
 	alpine_SSLLIB="$alpine_SSLDIR/lib"
-	alpine_SSLCERTS="$alpine_SSLDIR/certs"
+	alpine_SSLCERTS="/usr/local/etc/openssl"
 	alpine_SSLKEYS="$alpine_SSLDIR/private"
       elif test -d /opt/local/etc/openssl ; then
 	alpine_SSLDIR="/opt/local"
