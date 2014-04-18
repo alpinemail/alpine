@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 53 2014-04-09 16:52:40
+Alpine Commit 55 2014-04-18 01:04:35
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -184,6 +184,7 @@ Additions include:
   <LI> Upgrade UW-IMAP to Panda IMAP from 
        <A HREF="https://github.com/jonabbey/panda-imap">https://github.com/jonabbey/panda-imap</A>.
   <LI> S/MIME: Add screen to manage certificates.
+  <LI> S/MIME: sign messages using intermediate certificates when needed and possible.
   <LI> Add support to selective expunge through a subcommand of the 
        select-apply commands. Read more in the <A 
        HREF="h_index_cmd_expunge">help</A> for the expunge command.

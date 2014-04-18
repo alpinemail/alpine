@@ -35,6 +35,7 @@ static char rcsid[] = "$Id: smime.c 1074 2008-06-04 00:08:43Z hubert@u.washingto
 #include "../pith/conf.h"
 #include "../pith/list.h"
 #include "../pith/mailcmd.h"
+#include "../pith/tempfile.h"
 #include "radio.h"
 #include "keymenu.h"
 #include "mailview.h"
@@ -58,7 +59,7 @@ int      smime_helper_tool(struct pine *, int, CONF_S **, unsigned);
 int      smime_public_certs_tool(struct pine *, int, CONF_S **, unsigned);
 void 	 manage_certificates(struct pine *, WhichCerts);
 void     smime_manage_certs_init (struct pine *, CONF_S **, CONF_S **, WhichCerts, int);
-void	 display_certificate_information(struct pine *, X509 *, char *, WhichCerts);
+void	 display_certificate_information(struct pine *, X509 *, char *, WhichCerts, int num);
 int	 manage_certs_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags);
 int	 manage_certificate_info_tool(int, MSGNO_S *, SCROLL_S *);
 
@@ -922,7 +923,7 @@ smime_config_init_display(struct pine *ps, CONF_S **ctmp, CONF_S **first_line)
     (*ctmp)->varmem         = 11;
 }
 
-void display_certificate_information(struct pine *ps, X509 *cert, char *email, WhichCerts ctype)
+void display_certificate_information(struct pine *ps, X509 *cert, char *email, WhichCerts ctype, int num)
 {
     STORE_S  *store;
     SCROLL_S  scrollargs;
@@ -954,27 +955,46 @@ void display_certificate_information(struct pine *ps, X509 *cert, char *email, W
 	   break;
 
 	case MC_TRUST:
-	   save_cert_for(email, cert, CACert);
+	   if(SMHOLDERTYPE(CACert) == Directory)
+	      save_cert_for(email, cert, CACert);
+	   else{ /* if(SMHOLDERTYPE(CACert) == Container) */
+	      char  path[MAXPATH];
+	      char  *upath = PATHCERTDIR(ctype);
+	      char *tempfile = tempfile_in_same_dir(path, "az", NULL);
+	      CertList *clist;
+
+	      if(IS_REMOTE(upath))
+		strncpy(path, temp_nam(NULL, "a6"), sizeof(path)-1);
+	      else
+		strncpy(path, upath, sizeof(path)-1);
+	      path[sizeof(path)-1] = '\0';
+
+	      add_to_end_of_certlist(&ps_global->smime->cacertlist, email, X509_dup(cert));
+	      for(clist=ps_global->smime->cacertlist; clist && clist->next; clist = clist->next);
+	      certlist_to_file(tempfile, clist);
+	      add_file_to_container(CACert, tempfile, email);
+	      unlink(tempfile);
+	   }
 	   renew_store();
 	   new_store = 1;
 	   break;
 
 	case MC_DELETE:
-	   if (get_cert_deleted(ctype, email) != 0)
+	   if (get_cert_deleted(ctype, num) != 0)
 	      q_status_message(SM_ORDER, 1, 3, _("Certificate already deleted"));
 	   else{
-	      mark_cert_deleted(ctype, email, 1);
+	      mark_cert_deleted(ctype, num, 1);
 	      q_status_message(SM_ORDER, 1, 3, _("Certificate marked deleted"));
 	   }
 	   break;
 
 	case MC_UNDELETE:
-	   if (get_cert_deleted(ctype, email) != 0)
-	      q_status_message(SM_ORDER, 1, 3, _("Certificate not marked deleted"));
-	   else{
-	      mark_cert_deleted(ctype, email, 0);
-	      q_status_message(SM_ORDER, 1, 3, _("Certificate will not be deleted"));
+	   if (get_cert_deleted(ctype, num) != 0){
+	      mark_cert_deleted(ctype, num, 0);
+	      q_status_message(SM_ORDER, 1, 3, _("Certificate marked UNdeleted"));
 	   }
+	   else
+	      q_status_message(SM_ORDER, 1, 3, _("Certificate not marked deleted"));
 	   break;
 
 	default: break;
@@ -1107,7 +1127,7 @@ manage_certs_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
 	      rv = 0;
 	   }
 	   else{
-	      display_certificate_information(ps, cert, (*cl)->value+3, ctype);
+	      display_certificate_information(ps, cert, (*cl)->value+3, ctype, (*cl)->varmem);
 	      rv = 10 + (*cl)->varmem;
 	   }
 	   break;
@@ -1118,7 +1138,7 @@ manage_certs_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
 	   else{
 	      (*cl)->d.s.deleted = 1;
 	      rv = 10 + (*cl)->varmem;		/* forces redraw */
-	      mark_cert_deleted(ctype, (*cl)->value+3, 1);
+	      mark_cert_deleted(ctype, (*cl)->varmem, 1);
 	      q_status_message(SM_ORDER, 1, 3, _("Certificate marked deleted"));
 	   }
 	   break;
@@ -1128,9 +1148,9 @@ manage_certs_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
 	      q_status_message(SM_ORDER, 1, 3, _("Certificate not marked deleted"));
 	   else{
 	      (*cl)->d.s.deleted = 0;
-	      mark_cert_deleted(ctype, (*cl)->value+3, 0);
+	      mark_cert_deleted(ctype, (*cl)->varmem, 0);
 	      rv = 10 + (*cl)->varmem;		/* forces redraw */
-	      q_status_message(SM_ORDER, 1, 3, _("Certificate will not be deleted"));
+	      q_status_message(SM_ORDER, 1, 3, _("Certificate marked UNdeleted"));
 	   }
 	   break;
 
@@ -1228,7 +1248,7 @@ void smime_manage_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line
 
 	    new_confline(ctmp);
 	    (*ctmp)->d.s.ctype  = ctype;
-	    (*ctmp)->d.s.deleted = get_cert_deleted(ctype, cl->name);
+	    (*ctmp)->d.s.deleted = get_cert_deleted(ctype, i);
 	    (*ctmp)->tool       = manage_certs_tool;
 	    (*ctmp)->keymenu    = &config_smime_manage_certs_work_keymenu;
 	    (*ctmp)->varmem     = i++;

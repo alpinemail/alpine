@@ -707,38 +707,36 @@ typedef struct smime_stuff {
     SmimeHolderType publictype;
     char           *publicpath;
     char           *publiccontent;
-    CertList	   *publiccertdata;
     CertList       *publiccertlist;
 
     SmimeHolderType privatetype;
     char           *privatepath;
     char           *privatecontent;
-    CertList	   *privatecertdata;
+    CertList	   *privatecertlist;
     void           *personal_certs;	/* this is type (PERSONAL_CERT *) */
 
     SmimeHolderType catype;
     char           *capath;
     char           *cacontent;
-    CertList	   *cacertdata;
     CertList	   *cacertlist;
 
 } SMIME_STUFF_S;
 
-#define DATACERT(X) (((X) == Public ? ps_global->smime->publiccertdata		\
-			 : ((X) == Private ? ps_global->smime->privatecertdata	\
-			   : ((X) == CACert ? ps_global->smime->cacertdata : NULL))))
+#define DATACERT(X) (((X) == Public ? ps_global->smime->publiccertlist		\
+			 : ((X) == Private ? ps_global->smime->privatecertlist	\
+			   : ((X) == CACert ? ps_global->smime->cacertlist : NULL))))
 
 #define PATHCERTDIR(X) (((X) == Public ? ps_global->smime->publicpath	\
 			  : ((X) == Private ? ps_global->smime->privatepath	\
 			    : ((X) == CACert ? ps_global->smime->capath : NULL))))
 
+#define CONTENTCERTLIST(X) 	(((X) == Public ? ps_global->smime->publiccontent	\
+			  : ((X) == Private ? ps_global->smime->privatecontent	\
+			    : ((X) == CACert ? ps_global->smime->cacontent : NULL))))
+
 #define SMHOLDERTYPE(X) (((X) == Public ? ps_global->smime->publictype	\
 			  : ((X) == Private ? ps_global->smime->privatetype	\
 			    : ((X) == CACert ? ps_global->smime->catype : Nada))))
-
-#define SMCERTLIST(X) (((X) == Public ? ps_global->smime->publiccertlist	\
-			  : ((X) == Private ? ps_global->smime->privatecertdata	\
-			    : ((X) == CACert ? ps_global->smime->cacertlist : NULL))))
 
 #define EXTCERT(X)  (((X) == Public ? ".crt"		\
 			  : ((X) == Private ? ".key"	\

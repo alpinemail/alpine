@@ -44,95 +44,7 @@ static char rcsid[] = "$Id: smkeys.c 1266 2009-07-14 18:39:12Z hubert@u.washingt
 
 /* internal prototypes */
 static char     *emailstrclean(char *string);
-static int       certlist_to_file(char *filename, CertList *certlist);
 static int       mem_add_extra_cacerts(char *contents, X509_LOOKUP *lookup);
-
-/* smime_expunge_cert.
- * Return values: < 0 there was an error.
- *                >=0 the number of messages expunged
- */
-int
-smime_expunge_cert(WhichCerts ctype)
-{
-  int count; 
-  CertList *cl, *dummy, *data;
-  char *path, *ext, buf[MAXPATH+1];
-
-  if(DATACERT(ctype)== NULL)
-    return -1;
-
-  /* data cert is the way we unify certificate management across functions, but it is
-   * not where we really save the information in the case ctype is equal to Private.
-   * What we will do is to update the datacert, and in the case of ctype equal to Private
-   * use the updated certdata to update the personal_certs data.
-   */
-
-  path = PATHCERTDIR(ctype);
-  ext  = EXTCERT(ctype);
-
-  if(path){
-    /* add a fake certificate at the beginning of the list */
-    dummy = fs_get(sizeof(CertList));
-    memset((void *)dummy, 0, sizeof(CertList));
-    dummy->next = DATACERT(ctype);
-
-    for(cl = dummy, count = 0; cl && cl->next;){
-	if(cl->next->data.deleted == 0){
-	   cl = cl->next;
-	   continue;
-	}
-
-	build_path(buf, path, cl->next->name, sizeof(buf));
-	if(ctype == Private && strlen(buf) + strlen(EXTCERT(Private)) < sizeof(buf))
-	  strcat(buf, EXTCERT(Private));
-
-	if(our_unlink(buf) < 0)
-	    q_status_message1(SM_ORDER, 3, 3, _("Error removing certificate %s"), cl->next->name);
- 	else {
-	   count++;	/* count it! */
-	   data = cl->next;
-	   cl->next = data->next;
-	   if(data->name) fs_give((void **)&data->name);
-	   fs_give((void **)&data);
-	}
-    }
-  } else
-	q_status_message1(SM_ORDER, 3, 3, _("Error removing certificate %s"), cl->name);
-
-  switch(ctype){
-     case Private: ps_global->smime->privatecertdata = dummy->next; break;
-     case Public : ps_global->smime->publiccertdata = dummy->next; break;
-     case CACert : ps_global->smime->cacertdata = dummy->next; break;
-	default  : break;
-  }
-  fs_give((void **)&dummy);
-  if(count > 0)
-    q_status_message2(SM_ORDER, 3, 3, _("Removed %s certificate%s"), comatose(count), plural(count));
-  else
-    q_status_message(SM_ORDER, 3, 3, _("Error: No certificates were removed"));
-  return count;
-}
-
-void
-mark_cert_deleted(WhichCerts ctype, char *email, unsigned state)
-{
-  CertList *cl;
-  char tmp[200];
-
-  snprintf(tmp, sizeof(tmp), "%s%s", email, ctype == Private ? "" : ".crt");
-  tmp[sizeof(tmp)-1] = '\0';
-  for(cl = DATACERT(ctype); cl != NULL && strcmp(cl->name, tmp); cl = cl->next);
-  cl->data.deleted = state;
-}
-
-unsigned
-get_cert_deleted(WhichCerts ctype, char *email)
-{
-  CertList *cl;
-
-  for(cl = DATACERT(ctype); cl != NULL && strcmp(cl->name, email); cl = cl->next);
-  return (cl && cl->data.deleted) ? 1 : 0;
-}
 
 void
 get_fingerprint(X509 *cert, const EVP_MD *type, char *buf, size_t maxLen)
@@ -276,7 +188,7 @@ get_ca_store(void)
     }
     else if(ps_global->smime && ps_global->smime->catype == Directory
 	    && ps_global->smime->capath){
-	if(add_certs_in_dir(lookup, ps_global->smime->capath, ".crt", &ps_global->smime->cacertdata) < 0){
+	if(add_certs_in_dir(lookup, ps_global->smime->capath, ".crt", &ps_global->smime->cacertlist) < 0){
 	    X509_STORE_free(store);
 	    return NULL;
 	}
@@ -478,14 +390,21 @@ save_cert_for(char *email, X509 *cert, WhichCerts ctype)
 
 #endif /* APPLEKEYCHAIN */
     }
-    else if(ps_global->smime->publictype == Container){
+    else if(SMHOLDERTYPE(ctype) == Container){
 	REMDATA_S *rd = NULL;
 	char       path[MAXPATH];
 	char	  *upath = PATHCERTDIR(ctype);
 	char      *tempfile = NULL;
 	int        err = 0;
+	CertList  *clist = DATACERT(ctype);
 
-	add_to_end_of_certlist(&ps_global->smime->publiccertlist, email, X509_dup(cert));
+	add_to_end_of_certlist(&clist, email, X509_dup(cert));
+	switch(ctype){
+	   Private: ps_global->smime->privatecertlist = clist; break;
+	   Public : ps_global->smime->publiccertlist = clist; break;
+	   CACert : ps_global->smime->cacertlist = clist; break;
+	   default: break;
+	}
 
 	if(!upath)
 	  return;
@@ -554,7 +473,7 @@ save_cert_for(char *email, X509 *cert, WhichCerts ctype)
 
 	tempfile = tempfile_in_same_dir(path, "az", NULL);
 	if(tempfile){
-	    if(certlist_to_file(tempfile, ps_global->smime->publiccertlist))
+	    if(certlist_to_file(tempfile, DATACERT(ctype)))
 	      err++;
 
 	    if(!err){
@@ -607,7 +526,7 @@ save_cert_for(char *email, X509 *cert, WhichCerts ctype)
 	    fs_give((void **) &tempfile);
 	}
     }
-    else if(ps_global->smime->publictype == Directory){
+    else if(SMHOLDERTYPE(ctype) == Directory){
 	char   *path = PATHCERTDIR(ctype);
 	char    certfilename[MAXPATH];
 	BIO    *bio_out;
@@ -719,7 +638,7 @@ get_cert_for(char *email, WhichCerts ctype)
     else if(SMHOLDERTYPE(ctype) == Container){
 	    CertList *cl;
 
-	    for(cl = SMCERTLIST(ctype); cl; cl = cl->next){
+	    for(cl = DATACERT(ctype); cl; cl = cl->next){
 		if(cl->name && !strucmp(emailaddr, cl->name))
 		  break;
 	    }
@@ -813,12 +732,14 @@ mem_to_personal_certs(char *contents)
 
 
 CertList *
-mem_to_certlist(char *contents)
+mem_to_certlist(char *contents, WhichCerts ctype)
 {
     CertList *ret = NULL;
     char *p, *q, *line, *name, *certtext, *save_p;
     X509 *cert = NULL;
     BIO *in;
+    char *sep = (ctype == Public || ctype == Private)
+		? EMAILADDRLEADER : CACERTSTORELEADER;
 
     if(contents && *contents){
 	for(p = contents; *p != '\0';){
@@ -833,35 +754,28 @@ mem_to_certlist(char *contents)
 		*p++ = '\0';
 	    }
 
-	    if(strncmp(EMAILADDRLEADER, line, strlen(EMAILADDRLEADER)) == 0){
-		name = line + strlen(EMAILADDRLEADER);
+	    if(strncmp(sep, line, strlen(sep)) == 0){
+		name = line + strlen(sep);
 		cert = NULL;
-		certtext = p;
-		if(strncmp("-----BEGIN", certtext, strlen("-----BEGIN")) == 0){
-		    if((q = strstr(certtext, "-----END")) != NULL){
-			while(*q && *q != '\n')
-			  q++;
-
-			if(*q == '\n')
-			  q++;
-
+		certtext = strstr(p, "-----BEGIN");
+		if(certtext != NULL){
+		    if((q = strstr(certtext, sep)) != NULL)
 			p = q;
+		    else
+			p = q = certtext+strlen(certtext);
 
-			if((in = BIO_new_mem_buf(certtext, q-certtext)) != 0){
-			    cert = PEM_read_bio_X509(in, NULL, NULL, NULL);
-
-			    BIO_free(in);
-			}
+		    if((in = BIO_new_mem_buf(certtext, q-certtext)) != 0){
+			cert = PEM_read_bio_X509(in, NULL, NULL, NULL);
+			BIO_free(in);
 		    }
 		}
 		else{
+		    q_status_message2(SM_ORDER | SM_DING, 3, 3, _("Error in %scert container, missing BEGIN, certtext=%s"), ctype == Public ? _("public") : _("ca"), p);
 		    p = p + strlen(p);
-		    q_status_message1(SM_ORDER | SM_DING, 3, 3, _("Error in publiccert container, missing BEGIN, certtext=%s"), certtext);
 		}
 
-		if(name && cert){
+		if(name && cert)
 		    add_to_end_of_certlist(&ret, name, cert);
-		}
 	    }
 
 	    if(save_p)
@@ -913,8 +827,8 @@ mem_add_extra_cacerts(char *contents, X509_LOOKUP *lookup)
 	    /* look for separator line */
 	    if(strncmp(CACERTSTORELEADER, line, strlen(CACERTSTORELEADER)) == 0){
 		/* certtext is the content that should go in a file */
-		certtext = p;
-		if(strncmp("-----BEGIN", certtext, strlen("-----BEGIN")) == 0){
+		certtext = strstr(p, "-----BEGIN");
+		if(certtext != NULL){
 		    if((q = strstr(certtext, CACERTSTORELEADER)) != NULL){
 			p = q;
 		    }

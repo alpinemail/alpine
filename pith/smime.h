@@ -60,14 +60,19 @@ int            copy_privatecert_dir_to_container(void);
 int            copy_privatecert_container_to_dir(void);
 int            copy_cacert_dir_to_container(void);
 int            copy_cacert_container_to_dir(void);
+int	       import_certificate(WhichCerts);
+int	       copy_dir_to_container(WhichCerts which, char *contents);
 #ifdef APPLEKEYCHAIN
 int            copy_publiccert_container_to_keychain(void);
 int            copy_publiccert_keychain_to_container(void);
 #endif /* APPLEKEYCHAIN */
-int	       import_certificate(WhichCerts);
 #ifdef PASSFILE                                       
-void           setup_pwdcert(void);
+void           setup_pwdcert(void **pwdcert);
 #endif /* PASSFILE */
+void	       mark_cert_deleted(WhichCerts ctype, int num, unsigned state);
+unsigned       get_cert_deleted(WhichCerts ctype, int num);
+int	       smime_expunge_cert(WhichCerts ctype);
+int	       add_file_to_container(WhichCerts ctype, char *fpath, char *altname);
 
 #endif /* PITH_SMIME_INCLUDED */
 #endif /* SMIME */

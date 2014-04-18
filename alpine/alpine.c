@@ -192,7 +192,6 @@ main(int argc, char **argv)
     pith_opt_smime_get_passphrase  = smime_get_passphrase;
     pith_smime_import_certificate  = smime_import_certificate;
     pith_smime_enter_password	   = alpine_get_password;
-    pith_opt_get_data_prompt	   = alpine_get_data_prompt;
 #endif
 #ifdef	ENABLE_LDAP
     pith_opt_save_ldap_entry       = save_ldap_entry;

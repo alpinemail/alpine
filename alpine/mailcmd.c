@@ -4,8 +4,8 @@ static char rcsid[] = "$Id: mailcmd.c 1266 2009-07-14 18:39:12Z hubert@u.washing
 
 /*
  * ========================================================================
- * Copyright 2006-2009 University of Washington
  * Copyright 2013-2014 Eduardo Chappa
+ * Copyright 2006-2009 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -302,25 +302,14 @@ static ESCKEY_S flag_text_opt[] = {
     {-1, 0, NULL, NULL}
 };
 
-int alpine_get_data_prompt(char *prompt, char *value, size_t len)
-{
-  int rv, flags;
-  flags = OE_DISALLOW_HELP;
-  value[0] = '\0';
-  rv =  optionally_enter(value, -FOOTER_ROWS(ps_global), 0, len,
-                               prompt, NULL, NO_HELP, &flags);
-  return rv;
-}
-
 int 
 alpine_get_password(char *prompt, char *pass, size_t len)
 {
-  int rv, flags;
-  flags = OE_PASSWD | OE_DISALLOW_HELP;
+  int flags = OE_PASSWD | OE_DISALLOW_HELP;
   pass[0] = '\0';
-  rv =  optionally_enter(pass, -FOOTER_ROWS(ps_global), 0, len,
-                               prompt, NULL, NO_HELP, &flags);
-  return rv;
+  return optionally_enter(pass, 
+			-(ps_global->ttyo ? FOOTER_ROWS(ps_global) : 3),
+                         0, len, prompt, NULL, NO_HELP, &flags);
 }
 
 int smime_import_certificate(char *filename, char *full_filename, size_t len)

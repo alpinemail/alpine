@@ -2375,12 +2375,12 @@ read_passfile(pinerc, l)
 #ifdef SMIME
     smime_init();
     if(ps_global->smime->pwdcert == NULL)
-       setup_pwdcert();
+       setup_pwdcert(&ps_global->smime->pwdcert);
     tmp2[0] = '\0';
     fgets(tmp2, sizeof(tmp2), fp);
     fclose(fp);
     if(strcmp(tmp2, "-----BEGIN PKCS7-----\n")){
-       if(encrypt_file(tmp, NULL, ps_global->smime->pwdcert))
+       if(encrypt_file((char *)tmp, NULL, (PERSONAL_CERT *)ps_global->smime->pwdcert))
 	  encrypted++;
     }
     else
@@ -2399,7 +2399,7 @@ read_passfile(pinerc, l)
      * unencrypted and rewritten again.
      */
     if(encrypted){
-	text = text2 = decrypt_file(tmp, &i, ps_global->smime->pwdcert);
+	text = text2 = decrypt_file((char *)tmp, &i, (PERSONAL_CERT *)ps_global->smime->pwdcert);
 	switch(i){
 	   case 1 : save_password = 1;
 		    break;
@@ -2631,7 +2631,7 @@ write_passfile(pinerc, l)
 
     fclose(fp);
 #ifdef SMIME
-    if(encrypt_file(tmp2, text, ps_global->smime->pwdcert) == 0){
+    if(encrypt_file((char *)tmp2, text, (PERSONAL_CERT *) ps_global->smime->pwdcert) == 0){
 	if((fp = our_fopen(tmp2, "wb")) != NULL){
 	   fputs(text, fp);
 	   fclose(fp);

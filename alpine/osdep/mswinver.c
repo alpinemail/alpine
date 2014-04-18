@@ -34,7 +34,7 @@ mswin_majorver()
 int
 mswin_minorver()
 {
-    return(VER_MINOR 19);
+    return(VER_MINOR);
 }
 
 
