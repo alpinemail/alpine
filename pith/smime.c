@@ -2537,7 +2537,7 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
     int	     result, modified_the_body = 0;
     unsigned long mimelen, bodylen;
     char     newSec[100], *mimetext, *bodytext;
-    char    *what_we_did;
+    char    *what_we_did, *s;
 
     dprint((9, "do_detached_signature_verify(msgno=%ld type=%d subtype=%s section=%s)", msgno, b->type, b->subtype ? b->subtype : "NULL", (section && *section) ? section : (section != NULL) ? "Top" : "NULL"));
     smime_init();
@@ -2574,7 +2574,83 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
 	BIO_get_mem_ptr(in, &biobuf);
 	if(biobuf)
 	  BUF_MEM_grow(biobuf, mimelen + bodylen - 2);
-	result = do_signature_verify(p7, in, NULL, 0);
+
+	/* test one more time in case this is a remote connection and the
+	 * server massages the message to the point that it sends bogus
+	 * information. In this case, we fetch the message and we process
+	 * it by hand.
+	 */
+	if((result = do_signature_verify(p7, in, NULL, 1)) == 0
+	   && IS_REMOTE(ps_global->mail_stream->mailbox)){
+	   char *fetch;
+	   unsigned long hlen, tlen;
+	   STORE_S *msg_so;
+
+	   BIO_free(in);
+	   in = NULL;
+	   if((in = BIO_new(BIO_s_mem())) != NULL
+	      && (fetch = mail_fetch_header(ps_global->mail_stream, msgno, NULL, 
+				NULL, &hlen, FT_PEEK)) != NULL
+	      && (msg_so = so_get(CharStar, NULL, WRITE_ACCESS)) != NULL
+	      && so_nputs(msg_so, fetch, (long) hlen)
+	      && (fetch = pine_mail_fetch_text(ps_global->mail_stream, msgno, NULL, 
+				&tlen, FT_PEEK)) != NULL
+	      && so_nputs(msg_so, fetch, tlen)){
+		STRING bs;
+		char *h = (char *) so_text(msg_so);
+		char *bstart = strstr(h, "\r\n\r\n");
+		ENVELOPE *env;
+		BODY *body, *b2;
+		char *s;
+
+		dprint((1, "h = \"%s\"", h));
+
+		bstart += 4;
+		INIT(&bs, mail_string, bstart, tlen);
+		rfc822_parse_msg_full(&env, &body, h, (bstart-h)+2, &bs, BADHOST, 0, 0);
+		mail_free_envelope(&env);
+
+		if(b->nested.part->body.mime.text.data)
+		  fs_give((void **)&b->nested.part->body.mime.text.data);
+		b->nested.part->body.mime.text.size = body->nested.part->body.mime.text.size;
+		b->nested.part->body.mime.offset = body->nested.part->body.mime.offset;
+
+		if(b->nested.part->body.contents.text.data)
+		  fs_give((void **)&b->nested.part->body.contents.text.data);
+		b->nested.part->body.contents.text.size = body->nested.part->body.contents.text.size;
+		b->nested.part->body.contents.offset = body->nested.part->body.contents.offset;
+
+		create_local_cache(bstart, bstart, &b->nested.part->body);
+
+		modified_the_body = 1;
+
+		snprintf(newSec, sizeof(newSec), "%s%s1", section ? section : "", (section && *section) ? "." : "");
+
+		mimetext = mail_fetch_mime(ps_global->mail_stream, msgno, (char*) newSec, &mimelen, 0);
+
+		if(mimetext)
+		   bodytext = mail_fetch_body (ps_global->mail_stream, msgno, (char*) newSec, &bodylen, 0);
+
+		if (mimetext == NULL || bodytext ==  NULL)
+		   return modified_the_body;
+
+		(void) BIO_reset(in);
+		BIO_write(in, mimetext, mimelen);
+		BIO_write(in, bodytext, bodylen);
+		so_give(&msg_so);
+
+		if(((result = do_signature_verify(p7, in, NULL, 1)) == 0)
+			&& bodylen > 2 
+			&& (strncmp(bodytext+bodylen-2,"\r\n", 2) == 0)){
+			BUF_MEM *biobuf = NULL;
+
+			BIO_get_mem_ptr(in, &biobuf);
+			if(biobuf)
+			  BUF_MEM_grow(biobuf, mimelen + bodylen - 2);
+			result = do_signature_verify(p7, in, NULL, 0);
+		}
+	   }
+	}
     }
 
     BIO_free(in);
@@ -2860,49 +2936,51 @@ do_decoding(BODY *b, long msgno, const char *section)
 
 	    body->mime.offset    = 0;
 	    body->mime.text.size = 0;
-            /*
-             * Now convert original body (application/pkcs7-mime)
-             * to a multipart body with one sub-part (the decrypted body).
-	     * Note that the sub-part may also be multipart!
-             */
 
-            b->type = TYPEMULTIPART;
-            if(b->subtype)
+	    /*
+	     * Now convert original body (application/pkcs7-mime)
+	     * to a multipart body with one sub-part (the decrypted body).
+	     * Note that the sub-part may also be multipart!
+	     */
+
+	    b->type = TYPEMULTIPART;
+	    if(b->subtype)
 	      fs_give((void**) &b->subtype);
 
-    	    /*
-    	     * This subtype is used in mailview.c to annotate the display of
+	    /*
+	     * This subtype is used in mailview.c to annotate the display of
 	     * encrypted or signed messages. We know for sure then that it's a PKCS7
 	     * part because the sparep field is set to the PKCS7 object (see above).
 	     */
 	    b->subtype = cpystr(OUR_PKCS7_ENCLOSURE_SUBTYPE);
-            b->encoding = ENC8BIT;
+	    b->encoding = ENC8BIT;
 
-    	    if(b->description)
+	    if(b->description)
 	      fs_give((void**) &b->description);
 
 	    b->description = cpystr(what_we_did);
 
-            if(b->disposition.type)
+	    if(b->disposition.type)
 	      fs_give((void **) &b->disposition.type);
 
-            if(b->contents.text.data)
+	    if(b->contents.text.data)
 	      fs_give((void **) &b->contents.text.data);
 
-    	    if(b->parameter)
+	    if(b->parameter)
 	      mail_free_body_parameter(&b->parameter);
 
-            /* Allocate mem for the sub-part, and copy over the contents of our parsed body */
-            b->nested.part = fs_get(sizeof(PART));
-            b->nested.part->body = *body;
-            b->nested.part->next = NULL;
+	    /* Allocate mem for the sub-part, and copy over the contents of our parsed body */
+	    b->nested.part = fs_get(sizeof(PART));
+	    b->nested.part->body = *body;
+	    b->nested.part->next = NULL;
 
-            fs_give((void**) &body);
+	    fs_give((void**) &body);
 
             /*
-             * IMPORTANT BIT: set the body->contents.text.data elements to contain the decrypted
-             * data. Otherwise, it'll try to load it from the original data. Eek.
-             */
+             * IMPORTANT BIT: set the body->contents.text.data elements to contain 
+             * the decrypted data. Otherwise, it'll try to load it from the original 
+             * data. Eek. 
+	     */
             create_local_cache(bstart-b->nested.part->body.mime.offset, bstart, &b->nested.part->body);
 
             modified_the_body = 1;

@@ -1,7 +1,7 @@
 
                              Alpine Technical Notes
 
-   Version 2.19.11, April 2014
+   Version 2.19.12, April 2014
 
 Table of Contents
 
