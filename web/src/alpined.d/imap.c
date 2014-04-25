@@ -388,7 +388,6 @@ alpine_tcptimeout(long elapsed, long sincelast)
 long
 alpine_sslcertquery(char *reason, char *host, char *cert)
 {
-    static char buf[256];
     STRLIST_S *p;
 
     for(p = peCertHosts; p; p = p->next)

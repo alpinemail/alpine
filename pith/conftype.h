@@ -673,8 +673,8 @@ typedef enum {Directory, Container, Keychain, Nada} SmimeHolderType;
 typedef enum {Public, Private, CACert} WhichCerts;
 
 typedef struct certdata {
-  unsigned   deleted:1;		/* certificate is marked deleted		 */
-  unsigned   renew:1;		/* we must renew this list, set at top cert	 */
+  unsigned   deleted:1;		/* certificate is marked deleted	     */
+  unsigned   renew:1;		/* we must renew this list, set at top cert  */
 } CertData;
 
 typedef struct certlist {
@@ -693,9 +693,6 @@ typedef struct smime_stuff {
     unsigned already_auto_asked:1;	/* asked for passphrase automatically, not again */
     volatile char passphrase[100];	/* storage for the entered passphrase */
     char   **passphrase_emailaddr;	/* pointer to allocated storage */
-#ifdef PASSFILE
-    void   *pwdcert;			/* this has type (PERSONAL_CERT *) */
-#endif /* PASSFILE */
 
     /*
      * If we are using the Container type it is easiest if we
@@ -724,7 +721,7 @@ typedef struct smime_stuff {
 
 #define DATACERT(X) (((X) == Public ? ps_global->smime->publiccertlist		\
 			 : ((X) == Private ? ps_global->smime->privatecertlist	\
-			   : ((X) == CACert ? ps_global->smime->cacertlist : NULL))))
+			   : ps_global->smime->cacertlist)))
 
 #define PATHCERTDIR(X) (((X) == Public ? ps_global->smime->publicpath	\
 			  : ((X) == Private ? ps_global->smime->privatepath	\
@@ -740,7 +737,7 @@ typedef struct smime_stuff {
 
 #define EXTCERT(X)  (((X) == Public ? ".crt"		\
 			  : ((X) == Private ? ".key"	\
-				: ((X) == CACert ? ".crt" : NULL))))
+				: ((X) == CACert ? ".crt" : ""))))
 
 #define DELETEDCERT(X) ((X)->data.deleted)
 #define RENEWCERT(X)   ((X)->data.renew)

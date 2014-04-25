@@ -880,6 +880,11 @@ smime_config_init_display(struct pine *ps, CONF_S **ctmp, CONF_S **first_line)
 
 #endif /* APPLEKEYCHAIN */
 
+    if(SMHOLDERTYPE(Private) == Keychain
+	&& SMHOLDERTYPE(Public) == Keychain
+	&& SMHOLDERTYPE(CACert) == Keychain)
+	return;
+
     new_confline(ctmp)->var = vtmp;
     (*ctmp)->flags |= CF_NOSELECT | CF_B_LINE;
 
@@ -927,7 +932,7 @@ void display_certificate_information(struct pine *ps, X509 *cert, char *email, W
 {
     STORE_S  *store;
     SCROLL_S  scrollargs;
-    int cmd, offset, i;
+    int cmd, offset;
     int pub_cert, priv_cert, new_store;
     long error;
     BIO *out = NULL;
@@ -942,14 +947,14 @@ void display_certificate_information(struct pine *ps, X509 *cert, char *email, W
       switch(cmd){
 	case MC_PRIVATE:
 	   pub_cert = 0;
-	   priv_cert = ++priv_cert % 2;
+	   priv_cert = 1 - priv_cert;
 	   smime_certificate_info_keymenu.keys[PUBLIC_KEY].label  = N_("Public Key");
 	   smime_certificate_info_keymenu.keys[PRIVATE_KEY].label = priv_cert ? N_("No Priv Key") : N_("Pivate Key");
 	   break;
 
 	case MC_PUBLIC:
 	   priv_cert = 0;
-	   pub_cert = ++pub_cert % 2;
+	   pub_cert = 1 - pub_cert;
 	   smime_certificate_info_keymenu.keys[PRIVATE_KEY].label = priv_cert ? N_("No Priv Key") : N_("Pivate Key");
 	   smime_certificate_info_keymenu.keys[PUBLIC_KEY].label  = N_("Public Key");
 	   break;
@@ -1032,7 +1037,7 @@ void display_certificate_information(struct pine *ps, X509 *cert, char *email, W
 	  gf_puts(NEWLINE, view_writec);
 	  ch[1] = '\0';
 	  while(BIO_read(out, ch, 1) >= 1)
-	    gf_puts(ch, view_writec); 
+	    gf_puts((char *)ch, view_writec); 
 	  gf_puts(NEWLINE, view_writec);
 	  q_status_message1(SM_ORDER, 1, 3, _("%s information shown at bottom of certificate information"), pub_cert ? _("Public") : _("Private"));
 	  BIO_free_all(out);
@@ -1240,7 +1245,6 @@ void smime_manage_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line
 
     if(data){
       CertList *cl; int i;
-      PERSONAL_CERT *pc;
 
       for(cl = data, i = 0; cl; cl = cl->next)
 	 if(cl->name){
@@ -1277,7 +1281,7 @@ void smime_manage_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line
 void manage_certificates(struct pine *ps, WhichCerts ctype)
 {
     OPT_SCREEN_S    screen;
-    int             ew, readonly_warning = 0, rv = 10, fline;
+    int             readonly_warning = 0, rv = 10, fline;
 
     dprint((9, "manage_certificates(ps, %s)", ctype == Public ? _("Public") : (ctype == Private ? _("Private") : (ctype == CACert ? _("certificate authority") : _("unknown")))));
     ps->next_screen = SCREEN_FUN_NULL;

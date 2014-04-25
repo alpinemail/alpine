@@ -3696,7 +3696,6 @@ html_pop(FILTER_S *fd, ELPROP_S *ep)
 
     for(tp = HANDLERS(fd); tp && ep != EL(tp); tp = tp->below){
 	HANDLER_S *tp2;
-	ELPROP_S  *ep2;
 	
 	dprint((3, "-- html error: bad nesting: given /%s expected /%s", ep->element, EL(tp)->element));
 	/* if no evidence of opening tag, ignore given closing tag */
@@ -6931,7 +6930,7 @@ rss_title(HANDLER_S *hd, int ch, int cmd)
 	    RSS_ITEM_S *rip;
 
 	    if(feed){
-		if(rip = feed->items){
+		if((rip = feed->items) != NULL){
 		    for(; rip->next; rip = rip->next)
 		      ;
 
@@ -7025,7 +7024,7 @@ rss_link(HANDLER_S *hd, int ch, int cmd)
 	    RSS_ITEM_S *rip;
 
 	    if(feed){
-		if(rip = feed->items){
+		if((rip = feed->items) != NULL){
 		    for(; rip->next; rip = rip->next)
 		      ;
 
@@ -7078,7 +7077,7 @@ rss_description(HANDLER_S *hd, int ch, int cmd)
 	    RSS_ITEM_S *rip;
 
 	    if(feed){
-		if(rip = feed->items){
+		if((rip = feed->items) != NULL){
 		    for(; rip->next; rip = rip->next)
 		      ;
 
@@ -8886,7 +8885,6 @@ void *
 gf_html2plain_rss_opt(RSS_FEED_S **feedp, int flags)
 {
     HTML_OPT_S *op;
-    int		margin_l, margin_r;
 
     op = (HTML_OPT_S *) fs_get(sizeof(HTML_OPT_S));
     memset(op, 0, sizeof(HTML_OPT_S));

@@ -14994,6 +14994,8 @@ peAddSuggestedContactInfo(Tcl_Interp *interp, Tcl_Obj *lobjp, ADDRESS *addr)
 
     if(comment)
       fs_give((void **) &comment);
+
+    return 0;
 }
 
 

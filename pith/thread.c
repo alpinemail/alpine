@@ -884,7 +884,7 @@ collapse_or_expand(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap,
 void
 select_thread_stmp(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap)
 {
-    PINETHRD_S   *thrd;
+    PINETHRD_S   *thrd = NULL;
     unsigned long rawno, in_thread, set_in_thread, save_branch;
 
     /* ugly bit means the same thing as return of 1 from individual_select */

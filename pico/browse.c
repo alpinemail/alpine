@@ -1611,7 +1611,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		    PaintBrowser(gmp, 0, &crow, &ccol);
 		    break;
 		  case (CTRL|'P'):
-		    bsearch = ++bsearch % 2;
+		    bsearch = bsearch == 0 ? 1 : 0;
 		    break;
 		  case (CTRL|'Y'):		/* first first cell */
 		    for(tp = gmp->top; tp->prev; tp = tp->prev)

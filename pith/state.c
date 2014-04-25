@@ -179,6 +179,13 @@ free_pine_struct(struct pine **pps)
     if((*pps)->passfile)
       fs_give((void **)&(*pps)->passfile);
 #ifdef SMIME
+    if((*pps)->pwdcert){
+      PERSONAL_CERT *pc;
+
+      pc = (PERSONAL_CERT *) (*pps)->pwdcert;
+      free_personal_certs(&pc);
+      (*pps)->pwdcert = NULL;
+    }
     if((*pps)->pwdcertdir)
       fs_give((void **)&(*pps)->pwdcertdir);
 #endif /* SMIME inside PASSFILE */

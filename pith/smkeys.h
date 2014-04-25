@@ -59,6 +59,8 @@ PERSONAL_CERT *mem_to_personal_certs(char *contents);
 void           free_personal_certs(PERSONAL_CERT **pc);
 void	       get_fingerprint(X509 *cert, const EVP_MD *type, char *buf, size_t maxLen);
 int	       certlist_to_file(char *filename, CertList *certlist);
+int	       load_cert_for_key(char *pathdir, EVP_PKEY *pkey, char **certfile, X509 **pcert);
+
 
 #endif /* PITH_SMKEYS_INCLUDED */
 #endif /* SMIME */

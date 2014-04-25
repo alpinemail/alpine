@@ -53,7 +53,7 @@ static void            openssl_extra_randomness(void);
 static int             app_RAND_write_file(const char *file);
 static const char     *openssl_error_string(void);
 static int             load_private_key(PERSONAL_CERT *pcert);
-static void            create_local_cache(char *h, char *base, BODY *b);
+static void            create_local_cache(char *h, char *base, BODY *b, int type);
 static long            rfc822_output_func(void *b, char *string);
 static void            setup_pkcs7_body_for_signature(BODY *b, char *description,
 						      char *type, char *filename);
@@ -74,7 +74,7 @@ int		      smime_extract_and_save_cert(PKCS7 *p7);
 int		      same_cert(X509 *, X509 *);
 CertList *	      certlist_from_personal_certs(PERSONAL_CERT *pc);
 #ifdef PASSFILE
-void		      load_key_and_cert(char *pathdir, char **keyfile, char **certfile, EVP_PKEY **pkey, X509 **pcert);
+void		      load_key_and_cert(char *pathkeydir, char *pathcertdir, char **keyfile, char **certfile, EVP_PKEY **pkey, X509 **pcert);
 #endif /* PASSFILE */
 STACK_OF(X509)	     *get_chain_for_cert(X509 *cert, int *error);
 EVP_PKEY 	     *load_pkey_with_prompt(char *fpath, char *text, char *prompt);
@@ -91,54 +91,57 @@ static int egdsocket = 0;
 
 
 #ifdef PASSFILE
+/* 
+ * load key from pathkeydir and cert from pathcertdir. It chooses the first 
+ * key/certificate pair that matches. Delete pairs that you do not want used, 
+ * if you do not want them selected. All parameters must be non-null. 
+ * Memory freed by caller.
+ */
 void
-load_key_and_cert(char *pathdir, char **keyfile, 
+load_key_and_cert(char *pathkeydir, char *pathcertdir, char **keyfile, 
 		char **certfile, EVP_PKEY **pkey, X509 **pcert)
 {
-   BIO *in;
    char buf[MAXPATH+1], pathkey[MAXPATH+1], prompt[MAILTMPLEN];
    DIR *dirp;
    struct dirent *d;
+   int b = 0;
 
-   if(keyfile) *keyfile = NULL;
-   if(certfile) *certfile = NULL;
-   if(pkey) *pkey = NULL;
-   if(pcert) *pcert = NULL;
+   if(pathkeydir == NULL || pathcertdir == NULL || keyfile == NULL 
+	|| pkey == NULL	|| certfile == NULL || pcert == NULL)
+     return;
 
-   if(pathdir == NULL) return;
+   *keyfile = NULL;
+   *certfile = NULL;
+   *pkey = NULL;
+   *pcert = NULL;
 
-   if((dirp = opendir(pathdir)) != NULL){
-      while((d=readdir(dirp)) != NULL){
+   if((dirp = opendir(pathkeydir)) != NULL){
+      while(b == 0 && (d=readdir(dirp)) != NULL){
 	size_t ll;
 
         if((ll=strlen(d->d_name)) && ll > 4){
-	   if(pkey && *pkey == NULL && keyfile && !strcmp(d->d_name+ll-4, ".key")){
+	   if(!strcmp(d->d_name+ll-4, ".key")){
               strncpy(buf, d->d_name, sizeof(buf));
               buf[sizeof(buf)-1] = '\0';
-	      build_path(pathkey, pathdir, buf, sizeof(pathkey));
-	      buf[strlen(buf)-4] = '\0';
+	      build_path(pathkey, pathkeydir, buf, sizeof(pathkey));
+ 	      buf[strlen(buf)-4] = '\0';
 	      snprintf(prompt, sizeof(prompt),
 		_("Enter password of key <%s> to unlock password file: "), buf);
-	      if((*pkey = load_pkey_with_prompt(pathkey, NULL, prompt)) != NULL)
-		*keyfile = cpystr(buf);
-	   }
-
-	   if(pcert && *pcert == NULL && certfile && !strcmp(d->d_name+ll-4, ".crt")){
-              strncpy(buf, d->d_name, sizeof(buf));
-              buf[sizeof(buf)-1] = '\0';
-	      build_path(pathkey, pathdir, buf, sizeof(pathkey));
-	      if((in = BIO_new_file(pathkey, "r")) != NULL){
-		 if((*pcert = PEM_read_bio_X509(in, NULL, NULL, NULL)) != NULL)
-		    *certfile = cpystr(buf);
-		 else{
-		    q_status_message1(SM_ORDER, 0, 2,
-                      _("loading public certificate %s failed. Continuing..."), buf);
-		 }
-		 BIO_free(in);
+	      if((*pkey = load_pkey_with_prompt(pathkey, NULL, prompt)) != NULL){
+		if(load_cert_for_key(pathcertdir, *pkey, certfile, pcert)){
+		  b = 1;	/* break */
+		  *keyfile = cpystr(buf);
+		} else {
+		  EVP_PKEY_free(*pkey);
+		  *pkey = NULL;
+		  q_status_message1(SM_ORDER, 0, 2,
+		     _("Cannot find certificate that matches key <%s>. Continuing..."), buf);
+		}
 	      }
 	   }
 	}
       }
+      closedir(dirp);
    }
 }
 
@@ -151,32 +154,36 @@ load_key_and_cert(char *pathdir, char **keyfile,
  *  Check if the .alpine-smime/.pwd (or -pwdcertdir directory) exists, 
  *  if not create it. If we are successful, move to the next step
  *
- *  - If the user has a key/cert pair, setup is successful;
- *  - if the used does not have a key/cert pair, or one cannot be found
- *    create one, setup is successful; (TODO: implement this)
+ *  - If the user has a key/cert pair, in the .alpine-smime/.pwd dir 
+ *    setup is successful;
+ *  - if the user does not have a key/cert pair, look to see if
+ *    ps_global->smime->personal_certs is already setup, if so, use it.
+ *  - if ps_global->smime->personal_certs is not set up, see if we can 
+ *    find a certificate/cert pair in the default locations at compilation 
+ *    time. (~/.alpine-smime/private and ~/.alpine-smime/public
+ *  - if none of this is successful, create a key/certificate pair
+ *    (TODO: implement this)
  *  - in any other case, setup is not successful.
  *
- *  If setup is successful, setup ps_global->smime->pwdcert.
- *  If any of this fails, ps_global->smime->pwdcert will be null.
+ *  If setup is successful, setup ps_global->pwdcert.
+ *  If any of this fails, ps_global->pwdcert will be null.
  *  Ok, that should do it.
  */
 void
 setup_pwdcert(void **pwdcert)
 {
+  int we_inited = 0;
   int setup_dir = 0;	/* make it non zero if we know which dir to use */
-  int i,j,k;
   struct stat sbuf;
-  char pathdir[MAXPATH+1], pathkey[MAXPATH+1], fpath[MAXPATH+1];
-  char prompt[MAILTMPLEN], buf[MAXPATH+1];
+  char pathdir[MAXPATH+1], pathkey[MAXPATH+1], fpath[MAXPATH+1], pathcert[MAXPATH+1];
+  char fpath2[MAXPATH+1], prompt[MAILTMPLEN];
   char *keyfile, *certfile, *text;
-  DIR *dirp;
-  struct dirent *d;
   EVP_PKEY *pkey = NULL;
   X509 *pcert = NULL;
-  BIO *in = NULL;
   PERSONAL_CERT *pc, *pc2 = NULL;
 
-  smime_init();
+  if(pwdcert == NULL)
+    return;
 
   if(ps_global->pwdcertdir){
      if(our_stat(ps_global->pwdcertdir, &sbuf) == 0
@@ -190,91 +197,52 @@ setup_pwdcert(void **pwdcert)
       if(our_stat(pathdir, &sbuf) == 0){
 	if((sbuf.st_mode & S_IFMT) == S_IFDIR)
 	  setup_dir++;
-      } else {
-	if(can_access(pathdir, ACCESS_EXISTS) != 0
+      } else if(can_access(pathdir, ACCESS_EXISTS) != 0
 	    && our_mkpath(pathdir, 0700) == 0)
 	  setup_dir++;
-      }
   }
 
   if(setup_dir == 0)
     return;
 
-  /* reuse setup dir to mean setup_key */
-  setup_dir = 0;
+  load_key_and_cert(pathdir, pathdir, &keyfile, &certfile, &pkey, &pcert);
 
-  /* BUG: add container support */
-  load_key_and_cert(pathdir, &keyfile, &certfile, &pkey, &pcert);
-
-  if(certfile && keyfile)
-    setup_dir++;
-
-  if(setup_dir == 0){
-     if(keyfile == NULL){
-	/* PATHCERTDIR(Private) must be null, so create a path */
-	set_current_val(&ps_global->vars[V_PRIVATEKEY_DIR], TRUE, TRUE);
-	smime_path(ps_global->VAR_PRIVATEKEY_DIR, pathkey, MAXPATH);
-	load_key_and_cert(pathkey, &keyfile, NULL, &pkey, NULL);
-     }
-     if(certfile == NULL){
-	/* PATHCERTDIR(Public) must be null, so create a path */
-	set_current_val(&ps_global->vars[V_PUBLICCERT_DIR], TRUE, TRUE);
-	smime_path(ps_global->VAR_PUBLICCERT_DIR, pathkey, MAXPATH);
-	load_key_and_cert(pathkey, NULL, &certfile, NULL, &pcert);
-     }
-     smime_reinit();
-     if(certfile && keyfile){
-	build_path(fpath, pathdir, keyfile, sizeof(fpath));
-	strncat(fpath, ".key", 4);
-	fpath[sizeof(fpath)-1] = '\0';
-
-	smime_path(ps_global->VAR_PRIVATEKEY_DIR, pathkey, MAXPATH);
-	strncat(pathkey, "/", 1);
-	strncat(pathkey, keyfile, strlen(keyfile));
-	strncat(pathkey, ".key", 4);
-	pathkey[sizeof(pathkey)-1] = '\0';
-
-	if(our_copy(fpath, pathkey) == 0)
-	   setup_dir++;
-
-	if(setup_dir){
-	  setup_dir = 0;
-
-	  build_path(fpath, pathdir, certfile, sizeof(fpath));
-
-	  smime_path(ps_global->VAR_PUBLICCERT_DIR, pathkey, MAXPATH);
-	  strncat(pathkey, "/", 1);
-	  strncat(pathkey, keyfile, strlen(keyfile));
-	  strncat(pathkey, ".crt", 4);
-	  pathkey[sizeof(pathkey)-1] = '\0';
-
-	  if(our_copy(fpath, pathkey) == 0)
-	     setup_dir++;
-	}
-     }
+  if(certfile && keyfile){
+     pc = (PERSONAL_CERT *) fs_get(sizeof(PERSONAL_CERT));
+     memset((void *)pc, 0, sizeof(PERSONAL_CERT));
+     pc->name = keyfile;
+     pc->key  = pkey;
+     pc->cert = pcert;
+     *pwdcert = (void *) pc;
+     fs_give((void **)&certfile);
+     return;
   }
 
-  if(setup_dir > 0){
-     pc2 = (PERSONAL_CERT *) fs_get(sizeof(PERSONAL_CERT));
-     memset((void *)pc2, 0, sizeof(PERSONAL_CERT));
-     pc2->name = keyfile;
-     pc2->key  = pkey;
-     pc2->cert = pcert;
-     if(pwdcert) *pwdcert = (void *) pc2;
+  /* if the user gave a pwdcertdir and there is nothing there, do not
+   * continue. Let the user initialize on their own this directory.
+   */
+  if(ps_global->pwdcertdir != NULL)
+     return;
+
+  /* look to see if there are any certificates lying around, first
+   * we try to load ps_global->smime to see if that has information
+   * we can use. If we are the process filling the smime structure
+   * we deinit at the end, since this might not do a full init.
+   */
+  if(ps_global && ps_global->smime && !ps_global->smime->inited){
+     we_inited++;
+     smime_init();
   }
 
-  if(certfile)
-    fs_give((void **)&certfile);
-
-  if(setup_dir == 0){	/* try looking for an existent key */
-    if(ps_global->smime->personal_certs){
-      pc = (PERSONAL_CERT *) ps_global->smime->personal_certs;
-      if(ps_global->smime->privatetype == Directory){
+  /* at this point ps_global->smime->inited == 1 */
+  if(ps_global->smime && ps_global->smime->personal_certs != NULL){
+    pc = (PERSONAL_CERT *) ps_global->smime->personal_certs;
+    if(ps_global->smime->privatetype == Directory){
 	 build_path(pathkey, ps_global->smime->privatepath, pc->name, sizeof(pathkey));
 	 strncat(pathkey, ".key", 4);
 	 pathkey[sizeof(pathkey)-1] = '\0';
 	 text = NULL;
-      } else { 		/* ps_global->smime->privatetype == Container */
+    } else if (ps_global->smime->privatetype == Container){ 
 	 if(pc->keytext == NULL){	/* we should *never* be here, but just in case */
 	   if(ps_global->smime->privatecontent != NULL){
 	     char tmp[MAILTMPLEN], *s, *t, c;
@@ -294,85 +262,138 @@ setup_pwdcert(void **pwdcert)
 	 }
 	 if(pc->keytext != NULL)	/* we should go straigth here */
 	   text = pc->keytext;
-      }
-      if((pathkey && *pathkey) || text){
-	snprintf(prompt, sizeof(prompt),
-          _("Enter password of key <%s> to unlock password file: "), pc->name);
+    } else if (ps_global->smime->privatetype == Keychain){
+	   pathkey[0] = '\0';	/* no apple key chain support yet */
+	   text = NULL;
+    }
+    if((pathkey && *pathkey) || text){
+      snprintf(prompt, sizeof(prompt),
+	_("Enter password of key <%s> to unlock password file: "), pc->name);
 
-	 if((pkey = load_pkey_with_prompt(pathkey, text, prompt)) != NULL){
-	   pc2 = (PERSONAL_CERT *) fs_get(sizeof(PERSONAL_CERT));
-	   memset((void *)pc2, 0, sizeof(PERSONAL_CERT));
-	   pc2->name = cpystr(pc->name);
-	   pc2->key  = pkey;
-	   pc2->cert = X509_dup(pc->cert);
+      if((pkey = load_pkey_with_prompt(pathkey, text, prompt)) != NULL){
+	 pc2 = (PERSONAL_CERT *) fs_get(sizeof(PERSONAL_CERT));
+	 memset((void *)pc2, 0, sizeof(PERSONAL_CERT));
+	 pc2->name = cpystr(pc->name);
+	 pc2->key  = pkey;
+	 pc2->cert = X509_dup(pc->cert);
 
-	   /* now copy the keys and certs, starting by the key...  */
-	   build_path(fpath, pathdir, pc->name, sizeof(fpath));
-	   strncat(fpath, ".key", 4);
-	   fpath[sizeof(fpath)-1] = '\0';
-	   if(our_stat(fpath, &sbuf) == 0){
-	     if((sbuf.st_mode & S_IFMT) == S_IFREG)
-	       setup_dir++;
-	   }
-	   else { if(ps_global->smime->privatetype == Directory){
-		     if(our_copy(fpath, pathkey) == 0)
-		        setup_dir++;
-		} else {   /* ps_global->smime->privatetype == Container */
+	 /* now copy the keys and certs, starting by the key...  */
+	 build_path(fpath, pathdir, pc->name, sizeof(fpath));
+	 strncat(fpath, ".key", 4);
+	 fpath[sizeof(fpath)-1] = '\0';
+	 if(our_stat(fpath, &sbuf) == 0){	/* if fpath exists */
+	     if((sbuf.st_mode & S_IFMT) == S_IFREG) /* and is a regular file */
+	       setup_dir++;			/* we are done */
+	 } else if(ps_global->smime->privatetype == Directory){
+		   if(our_copy(fpath, pathkey) == 0)
+		     setup_dir++;
+	 } else if(ps_global->smime->privatetype == Container){
 		     BIO *out;
 		     if((out = BIO_new_file(fpath, "w")) != NULL){
 			if(BIO_puts(out, pc->keytext) > 0)
 			   setup_dir++;
 		        BIO_free(out);
 		     }
-	        }
-	   }
+	 } else if(ps_global->smime->privatetype == Keychain){
+			/* add support for Apple Mac OS X */
+	 }
+      }
 
-	   /* successful copy of key, now continue with certificate */
-	   if(setup_dir){
-	      setup_dir = 0;
+	/* successful copy of key, now continue with certificate */
+      if(setup_dir){
+	setup_dir = 0;
 
-	      build_path(pathkey, ps_global->smime->publicpath, pc->name, sizeof(pathkey));
-	      strncat(pathkey, ".crt", 4);
-	      pathkey[sizeof(pathkey)-1] = '\0';
+	build_path(pathkey, ps_global->smime->publicpath, pc->name, sizeof(pathkey));
+	strncat(pathkey, ".crt", 4);
+	pathkey[sizeof(pathkey)-1] = '\0';
 
-	      build_path(fpath, pathdir, pc->name, sizeof(fpath));
-	      strncat(fpath, ".crt", 4);
-	      fpath[sizeof(fpath)-1] = '\0';
+	build_path(fpath, pathdir, pc->name, sizeof(fpath));
+	strncat(fpath, ".crt", 4);
+	fpath[sizeof(fpath)-1] = '\0';
 
-	      if(our_stat(fpath, &sbuf) == 0){
-		if((sbuf.st_mode & S_IFMT) == S_IFREG)
-		  setup_dir++;
-	      }
-	      else{ if(ps_global->smime->privatetype == Directory){
-		       if(our_copy(fpath, pathkey) == 0)
-			 setup_dir++;
-		    } else { /* ps_global->smime->privatetype == Container */
-			BIO *out;
-			if((out = BIO_new_file(fpath, "w")) != NULL){
-			   if(PEM_write_bio_X509(out, pc->cert))
-			     setup_dir++;
+	if(our_stat(fpath, &sbuf) == 0){
+	   if((sbuf.st_mode & S_IFMT) == S_IFREG)
+	      setup_dir++;
+	}
+	else if(ps_global->smime->privatetype == Directory){
+		if(our_copy(fpath, pathkey) == 0)
+		   setup_dir++;
+	} else if(ps_global->smime->privatetype == Container) {
+		  BIO *out;
+		  if((out = BIO_new_file(fpath, "w")) != NULL){
+		     if(PEM_write_bio_X509(out, pc->cert))
+			setup_dir++;
 			   BIO_free(out);
-			}
-		    }
-	      }
-	   }		
+		  }
+	} else if (ps_global->smime->privatetype == Keychain) {
+			/* add support for Mac OS X */
+	}
+      }		
 
-	   if(setup_dir)
-	     if(pwdcert) *pwdcert = (void *) pc2;
-	   else{
-	     free_personal_certs(&pc2);
-	     return;
-	   }
-	 }			/* end of if(pkey != NULL) */
-	 BIO_free(in);
-      } 			/* end of if(in != NULL) */
-    } 				/* end of if(ps_global->personal_certs) */
+      if(setup_dir){
+	*pwdcert = (void *) pc2;
+	return;
+      }
+      else if(pc2 != NULL)
+	free_personal_certs(&pc2);
+    }		/* if (pathkey...) */
+  }		/* if(ps_global->smime->personal_certs) */
+
+
+  if(setup_dir == 0){
+     /* PATHCERTDIR(Private) must be null, so create a path */
+     set_current_val(&ps_global->vars[V_PRIVATEKEY_DIR], TRUE, TRUE);
+     smime_path(ps_global->VAR_PRIVATEKEY_DIR, pathkey, sizeof(pathkey));
+
+     /* PATHCERTDIR(Public) must be null, so create a path */
+     set_current_val(&ps_global->vars[V_PUBLICCERT_DIR], TRUE, TRUE);
+     smime_path(ps_global->VAR_PUBLICCERT_DIR, pathcert, sizeof(pathcert));
+
+     /* BUG: this does not support local containers */
+     load_key_and_cert(pathkey, pathcert, &keyfile, &certfile, &pkey, &pcert);
+
+     if(certfile && keyfile){
+	build_path(fpath, pathdir, keyfile, sizeof(fpath));
+	strncat(fpath, ".key", 4);
+	fpath[sizeof(fpath)-1] = '\0';
+
+	build_path(fpath2, pathkey, keyfile, sizeof(fpath));
+	strncat(fpath2, ".key", 4);
+	fpath2[sizeof(fpath2)-1] = '\0';
+
+	if(our_copy(fpath, fpath2) == 0)
+	   setup_dir++;
+
+	if(setup_dir){
+	  setup_dir = 0;
+
+	  build_path(fpath, pathdir, certfile, sizeof(fpath));
+	  build_path(fpath2, pathcert, certfile, sizeof(fpath2));
+
+	  if(our_copy(fpath, fpath2) == 0)
+	     setup_dir++;
+	}
+     }
   }
 
-  /* TODO: create self signed certificate */
-  if(setup_dir == 0)
-     q_status_message(SM_ORDER, 0, 2,
-	   _("No key/certificate pair found. Password file not encrypted!"));
+  if(keyfile && certfile){
+     pc = (PERSONAL_CERT *) fs_get(sizeof(PERSONAL_CERT));
+     memset((void *)pc, 0, sizeof(PERSONAL_CERT));
+     pc->name = keyfile;
+     pc->key  = pkey;
+     pc->cert = pcert;
+     *pwdcert = (void *) pc;
+     fs_give((void **)&certfile);
+     return;
+  }
+
+/* TODO: create self signed certificate 
+  q_status_message(SM_ORDER, 2, 2,
+	_("No key/certificate pair found for password file encryption support"));
+*/
+
+  if(we_inited)
+    smime_deinit();
 }
 #endif /* PASSFILE */
 
@@ -385,20 +406,20 @@ smime_expunge_cert(WhichCerts ctype)
 {
   int count, removed; 
   CertList *cl, *dummy, *data;
-  char *path, *ext, buf[MAXPATH+1];
+  char *path, buf[MAXPATH+1];
   char *contents;
 
   if(DATACERT(ctype)== NULL)
     return -1;
 
-  /* data cert is the way we unify certificate management across functions, but it is
-   * not where we really save the information in the case ctype is equal to Private.
-   * What we will do is to update the datacert, and in the case of ctype equal to Private
-   * use the updated certdata to update the personal_certs data.
+  /* data cert is the way we unify certificate management across 
+   * functions, but it is not where we really save the information in the 
+   * case ctype is equal to Private. What we will do is to update the
+   * datacert, and in the case of ctype equal to Private use the updated
+   * certdata to update the personal_certs data. 
    */
 
   path = PATHCERTDIR(ctype);
-  ext  = EXTCERT(ctype);
 
   if(path){
     /* add a fake certificate at the beginning of the list */
@@ -415,8 +436,10 @@ smime_expunge_cert(WhichCerts ctype)
 	removed = 1;		/* assume success */
 	if(SMHOLDERTYPE(ctype) == Directory){
 	  build_path(buf, path, cl->next->name, sizeof(buf));
-	  if(ctype == Private && strlen(buf) + strlen(EXTCERT(Private)) < sizeof(buf))
-	    strcat(buf, EXTCERT(Private));
+	  if(ctype == Private && strlen(buf) + strlen(EXTCERT(Private)) < sizeof(buf)){
+	    strncat(buf, EXTCERT(Private), 4);
+	    buf[sizeof(buf)-1] = '\0';
+	  }
 
 	  if(our_unlink(buf) < 0){
 	     q_status_message1(SM_ORDER, 3, 3, _("Error removing certificate %s"), cl->next->name);
@@ -503,7 +526,6 @@ load_pkey_with_prompt(char *fpath, char *text, char *prompt)
 {
   EVP_PKEY *pkey;
   int rc = 0;   /* rc == 1, cancel, rc == 0 success */
-  int we_clear = 0;
   char pass[MAILTMPLEN+1];
   BIO *in;
 
@@ -556,9 +578,7 @@ import_certificate(WhichCerts ctype)
      return r;
    else if (ctype == Private){
 	char prompt[500], *s, *t;
-	BIO *in;
 	EVP_PKEY *key = NULL;
-	PERSONAL_CERT *pc;
 
 	if(!ps_global->smime->privatecertlist){
 	  ps_global->smime->privatecertlist = fs_get(sizeof(CertList));
@@ -569,11 +589,14 @@ import_certificate(WhichCerts ctype)
 	if(s) *(s-1) = 0;
 
 	snprintf(prompt, sizeof(prompt), _("Enter passphrase for <%s>: "), filename);
+	prompt[sizeof(prompt)-1] = '\0';
         if((key = load_pkey_with_prompt(full_filename, NULL, prompt)) != NULL){
 	  if(SMHOLDERTYPE(ctype) == Directory){
 	    build_path(buf, PATHCERTDIR(ctype), filename, sizeof(buf));
-	    if(strcmp(buf + strlen(buf) - 4, EXTCERT(ctype)) != 0 && strlen(buf) + 4 < sizeof(buf))
-	       strcat(buf, EXTCERT(ctype));
+	    if(strcmp(buf + strlen(buf) - 4, EXTCERT(ctype)) != 0 && strlen(buf) + 4 < sizeof(buf)){
+	       strncat(buf, EXTCERT(ctype), 4);
+	       buf[sizeof(buf)-1] = '\0';
+	    }
 	    rc = our_copy(buf, full_filename);
 	  }
 	  else /* if(SMHOLDERTYPE(ctype) == Container){ */
@@ -595,8 +618,10 @@ import_certificate(WhichCerts ctype)
 	if((cert = PEM_read_bio_X509(ins, NULL, NULL, NULL)) != NULL){
 	  if(SMHOLDERTYPE(ctype) == Directory){
 	    build_path(buf, PATHCERTDIR(ctype), filename, sizeof(buf));
-	    if(strcmp(buf + strlen(buf) - 4, ".crt") != 0 && strlen(buf) + 4 < sizeof(buf))
-	       strcat(buf, EXTCERT(ctype));
+	    if(strcmp(buf + strlen(buf) - 4, ".crt") != 0 && strlen(buf) + 4 < sizeof(buf)){
+	       strncat(buf, EXTCERT(ctype), 4);
+	       buf[sizeof(buf)-1] = '\0';
+	    }
 
 	    rc = our_copy(buf, full_filename);
 	  }
@@ -887,23 +912,23 @@ renew_cert_data(CertList **data, WhichCerts ctype)
     X509_LOOKUP    *lookup = NULL;
     X509_STORE     *store = NULL;
 
-    if((store = X509_STORE_new()) != NULL)
+    if((store = X509_STORE_new()) != NULL){
        if((lookup = X509_STORE_add_lookup(store, X509_LOOKUP_file())) == NULL){
           X509_STORE_free(store);
           store = NULL;
-       }
-    else{
-       free_certlist(data);
-       if(SMHOLDERTYPE(ctype) == Directory)
-           add_certs_in_dir(lookup, PATHCERTDIR(ctype), EXTCERT(ctype), data);
-       else /* if(SMHOLDERTYPE(ctype) == Container) */
-	  *data = mem_to_certlist(CONTENTCERTLIST(ctype), ctype);
-       if(data && *data)
-	 RENEWCERT(*data) = 0;
-       if(ctype == Public)
-         ps_global->smime->publiccertlist = *data;
-       else
-         ps_global->smime->cacertlist = *data;
+       } else{
+	  free_certlist(data);
+	  if(SMHOLDERTYPE(ctype) == Directory)
+	    add_certs_in_dir(lookup, PATHCERTDIR(ctype), EXTCERT(ctype), data);
+	  else /* if(SMHOLDERTYPE(ctype) == Container) */
+	    *data = mem_to_certlist(CONTENTCERTLIST(ctype), ctype);
+	  if(data && *data)
+	    RENEWCERT(*data) = 0;
+	  if(ctype == Public)
+	    ps_global->smime->publiccertlist = *data;
+	  else
+	    ps_global->smime->cacertlist = *data;
+      }
     }
   }
 }
@@ -1074,8 +1099,6 @@ setup_privatekey_storage(void)
 
     /* private keys in a directory of files */
     if(!privatekeycontainer){
-	PERSONAL_CERT *result = NULL;
-
 	ps_global->smime->privatetype = Directory;
 
 	path[0] = '\0';
@@ -1289,7 +1312,8 @@ add_file_to_container(WhichCerts ctype, char *fpath, char *altname)
 		    : (ctype == Private ? ps_global->smime->privatecontent
 		    : ps_global->smime->cacontent);
     char *name;
-    char *s, c;
+    char *s;
+    unsigned char c;
     struct stat sbuf;
     STORE_S *in = NULL;
     int rv = -1; 	/* assume error */
@@ -1323,7 +1347,7 @@ add_file_to_container(WhichCerts ctype, char *fpath, char *altname)
     *content++ = '\n';
 
     while(so_readc(&c, in))
-       *content++ = c;
+       *content++ = (char) c;
     *content = '\0';
 
     switch(ctype){
@@ -1899,26 +1923,29 @@ dump_bio_to_file(BIO *in, char *filename)
 /*
  * Recursively stash a pointer to the decrypted data in our
  * manufactured body.
+ * parameters: type: call of type 1, save the base and header for multipart messages
+		     call of type 0, do not save the base and header for multipart messages
  */
 static void
-create_local_cache(char *h, char *base, BODY *b)
+create_local_cache(char *h, char *base, BODY *b, int type)
 {
     if(b->type==TYPEMULTIPART){
         PART *p;
 
-#if 0 
-        cpytxt(&b->contents.text, base + b->contents.offset, b->size.bytes);
-#else
-    	/*
-    	 * We don't really want to copy the real body contents. It shouldn't be
+        if(type == 1){
+	  cpytxt(&b->mime.text, h+b->mime.offset, b->mime.text.size);
+	  cpytxt(&b->contents.text, base + b->contents.offset, b->size.bytes);
+	} else if(type == 0){
+	/*
+	 * We don't really want to copy the real body contents. It shouldn't be
 	 * used, and in the case of a message with attachments, we'll be 
 	 * duplicating the files multiple times.
 	 */
-    	cpytxt(&b->contents.text, "BODY UNAVAILABLE", 16);
-#endif
+	  cpytxt(&b->contents.text, "BODY UNAVAILABLE", 16);
 
-        for(p=b->nested.part; p; p=p->next)
-          create_local_cache(h, base, (BODY*) p);
+          for(p=b->nested.part; p; p=p->next)
+            create_local_cache(h, base, (BODY *) p, type);
+	}
     }
     else{
 	cpytxt(&b->mime.text, h+b->mime.offset, b->mime.text.size);
@@ -2149,20 +2176,15 @@ encrypt_file(char *fp, char *text, PERSONAL_CERT *pc)
 {
   const EVP_CIPHER *cipher = NULL;
   STACK_OF(X509) *encerts = NULL;
-  X509 *cert;
-  BIO *out;
+  BIO *out = NULL;
   PKCS7 *p7 = NULL;
-  FILE *fpp;
-  int i, rv = 0;
-  char *fname;
-  char emailaddress[MAILTMPLEN];
-
-  smime_init();
-  cipher = EVP_aes_256_cbc();
-  encerts = sk_X509_new_null();
+  int rv = 0;
 
   if(pc == NULL)
-    goto end;
+    return 0;
+
+  cipher = EVP_aes_256_cbc();
+  encerts = sk_X509_new_null();
 
   sk_X509_push(encerts, X509_dup(pc->cert));
 
@@ -2190,7 +2212,8 @@ encrypt_file(char *fp, char *text, PERSONAL_CERT *pc)
   BIO_flush(out);
 
 end:
-  BIO_free(out);
+  if(out != NULL)
+    BIO_free(out);
   PKCS7_free(p7);
   sk_X509_pop_free(encerts, X509_free);
 
@@ -2393,7 +2416,6 @@ int smime_extract_and_save_cert(PKCS7 *p7)
     X509 *x, *cert;
     char **email;
     int i, j;
-    long error;
 
     if((signers = PKCS7_get0_signers(p7, NULL, 0)) == NULL)
       return -1;
@@ -2481,8 +2503,8 @@ free_smime_body_sparep(void **sparep)
   When Alpine sends a message, it constructs that message, computes the 
   signature, but then it forgets the message it signed and reconstructs it 
   again. Since it signs a message containing a notice about "mime aware 
-  tools", but it does not send that we do not include that in the part that 
-  is signed, and that takes care of much of the problems.
+  tools", but it does not send that we do not include that in the part 
+  that is signed, and that takes care of much of the problems.
  
   Another problem is what is received from the servers. All servers tested 
   seem to transmit the message that was signed intact and Alpine can check 
@@ -2493,10 +2515,10 @@ free_smime_body_sparep(void **sparep)
  
   When a message containing and attachment is sent by Alpine, UW-IMAP, 
   Panda-IMAP, Gmail, and local reading of folders send exactly the message 
-  that was sent by Alpine, but GMX.com, Exchange, and probably other servers 
-  add a trailing \r\n in the message, so when validating the signature, 
-  these messages will not validate. There are several things that can be 
-  done.
+  that was sent by Alpine, but GMX.com, Exchange, and probably other 
+  servers add a trailing \r\n in the message, so when validating the 
+  signature, these messages will not validate. There are several things 
+  that can be done.
  
   1. Add a trailing \r\n to any message that contains attachments, sign that 
      and send that. In this way, all messages will validate with all 
@@ -2507,21 +2529,40 @@ free_smime_body_sparep(void **sparep)
      remove the trailing \r\n and try to revalidate again.
 
   3. We do not add \r\n to validate a message that we sent, because that 
-     would only work in Alpine, and not in any other client. That would not 
-     be a good thing to do.
+     would only work in Alpine, and not in any other client. That would 
+     not be a good thing to do.
 
   PART II
 
-  Now we have to deal with encrypted and signed messages. The problem is that 
-  c-client makes all its pointers point to "on disk" content, but since we 
-  decrypted the data earlier, we have to make sure of two things. One is that we 
-  saved that data (so we do not have to decrypt it again) and second that we can 
-  use it.
+  Now we have to deal with encrypted and signed messages. The problem is 
+  that c-client makes all its pointers point to "on disk" content, but 
+  since we decrypted the data earlier, we have to make sure of two things. 
+  One is that we saved that data (so we do not have to decrypt it again) 
+  and second that we can use it.
 
   In order to save the data we use create_local_cache, so that we do not
   have to redecrypt the message. Once this is saved, c-client functions will
   find it and send it to us in mail_fetch_mime and mail_fetch_body.
 
+  PART III
+
+  When we are trying to verify messages with detached signatures, some 
+  imap servers send incorrect information in the mail_fetch_mime call. By 
+  incorrect I mean that this is not fetched directly from the message, but 
+  it is read from the message, processed, and then the processed part is 
+  sent to us, so this text might not agree with what is in the message, 
+  and so the validation of the signature might fail. However, the good 
+  news is that the message validates if saved to a local folder. This 
+  means that if normal validation does not work we can make it work by 
+  saving the message locally and validating that. This is implemented 
+  below, and causes delay in the display of the message. I am considering 
+  at this time not to do this automatically, but wait for the user to tell 
+  us to do it for them by means of a command available in the 
+  mail_view_screen. This might help in other situations, where a message 
+  is supposed to have an attachment, but it can not be seen in the 
+  processed text. Nevertheless, at this time, this is automatic, and is 
+  causing a delay in the processing of the message, but it is validating
+  correctly all messages.
  */
 
 /*
@@ -2537,9 +2578,10 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
     int	     result, modified_the_body = 0;
     unsigned long mimelen, bodylen;
     char     newSec[100], *mimetext, *bodytext;
-    char    *what_we_did, *s;
+    char    *what_we_did;
 
     dprint((9, "do_detached_signature_verify(msgno=%ld type=%d subtype=%s section=%s)", msgno, b->type, b->subtype ? b->subtype : "NULL", (section && *section) ? section : (section != NULL) ? "Top" : "NULL"));
+
     smime_init();
 
     snprintf(newSec, sizeof(newSec), "%s%s1", section ? section : "", (section && *section) ? "." : "");
@@ -2587,7 +2629,6 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
 	   STORE_S *msg_so;
 
 	   BIO_free(in);
-	   in = NULL;
 	   if((in = BIO_new(BIO_s_mem())) != NULL
 	      && (fetch = mail_fetch_header(ps_global->mail_stream, msgno, NULL, 
 				NULL, &hlen, FT_PEEK)) != NULL
@@ -2600,32 +2641,19 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
 		char *h = (char *) so_text(msg_so);
 		char *bstart = strstr(h, "\r\n\r\n");
 		ENVELOPE *env;
-		BODY *body, *b2;
-		char *s;
-
-		dprint((1, "h = \"%s\"", h));
+		BODY *body;
 
 		bstart += 4;
 		INIT(&bs, mail_string, bstart, tlen);
-		rfc822_parse_msg_full(&env, &body, h, (bstart-h)+2, &bs, BADHOST, 0, 0);
+		rfc822_parse_msg_full(&env, &body, h, (bstart-h), &bs, BADHOST, 0, 0);
 		mail_free_envelope(&env);
 
-		if(b->nested.part->body.mime.text.data)
-		  fs_give((void **)&b->nested.part->body.mime.text.data);
-		b->nested.part->body.mime.text.size = body->nested.part->body.mime.text.size;
-		b->nested.part->body.mime.offset = body->nested.part->body.mime.offset;
-
-		if(b->nested.part->body.contents.text.data)
-		  fs_give((void **)&b->nested.part->body.contents.text.data);
-		b->nested.part->body.contents.text.size = body->nested.part->body.contents.text.size;
-		b->nested.part->body.contents.offset = body->nested.part->body.contents.offset;
-
-		create_local_cache(bstart, bstart, &b->nested.part->body);
-
+		mail_free_body_part(&b->nested.part);
+		b->nested.part = body->nested.part;
+		create_local_cache(bstart, bstart, &b->nested.part->body, 1);
 		modified_the_body = 1;
 
 		snprintf(newSec, sizeof(newSec), "%s%s1", section ? section : "", (section && *section) ? "." : "");
-
 		mimetext = mail_fetch_mime(ps_global->mail_stream, msgno, (char*) newSec, &mimelen, 0);
 
 		if(mimetext)
@@ -2634,20 +2662,25 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
 		if (mimetext == NULL || bodytext ==  NULL)
 		   return modified_the_body;
 
+		snprintf(newSec, sizeof(newSec), "%s%s2", section ? section : "", (section && *section) ? "." : "");
+
+		if((p7 = get_pkcs7_from_part(msgno, newSec)) == NULL)
+		  return modified_the_body;
+
 		(void) BIO_reset(in);
 		BIO_write(in, mimetext, mimelen);
 		BIO_write(in, bodytext, bodylen);
 		so_give(&msg_so);
 
 		if(((result = do_signature_verify(p7, in, NULL, 1)) == 0)
-			&& bodylen > 2 
-			&& (strncmp(bodytext+bodylen-2,"\r\n", 2) == 0)){
-			BUF_MEM *biobuf = NULL;
+		  && bodylen > 2 
+		  && (strncmp(bodytext+bodylen-2,"\r\n", 2) == 0)){
+		  BUF_MEM *biobuf = NULL;
 
-			BIO_get_mem_ptr(in, &biobuf);
-			if(biobuf)
-			  BUF_MEM_grow(biobuf, mimelen + bodylen - 2);
-			result = do_signature_verify(p7, in, NULL, 0);
+		  BIO_get_mem_ptr(in, &biobuf);
+		  if(biobuf)
+		    BUF_MEM_grow(biobuf, mimelen + bodylen - 2);
+		  result = do_signature_verify(p7, in, NULL, 0);
 		}
 	   }
 	}
@@ -2738,17 +2771,13 @@ char *
 decrypt_file(char *fp, int *rv, PERSONAL_CERT *pc)
 {
   PKCS7 *p7 = NULL;
-  char *text, *tmp, file_name[MAILTMPLEN];
+  char *text, *tmp;
   BIO *in = NULL, *out = NULL;
-  EVP_PKEY *pkey = NULL;
-  X509 *recip;
   int i, j;
   long unsigned int len;
   void *ret;
    
-  smime_init();   
-   
-  if(pc == NULL || (text = read_file(fp, 0)) == NULL)
+  if(pc == NULL || (text = read_file(fp, 0)) == NULL || *text == '\0')
     return NULL;
 
   tmp = fs_get(strlen(text) + (strlen(text) << 6) + 1);
@@ -2757,7 +2786,7 @@ decrypt_file(char *fp, int *rv, PERSONAL_CERT *pc)
      tmp[j] = text[i];
   tmp[j] = '\0';
   
-  ret = rfc822_base64(tmp, strlen(tmp), &len);
+  ret = rfc822_base64((unsigned char *)tmp, strlen(tmp), &len);
   
   if((in = BIO_new_mem_buf((char *)ret, len)) != NULL){
      p7 = d2i_PKCS7_bio(in, NULL);
@@ -2981,7 +3010,7 @@ do_decoding(BODY *b, long msgno, const char *section)
              * the decrypted data. Otherwise, it'll try to load it from the original 
              * data. Eek. 
 	     */
-            create_local_cache(bstart-b->nested.part->body.mime.offset, bstart, &b->nested.part->body);
+            create_local_cache(bstart-b->nested.part->body.mime.offset, bstart, &b->nested.part->body, 0);
 
             modified_the_body = 1;
         }
@@ -3328,16 +3357,6 @@ free_smime_struct(SMIME_STUFF_S **smime)
 	    free_personal_certs(&pc);
 	    (*smime)->personal_certs = NULL;
 	}
-
-#ifdef PASSFILE
-	if((*smime)->pwdcert){
-	    PERSONAL_CERT *pc;
-
-	    pc = (PERSONAL_CERT *) (*smime)->pwdcert;
-	    free_personal_certs(&pc);
-	    (*smime)->pwdcert = NULL;
-	}
-#endif /* PASSFILE */
 
 	if((*smime)->privatecontent)
 	  fs_give((void **) &(*smime)->privatecontent);

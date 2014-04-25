@@ -907,10 +907,10 @@ context_edit_screen(struct pine *ps, char *func, char *def_nick,
 		    char *def_serv, char *def_path, char *def_view)
 {
     int	       editor_result, i, j;
-    char       nickpart[MAILTMPLEN], servpart[MAILTMPLEN], new_cntxt[MAILTMPLEN];
+    char       servpart[MAILTMPLEN], new_cntxt[MAILTMPLEN];
     char       pathpart[MAILTMPLEN], allbutnick[MAILTMPLEN];
     char       tmp[MAILTMPLEN], *nick, *serv, *path, *view,
-	      *return_cntxt = NULL, *val, *p, new[MAILTMPLEN];
+	      *return_cntxt = NULL, *val, *p;
     char       nickpmt[100], servpmt[100], pathpmt[100], viewpmt[100];
     int        indent;
     PICO       pbf;
@@ -4491,10 +4491,10 @@ get_folder_name:
 
 	/* for non-local folders, transform UTF-8 to MUTF7 */
 	if(offset > 0 && add_folder[0] == '{'){
-	  unsigned char *mutf7 = utf8_to_mutf7(&add_folder[offset]);
+	  unsigned char *mutf7 = utf8_to_mutf7((unsigned char *)&add_folder[offset]);
 	  if(mutf7 != NULL){
 	    strncpy(orig_folder, &add_folder[offset], 2*MAXFOLDER+10);
-	    strncpy(&add_folder[offset], mutf7, add_folderlen-offset);
+	    strncpy(&add_folder[offset], (char *) mutf7, add_folderlen-offset);
 	    add_folder[add_folderlen-1] = '\0';
 	    fs_give((void **)&mutf7);
 	  }
@@ -4615,10 +4615,10 @@ skip_over_folder_input:
 
 	    /* for non-local folders, transform UTF-8 to MUTF7 */
 	    if(offset > 0 && add_folder[0] == '{'){
-	      unsigned char *mutf7 = utf8_to_mutf7(&add_folder[offset]);
+	      unsigned char *mutf7 = utf8_to_mutf7((unsigned char *)&add_folder[offset]);
 	      if(mutf7 != NULL){
 		strncpy(orig_folder, &add_folder[offset], 2*MAXFOLDER+10);
-		strncpy(&add_folder[offset], mutf7, add_folderlen-offset);
+		strncpy(&add_folder[offset], (char *) mutf7, add_folderlen-offset);
 		add_folder[add_folderlen-1] = '\0';
 		fs_give((void **)&mutf7);
 	      }
@@ -6166,7 +6166,8 @@ folder_select_count(long int *count, int *cmp)
 	    continue;
 
 	  case 14 :		/* toggle comparison */
-	    *cmp = ++(*cmp) % 3;
+	    ++(*cmp);
+	    *cmp = *cmp % 3;
 	    continue;
 
 	  case -1 :		/* cancel */

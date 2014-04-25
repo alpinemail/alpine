@@ -216,7 +216,7 @@ debugjournal_to_file(FILE *dfile)
 		p = NULL;
 	    }
 
-	    if(p){
+	    if(p != NULL){
 		if(p->timestamp && p->timestamp[0]
 		   && (fputs(p->timestamp, dfile) == EOF
 		       || fputs(": ", dfile) == EOF))

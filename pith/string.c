@@ -431,7 +431,7 @@ short_str(char *src, char *buf, size_t buflen, int wid, WhereDots where)
 	    }
 
 	    q = buf;
-	    if(first){
+	    if(first > 0){
 		q += utf8_to_width(q, src, buflen, first, &got_width);
 		if(got_width != first){
 		  if(second)
@@ -448,7 +448,7 @@ short_str(char *src, char *buf, size_t buflen, int wid, WhereDots where)
 		q += strlen(q);
 	    }
 	    
-	    if(second){
+	    if(second > 0){
 		char *p;
 
 		p = utf8_count_back_width(src, src+strlen(src), second, &got_width);
@@ -2738,7 +2738,7 @@ add_escapes(char *src, char *quote_these_chars, int quoting_char,
 char *
 copy_quoted_string_asis(char *src)
 {
-    char *q, *p;
+    char *q = NULL, *p;
     int   done = 0, quotes = 0;
 
     if(src){

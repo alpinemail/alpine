@@ -835,8 +835,8 @@ scroll_handle_prompt(HANDLE_S *handle, int force)
 
     if(force
        || (handle->type == URL
-	   && !struncmp(handle->h.url.path, "x-alpine-", 9)
-		|| !struncmp(handle->h.url.path, "x-pine-help", 11)))
+	   && (!struncmp(handle->h.url.path, "x-alpine-", 9)
+		|| !struncmp(handle->h.url.path, "x-pine-help", 11))))
       return(1);
 
     while(1){
@@ -1396,7 +1396,7 @@ url_launch(HANDLE_S *handle)
 #define	URL_MAX_LAUNCH	(2 * MAILTMPLEN)
 
     if(handle->h.url.tool){
-	char	*toolp, *cmdp, *p, *q, cmd[URL_MAX_LAUNCH + 4];
+	char	*toolp, *cmdp, *p, cmd[URL_MAX_LAUNCH + 4];
 	int	 mode, copied = 0;
 	PIPE_S  *syspipe;
 

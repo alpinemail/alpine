@@ -206,7 +206,7 @@ necessary.
 void
 mm_expunged(MAILSTREAM *stream, long unsigned int rawno)
 {
-    MESSAGECACHE *mc;
+    MESSAGECACHE *mc = NULL;
     long          i;
     int           is_current = 0;
     MSGNO_S      *msgmap;

@@ -1563,6 +1563,7 @@ set_priority_header(METAENV *header, char *value)
 	      pf->textbuf = cpystr(value);
 	}
     }
+    return pf;
 }
 
 

@@ -399,11 +399,12 @@ save_cert_for(char *email, X509 *cert, WhichCerts ctype)
 	CertList  *clist = DATACERT(ctype);
 
 	add_to_end_of_certlist(&clist, email, X509_dup(cert));
+
 	switch(ctype){
-	   Private: ps_global->smime->privatecertlist = clist; break;
-	   Public : ps_global->smime->publiccertlist = clist; break;
-	   CACert : ps_global->smime->cacertlist = clist; break;
-	   default: break;
+	 case Private: ps_global->smime->privatecertlist = clist; break;
+	 case Public : ps_global->smime->publiccertlist = clist; break;
+	 case CACert : ps_global->smime->cacertlist = clist; break;
+	      default: break;
 	}
 
 	if(!upath)
@@ -555,7 +556,6 @@ save_cert_for(char *email, X509 *cert, WhichCerts ctype)
 X509 *
 get_cert_for(char *email, WhichCerts ctype)
 {
-    char       *path;
     char	certfilename[MAXPATH];
     char    	emailaddr[MAXPATH];
     X509       *cert = NULL;
@@ -664,6 +664,58 @@ get_cert_for(char *email, WhichCerts ctype)
     }
 
     return cert;
+}
+
+/*
+ * load_cert_for_key finds a certificate in pathdir that matches a private key
+ * pkey. It returns its name in certfile, and the certificate in *pcert.
+ * return value: success: different from zero, failure 0. If both certfile
+ * and pcert are NULL, this function returns if there is certificate that
+ * matches the given key.
+ */
+int
+load_cert_for_key(char *pathdir, EVP_PKEY *pkey, char **certfile, X509 **pcert)
+{
+   DIR *dirp;
+   struct dirent *d;
+   int rv = 0;
+   BIO *in;
+   X509 *x;
+   char buf[MAXPATH+1], pathcert[MAXPATH+1];
+
+   if(pathdir == NULL || pkey == NULL)
+    return 0;
+
+   if(certfile) *certfile = NULL;
+   if(pcert)    *pcert = NULL;
+           
+   if((dirp = opendir(pathdir)) != NULL){
+      while(rv == 0 && (d=readdir(dirp)) != NULL){
+        size_t ll;
+    
+	if((ll=strlen(d->d_name)) && ll > 4){
+	   if(!strcmp(d->d_name+ll-4, ".crt")){
+	     strncpy(buf, d->d_name, sizeof(buf));
+	     buf[sizeof(buf)-1] = '\0';
+	     build_path(pathcert, pathdir, buf, sizeof(pathcert));
+	     if((in = BIO_new_file(pathcert, "r")) != NULL){
+	        if((x = PEM_read_bio_X509(in, NULL, NULL, NULL)) != NULL){
+		  if(X509_check_private_key(x, pkey) > 0){
+		    rv = 1;
+		    if(certfile) *certfile = cpystr(buf);
+		    if(pcert)    *pcert = x;
+		  }
+		  else
+		    X509_free(x);
+		}
+	        BIO_free(in);
+	     }
+	   }
+        }
+      }
+      closedir(dirp);
+   }
+   return rv;
 }
 
 

@@ -356,6 +356,9 @@ struct pine {
 
 #ifdef SMIME
     SMIME_STUFF_S *smime;
+#ifdef PASSFILE
+    void *pwdcert;	/* this is of type PERSONAL_CERT */
+#endif /* PASSFILE inside SMIME */
 #endif /* SMIME */
 
     struct variable *vars;

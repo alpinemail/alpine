@@ -1956,12 +1956,10 @@ paint_index_line(ICE_S *argice, int line, long int msgno, IndexColType sfld,
 
 	for(ielem = ifield->ielem; ielem; ielem = ielem->next){
 	  char *src;
-	  size_t bytes_added;
 
 	  src = ielem->data;
-	  bytes_added = utf8_pad_to_width(draw, src,
-					  (n+1) * sizeof(char),
-					  ielem->wid, ifield->leftadj);
+	  utf8_pad_to_width(draw, src, (n+1) * sizeof(char),
+				       ielem->wid, ifield->leftadj);
 	  draw[n] = '\0';
 
           /*
@@ -3625,7 +3623,7 @@ view_in_new_window(void)
     void             *text;
     long              len;
     int	              format;
-    MSWIN_TEXTWINDOW *mswin_tw;
+    MSWIN_TEXTWINDOW *mswin_tw = NULL;
 
     /* Launch text in alt window. */
     if(index_gettext_callback(title, sizeof (title), &text, &len, &format)){
@@ -3636,7 +3634,7 @@ view_in_new_window(void)
 	  mswin_tw = mswin_displaytext(title, NULL, 0, text,
 				       NULL, MSWIN_DT_USEALTWINDOW);
 
-	if(mswin_tw)
+	if(mswin_tw != NULL)
 	  mswin_set_readonly(mswin_tw, FALSE);
     }
 }

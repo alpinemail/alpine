@@ -3469,7 +3469,7 @@ io_error:
 
     writing = 0;
 
-    if(ab_stream){
+    if(ab_stream != NULL){
 	fclose(ab_stream);
 	ab_stream = (FILE *)NULL;
     }

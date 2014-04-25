@@ -434,7 +434,7 @@ is_user_separator(UCS c)
 void
 do_quote_match(UCS *q, LINE *l, UCS *buf, size_t buflen)
 {
-    register int i, j, qb;
+    register int i, j;
     int qstart, qend, k;
 
     /* 

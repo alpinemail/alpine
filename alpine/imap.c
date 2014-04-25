@@ -2061,8 +2061,8 @@ line_get(char *tmp, size_t len, char **textp)
   if(*(s-1) == '\r')
     *(s-1) = '\0';
 
-  strcpy(tmp, *textp);
-  strcat(tmp, "\n");
+  snprintf(tmp, len, "%s\n", *textp);
+  tmp[len-1] = '\0';
   *textp = s+1;
 
   return 1;
@@ -2373,14 +2373,25 @@ read_passfile(pinerc, l)
     };
 
 #ifdef SMIME
-    smime_init();
-    if(ps_global->smime->pwdcert == NULL)
-       setup_pwdcert(&ps_global->smime->pwdcert);
+    /* the next call initializes the key/certificate pair used to
+     * encrypt and decrypt a password file. The details of how this is
+     * done is in the file pith/smime.c. During this setup we might call
+     * smime_init(), but no matter what happens we must call smime_deinit()
+     * there. The reason why this is so is because we can not assume that 
+     * the .pinerc file has been read by this time, so this code might not
+     * know about the ps_global->smime structure or any of its components,
+     * and it shouldn't because it only needs ps_global->pwdcert, so 
+     * do not init smime here, because the .pinerc might not have been
+     * read and we do not really know where the keys and certificates really
+     * are.
+     */
+    if(ps_global->pwdcert == NULL)
+       setup_pwdcert(&ps_global->pwdcert);
     tmp2[0] = '\0';
     fgets(tmp2, sizeof(tmp2), fp);
     fclose(fp);
     if(strcmp(tmp2, "-----BEGIN PKCS7-----\n")){
-       if(encrypt_file((char *)tmp, NULL, (PERSONAL_CERT *)ps_global->smime->pwdcert))
+       if(encrypt_file((char *)tmp, NULL, (PERSONAL_CERT *)ps_global->pwdcert))
 	  encrypted++;
     }
     else
@@ -2399,7 +2410,7 @@ read_passfile(pinerc, l)
      * unencrypted and rewritten again.
      */
     if(encrypted){
-	text = text2 = decrypt_file((char *)tmp, &i, (PERSONAL_CERT *)ps_global->smime->pwdcert);
+	text = text2 = decrypt_file((char *)tmp, &i, (PERSONAL_CERT *)ps_global->pwdcert);
 	switch(i){
 	   case 1 : save_password = 1;
 		    break;
@@ -2623,7 +2634,7 @@ write_passfile(pinerc, l)
 	   len = strlen(text) + strlen(tmp) + 1;
 	   fs_resize((void **)&text, len*sizeof(char));
 	}
-	strcat(text, tmp);
+	strncat(text, tmp, strlen(tmp));
 #else /* SMIME */
 	fputs(tmp, fp);
 #endif /* SMIME */
@@ -2631,13 +2642,15 @@ write_passfile(pinerc, l)
 
     fclose(fp);
 #ifdef SMIME
-    if(encrypt_file((char *)tmp2, text, (PERSONAL_CERT *) ps_global->smime->pwdcert) == 0){
-	if((fp = our_fopen(tmp2, "wb")) != NULL){
+    if(text != NULL){
+       if(encrypt_file((char *)tmp2, text, ps_global->pwdcert) == 0){
+	 if((fp = our_fopen(tmp2, "wb")) != NULL){
 	   fputs(text, fp);
 	   fclose(fp);
-	}
+	 }
+       }
+       fs_give((void **)&text);
     }
-    fs_give((void **)&text);
 #endif /* SMIME */
 #endif /* PASSFILE */
 }
@@ -2940,7 +2953,6 @@ update_passfile_hostlist(pinerc, user, hostlist, altflag)
     return;
 #else /* !WINCRED */
     MMLOGIN_S *l;
-    STRLIST_S *h1, *h2;
     
     for(l = passfile_cache; l; l = l->next)
       if(imap_same_host(l->hosts, hostlist)

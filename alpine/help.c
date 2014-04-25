@@ -634,7 +634,7 @@ url_local_config(char *url)
 {
     if(!struncmp(url, "x-alpine-config:", 16)){
 	char **config;
-	int    rv;
+	int    rv = MC_NONE;
 
 	config = get_supported_options();
 	if(config){

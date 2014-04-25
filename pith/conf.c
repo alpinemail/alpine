@@ -5935,11 +5935,11 @@ write_pinerc(struct pine *ps, EditWhich which, int flags)
 	        if(basep == NULL){
 		  *basep = '\0';
 		  slpath = (char *) fs_get((strlen(filename) + strlen(slink) + 2)*sizeof(char));
-		  sprintf(slpath, "%s/%s", filename, slink);
+		  snprintf(slpath, sizeof(slpath), "%s/%s", filename, slink);
 		  *basep = '/';
 		} else {
 		  slpath = (char *) fs_get((strlen(ps_global->home_dir) + strlen(slink) + 2)*sizeof(char));
-		  sprintf(slpath, "%s/%s", ps_global->home_dir, slink);
+		  snprintf(slpath, sizeof(slpath), "%s/%s", ps_global->home_dir, slink);
 		}
 	      }
 	      file_attrib_copy(tmp, slpath);
@@ -5964,6 +5964,7 @@ write_pinerc(struct pine *ps, EditWhich which, int flags)
 	char datebuf[200];
 
 	datebuf[0] = '\0';
+	we_cancel = 0;
 
 	if(!(flags & WRP_NOUSER))
 	  we_cancel = busy_cue(_("Copying to remote config"), NULL, 1);

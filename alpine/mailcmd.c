@@ -438,7 +438,7 @@ view_text:
 			     : (in_index == View)
 			       ? MH_ANYTHD : MH_NONE);
 		if(i == mn_get_cur(msgmap)){
-		    PINETHRD_S *thrd, *topthrd;
+		    PINETHRD_S *thrd = NULL, *topthrd = NULL;
 
 		    if(THRD_INDX_ENABLED()){
 			mn_dec_cur(stream, msgmap, MH_ANYTHD);
@@ -5537,20 +5537,20 @@ broach_folder(int qline, int allow_list, int *notrealinbox, CONTEXT_S **context)
 	 * newfolder, including content and size. f2 is copy of f1
 	 * that has to freed. Sigh!
 	 */
-	f3 = cpystr(newfolder);
+	f3 = (unsigned char *) cpystr(newfolder);
 	f1 = fs_get(sizeof(newfolder));
 	f2 = folder_name_decoded(f3);
 	if(f3) fs_give((void **)&f3);
-	strncpy(f1, f2, sizeof(newfolder));
+	strncpy((char *)f1, (char *)f2, sizeof(newfolder));
 	f1[sizeof(newfolder)-1] = '\0';
 	if(f2) fs_give((void **)&f2);
 
 	flags = OE_APPEND_CURRENT;
         rc = optionally_enter(f1, qline, 0, sizeof(newfolder),
-			      prompt, ekey, help, &flags);
+			      (char *) prompt, ekey, help, &flags);
 
 	f2 = folder_name_encoded(f1);
-	strncpy(newfolder, f2, sizeof(newfolder));
+	strncpy(newfolder, (char *)f2, sizeof(newfolder));
 	if(f1) fs_give((void **)&f1);
 	if(f2) fs_give((void **)&f2);
 
