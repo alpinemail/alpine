@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 60 2014-04-25 18:02:23
+Alpine Commit 61 2014-05-02 18:29:37
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -184,17 +184,25 @@ Additions include:
   <LI> Upgrade UW-IMAP to Panda IMAP from 
        <A HREF="https://github.com/jonabbey/panda-imap">https://github.com/jonabbey/panda-imap</A>.
   <LI> S/MIME: Add screen to manage certificates.
-  <LI> S/MIME: sign messages using intermediate certificates when needed and possible.
-  <LI> S/MIME: validation of certificates for servers that modify signed content.
+  <LI> S/MIME: sign messages using intermediate certificates when needed 
+       and possible.
+  <LI> S/MIME: validation of certificates for servers that modify signed 
+       content.
+  <LI> S/MIME: signed and encrypted messages will be signed first and 
+       encrypted second, so that they can be decoded by other clients.
+  <LI> S/MIME: add the sender certificate to the list of certificates in
+       encrypted messages to make it possible for the sender to decrypt
+       the message they sent.    
   <LI> Add support to selective expunge through a subcommand of the 
        select-apply commands. Read more in the <A 
        HREF="h_index_cmd_expunge">help</A> for the expunge command.
   <LI> Pico: New subcommand of the search command, allows to reverse the
        direction of search.
-  <LI> If a password file is defined, and S/MIME is enabled, the key and
-       certificate used to encrypt the password file are saved in 
-       the ~/.alpine-smime/.pwd directory, or in the directory specified
-       by the -pwdcertdir command line option.
+  <LI> Unix Alpine: If a password file is defined, and S/MIME is enabled, 
+       the key and certificate used to encrypt the password file are saved 
+       in the ~/.alpine-smime/.pwd directory, or in the directory specified
+       by the -pwdcertdir command line option. 
+       <A HREF="h_password_file_support">Learn more</A>.
   <LI> Add /tls1, /tls1_1, /tls1_2 and /dtls1 to the definition of a 
        server to use different ways to connect using ssl, for 
        example {server.com/tls1} will attempt to connect to 
@@ -217,6 +225,9 @@ Additions include:
   <LI> Experimental: Write the content-type of a message in 
        lowercase, as some non-compliant servers do not understand 
        uppercase content-type, such as those of GMX.de.
+  <LI> Experimental: Do not send the RSET command before attempting
+       to send a message, as this causes a delay in some evily managed
+       servers.
   <LI> Opening a folder updates recent count in maildrops (this 
        already works for other types of folders)
   <LI> Automatically redraw screen after opening an attachment 
@@ -283,7 +294,7 @@ Bugs that have been addressed include:
        $alpine_TCLINC instead of $alpine_TCLINC/tcl.h. Reported and fixed 
        by Werner Scheinast.
   <LI> Move SSL configurations from UW-IMAP to configure script, and
-       update OpenSSL configuration for mac OSX.
+       update OpenSSL configuration for Mac OSX.
   <LI> Remove -lregex from linker flags when building --with-supplied-regex.
 </UL>
 <P>
@@ -717,6 +728,104 @@ or instead you can find the Apache License, version 2.0 at the web URL:
 
 <P>
 &lt;End of Release Notes&gt;
+</BODY>
+</HTML>
+====== h_password_file_support ======
+<HTML>
+<HEAD>
+<TITLE>Encryption for Password File Support Explained</TITLE>
+</HEAD>
+<BODY>
+<H1>Encryption for Password File Support Explained</H1>
+
+Index<BR>
+<OL>
+<LI><A HREF="#content">Explanation</A>
+<LI><A HREF="#example">Example</A>
+</OL>
+
+<P><A NAME="content">Unix Alpine Only.</A>
+
+<P> If your version of Alpine has been built with password file support
+then you can use a special file to save your passwords, and avoid typing
+them every time you open a connection to a remote server.
+
+<P> If your version of Alpine was built with SMIME support, and you have a
+public certificate/private key pair, then Alpine will use such pair to
+encrypt your password file. If you have more than one key/certificate
+pair, Alpine will pick the first pair that it finds that works. You can also
+select a pair, and the way to do this is explained below.
+
+<P> Once a pair has been chosen, it will be copied to the directory 
+~/.alpine-smime/.pwd, and from then on, Alpine will use the pair found in 
+that directory. The first time this process is done, this directory will 
+be created, a key/certificate pair will be copied to it, and this pair 
+will be used in the future to encrypt and decrypt your password file. You 
+can create this directory and copy any key/certificate pair there. You
+can add a self-signed certificate there, if you like, and you can let
+this certificate expire. This will not affect the encryption and decryption
+of the password file.
+
+<P> If you prefer not to use the directory ~/.alpine-smime/.pwd to save 
+your key/certificate pair, you can specify a different one with the 
+-pwdcertdir command line option in Alpine. If the directory specified by 
+this option is not found or there is no valid key/certificate pair there, 
+Alpine will fail to encrypt and decrypt your password file. In other words,
+Alpine will not initialize this directory for you.
+
+<P> Alpine does not care about the names of the key and certificates in 
+this directory, but the private key must have &quot;.key&quot; extension 
+and your public certificate must have the &quot;.crt&quot; extension. The
+name of the private key will be used in the prompt when you are asked
+to unlock your key to decrypt your password.
+
+<P><A NAME="example">An example follows</A>
+
+<P>Assume you have a private key called peter@address.com.key in your, 
+~/.alpine-smime/private directory, and a public certificate called 
+peter@address.com.crt in your ~/.alpine-smime/public directory, and these 
+are your only key/certificate pair.
+
+<P> When Alpine starts for the first time, without command line options, 
+it will check if the directory ~/.alpine-smime/.pwd exists, and if not, 
+it will create it. Then it will go through your keys and certificates and 
+find a pair that it can use, and copy the files peter@address.com.key,
+and peter@address.com.crt to the ~/.alpine-smime/.pwd directory. Alternatively
+you can do the same by copying these files by yourself. This can be done
+with the sequence of commands
+
+<PRE>
+mkdir ~/.alpine-smime/.pwd
+cp ~/.alpine-smime/private/peter@address.com.key ~/.alpine-smime/.pwd
+cp ~/.alpine-smime/public/peter@address.com.crt ~/.alpine-smime/.pwd
+</PRE>
+
+<P> When Alpine starts, you will be asked the password to unlock your
+private key with the prompt.
+
+<PRE>
+Enter password of key &lt;peter@address.com&gt; to unlock password file:
+</PRE>
+
+<P> If you prefer to use different names for your private and public keys 
+in the ~/.alpine-smime/.pwd directory, you can do so, but you must 
+preserve the extension of the files. For example, you can use the names 
+private_key.key and public_cert.crt instead. In this case, the prompt you 
+will see when you are asked to unlock your private key will read
+
+<PRE>
+Enter password of key &lt;private_key&gt; to unlock password file:
+</PRE>
+
+<P>Observe that you do not need to use an existing key/certificate pair, 
+and that you can create a new private key/public certificate pair to 
+encrypt and decrypt your password. However, once one is used, Alpine does 
+not provide a mechanism to switch the encryption and decryption files to 
+another key/certificate pair. This will be implemented in a future 
+release of Alpine.
+
+<P>
+&lt;End of help&gt;
 </BODY>
 </HTML>
 ====== h_tls_failure_details ======

@@ -56,18 +56,19 @@ static int             load_private_key(PERSONAL_CERT *pcert);
 static void            create_local_cache(char *h, char *base, BODY *b, int type);
 static long            rfc822_output_func(void *b, char *string);
 static void            setup_pkcs7_body_for_signature(BODY *b, char *description,
-						      char *type, char *filename);
+						      char *type, char *filename, char *smime_type);
 static BIO            *body_to_bio(BODY *body);
 static BIO            *bio_from_store(STORE_S *store);
 static STORE_S        *get_part_contents(long msgno, const char *section);
 static PKCS7         *get_pkcs7_from_part(long msgno, const char *section);
 static int            do_signature_verify(PKCS7 *p7, BIO *in, BIO *out, int silent);
-static int            do_detached_signature_verify(BODY *b, long msgno, char *section);
+int            	      do_detached_signature_verify(BODY *b, long msgno, char *section);
 static PERSONAL_CERT *find_certificate_matching_pkcs7(PKCS7 *p7);
 static int            do_decoding(BODY *b, long msgno, const char *section);
 static void           free_smime_struct(SMIME_STUFF_S **smime);
 static void           setup_storage_locations(void);
 static int            copy_container_to_dir(WhichCerts which);
+static int	      do_fiddle_smime_message(BODY *b, long msgno, char *section);
 void		      setup_privatekey_storage(void);
 int		      smime_path(char *rpath, char *fpath, size_t len);
 int		      smime_extract_and_save_cert(PKCS7 *p7);
@@ -88,6 +89,36 @@ static X509_STORE   *s_cert_store;
 /* State management for randomness functions below */
 static int seeded = 0;
 static int egdsocket = 0;
+
+typedef enum {P7Type, CharType, SizedText} SpareType; 
+
+typedef struct smime_sparep_t {
+   SpareType sptype;
+   void *data;
+} SMIME_SPARE_S;
+
+void *
+create_smime_sparep(SpareType stype, void *s)
+{
+  SMIME_SPARE_S *rv;
+
+  rv = fs_get(sizeof(SMIME_SPARE_S));
+  rv->sptype = stype;
+  rv->data   = s;
+  return (void *) rv;
+}
+
+SpareType
+get_smime_sparep_type(void *s)
+{
+  return ((SMIME_SPARE_S *)s)->sptype;
+}
+
+void *
+get_smime_sparep_data(void *s)
+{
+  return ((SMIME_SPARE_S *)s)->data;
+}
 
 
 #ifdef PASSFILE
@@ -2041,7 +2072,7 @@ load_private_key(PERSONAL_CERT *pcert)
 
 
 static void
-setup_pkcs7_body_for_signature(BODY *b, char *description, char *type, char *filename)
+setup_pkcs7_body_for_signature(BODY *b, char *description, char *type, char *filename, char *smime_type)
 {
     b->type = TYPEAPPLICATION;
     b->subtype = cpystr(type);
@@ -2052,6 +2083,8 @@ setup_pkcs7_body_for_signature(BODY *b, char *description, char *type, char *fil
     set_parameter(&b->disposition.parameter, "filename", filename);
 
     set_parameter(&b->parameter, "name", filename);
+    if(smime_type && *smime_type)
+      set_parameter(&b->parameter, "smime-type", smime_type);
 }
 
 
@@ -2238,6 +2271,8 @@ encrypt_outgoing_message(METAENV *header, BODY **bodyP)
     BODY	*body = *bodyP;
     BODY	*newBody = NULL;
     int		 result = 0;
+    X509	*cert;
+    char	buf[MAXPATH];
 
     dprint((9, "encrypt_outgoing_message()"));
     smime_init();
@@ -2250,13 +2285,9 @@ encrypt_outgoing_message(METAENV *header, BODY **bodyP)
     for(pf = header->local; pf && pf->name; pf = pf->next)
         if(pf->type == Address && pf->rcptto && pf->addr && *pf->addr){
             for(a=*pf->addr; a; a=a->next){
-                X509	*cert;
-                char	 buf[MAXPATH];
-
                 snprintf(buf, sizeof(buf), "%s@%s", a->mailbox, a->host);
 
-                cert = get_cert_for(buf, Public);
-                if(cert)
+                if((cert = get_cert_for(buf, Public)) != NULL)
                   sk_X509_push(encerts,cert);
                 else{
                     q_status_message2(SM_ORDER, 1, 1,
@@ -2267,6 +2298,14 @@ encrypt_outgoing_message(METAENV *header, BODY **bodyP)
             }
         }
 
+    /* add the sender's certificate so that they can decrypt the message too */
+    for(a=header->env->from; a ; a = a->next){
+       snprintf(buf, sizeof(buf), "%s@%s", a->mailbox, a->host);
+
+       if((cert = get_cert_for(buf, Public)) != NULL
+	  && sk_X509_find(encerts, cert) == -1)
+         sk_X509_push(encerts,cert);
+    }
 
     in = body_to_bio(body);
 
@@ -2491,11 +2530,73 @@ do_signature_verify(PKCS7 *p7, BIO *in, BIO *out, int silent)
 void
 free_smime_body_sparep(void **sparep)
 {
+    char *s;
+    SIZEDTEXT *st;
     if(sparep && *sparep){
-	PKCS7_free((PKCS7 *) (*sparep));
-	*sparep = NULL;
+        switch(get_smime_sparep_type(*sparep)){
+	  case P7Type: 	PKCS7_free((PKCS7 *) get_smime_sparep_data(*sparep));
+			break;
+	  case CharType: s = (char *)get_smime_sparep_data(*sparep);
+			 fs_give((void **)  &s);
+			 break;
+	  case SizedText : st = (SIZEDTEXT *)get_smime_sparep_data(*sparep);
+			 fs_give((void **) &st->data);
+			 fs_give((void **) &st);
+			 break;
+	  default : break;
+	}
+	((SMIME_SPARE_S *)(*sparep))->data = NULL;
+	fs_give(sparep);
     }
 }
+
+/* return the mime header for this body part. Memory freed by caller */
+char *
+smime_fetch_mime(BODY *b, MAILSTREAM *stream, long msgno, char * section, 
+		unsigned long *mimelen)
+{
+  char *rv;
+  char  newSec[100];
+
+  if(b->type == TYPEMULTIPART)
+    snprintf(newSec, sizeof(newSec), "%s%s1", section ? section : "", (section && *section) ? "." : "");
+  else
+    strncpy(newSec, section, sizeof(newSec));
+  newSec[sizeof(newSec)-1] = '\0';
+  rv = mail_fetch_mime(stream, msgno, newSec, mimelen, 0);
+  return rv ? cpystr(rv) : NULL;
+}
+
+
+void
+smime_write_body_header(BODY *b, MAILSTREAM *stream, long msgno, char *section, soutr_t f, void *s)
+{
+  char *rv;
+  char  newSec[100];
+
+  if(b->nested.part == NULL)
+    return;
+
+  if(b->nested.part->body.type == TYPEMULTIPART)
+    snprintf(newSec, sizeof(newSec), "%s%s1", section ? section : "", (section && *section) ? "." : "");
+  else
+    strncpy(newSec, section, sizeof(newSec));
+  newSec[sizeof(newSec)-1] = '\0';
+  rv = mail_fetch_mime(stream, msgno, newSec, NULL, 0);
+  if(f && rv != NULL)
+   (*f)(s, rv);
+}
+
+int
+write_signed_body(BODY *b, MAILSTREAM *stream, long msgno, char *section, BIO *in)
+{
+
+   smime_write_body_header(b, stream, msgno, section, rfc822_output_func, in);
+
+
+}
+
+
 
 /* Big comment, explaining the mess that exists out there, and how we deal
    with it, and also how we solve the problems that are created this way.
@@ -2569,7 +2670,7 @@ free_smime_body_sparep(void **sparep)
  * Given a multipart body of type multipart/signed, attempt to verify it.
  * Returns non-zero if the body was changed.
  */
-static int
+int
 do_detached_signature_verify(BODY *b, long msgno, char *section)
 {
     PKCS7   *p7 = NULL;
@@ -2579,29 +2680,44 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
     unsigned long mimelen, bodylen;
     char     newSec[100], *mimetext, *bodytext;
     char    *what_we_did;
+    SIZEDTEXT *st;
 
     dprint((9, "do_detached_signature_verify(msgno=%ld type=%d subtype=%s section=%s)", msgno, b->type, b->subtype ? b->subtype : "NULL", (section && *section) ? section : (section != NULL) ? "Top" : "NULL"));
 
     smime_init();
 
-    snprintf(newSec, sizeof(newSec), "%s%s1", section ? section : "", (section && *section) ? "." : "");
+    /* if it was signed and then encrypted, use the decrypted text
+     * to check the validity of the signature
+     */
+    if(b->sparep){
+	if(get_smime_sparep_type(b->sparep) == SizedText){
+	   /* bodytext includes mimetext */
+	   st = (SIZEDTEXT *) get_smime_sparep_data(b->sparep);
+	   bodytext = st->data;
+	   bodylen  = st->size;
+	   mimetext = NULL;
+	   mimelen  = 0L;
+	}
+    }
+    else{
+      snprintf(newSec, sizeof(newSec), "%s%s1", section ? section : "", (section && *section) ? "." : "");
+      mimetext = mail_fetch_mime(ps_global->mail_stream, msgno, (char*) newSec, &mimelen, 0);
+      if(mimetext)
+        bodytext = mail_fetch_body (ps_global->mail_stream, msgno, (char*) newSec, &bodylen, 0);
 
-    mimetext = mail_fetch_mime(ps_global->mail_stream, msgno, (char*) newSec, &mimelen, 0);
-
-    if(mimetext)
-       bodytext = mail_fetch_body (ps_global->mail_stream, msgno, (char*) newSec, &bodylen, 0);
-
-    if (mimetext == NULL || bodytext ==  NULL)
-       return modified_the_body;
+      if(mimetext == NULL || bodytext ==  NULL)
+         return modified_the_body;
+    }
 
     snprintf(newSec, sizeof(newSec), "%s%s2", section ? section : "", (section && *section) ? "." : "");
 
-    if((p7 = get_pkcs7_from_part(msgno, newSec)) == NULL 
-	|| (in = BIO_new(BIO_s_mem())) == NULL)
-       return modified_the_body;
+    if((p7 = get_pkcs7_from_part(msgno, newSec)) == NULL
+       || (in = BIO_new(BIO_s_mem())) == NULL)
+	return modified_the_body;
 
     (void) BIO_reset(in);
-    BIO_write(in, mimetext, mimelen);
+    if(mimetext != NULL) 
+      BIO_write(in, mimetext, mimelen);
     BIO_write(in, bodytext, bodylen);
 
     /* Try compatibility with the past and check if this message
@@ -2623,6 +2739,7 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
 	 * it by hand.
 	 */
 	if((result = do_signature_verify(p7, in, NULL, 1)) == 0
+	   && mimelen > 0	/* do not do this for encrypted messages */
 	   && IS_REMOTE(ps_global->mail_stream->mailbox)){
 	   char *fetch;
 	   unsigned long hlen, tlen;
@@ -2645,7 +2762,7 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
 
 		bstart += 4;
 		INIT(&bs, mail_string, bstart, tlen);
-		rfc822_parse_msg_full(&env, &body, h, (bstart-h), &bs, BADHOST, 0, 0);
+		rfc822_parse_msg_full(&env, &body, h, bstart-h, &bs, BADHOST, 0, 0);
 		mail_free_envelope(&env);
 
 		mail_free_body_part(&b->nested.part);
@@ -2654,6 +2771,7 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
 		modified_the_body = 1;
 
 		snprintf(newSec, sizeof(newSec), "%s%s1", section ? section : "", (section && *section) ? "." : "");
+
 		mimetext = mail_fetch_mime(ps_global->mail_stream, msgno, (char*) newSec, &mimelen, 0);
 
 		if(mimetext)
@@ -2701,7 +2819,7 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
 
     b->description = cpystr(what_we_did);
 
-    b->sparep = p7;
+    b->sparep = create_smime_sparep(P7Type, p7);
 
     p = b->nested.part;
 	
@@ -2844,11 +2962,11 @@ do_decoding(BODY *b, long msgno, const char *section)
      *	Extract binary data from part to an in-memory store
      */
 
-    if(b->sparep){		/* already done */
-    	p7 = (PKCS7*) b->sparep;
+    if(b->sparep){
+        if(get_smime_sparep_type(b->sparep) == P7Type)
+	  p7 = (PKCS7*) get_smime_sparep_data(b->sparep);
     }
     else{
-
 	p7 = get_pkcs7_from_part(msgno, section && *section ? section : "1");
 	if(!p7){
             q_status_message1(SM_ORDER, 2, 2, "Couldn't load PKCS7 object: %s",
@@ -2860,7 +2978,7 @@ do_decoding(BODY *b, long msgno, const char *section)
     	 * Save the PKCS7 object for later dealings by the user interface.
 	 * It will be cleaned up when the body is garbage collected.
 	 */
-	b->sparep = p7;
+	b->sparep = create_smime_sparep(P7Type, p7);
     }
 
     dprint((1, "type_is_signed = %d, type_is_enveloped = %d", PKCS7_type_is_signed(p7), PKCS7_type_is_enveloped(p7)));
@@ -2927,8 +3045,7 @@ do_decoding(BODY *b, long msgno, const char *section)
 	if(!decrypt_result){
             q_status_message1(SM_ORDER, 1, 1, _("Error decrypting: %s"),
 			      (char*) openssl_error_string());
-            goto end;
-	}
+            goto end;	}
 
 	BIO_write(out, null, 1);
     }
@@ -2957,12 +3074,24 @@ do_decoding(BODY *b, long msgno, const char *section)
             q_status_message(SM_ORDER, 3, 3, _("Encrypted data couldn't be parsed."));
      	}
 	else{
+	    SIZEDTEXT *st;
             bstart += 4; /* skip over CRLF*2 */
 
             INIT(&s, mail_string, bstart, strlen(bstart));
-            rfc822_parse_msg_full(&env, &body, h, (bstart-h)-2, &s, BADHOST, 0, 0);
+            rfc822_parse_msg_full(&env, &body, h, bstart-h-2, &s, BADHOST, 0, 0);
             mail_free_envelope(&env); /* Don't care about this */
 
+	    if(body->type == TYPEMULTIPART
+		&& !strucmp(body->subtype, "SIGNED")){
+	      char *cookie = NULL;
+	      PARAMETER *param;
+	      for (param = body->parameter; param && !cookie; param = param->next)
+                   if (!strucmp (param->attribute,"BOUNDARY")) cookie = param->value;
+	      st = fs_get(sizeof(SIZEDTEXT));
+	      st->data = (void *) cpystr(bstart + strlen(cookie)+4); /* 4 = strlen("--\r\n") */
+	      st->size = body->nested.part->next->body.mime.offset - 2*(strlen(cookie) + 4);
+	      body->sparep = create_smime_sparep(SizedText, (void *)st);
+	    }
 	    body->mime.offset    = 0;
 	    body->mime.text.size = 0;
 
@@ -3094,7 +3223,6 @@ do_fiddle_smime_message(BODY *b, long msgno, char *section)
 	else{
 
             for(p=b->nested.part,partNum=1; p; p=p->next,partNum++){
-
                 /* Append part number to the section string */
 
                 snprintf(newSec, sizeof(newSec), "%s%s%d", section, *section ? "." : "", partNum);
@@ -3141,6 +3269,7 @@ get_chain_for_cert(X509 *cert, int *error)
   X509_STORE_CTX *ctx;   
   X509 *x, *xtmp;
   int rc;       /* return code */
+  int level = -1;
             
   *error = 0;
   ERR_clear_error();
@@ -3150,7 +3279,8 @@ get_chain_for_cert(X509 *cert, int *error)
 	*error   = X509_STORE_CTX_get_error(ctx);
       else if((chain = sk_X509_new_null()) != NULL){
 	for(x = cert; ; x = xtmp){
-	    sk_X509_push(chain, X509_dup(x));
+	    if(++level > 0)
+	      sk_X509_push(chain, X509_dup(x));
 	    rc = X509_STORE_CTX_get1_issuer(&xtmp, ctx, x);
 	    if(rc < 0)
 	      *error = 1;
@@ -3160,8 +3290,10 @@ get_chain_for_cert(X509 *cert, int *error)
 	       break;
 	}
       }
-      if(*error && chain != NULL)
+      if((*error && chain != NULL) || level == 0){
 	sk_X509_pop_free(chain, X509_free);
+	chain = NULL;
+      }
       X509_STORE_CTX_free(ctx);
   }
   return chain;
@@ -3248,7 +3380,7 @@ sign_outgoing_message(METAENV *header, BODY **bodyP, int dont_detach)
     
 	newBody = mail_newbody();
     	
-	setup_pkcs7_body_for_signature(newBody, "S/MIME Cryptographically Signed Message", "pkcs7-mime", "smime.p7m");
+	setup_pkcs7_body_for_signature(newBody, "S/MIME Cryptographically Signed Message", "pkcs7-mime", "smime.p7m", "signed-data");
 
     	newBody->contents.text.data = (unsigned char *) outs;
 	*bodyP = newBody;
@@ -3288,7 +3420,7 @@ sign_outgoing_message(METAENV *header, BODY **bodyP, int dont_detach)
 
 	p1->next = p2;
 
-	setup_pkcs7_body_for_signature(&p2->body, "S/MIME Cryptographic Signature", "pkcs7-signature", "smime.p7s");
+	setup_pkcs7_body_for_signature(&p2->body, "S/MIME Cryptographic Signature", "pkcs7-signature", "smime.p7s", NULL);
     	p2->body.contents.text.data = (unsigned char *) outs;
 
     	newBody->nested.part = p1;

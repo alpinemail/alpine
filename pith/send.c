@@ -1768,12 +1768,12 @@ call_mailer(METAENV *header, struct mail_bodystruct *body, char **alt_smtp_serve
     
     	result = 1;
     
-    	if(ps_global->smime->do_encrypt)
-    	  result = encrypt_outgoing_message(header, &body);
+    	if(ps_global->smime->do_sign)
+	  result = sign_outgoing_message(header, &body, 0);
 	
 	/* need to free new body from encrypt if sign fails? */
-	if(result && ps_global->smime->do_sign)
-	  result = sign_outgoing_message(header, &body, ps_global->smime->do_encrypt);
+	if(result && ps_global->smime->do_encrypt)
+    	  result = encrypt_outgoing_message(header, &body);
 	
 	lmc.so = so;
 	

@@ -437,10 +437,11 @@ long smtp_mail (SENDSTREAM *stream,char *type,ENVELOPE *env,BODY *body)
          (stream->netstream->dtb ==
       (NETDRIVER *) mail_parameters (NIL,GET_SSLDRIVER,NIL)) ?
          "/ssl" : "");
-  do {				/* make sure stream is in good shape */
-    smtp_send (stream,"RSET",NIL);
+  do {
     if (retry) {		/* need to retry with authentication? */
       NETMBX mb;
+				/* make sure stream is in good shape */
+      smtp_send (stream,"RSET",NIL);
 				/* yes, build remote name for authentication */
       mail_valid_net_parse (smtpserver,&mb);
       if (!smtp_auth (stream,&mb,smtpserver)) return NIL;
