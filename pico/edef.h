@@ -32,6 +32,7 @@
 
 /* initialized global definitions */
 
+int	direction = 0;			/* direction of writing		*/
 int     fillcol = 72;                   /* Current fill column          */
 int     userfillcol = -1;               /* Fillcol set from cmd line    */
 UCS     pat[NPAT];                      /* Search pattern		*/
@@ -84,6 +85,7 @@ void    *input_cs;		/* passed to mbtow() via kbseq() */
 
 /* initialized global external declarations */
 
+extern  int	direction;
 extern  int     fillcol;                /* Fill column                  */
 extern  int     userfillcol;            /* Fillcol set from cmd line    */
 extern  UCS     pat[];                  /* Search pattern               */

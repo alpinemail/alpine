@@ -6026,3 +6026,45 @@ add_forced_entries(AdrBk *abook)
 	}
     }
 }
+
+/* Go through the list of addressbooks and check if any
+ * of them point to the given stream.
+ */
+int
+any_addressbook_in_remote_stream(MAILSTREAM *stream)
+{
+  int rv = 0;
+  int i = 0, num = 0;
+  char *nickname = NULL;
+  char *filename = NULL;
+  char *q = NULL;
+
+  do{
+    if(ps_global->VAR_ADDRESSBOOK &&
+       ps_global->VAR_ADDRESSBOOK[num] &&
+       ps_global->VAR_ADDRESSBOOK[num][0]){
+	q = ps_global->VAR_ADDRESSBOOK[num++];
+	i = num;
+    }
+    else if(ps_global->VAR_GLOB_ADDRBOOK &&
+	    ps_global->VAR_GLOB_ADDRBOOK[i-num] &&
+	    ps_global->VAR_GLOB_ADDRBOOK[i-num][0]){
+	q = ps_global->VAR_GLOB_ADDRBOOK[i - num];
+	i++;
+    } else q = NULL;
+    if(q != NULL){
+      get_pair(q, &nickname, &filename, 0, 0);
+
+      if(nickname) fs_give((void **)&nickname);
+
+      if(filename){
+	if(*filename == '{' 
+	   && same_stream(filename, stream) != NULL)
+	 rv = 1;
+	fs_give((void **)&filename);
+      }
+    }
+  } while (rv == 0 && q != NULL);
+
+  return rv;
+}

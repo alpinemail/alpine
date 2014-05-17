@@ -15,7 +15,7 @@ dnl  */
 
 AC_PREREQ([2.69])
 
-AC_REVISION([Rev:13 by chappa@washington.edu])
+AC_REVISION([Rev:14 by chappa@washington.edu])
 
 dnl Alpine Version Number is in $srcdir/VERSION
 AC_INIT([alpine],[m4_normalize(m4_include(VERSION))],[chappa@washington.edu])
@@ -630,6 +630,10 @@ PINEVAR(smime-public-cert-directory, DF_PUBLICCERT_DIR, [.alpine-smime/public], 
 PINEVAR(smime-private-key-directory, DF_PRIVATEKEY_DIR, [.alpine-smime/private], [Default Private Key Directory])
 PINEVAR(smime-cacert-directory, DF_CACERT_DIR, [.alpine-smime/ca], [Default Cert Authority Directory])
 PINEVAR_UNQUOTED(default-printer, DF_DEFAULT_PRINTER, [ANSI_PRINTER], [Default printer])
+
+AC_DEFINE_UNQUOTED([DF_PUBLIC_CONTAINER], "PublicContainer", [Name of default public container])
+AC_DEFINE_UNQUOTED([DF_PRIVATE_CONTAINER], "PrivateContainer", [Name of default private container])
+AC_DEFINE_UNQUOTED([DF_CA_CONTAINER], "CAContainer", [Name of default certificate authority container])
 
 dnl set PASSFILE?
 AC_ARG_WITH(passfile,

@@ -157,6 +157,9 @@
 #define CQ_FLAG_EXTENDED	0x02
 #define CQ_FLAG_ALT		0x04
 
+#define ARABIC_LRM	0x200E
+#define ARABIC_RLM	0x200F
+
 /* Special ASCII characters. */
 #define ASCII_BEL       0x07
 #define ASCII_BS        0x08
@@ -3395,6 +3398,10 @@ WriteTTYBlock (HWND hWnd, LPTSTR lpBlock, int nLength)
 
     for (i = 0 ; i < nLength; i++) {
 	switch (lpBlock[i]) {
+	case ARABIC_LRM:
+	case ARABIC_RLM:
+		break;
+
 	case ASCII_BEL:
 	    /* Bell */
 	    MessageBeep (0) ;
@@ -7054,6 +7061,11 @@ int
 mswin_putc (UCS ucs)
 {
     TCHAR cc = (TCHAR)ucs;
+	if(ucs == ARABIC_LRM || ucs == ARABIC_RLM){
+		FlushWriteAccum();
+		WriteTTYBlock (ghTTYWnd, &cc, 1);
+		return 0;
+	}
     if (ucs >= (UCS)(' ')) {
 	/* Not carriage control. */
 	gpTTYInfo->writeAccum[gpTTYInfo->writeAccumCount++] = (TCHAR)ucs;

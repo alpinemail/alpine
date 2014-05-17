@@ -62,7 +62,7 @@ static BIO            *bio_from_store(STORE_S *store);
 static STORE_S        *get_part_contents(long msgno, const char *section);
 static PKCS7         *get_pkcs7_from_part(long msgno, const char *section);
 static int            do_signature_verify(PKCS7 *p7, BIO *in, BIO *out, int silent);
-int            	      do_detached_signature_verify(BODY *b, long msgno, char *section);
+static int            do_detached_signature_verify(BODY *b, long msgno, char *section);
 static PERSONAL_CERT *find_certificate_matching_pkcs7(PKCS7 *p7);
 static int            do_decoding(BODY *b, long msgno, const char *section);
 static void           free_smime_struct(SMIME_STUFF_S **smime);
@@ -89,13 +89,6 @@ static X509_STORE   *s_cert_store;
 /* State management for randomness functions below */
 static int seeded = 0;
 static int egdsocket = 0;
-
-typedef enum {P7Type, CharType, SizedText} SpareType; 
-
-typedef struct smime_sparep_t {
-   SpareType sptype;
-   void *data;
-} SMIME_SPARE_S;
 
 void *
 create_smime_sparep(SpareType stype, void *s)
@@ -1410,13 +1403,15 @@ copy_dir_to_container(WhichCerts which, char *contents)
     int ret = 0;
     BIO *bio_out = NULL, *bio_in = NULL;
     char srcpath[MAXPATH+1], dstpath[MAXPATH+1], emailaddr[MAXPATH], file[MAXPATH], line[4096];
-    char *tempfile = NULL;
+    char *tempfile = NULL, fpath[MAXPATH+1];
     DIR *dirp;
     struct dirent *d;
     REMDATA_S *rd = NULL;
     char *configdir = NULL;
     char *configpath = NULL;
+    char *configcontainer = NULL;
     char *filesuffix = NULL;
+    char *ret_dir = NULL;
 
     dprint((9, "copy_dir_to_container(%s)", which==Public ? "Public" : which==Private ? "Private" : which==CACert ? "CACert" : "?"));
     smime_init();
@@ -1429,16 +1424,19 @@ copy_dir_to_container(WhichCerts which, char *contents)
     if(which == Public){
 	configdir  = ps_global->VAR_PUBLICCERT_DIR;
 	configpath = ps_global->smime->publicpath;
+	configcontainer = cpystr(DF_PUBLIC_CONTAINER);
 	filesuffix = ".crt";
     }
     else if(which == Private){
 	configdir = ps_global->VAR_PRIVATEKEY_DIR;
 	configpath = ps_global->smime->privatepath;
+	configcontainer = cpystr(DF_PRIVATE_CONTAINER);
 	filesuffix = ".key";
     }
     else if(which == CACert){
 	configdir = ps_global->VAR_CACERT_DIR;
 	configpath = ps_global->smime->capath;
+	configcontainer = cpystr(DF_CA_CONTAINER);
 	filesuffix = ".crt";
     }
 
@@ -1534,7 +1532,7 @@ copy_dir_to_container(WhichCerts which, char *contents)
 	 * dstpath is either the local Container file or the local cache file
 	 * for the remote Container file.
 	 */
-	tempfile = tempfile_in_same_dir(dstpath, "az", NULL);
+	tempfile = tempfile_in_same_dir(dstpath, "az", &ret_dir);
     }
 
     /*
@@ -1609,12 +1607,24 @@ copy_dir_to_container(WhichCerts which, char *contents)
 	BIO_free(bio_out);
 
 	if(!ret){
-	    if(rename_file(tempfile, dstpath) < 0){
+            if(ret_dir){  
+                if(strlen(dstpath) + strlen(configcontainer) - strlen(ret_dir) + 1 < sizeof(dstpath))
+                   snprintf(fpath, sizeof(fpath), "%s%c%s",
+                        dstpath, tempfile[strlen(ret_dir)], configcontainer);
+                else
+                   ret = -1;  
+            }
+            else ret = -1;
+            
+	    if(!ret){
+	      if(rename_file(tempfile, fpath) < 0){
 		q_status_message2(SM_ORDER, 3, 3,
-		    _("Can't rename %s to %s"), tempfile, dstpath);
+		    _("Can't rename %s to %s"), tempfile, fpath);
 		ret = -1;
+	      } else q_status_message1(SM_ORDER, 3, 3,
+		    _("saved container to %s"), fpath);
 	    }
-	    
+
 	    /* if the container is remote, copy it */
 	    if(!ret && IS_REMOTE(configpath)){
 		int   e;
@@ -1655,6 +1665,12 @@ copy_dir_to_container(WhichCerts which, char *contents)
 
     if(tempfile)
       fs_give((void **) &tempfile);
+
+    if(ret_dir) 
+      fs_give((void **) &ret_dir);
+
+    if(configcontainer)
+      fs_give((void **) &configcontainer);
 
     return ret;
 }
@@ -1919,36 +1935,6 @@ is_pkcs7_body(BODY *body)
 
     return result;
 }
-
-
-#ifdef notdef
-/*
- * Somewhat useful debug utility to dump the contents of a BIO to a file.
- * Note that a memory BIO will have its contents eliminated after they
- * are read so this will break the next step.
- */
-static void
-dump_bio_to_file(BIO *in, char *filename)
-{
-    char iobuf[4096];
-    int len;
-    BIO *out;
-    
-    out = BIO_new_file(filename, "w");
-    
-    if(out){
-	if(BIO_method_type(in) != BIO_TYPE_MEM)
-    	  BIO_reset(in);
-    
-	while((len = BIO_read(in, iobuf, sizeof(iobuf))) > 0)
-	  BIO_write(out, iobuf, len);
-
-    	BIO_free(out);
-    }
-	
-    BIO_reset(in);
-}
-#endif
 
 
 /*
@@ -2255,7 +2241,7 @@ end:
 
 /*
  * Encrypt a message on the way out. Called from call_mailer in send.c
- * The body may be reallocated.
+ * The body may be reallocated. 
  */
 int
 encrypt_outgoing_message(METAENV *header, BODY **bodyP)
@@ -2287,9 +2273,9 @@ encrypt_outgoing_message(METAENV *header, BODY **bodyP)
             for(a=*pf->addr; a; a=a->next){
                 snprintf(buf, sizeof(buf), "%s@%s", a->mailbox, a->host);
 
-                if((cert = get_cert_for(buf, Public)) != NULL)
+                if((cert = get_cert_for(buf, Public)) != NULL){
                   sk_X509_push(encerts,cert);
-                else{
+                }else{
                     q_status_message2(SM_ORDER, 1, 1,
                                       _("Unable to find certificate for <%s@%s>"),
 				      a->mailbox, a->host);
@@ -2491,10 +2477,12 @@ static int
 do_signature_verify(PKCS7 *p7, BIO *in, BIO *out, int silent)
 {
     STACK_OF(X509) *otherCerts = NULL;
+    CertList *cl;
     int result;
+    int flags;
     const char *data;
     long err;
-    
+
     if(!s_cert_store){
 	if(!silent) q_status_message(SM_ORDER | SM_DING, 2, 2,
 		_("Couldn't verify S/MIME signature: No CA Certs were loaded"));
@@ -2504,8 +2492,31 @@ do_signature_verify(PKCS7 *p7, BIO *in, BIO *out, int silent)
 
     smime_extract_and_save_cert(p7);
 
-    result = PKCS7_verify(p7, otherCerts, s_cert_store, in, out, 0);
-    
+    flags = F_ON(F_USE_CERT_STORE_ONLY, ps_global) ? PKCS7_NOINTERN : 0;
+
+    if(ps_global->smime->publiccertlist == NULL){
+       renew_cert_data(&ps_global->smime->publiccertlist, Public);
+       for(cl = ps_global->smime->publiccertlist; cl ; cl = cl->next){
+	  if(cl->x509_cert == NULL){
+	    char *s = strrchr(cl->name, '.');
+	    *s = '\0';
+	    cl->x509_cert = get_cert_for(cl->name, Public);
+	    *s = '.';
+	  }
+       }
+    }
+
+    if(ps_global->smime->publiccertlist){
+       otherCerts = sk_X509_new_null();
+       for(cl = ps_global->smime->publiccertlist; cl ; cl = cl->next)
+	   if(cl->x509_cert != NULL)
+	      sk_X509_push(otherCerts, X509_dup(cl->x509_cert));
+    }
+
+    result = PKCS7_verify(p7, otherCerts, s_cert_store, in, out, flags);
+
+    sk_X509_pop_free(otherCerts, X509_free);
+
     if(result){
 	q_status_message(SM_ORDER, 1, 1, _("S/MIME signature verified ok"));
     }
@@ -2549,54 +2560,6 @@ free_smime_body_sparep(void **sparep)
 	fs_give(sparep);
     }
 }
-
-/* return the mime header for this body part. Memory freed by caller */
-char *
-smime_fetch_mime(BODY *b, MAILSTREAM *stream, long msgno, char * section, 
-		unsigned long *mimelen)
-{
-  char *rv;
-  char  newSec[100];
-
-  if(b->type == TYPEMULTIPART)
-    snprintf(newSec, sizeof(newSec), "%s%s1", section ? section : "", (section && *section) ? "." : "");
-  else
-    strncpy(newSec, section, sizeof(newSec));
-  newSec[sizeof(newSec)-1] = '\0';
-  rv = mail_fetch_mime(stream, msgno, newSec, mimelen, 0);
-  return rv ? cpystr(rv) : NULL;
-}
-
-
-void
-smime_write_body_header(BODY *b, MAILSTREAM *stream, long msgno, char *section, soutr_t f, void *s)
-{
-  char *rv;
-  char  newSec[100];
-
-  if(b->nested.part == NULL)
-    return;
-
-  if(b->nested.part->body.type == TYPEMULTIPART)
-    snprintf(newSec, sizeof(newSec), "%s%s1", section ? section : "", (section && *section) ? "." : "");
-  else
-    strncpy(newSec, section, sizeof(newSec));
-  newSec[sizeof(newSec)-1] = '\0';
-  rv = mail_fetch_mime(stream, msgno, newSec, NULL, 0);
-  if(f && rv != NULL)
-   (*f)(s, rv);
-}
-
-int
-write_signed_body(BODY *b, MAILSTREAM *stream, long msgno, char *section, BIO *in)
-{
-
-   smime_write_body_header(b, stream, msgno, section, rfc822_output_func, in);
-
-
-}
-
-
 
 /* Big comment, explaining the mess that exists out there, and how we deal
    with it, and also how we solve the problems that are created this way.
@@ -2664,19 +2627,30 @@ write_signed_body(BODY *b, MAILSTREAM *stream, long msgno, char *section, BIO *i
   processed text. Nevertheless, at this time, this is automatic, and is 
   causing a delay in the processing of the message, but it is validating
   correctly all messages.
+
+  PART IV
+
+  When the user sends a message as encrypted and signed, this code used to 
+  encrypt first, and then sign the pkcs7 body, but it turns out that some 
+  other clients can not handle these messages. While we could argue that the 
+  other clients need to improve, we will support reading messages in both 
+  ways, and will send messages using this technique; that is, signed first,
+  encrypted second. It seems that all tested clients support this way, so it
+  should be safe to do so.
  */
 
 /*
  * Given a multipart body of type multipart/signed, attempt to verify it.
  * Returns non-zero if the body was changed.
  */
-int
+static int
 do_detached_signature_verify(BODY *b, long msgno, char *section)
 {
     PKCS7   *p7 = NULL;
     BIO	    *in = NULL;
     PART    *p;
     int	     result, modified_the_body = 0;
+    int      flag;	/* 1 silent, 0 not silent */
     unsigned long mimelen, bodylen;
     char     newSec[100], *mimetext, *bodytext;
     char    *what_we_did;
@@ -2693,7 +2667,7 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
 	if(get_smime_sparep_type(b->sparep) == SizedText){
 	   /* bodytext includes mimetext */
 	   st = (SIZEDTEXT *) get_smime_sparep_data(b->sparep);
-	   bodytext = st->data;
+	   bodytext = (char *) st->data;
 	   bodylen  = st->size;
 	   mimetext = NULL;
 	   mimelen  = 0L;
@@ -2724,7 +2698,9 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
      * validates when we remove the last two characters. Silence
      * any failures first.
      */
-    if(((result = do_signature_verify(p7, in, NULL, 1)) == 0)
+    flag = (bodylen  <= 2 || strncmp(bodytext+bodylen-2, "\r\n", 2))
+	    ? 0 : 1;
+    if(((result = do_signature_verify(p7, in, NULL, flag)) == 0)
 	&& bodylen > 2 
 	&& (strncmp(bodytext+bodylen-2,"\r\n", 2) == 0)){
 	BUF_MEM *biobuf = NULL;
@@ -2738,7 +2714,9 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
 	 * information. In this case, we fetch the message and we process
 	 * it by hand.
 	 */
-	if((result = do_signature_verify(p7, in, NULL, 1)) == 0
+	flag = (mimelen == 0 || !IS_REMOTE(ps_global->mail_stream->mailbox))
+		? 0 : 1;
+	if((result = do_signature_verify(p7, in, NULL, flag)) == 0
 	   && mimelen > 0	/* do not do this for encrypted messages */
 	   && IS_REMOTE(ps_global->mail_stream->mailbox)){
 	   char *fetch;
@@ -2766,7 +2744,7 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
 		mail_free_envelope(&env);
 
 		mail_free_body_part(&b->nested.part);
-		b->nested.part = body->nested.part;
+		b->nested.part = mail_body_section(body, section)->nested.part;
 		create_local_cache(bstart, bstart, &b->nested.part->body, 1);
 		modified_the_body = 1;
 
@@ -3086,11 +3064,15 @@ do_decoding(BODY *b, long msgno, const char *section)
 	      char *cookie = NULL;
 	      PARAMETER *param;
 	      for (param = body->parameter; param && !cookie; param = param->next)
-                   if (!strucmp (param->attribute,"BOUNDARY")) cookie = param->value;
-	      st = fs_get(sizeof(SIZEDTEXT));
-	      st->data = (void *) cpystr(bstart + strlen(cookie)+4); /* 4 = strlen("--\r\n") */
-	      st->size = body->nested.part->next->body.mime.offset - 2*(strlen(cookie) + 4);
-	      body->sparep = create_smime_sparep(SizedText, (void *)st);
+		if (!strucmp (param->attribute,"BOUNDARY")) cookie = param->value;
+	      if(cookie != NULL){
+	        st = fs_get(sizeof(SIZEDTEXT));
+	        st->data = (void *) cpystr(bstart + strlen(cookie)+4); /* 4 = strlen("--\r\n") */
+	        st->size = body->nested.part->next->body.mime.offset - 2*(strlen(cookie) + 4);
+	        body->sparep = create_smime_sparep(SizedText, (void *)st);
+	      }
+	      else
+		q_status_message(SM_ORDER, 3, 3, _("Couldn't find cookie in attachment list."));
 	    }
 	    body->mime.offset    = 0;
 	    body->mime.text.size = 0;

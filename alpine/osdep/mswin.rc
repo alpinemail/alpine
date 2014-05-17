@@ -244,8 +244,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,19,991,0
- PRODUCTVERSION 2,19,991,0
+ FILEVERSION 2,19,999,0
+ PRODUCTVERSION 2,19,999,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -260,19 +260,19 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "see http://www.washington.edu/alpine\0"
-            VALUE "CompanyName", "University of Washington\0"
+            VALUE "Comments", "see http://patches.freeiz.com/alpine/\0"
+            VALUE "CompanyName", "Patches for Alpine\0"
 #ifdef _PCP_W2K
             VALUE "FileDescription", "Alpine with krb5 for Windows\0"
 #else
             VALUE "FileDescription", "Alpine\0"
 #endif
-            VALUE "FileVersion", "2.19.991\0"
+            VALUE "FileVersion", "2.19.999\0"
             VALUE "InternalName", "alpine\0"
-            VALUE "LegalCopyright", "Copyright 2006-2009\0"
+            VALUE "LegalCopyright", "Copyright 2006-2009 University of Washington, Copyright 2013-2014\0"
             VALUE "OriginalFilename", "alpine.exe\0"
             VALUE "ProductName", "alpine\0"
-            VALUE "ProductVersion", "2.19.991\0"
+            VALUE "ProductVersion", "2.19.999\0"
         END
     END
     BLOCK "VarFileInfo"
@@ -583,7 +583,7 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_BYLINE              "Copyright 2006-2009 University of Washington"
+    IDS_BYLINE              "Copyright 2013-2014 Eduardo Chappa, Copyright 2006-2009 University of Washington"
     IDS_APPNAME             "Alpine"
     IDS_APPIDENT            "alpine"
 END

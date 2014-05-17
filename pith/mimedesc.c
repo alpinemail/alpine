@@ -579,12 +579,15 @@ type_desc(int type, char *subtype, PARAMETER *params, PARAMETER *disp_params, in
     }
 
     if(full && type != TYPEMULTIPART && type != TYPEMESSAGE){
+	unsigned char decodebuf[10000];
 	if((parmval = parameter_val(params, "name")) != NULL){
-	    snprintf(p, sizeof(type_d)-(p-type_d), " (Name: \"%s\")", parmval);
+	    rfc1522_decode_to_utf8(decodebuf, sizeof(decodebuf), parmval);
+	    snprintf(p, sizeof(type_d)-(p-type_d), " (Name: \"%s\")", decodebuf);
 	    fs_give((void **) &parmval);
 	}
 	else if((parmval = parameter_val(disp_params, "filename")) != NULL){
-	    snprintf(p, sizeof(type_d)-(p-type_d), " (Filename: \"%s\")", parmval);
+	    rfc1522_decode_to_utf8(decodebuf, sizeof(decodebuf), parmval);
+	    snprintf(p, sizeof(type_d)-(p-type_d), " (Filename: \"%s\")", decodebuf);
 	    fs_give((void **) &parmval);
 	}
     }

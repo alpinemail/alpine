@@ -4245,6 +4245,7 @@ l_putc(int c)
 long
 pine_rfc822_output_body(struct mail_bodystruct *body, soutr_t f, void *s)
 {
+    STORE_S *bodyso;
     PART *part;
     PARAMETER *param;
     char *t, *cookie = NIL, *encode_error;
@@ -4255,6 +4256,9 @@ pine_rfc822_output_body(struct mail_bodystruct *body, soutr_t f, void *s)
 
     dprint((4, "-- pine_rfc822_output_body: %d\n",
 	       body ? body->type : 0));
+
+    bodyso = (STORE_S *) body->contents.text.data;
+
     if(body->type == TYPEMULTIPART) {   /* multipart gets special handling */
 	part = body->nested.part;	/* first body part */
 					/* find cookie */
@@ -4307,8 +4311,8 @@ pine_rfc822_output_body(struct mail_bodystruct *body, soutr_t f, void *s)
     dprint((4, "-- pine_rfc822_output_body: segment %ld bytes\n",
 	       body->size.bytes));
 
-    if(body->contents.text.data)
-      gf_set_so_readc(&gc, (STORE_S *) body->contents.text.data);
+    if(bodyso)
+      gf_set_so_readc(&gc, bodyso);
     else
       return(1);
 
@@ -4316,15 +4320,15 @@ pine_rfc822_output_body(struct mail_bodystruct *body, soutr_t f, void *s)
      * Don't add trailing line if it is ExternalText, which already guarantees
      * a trailing newline.
      */
-    add_trailing_crlf = !(((STORE_S *) body->contents.text.data)->src == ExternalText);
+    add_trailing_crlf = !(bodyso->src == ExternalText);
 
-    so_seek((STORE_S *) body->contents.text.data, 0L, 0);
+    so_seek(bodyso, 0L, 0);
 
     if(body->type != TYPEMESSAGE){ 	/* NOT encapsulated message */
 	char *charset;
 
 	if(body->type == TYPETEXT
-	   && so_attr((STORE_S *) body->contents.text.data, "edited", NULL)
+	   && so_attr(bodyso, "edited", NULL)
 	   && (charset = parameter_val(body->parameter, "charset"))){
 	    if(strucmp(charset, "utf-8") && strucmp(charset, "us-ascii")){
 		if(!strucmp(charset, "iso-2022-jp")){
@@ -4356,7 +4360,7 @@ pine_rfc822_output_body(struct mail_bodystruct *body, soutr_t f, void *s)
 	 */
 	if(body->type == TYPETEXT
 	   && body->encoding != ENCBASE64
-	   && !so_attr((STORE_S *) body->contents.text.data, "rawbody", NULL)){
+	   && !so_attr(bodyso, "rawbody", NULL)){
 	    gf_link_filter(gf_local_nvtnl, NULL);
 	}
 
@@ -4380,7 +4384,7 @@ pine_rfc822_output_body(struct mail_bodystruct *body, soutr_t f, void *s)
 	display_message('x');
     }
 
-    gf_clear_so_readc((STORE_S *) body->contents.text.data);
+    gf_clear_so_readc(bodyso);
 
     if(encode_error || !l_flush_net(TRUE))
       return(0);

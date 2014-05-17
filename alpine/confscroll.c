@@ -4611,6 +4611,12 @@ toggle_feature_bit(struct pine *ps, int index, struct variable *var, CONF_S *cl,
 	  ps->pass_ctrl_chars = F_ON(F_PASS_CONTROL_CHARS,ps_global) ? 1 : 0;
 	  break;
 
+	case F_USE_CERT_STORE_ONLY:
+	  if(F_OFF(F_USE_CERT_STORE_ONLY, ps))
+	  q_status_message(SM_ORDER | SM_DING, 3, 4,
+	  "Disabling this feature should only be done for testing. Press \"?\" for help");
+	  break;
+
 	case F_PASS_C1_CONTROL_CHARS :
 	  ps->pass_c1_ctrl_chars = F_ON(F_PASS_C1_CONTROL_CHARS,ps_global) ? 1 : 0;
 	  break;

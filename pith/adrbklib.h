@@ -852,6 +852,6 @@ void           adrbk_maintenance(void);
 char         **parse_addrlist(char *);
 char          *skip_to_next_addr(char *);
 void           add_forced_entries(AdrBk *);
-
+int	     any_addressbook_in_remote_stream(MAILSTREAM *);
 
 #endif /* PITH_ADRBKLIB_INCLUDED */

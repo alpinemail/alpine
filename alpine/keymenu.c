@@ -2686,8 +2686,8 @@ struct key smime_certificate_info_keys[] =
 	{"R",N_("Private Key"),{MC_PRIVATE,1,{'r'}},KS_NONE},
 	NULL_MENU,
 	NULL_MENU,
-	FWDEMAIL_MENU,
-	{"S", N_("Save"), {MC_SAVETEXT,1,{'s'}}, KS_SAVE},
+	NULL_MENU,
+	NULL_MENU,
 
 	HELP_MENU,
 	OTHER_MENU,

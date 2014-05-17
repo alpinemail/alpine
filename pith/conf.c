@@ -3259,6 +3259,8 @@ feature_list(int index)
 	 F_REMEMBER_SMIME_PASSPHRASE, h_config_smime_remember_passphrase, PREF_HIDDEN, 0},
 	{"smime-sign-by-default", "S/MIME -- Sign by Default",
 	 F_SIGN_DEFAULT_ON, h_config_smime_sign_by_default, PREF_HIDDEN, 0},
+	{"smime-use-store-only", "S/MIME -- Validate Using Certificate Store Only",
+	 F_USE_CERT_STORE_ONLY, h_config_smime_use_cert_store, PREF_HIDDEN, 1},
 #ifdef APPLEKEYCHAIN
 	{"publiccerts-in-keychain", "S/MIME -- Public Certs in MacOS Keychain",
 	 F_PUBLICCERTS_IN_KEYCHAIN, h_config_smime_pubcerts_in_keychain, PREF_HIDDEN, 0},

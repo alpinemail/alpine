@@ -252,58 +252,6 @@ load_key(PERSONAL_CERT *pc, char *pass)
 }
 
 
-#ifdef notdef
-static char *
-get_x509_name_entry(const char *key, X509_NAME *name)
-{
-    int i, c, n;
-    char    buf[256];
-    char	*id;
-	
-    if(!name)
-      return NULL;
- 
-    c = X509_NAME_entry_count(name);
-    
-    for(i=0; i<c; i++){
-    	X509_NAME_ENTRY *e;
-	
-    	e = X509_NAME_get_entry(name, i);
-    	if(!e)
-	  continue;
-
-    	buf[0] = 0;
-	id = buf;
-		
-        n = OBJ_obj2nid(e->object);
-        if((n == NID_undef) || ((id=(char*) OBJ_nid2sn(n)) == NULL)){
-            i2t_ASN1_OBJECT(buf, sizeof(buf), e->object);
-            id = buf;
-        }
-
-	if((strucmp(id, "email")==0) || (strucmp(id, "emailAddress")==0)){
-	    X509_NAME_get_text_by_OBJ(name, e->object, buf, sizeof(buf)-1);
-	    return cpystr(buf);
-	}
-    }
-
-    return NULL;
-}
-
-
-char *
-get_x509_subject_email(X509 *x)
-{
-    char* result;
-    result = get_x509_name_entry("email", X509_get_subject_name(x));
-    if( !result ){
-	result = get_x509_name_entry("emailAddress", X509_get_subject_name(x));
-    }
-
-    return result;
-}
-#endif /* notdef */
-
 #include <openssl/x509v3.h>
 /*
  * This newer version is from Adrian Vogel. It looks for the email
@@ -392,7 +340,9 @@ save_cert_for(char *email, X509 *cert, WhichCerts ctype)
     }
     else if(SMHOLDERTYPE(ctype) == Container){
 	REMDATA_S *rd = NULL;
+	char	  *ret_dir = NULL;
 	char       path[MAXPATH];
+	char	   fpath[MAXPATH];
 	char	  *upath = PATHCERTDIR(ctype);
 	char      *tempfile = NULL;
 	int        err = 0;
@@ -472,15 +422,26 @@ save_cert_for(char *email, X509 *cert, WhichCerts ctype)
 	    path[sizeof(path)-1] = '\0';
 	}
 
-	tempfile = tempfile_in_same_dir(path, "az", NULL);
+	tempfile = tempfile_in_same_dir(path, "az", &ret_dir);
 	if(tempfile){
 	    if(certlist_to_file(tempfile, DATACERT(ctype)))
 	      err++;
 
+	    if(!err && ret_dir){
+		if(strlen(path) + strlen(tempfile) - strlen(ret_dir) + 1 < sizeof(path))
+		   snprintf(fpath, sizeof(fpath), "%s%c%s", 
+			path, tempfile[strlen(ret_dir)], tempfile + strlen(ret_dir) + 1);
+		else
+		   err++;
+	    }
+	    else err++;
+
+	    fs_give((void **)&ret_dir);
+
 	    if(!err){
-		if(rename_file(tempfile, path) < 0){
+		if(rename_file(tempfile, fpath) < 0){
 		    q_status_message2(SM_ORDER, 3, 3,
-			_("Can't rename %s to %s"), tempfile, path);
+			_("Can't rename %s to %s"), tempfile, fpath);
 		    err++;
 		}
 	    }

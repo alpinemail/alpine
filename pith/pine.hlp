@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 61 2014-05-02 18:29:37
+Alpine Commit 62 2014-05-17 16:49:55
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -162,7 +162,7 @@ Version <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)
 
 <P>
 Alpine is an &quot;Alternatively Licensed Program for Internet
-News and Email&quot; produced until 2008 by the University of Washington.
+News and Email&quot; produced until 2009 by the University of Washington.
 It is intended to be an easy-to-use program for
 sending, receiving, and filing Internet electronic mail messages and
 bulletin board (Netnews) messages.  Alpine is designed to run on a wide
@@ -184,6 +184,11 @@ Additions include:
   <LI> Upgrade UW-IMAP to Panda IMAP from 
        <A HREF="https://github.com/jonabbey/panda-imap">https://github.com/jonabbey/panda-imap</A>.
   <LI> S/MIME: Add screen to manage certificates.
+  <LI> S/MIME: Signatures are validated using the user's certificates instead
+       of the ones included in the message. Behavior can be disabled by
+       disabling the option <A href="h_config_smime_use_cert_store">
+	<!--#echo var="FEAT_smime-use-storey-only"--></A>, which is enabled
+       by default.
   <LI> S/MIME: sign messages using intermediate certificates when needed 
        and possible.
   <LI> S/MIME: validation of certificates for servers that modify signed 
@@ -192,7 +197,11 @@ Additions include:
        encrypted second, so that they can be decoded by other clients.
   <LI> S/MIME: add the sender certificate to the list of certificates in
        encrypted messages to make it possible for the sender to decrypt
-       the message they sent.    
+       the message they sent.
+  <LI> S/MIME: When transferring certificates to a local container, create 
+       container with default names PublicContainer, PrivateContainer and 
+       CAContainer, as appropriate for these files, unless the user has 
+       provided some other names.
   <LI> Add support to selective expunge through a subcommand of the 
        select-apply commands. Read more in the <A 
        HREF="h_index_cmd_expunge">help</A> for the expunge command.
@@ -235,6 +244,8 @@ Additions include:
   <LI> Pico: Justification works without need of a predefined quote 
        string. This allows justification of blocks of text that are 
        indented with spaces.
+  <LI> Decode the name of attachment names, so they can be written as part   
+       of the description of the part. 
   <LI> Check bounds and tie strings off to improve security. Contributed 
        by James Jerkins.
   <LI> Replace tabs by spaces in From and Subject fields to control for
@@ -267,10 +278,21 @@ Bugs that have been addressed include:
        and Stefan Mueller.
   <LI> S/MIME: Certificates are lost when using a pinerc file outside of the 
        home directory.
-  <LI> S/MIME: accessing the S/MIME configuration screen would deinitialize
+  <LI> S/MIME: Accessing the S/MIME configuration screen would deinitialize
        SMIME making it not possible to sign or encrypt messages.
+  <LI> S/MIME: Forwarding a signed message might make the body contain mime 
+       information that is not part of the body, and hence making the body
+       of the message seem wrong.
   <LI> Crash when tcp connection to NNTP server was lost after connection
        had been established, but lost immediately afterwards.
+  <LI> Crash with message &quot;lock when already locked&quot;, when painting
+       an index was based on scores that needed information from a remote
+       addressbook in the same server as the folder opened. Reported by
+       Peter Koellner.
+  <LI> Alpine cannot handle correctly some characters in the Windows-1256 
+       character set, which might lead to a crash or a corruption in the 
+       screen. Work was done to contain the bug. A more complete fix will 
+       be done in a future release. Reported by Professor Robert Funnell.
   <LI> WebAlpine: add _GNU_SOURCE to make pubcookie build.
   <LI> WebAlpine: fail to build with debug disabled. Fix from Sam Hathaway.
   <LI> Save command did not warn of existence of a message with a deleted 
@@ -294,7 +316,7 @@ Bugs that have been addressed include:
        $alpine_TCLINC instead of $alpine_TCLINC/tcl.h. Reported and fixed 
        by Werner Scheinast.
   <LI> Move SSL configurations from UW-IMAP to configure script, and
-       update OpenSSL configuration for Mac OSX.
+       update OpenSSL configuration for Mac OS X.
   <LI> Remove -lregex from linker flags when building --with-supplied-regex.
 </UL>
 <P>
@@ -357,7 +379,7 @@ Additions include:
 <UL>
    <LI> Quota report for IMAP folders that support it (press the &quot;@&quot; command in the index screen of such folder).
    <LI> Search a folder for the content of any header with the &quot;;&quot; command. 
-   <LI> Foreign characters are decoded correctly in IMAP folders.
+   <LI> Foreign characters are decoded correctly in IMAP folder names.
    <LI> Question about breaking connection to slow servers includes their name.
    <LI> Internal x-alpine-help: resource locator for sending links to internal help.
    <LI> OpenSuse: Alpine find location of OpenSSL certificates.
@@ -380,7 +402,7 @@ Bugs that have been addressed include:
    <LI> Not display of login prompt during initial keystrokes.
    <LI> justification of long urls breaks them.
    <LI> Incorrect New Mail message when envelope is not available.
-   <LI> Inorrect display of PREFDATE, PREFDATETIME and PREFTIME tokens.
+   <LI> Incorrect display of PREFDATE, PREFDATETIME and PREFTIME tokens.
    <LI> Crash when resizing the screen after display of LDAP search.
    <LI> Crash when redrawing screen while opening a remote folder collection.
    <LI> Infinite loop in scrolltool function during notification of new mail.
@@ -713,7 +735,7 @@ version <!--#echo var="C_CLIENT_VERSION"-->.
 Alpine was developed until 2009 by the Office of Computing 
 &amp; Communications at the University of Washington in Seattle.  
 Since then, the effort of developing Alpine has been continued by
-a community of volunteers who make a good software even better!
+a community of volunteers who make good software even better!
 
 <P>
 Alpine Copyright 2013-2014 Eduardo Chappa, 
@@ -1535,7 +1557,7 @@ employer, ... ; or
 </UL>
 
 Due to the large number of Alpine installations worldwide, and because we
-receive no funding for it, the Alpine development team <B>cannot provide 
+receive no funding for it, the University of Washington <B>cannot provide 
 individual support services outside the University of Washington</B>.
 <P>
 If you have no local computing support to turn to, the worldwide <b>comp.mail.pine</b>
@@ -1599,13 +1621,14 @@ select Setup/Config to see many of the options available to you. Also note
 that all screens have context-sensitive help text available.<P>
 <!--chtml if pinemode="phone_home"-->
 SPECIAL REQUEST:
-This software is made available as a public service of the
-University of Washington in Seattle. We are no longer actively developing
-the software, but it is still helpful to us to have an idea of how many
-people are using Alpine. Are you willing to be counted as an Alpine user? Pressing 
+This software was originally created and maintained as a public
+service by the University of Washington until 2009; updates are made 
+available as a public service of the Alpine community. It is always 
+helpful to have an idea of how many users are using Alpine. Are you 
+willing to be counted as an Alpine user? Pressing 
 <A HREF="X-Alpine-Phone-Home:">Return</A>
 will send an anonymous (meaning, your real email address will not be revealed) 
-message to the Alpine team at the University of Washington for purposes of tallying.
+message to the Alpine developers for purposes of tallying.
 <P>
 <!--To Exit this screen and continue your Alpine session press "E".-->
 <!--chtml else-->
@@ -1632,13 +1655,14 @@ The Release Notes may be viewed by pressing
 <P>
 <!--chtml if pinemode="phone_home"-->
 SPECIAL REQUEST:
-This software is made available as a public service of the
-University of Washington in Seattle. We are no longer actively developing
-the software, but it is still helpful to us to have an idea of how many
-people are using Alpine. Are you willing to be counted as an Alpine user? Pressing 
+This software was originally created and maintained as a public
+service by the University of Washington until 2009; updates are made 
+available as a public service of the Alpine community. It is always 
+helpful to have an idea of how many users are using Alpine. Are you 
+willing to be counted as an Alpine user? Pressing 
 <A HREF="X-Alpine-Phone-Home:">Return</A>
 will send an anonymous (meaning, your real email address will not be revealed) 
-message to the Alpine team at the University of Washington for purposes of tallying.
+message to the Alpine developers for purposes of tallying.
 <P>
 <!--To Exit this screen and continue your Alpine session press "E".-->
 <!--chtml else-->
@@ -1662,14 +1686,15 @@ documented in the Release Notes, which may be viewed by pressing
 <P>
 <!--chtml if pinemode="phone_home"-->
 SPECIAL REQUEST:
-This software is made available as a public service of the
-University of Washington in Seattle. We are no longer actively developing
-the software, but it is still helpful to us to have an idea of how many
-people are using Alpine. Are you willing to be counted as an Alpine user? Pressing 
+This software was originally created and maintained as a public
+service by the University of Washington until 2009; updates are made 
+available as a public service of the Alpine community. It is always 
+helpful to have an idea of how many users are using Alpine. Are you 
+willing to be counted as an Alpine user? Pressing 
 <A HREF="X-Alpine-Phone-Home:">Return</A>
 will send an anonymous (meaning, your real email address will not be revealed) 
-message to the Alpine team at the University of Washington for purposes of tallying.
-
+message to the Alpine developers for purposes of tallying.
+<P>
 <!--To Exit this screen and continue your Alpine session press "E".-->
 <!--chtml else-->
 To Exit this screen and continue your Alpine session press "Return".
@@ -1766,7 +1791,7 @@ The &quot;NextLink&quot; and &quot;PrevLink&quot; commands
 <H1>Introduction</H1>
 
 Alpine is an &quot;Alternatively Licensed Program for Internet
-News and Email&quot; produced until 2008 by the University of Washington.
+News and Email&quot; produced until 2009 by the University of Washington.
 It is intended to be an easy-to-use program for
 sending, receiving, and filing Internet electronic mail messages and
 bulletin board (Netnews/Usenet) messages. Alpine supports the following
@@ -3945,6 +3970,7 @@ There are also additional details on
 <li><a href="h_config_smime_encrypt_by_default">S/MIME FEATURE: <!--#echo var="FEAT_smime-encrypt-by-default"--></a>
 <li><a href="h_config_smime_remember_passphrase">S/MIME FEATURE: <!--#echo var="FEAT_smime-remember-passphrase"--></a>
 <li><a href="h_config_smime_sign_by_default">S/MIME FEATURE: <!--#echo var="FEAT_smime-sign-by-default"--></a>
+<li><a href="h_config_smime_use_cert_store">S/MIME FEATURE: <!--#echo var="FEAT_smime-use-store-only"--></a>
 <li><a href="h_config_smime_pubcerts_in_keychain">S/MIME FEATURE: <!--#echo var="FEAT_publiccerts-in-keychain"--></a>
 <li><a href="h_config_smime_cacertcon">S/MIME OPTION: <!--#echo var="VAR_smime-cacert-container"--></a>
 <li><a href="h_config_smime_cacertdir">S/MIME OPTION: <!--#echo var="VAR_smime-cacert-directory"--></a>
@@ -34585,6 +34611,47 @@ Only the default value is affected.
 In any case, you may still toggle the Signing option on or off before sending
 with the &quot;G Sign&quot; command (provided you have a personal digital ID
 certificate).
+<P>
+<UL>   
+<LI><A HREF="h_mainhelp_smime">General S/MIME help</A>
+</UL><P>
+<P>
+
+<UL>   
+<LI><A HREF="h_finding_help">Finding more information and requesting help</A>
+</UL><P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+========== h_config_smime_use_cert_store ==========
+<HTML>
+<HEAD>
+<TITLE>S/MIME FEATURE: <!--#echo var="FEAT_smime-use-store-only"--></TITLE>
+</HEAD>
+<BODY>
+<H1>S/MIME FEATURE: <!--#echo var="FEAT_smime-use-store-only"--></H1>
+
+UNIX Alpine only.
+<P>
+This feature only has an effect if your version of Alpine includes
+support for S/MIME.
+It affects Alpine's behavior when you validate a message, and should
+not be disabled, unless you are performing a test.
+<P>
+There are two important aspects of validation: validation of the message
+(that is, the message was not modified after it was sent) 
+as well as validation of the identity of the sender. This option has to 
+do with the latter. 
+<P>
+In order to validate that the message came from the sender in the message
+and not an impersonator, Alpine can 
+either use the certificates that come in the message, or the ones that 
+you have personally stored. If this feature is enabled (the default) then 
+Alpine will use certificates that you have already saved in your store 
+and not those that come in the message to validate the sender of the 
+message. This behavior helps you prevent against impersonation, because 
+it is assumed that you trust the certificates that you have saved, and 
+might not trust those that came with the message that you are validating.
 <P>
 <UL>   
 <LI><A HREF="h_mainhelp_smime">General S/MIME help</A>

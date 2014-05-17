@@ -34,6 +34,14 @@
 #define OUR_PKCS7_ENCLOSURE_SUBTYPE "x-pkcs7-enclosure"
 
 
+typedef enum {P7Type, CharType, SizedText} SpareType;
+
+typedef struct smime_sparep_t {
+   SpareType sptype;
+   void *data;
+} SMIME_SPARE_S;
+
+
 /* exported protoypes */
 int	       smime_validate_cert(X509 *cert, long *error);
 int	       encrypt_file(char *fp, char *text, PERSONAL_CERT *pc);
@@ -73,6 +81,9 @@ void	       mark_cert_deleted(WhichCerts ctype, int num, unsigned state);
 unsigned       get_cert_deleted(WhichCerts ctype, int num);
 int	       smime_expunge_cert(WhichCerts ctype);
 int	       add_file_to_container(WhichCerts ctype, char *fpath, char *altname);
+void 	      *create_smime_sparep(SpareType stype, void *s);
+SpareType      get_smime_sparep_type(void *s);
+void	      *get_smime_sparep_data(void *s);
 
 #endif /* PITH_SMIME_INCLUDED */
 #endif /* SMIME */

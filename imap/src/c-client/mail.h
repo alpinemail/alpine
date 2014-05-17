@@ -1704,6 +1704,7 @@ void mail_gc (MAILSTREAM *stream,long gcflags);
 void mail_gc_msg (MESSAGE *msg,long gcflags);
 void mail_gc_body (BODY *body);
 
+BODY *mail_body_section (BODY *b, unsigned char *section);
 BODY *mail_body (MAILSTREAM *stream,unsigned long msgno,
 		 unsigned char *section);
 char *mail_date (char *string,MESSAGECACHE *elt);

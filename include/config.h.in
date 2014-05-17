@@ -51,6 +51,9 @@
 /* Default configuration value */
 #undef DF_CACERT_DIR
 
+/* Name of default certificate authority container */
+#undef DF_CA_CONTAINER
+
 /* Default configuration value */
 #undef DF_DEFAULT_FCC
 
@@ -99,8 +102,14 @@
 /* Default configuration value */
 #undef DF_PRIVATEKEY_DIR
 
+/* Name of default private container */
+#undef DF_PRIVATE_CONTAINER
+
 /* Default configuration value */
 #undef DF_PUBLICCERT_DIR
+
+/* Name of default public container */
+#undef DF_PUBLIC_CONTAINER
 
 /* Default configuration value */
 #undef DF_REMOTE_ABOOK_HISTORY

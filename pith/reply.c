@@ -2253,7 +2253,7 @@ forward_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_bod
 	   && orig_body->nested.part){
 	    /* only operate on the signed data (not the signature) */
 	    body = forward_body(stream, env, &orig_body->nested.part->body,
-				msgno, sect_prefix, msgtext, flags);
+				msgno, section, msgtext, flags);
 	}
 	/*---- Message is multipart ----*/
 	else if(!(orig_body->subtype && !strucmp(orig_body->subtype,

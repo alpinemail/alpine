@@ -72,6 +72,7 @@ static char rcsid[] = "$Id: pico.c 921 2008-01-31 02:09:25Z hubert@u.washington.
 #include	"../pith/charconv/filesys.h"
 
 
+void    remove_directions_mark(void);
 void	func_init(void);
 void	breplace(void *w);
 int	any_header_changes(void);
@@ -100,6 +101,33 @@ static UCS pfkm[12][2] = {
     { F12, (CTRL|'D')}
 #endif
 };
+
+
+void
+remove_directions_mark(void)
+{
+   LINE *lp;
+   int i, ll;
+   UCS c;
+
+   for(lp = lforw(curbp->b_linep); lp != curbp->b_linep; lp = lforw(lp)){
+      ll = llength(lp);
+      for(i = 0; i < ll;){
+	 c = lgetc(lp, i).c;
+	 if(c == 0x200E || c == 0x200F){
+	    curwp->w_dotp = lp;
+	    curwp->w_doto = i;
+	    forwdel(FALSE, 1);
+	    direction = c == 0x200E ? 0 : 1;
+	 }
+	 else
+	   lgetc(lp,i++).d = direction;
+      }
+   }
+   curwp->w_linep   = lforw(curbp->b_linep);
+   curwp->w_dotp    = lforw(curbp->b_linep);
+   curwp->w_doto    = 0;
+}
 
 
 /*
@@ -171,6 +199,8 @@ pico(PICO *pm)
 
     if(pm->msgtext)
       breplace(pm->msgtext);
+
+    remove_directions_mark();
 
 #ifdef	_WINDOWS
     cursor_shown = mswin_showcaret(1);	/* turn on for main window */

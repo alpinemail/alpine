@@ -56,7 +56,7 @@ void     revert_to_saved_smime_config(struct pine *ps, SAVED_CONFIG_S *vsave);
 SAVED_CONFIG_S *save_smime_config_vars(struct pine *ps);
 void     free_saved_smime_config(struct pine *ps, SAVED_CONFIG_S **vsavep);
 int      smime_helper_tool(struct pine *, int, CONF_S **, unsigned);
-int      smime_public_certs_tool(struct pine *, int, CONF_S **, unsigned);
+//int      smime_public_certs_tool(struct pine *, int, CONF_S **, unsigned);
 void 	 manage_certificates(struct pine *, WhichCerts);
 void     smime_manage_certs_init (struct pine *, CONF_S **, CONF_S **, WhichCerts, int);
 void	 display_certificate_information(struct pine *, X509 *, char *, WhichCerts, int num);
@@ -187,7 +187,7 @@ smime_info_screen(struct pine *ps)
 void
 format_smime_info(int pass, BODY *body, long msgno, gf_io_t pc)
 {
-    PKCS7 *p7;
+    PKCS7 *p7 = NULL;
     int    i;
     
     if(body->type == TYPEMULTIPART){
@@ -196,8 +196,10 @@ format_smime_info(int pass, BODY *body, long msgno, gf_io_t pc)
         for(p=body->nested.part; p; p=p->next)
           format_smime_info(pass, &p->body, msgno, pc);
     }
-    
-    p7 = body->sparep;
+    if(body->sparep)
+       p7 = get_smime_sparep_type(body->sparep) == P7Type 
+		? (PKCS7 *)get_smime_sparep_data(body->sparep)
+		: NULL;
     if(p7){
 
     	if(PKCS7_type_is_signed(p7)){
@@ -756,6 +758,17 @@ smime_config_init_display(struct pine *ps, CONF_S **ctmp, CONF_S **first_line)
     (*ctmp)->value		= pretty_value(ps, (*ctmp));
 
     ind = feature_list_index(F_SIGN_DEFAULT_ON);
+    feature = feature_list(ind);
+    new_confline(ctmp)->var 	= vtmp;
+    (*ctmp)->varnamep		= ctmpb;
+    (*ctmp)->keymenu		= &config_checkbox_keymenu;
+    (*ctmp)->help		= config_help(vtmp-ps->vars, feature->id);
+    (*ctmp)->tool		= checkbox_tool;
+    (*ctmp)->valoffset		= feature_indent();
+    (*ctmp)->varmem		= ind;
+    (*ctmp)->value		= pretty_value(ps, (*ctmp));
+
+    ind = feature_list_index(F_USE_CERT_STORE_ONLY);
     feature = feature_list(ind);
     new_confline(ctmp)->var 	= vtmp;
     (*ctmp)->varnamep		= ctmpb;

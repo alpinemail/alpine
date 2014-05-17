@@ -2723,21 +2723,18 @@ void mail_gc_body (BODY *body)
   if (body->mime.text.data) fs_give ((void **) &body->mime.text.data);
   if (body->contents.text.data) fs_give ((void **) &body->contents.text.data);
 }
-
-/* Mail get body part
- * Accepts: mail stream
- *	    message number
- *	    section specifier
- * Returns: pointer to body
+/* Mail get body section
+ * Accepts: body of message
+ *          section specifier
+ * Returns: pointer to body at given section
  */
 
-BODY *mail_body (MAILSTREAM *stream,unsigned long msgno,unsigned char *section)
+BODY *mail_body_section (BODY *b, unsigned char *section)
 {
-  BODY *b = NIL;
   PART *pt;
   unsigned long i;
 				/* make sure have a body */
-  if (section && *section && mail_fetchstructure (stream,msgno,&b) && b)
+  if (section && *section && b)
     while (*section) {		/* find desired section */
       if (isdigit (*section)) {	/* get section specifier */
 				/* make sure what follows is valid */
@@ -2767,6 +2764,24 @@ BODY *mail_body (MAILSTREAM *stream,unsigned long msgno,unsigned char *section)
       }
       else return NIL;		/* unknown section specifier */
     }
+  return b;
+}
+
+/* Mail get body part
+ * Accepts: mail stream
+ *	    message number
+ *	    section specifier
+ * Returns: pointer to body
+ */
+
+BODY *mail_body (MAILSTREAM *stream,unsigned long msgno,unsigned char *section)
+{
+  BODY *b = NIL;
+  PART *pt;
+  unsigned long i;
+				/* make sure have a body */
+  if (section && *section && mail_fetchstructure (stream,msgno,&b) && b)
+    return mail_body_section(b, section);
   return b;
 }  
 
