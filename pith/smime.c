@@ -1400,7 +1400,7 @@ endadd:
 int
 copy_dir_to_container(WhichCerts which, char *contents)
 {
-    int ret = 0;
+    int ret = 0, container = 0;
     BIO *bio_out = NULL, *bio_in = NULL;
     char srcpath[MAXPATH+1], dstpath[MAXPATH+1], emailaddr[MAXPATH], file[MAXPATH], line[4096];
     char *tempfile = NULL, fpath[MAXPATH+1];
@@ -1439,6 +1439,7 @@ copy_dir_to_container(WhichCerts which, char *contents)
 	configcontainer = cpystr(DF_CA_CONTAINER);
 	filesuffix = ".crt";
     }
+    container = SMHOLDERTYPE(which) == Container;
 
     if(!(configdir && configdir[0])){
 	q_status_message(SM_ORDER, 3, 3, _("Directory not defined"));
@@ -1607,7 +1608,11 @@ copy_dir_to_container(WhichCerts which, char *contents)
 	BIO_free(bio_out);
 
 	if(!ret){
-            if(ret_dir){  
+	    if(container && configpath && *configpath){
+	      strncpy(fpath, configpath, sizeof(fpath));
+	      fpath[sizeof(fpath) - 1] = '\0';
+	    }
+	    else if(ret_dir){  
                 if(strlen(dstpath) + strlen(configcontainer) - strlen(ret_dir) + 1 < sizeof(dstpath))
                    snprintf(fpath, sizeof(fpath), "%s%c%s",
                         dstpath, tempfile[strlen(ret_dir)], configcontainer);
