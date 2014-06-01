@@ -50,7 +50,7 @@ int            is_pkcs7_body(BODY *b);
 int            fiddle_smime_message(BODY *b, long msgno);
 int            encrypt_outgoing_message(METAENV *header, BODY **bodyP);
 void           free_smime_body_sparep(void **sparep);
-int            sign_outgoing_message(METAENV *header, BODY **bodyP, int dont_detach);
+int            sign_outgoing_message(METAENV *header, BODY **bodyP, int dont_detach, BODY **bp);
 void           gf_puts_uline(char *txt, gf_io_t pc);
 PERSONAL_CERT *find_certificate_matching_recip_info(PKCS7_RECIP_INFO *ri);
 PERSONAL_CERT *get_personal_certs(char *path);
@@ -84,6 +84,7 @@ int	       add_file_to_container(WhichCerts ctype, char *fpath, char *altname);
 void 	      *create_smime_sparep(SpareType stype, void *s);
 SpareType      get_smime_sparep_type(void *s);
 void	      *get_smime_sparep_data(void *s);
+STACK_OF(X509)       *get_chain_for_cert(X509 *cert, int *error, int *level);
 
 #endif /* PITH_SMIME_INCLUDED */
 #endif /* SMIME */

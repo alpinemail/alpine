@@ -3042,6 +3042,8 @@ update_option_screen(struct pine *ps, OPT_SCREEN_S *screen, Pos *cursor_pos)
     if(screen == NULL || BODY_LINES(ps) < 1)
        return;
 
+    opt_screen = screen;
+
     if(cursor_pos){
 	cursor_pos->col = 0;
 	cursor_pos->row = -1;		/* to tell us if we've set it yet */

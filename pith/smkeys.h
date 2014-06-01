@@ -57,9 +57,10 @@ void           add_to_end_of_certlist(CertList **cl, char *name, X509 *cert);
 void           free_certlist(CertList **cl);
 PERSONAL_CERT *mem_to_personal_certs(char *contents);
 void           free_personal_certs(PERSONAL_CERT **pc);
-void	       get_fingerprint(X509 *cert, const EVP_MD *type, char *buf, size_t maxLen);
+void	       get_fingerprint(X509 *cert, const EVP_MD *type, char *buf, size_t maxLen, char *s);
 int	       certlist_to_file(char *filename, CertList *certlist);
 int	       load_cert_for_key(char *pathdir, EVP_PKEY *pkey, char **certfile, X509 **pcert);
+char 	       *smime_name(char *email, X509 *x, WhichCerts ctype);
 
 
 #endif /* PITH_SMKEYS_INCLUDED */

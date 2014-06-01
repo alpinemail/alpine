@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 63 2014-05-17 18:18:38
+Alpine Commit 64 2014-05-31 21:36:57
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -202,6 +202,9 @@ Additions include:
        container with default names PublicContainer, PrivateContainer and 
        CAContainer, as appropriate for these files, unless the user has 
        provided some other names.
+  <LI> S/MIME: Forwarding a message will include the signed part as part
+       of the text and not as a multipart message, just as the reply
+       command does.
   <LI> Add support to selective expunge through a subcommand of the 
        select-apply commands. Read more in the <A 
        HREF="h_index_cmd_expunge">help</A> for the expunge command.
@@ -283,6 +286,10 @@ Bugs that have been addressed include:
   <LI> S/MIME: Forwarding a signed message might make the body contain mime 
        information that is not part of the body, and hence making the body
        of the message seem wrong.
+  <LI> S/MIME Alpine would compute incorrectly the signature of a message 
+       that contains 8bit if the option "Enable 8bit ESMTP Negotiation" is 
+       enabled, the message contains 8bit characters and the smtp server 
+       supports 8bit sending.
   <LI> Crash when tcp connection to NNTP server was lost after connection
        had been established, but lost immediately afterwards.
   <LI> Crash with message &quot;lock when already locked&quot;, when painting

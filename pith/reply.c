@@ -4,8 +4,8 @@ static char rcsid[] = "$Id: reply.c 1074 2008-06-04 00:08:43Z hubert@u.washingto
 
 /*
  * ========================================================================
- * Copyright 2006-2008 University of Washington
  * Copyright 2013-2014 Eduardo Chappa
+ * Copyright 2006-2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,9 @@ static char rcsid[] = "$Id: reply.c 1074 2008-06-04 00:08:43Z hubert@u.washingto
 #include "../pith/ablookup.h"
 #include "../pith/mailcmd.h"
 #include "../pith/margin.h"
+#ifdef SMIME
+#include "../pith/smime.h"
+#endif /* SMIME */
 
 
 /*
@@ -2249,11 +2252,23 @@ forward_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_bod
 	}
     }
     else if(orig_body->type == TYPEMULTIPART) {
-	if(orig_body->subtype && !strucmp(orig_body->subtype, "signed")
-	   && orig_body->nested.part){
+	if(orig_body->subtype 
+		&& ((!strucmp(orig_body->subtype, "signed") && orig_body->nested.part)
+#ifdef SMIME
+		    || (!strucmp(orig_body->subtype, "mixed") 
+			  && orig_body->nested.part
+			  && orig_body->nested.part->body.type ==  TYPEMULTIPART
+			  && orig_body->nested.part->body.subtype
+			  && (!strucmp(orig_body->nested.part->body.subtype, OUR_PKCS7_ENCLOSURE_SUBTYPE)
+				|| !strucmp(orig_body->nested.part->body.subtype, "signed")))
+		    || !strucmp(orig_body->subtype, OUR_PKCS7_ENCLOSURE_SUBTYPE))
+#endif /* SMIME */
+	   ){
 	    /* only operate on the signed data (not the signature) */
 	    body = forward_body(stream, env, &orig_body->nested.part->body,
-				msgno, section, msgtext, flags);
+			msgno, 
+			orig_body->nested.part->body.type ==  TYPEMULTIPART 
+				? section : sect_prefix, msgtext, flags);
 	}
 	/*---- Message is multipart ----*/
 	else if(!(orig_body->subtype && !strucmp(orig_body->subtype,

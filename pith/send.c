@@ -1762,21 +1762,23 @@ call_mailer(METAENV *header, struct mail_bodystruct *body, char **alt_smtp_serve
 #ifdef SMIME
     if(ps_global->smime && (ps_global->smime->do_encrypt || ps_global->smime->do_sign)){
     	int result;
-	
+
     	STORE_S *so = lmc.so;
 	lmc.so = NULL;
-    
+
     	result = 1;
-    
-    	if(ps_global->smime->do_sign)
-	  result = sign_outgoing_message(header, &body, 0);
-	
+
+    	if(ps_global->smime->do_sign){
+	  bp = F_ON(F_ENABLE_8BIT, ps_global) ? first_text_8bit(body) : NULL;
+	  result = sign_outgoing_message(header, &body, 0, &bp);
+	}
+
 	/* need to free new body from encrypt if sign fails? */
 	if(result && ps_global->smime->do_encrypt)
     	  result = encrypt_outgoing_message(header, &body);
-	
+
 	lmc.so = so;
-	
+
 	if(!result)
 	  return 0;
     }
@@ -1999,6 +2001,19 @@ call_mailer(METAENV *header, struct mail_bodystruct *body, char **alt_smtp_serve
 		body_encodings[added_encoding] = body_encodings[ENC8BIT];
 		save_encoding = bp->encoding;
 		bp->encoding = added_encoding;
+#ifdef SMIME
+	    if(ps_global->smime && ps_global->smime->do_sign 
+		&& body->nested.part->next
+		&& body->nested.part->next->body.contents.text.data
+		&& body->nested.part->next->body.mime.text.data){
+		  STORE_S *so;
+
+		  so = (STORE_S *) body->nested.part->next->body.contents.text.data;
+		  so_give(&so);
+		  body->nested.part->next->body.contents.text.data = body->nested.part->next->body.mime.text.data;
+		  body->nested.part->next->body.mime.text.data = NULL;
+		}
+#endif /* SMIME */
 	    }
 	}
 

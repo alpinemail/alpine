@@ -77,8 +77,10 @@ CertList *	      certlist_from_personal_certs(PERSONAL_CERT *pc);
 #ifdef PASSFILE
 void		      load_key_and_cert(char *pathkeydir, char *pathcertdir, char **keyfile, char **certfile, EVP_PKEY **pkey, X509 **pcert);
 #endif /* PASSFILE */
-STACK_OF(X509)	     *get_chain_for_cert(X509 *cert, int *error);
 EVP_PKEY 	     *load_pkey_with_prompt(char *fpath, char *text, char *prompt);
+void		      smime_remove_trailing_crlf(char **mimetext, unsigned long *mimelen, char **bodytext, unsigned long *bodylen);
+void		      smime_remove_folding_space(char **mimetext, unsigned long *mimelen, char **bodytext, unsigned long *bodylen);
+int		      smime_validate_extra_test(char *mimetext, unsigned long mimelen, char *bodytext, unsigned long bodylen, PKCS7 *p7, int nflag);
 
 int  (*pith_opt_smime_get_passphrase)(void);
 int  (*pith_smime_import_certificate)(char *, char *, size_t);
@@ -2421,8 +2423,8 @@ int same_cert(X509 *x, X509 *cert)
    char    bufcert[256],  bufx[256];
    int rv = 0;
 
-   get_fingerprint(cert, EVP_md5(), bufcert, sizeof(bufcert));
-   get_fingerprint(x, EVP_md5(), bufx, sizeof(bufx));
+   get_fingerprint(cert, EVP_md5(), bufcert, sizeof(bufcert), ":");
+   get_fingerprint(x, EVP_md5(), bufx, sizeof(bufx), ":");
    if(strcmp(bufx, bufcert) == 0)
      rv = 1;
 
@@ -2644,6 +2646,85 @@ free_smime_body_sparep(void **sparep)
   should be safe to do so.
  */
 
+typedef struct smime_filter_s {
+  void (*filter)();
+} SMIME_FILTER_S;
+
+SMIME_FILTER_S sig_filter[] = {
+   {smime_remove_trailing_crlf},
+   {smime_remove_folding_space}
+};
+
+#define TOTAL_FILTERS  (sizeof(sig_filter)/sizeof(sig_filter[0]))
+#define TOTAL_SIGFLTR  (1 << TOTAL_FILTERS)  /* not good, keep filters to a low number */
+
+void
+smime_remove_trailing_crlf(char **mimetext, unsigned long *mimelen, 
+			char **bodytext, unsigned long *bodylen)
+{
+  if(*bodylen > 2 && !strncmp(*bodytext+*bodylen-2, "\r\n", 2))
+    *bodylen -= 2;
+}
+
+void
+smime_remove_folding_space(char **mimetext, unsigned long *mimelen, 
+			char **bodytext, unsigned long *bodylen)
+{
+   char *s = NULL, *t;
+   unsigned long mlen = *mimelen;
+
+   if(*mimetext){
+      for (s = t = *mimetext; t - *mimetext < *mimelen; ){
+	 if(*t == '\r' && *(t+1) == '\n' && (*(t+2) == '\t' || *(t+2) == ' ')){
+	    *s++ = ' ';
+	    t += 3;
+	    mlen -= 2;
+	 }
+	 else
+	    *s++ = *t++;
+      }
+      *mimelen = mlen;
+   }
+}
+
+int
+smime_validate_extra_test(char *mimetext, unsigned long mimelen, char *bodytext, unsigned long bodylen, PKCS7 *p7, int nflag)
+{
+  int result, i, j, flag;
+  char *mtext, *btext;
+  unsigned long mlen, blen;
+  BIO *in;
+
+  mtext = mimelen ? fs_get(mimelen+1) : NULL;
+  btext = fs_get(bodylen+1);
+
+  flag = 1;	/* silence all failures */
+  for(i = 1; result == 0 && i < TOTAL_SIGFLTR; i++){
+     if((in = BIO_new(BIO_s_mem())) == NULL)
+       return -1;
+
+     (void) BIO_reset(in);
+
+     if(i+1 == TOTAL_SIGFLTR)
+	flag = nflag;
+
+     if(mimelen)
+	strncpy(mtext, mimetext, mlen = mimelen);
+     strncpy(btext, bodytext, blen = bodylen);
+     for(j = 0; j < TOTAL_FILTERS; j++)
+	if((i >> j) & 1)
+	  (sig_filter[j].filter)(&mtext, &mlen, &btext, &blen);
+     if(mtext != NULL) 
+	BIO_write(in, mtext, mlen);
+     BIO_write(in, btext, blen);
+     result = do_signature_verify(p7, in, NULL, flag);
+     BIO_free(in);
+  }
+  if(mtext) fs_give((void **)&mtext);
+  if(btext) fs_give((void **)&btext);
+  return result;
+}
+
 /*
  * Given a multipart body of type multipart/signed, attempt to verify it.
  * Returns non-zero if the body was changed.
@@ -2699,36 +2780,20 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
       BIO_write(in, mimetext, mimelen);
     BIO_write(in, bodytext, bodylen);
 
-    /* Try compatibility with the past and check if this message
-     * validates when we remove the last two characters. Silence
-     * any failures first.
-     */
-    flag = (bodylen  <= 2 || strncmp(bodytext+bodylen-2, "\r\n", 2))
-	    ? 0 : 1;
-    if(((result = do_signature_verify(p7, in, NULL, flag)) == 0)
-	&& bodylen > 2 
-	&& (strncmp(bodytext+bodylen-2,"\r\n", 2) == 0)){
-	BUF_MEM *biobuf = NULL;
-
-	BIO_get_mem_ptr(in, &biobuf);
-	if(biobuf)
-	  BUF_MEM_grow(biobuf, mimelen + bodylen - 2);
-
-	/* test one more time in case this is a remote connection and the
-	 * server massages the message to the point that it sends bogus
-	 * information. In this case, we fetch the message and we process
-	 * it by hand.
-	 */
-	flag = (mimelen == 0 || !IS_REMOTE(ps_global->mail_stream->mailbox))
+    if((result = do_signature_verify(p7, in, NULL, 1)) == 0){
+      flag = (mimelen == 0 || !IS_REMOTE(ps_global->mail_stream->mailbox))
 		? 0 : 1;
-	if((result = do_signature_verify(p7, in, NULL, flag)) == 0
+      result = smime_validate_extra_test(mimetext, mimelen, bodytext, bodylen, p7, flag);
+      if(result < 0)
+         return modified_the_body;
+      if(result == 0
 	   && mimelen > 0	/* do not do this for encrypted messages */
 	   && IS_REMOTE(ps_global->mail_stream->mailbox)){
 	   char *fetch;
 	   unsigned long hlen, tlen;
 	   STORE_S *msg_so;
 
-	   BIO_free(in);
+	   BIO_free(in); 
 	   if((in = BIO_new(BIO_s_mem())) != NULL
 	      && (fetch = mail_fetch_header(ps_global->mail_stream, msgno, NULL, 
 				NULL, &hlen, FT_PEEK)) != NULL
@@ -2773,15 +2838,10 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
 		BIO_write(in, bodytext, bodylen);
 		so_give(&msg_so);
 
-		if(((result = do_signature_verify(p7, in, NULL, 1)) == 0)
-		  && bodylen > 2 
-		  && (strncmp(bodytext+bodylen-2,"\r\n", 2) == 0)){
-		  BUF_MEM *biobuf = NULL;
-
-		  BIO_get_mem_ptr(in, &biobuf);
-		  if(biobuf)
-		    BUF_MEM_grow(biobuf, mimelen + bodylen - 2);
-		  result = do_signature_verify(p7, in, NULL, 0);
+		if((result = do_signature_verify(p7, in, NULL, 1)) == 0){
+		  result = smime_validate_extra_test(mimetext, mimelen, bodytext, bodylen, p7, 0);
+		  if(result < 0)
+		    return modified_the_body;
 		}
 	   }
 	}
@@ -3248,16 +3308,16 @@ gf_puts_uline(char *txt, gf_io_t pc)
     pc(TAG_EMBED); pc(TAG_BOLDOFF);
 }
 
-
+/* get_chain_for_cert: error and level are mandatory arguments */
 STACK_OF(X509) *
-get_chain_for_cert(X509 *cert, int *error)   
+get_chain_for_cert(X509 *cert, int *error, int *level)
 {
   STACK_OF(X509) *chain = NULL;
   X509_STORE_CTX *ctx;   
   X509 *x, *xtmp;
   int rc;       /* return code */
-  int level = -1;
-            
+
+  *level = -1;
   *error = 0;
   ERR_clear_error();
   if((ctx = X509_STORE_CTX_new()) != NULL){
@@ -3266,7 +3326,7 @@ get_chain_for_cert(X509 *cert, int *error)
 	*error   = X509_STORE_CTX_get_error(ctx);
       else if((chain = sk_X509_new_null()) != NULL){
 	for(x = cert; ; x = xtmp){
-	    if(++level > 0)
+	    if(++*level > 0)
 	      sk_X509_push(chain, X509_dup(x));
 	    rc = X509_STORE_CTX_get1_issuer(&xtmp, ctx, x);
 	    if(rc < 0)
@@ -3276,10 +3336,6 @@ get_chain_for_cert(X509 *cert, int *error)
 	    if(!X509_check_issued(xtmp, xtmp))
 	       break;
 	}
-      }
-      if((*error && chain != NULL) || level == 0){
-	sk_X509_pop_free(chain, X509_free);
-	chain = NULL;
       }
       X509_STORE_CTX_free(ctx);
   }
@@ -3292,22 +3348,37 @@ get_chain_for_cert(X509 *cert, int *error)
  *
  * This takes the header for the outgoing message as well as a pointer
  * to the current body (which may be reallocated).
+ * The last argument (BODY **bp) is an argument that tells Alpine
+ * if the body has 8 bit. if *bp is not null we compute two signatures
+ * one for the quoted-printable encoded message, and another for the
+ * 8bit encoded message. We return the signature for the 8bit encoded
+ * part in p2->body.mime.text.data.
+ * The reason why we compute two signatures is so that we can decide
+ * which one to use later, and we only do it in the case that *bp is
+ * not null. If we did not do this, then we might not be able to sign
+ * a message until we log in to the smtp server, so instead of doing
+ * that, we get ready for any possible situation we might find.
  */
 int
-sign_outgoing_message(METAENV *header, BODY **bodyP, int dont_detach)
+sign_outgoing_message(METAENV *header, BODY **bodyP, int dont_detach, BODY **bp)
 {
     STORE_S *outs = NULL;
+    STORE_S *outs_2 = NULL;
     BODY    *body = *bodyP;
     BODY    *newBody = NULL;
     PART    *p1 = NULL;
     PART    *p2 = NULL;
     PERSONAL_CERT   *pcert;
     BIO *in = NULL;
+    BIO *in_2 = NULL;
     BIO *out = NULL;
+    BIO *out_2 = NULL;
     PKCS7   *p7 = NULL;
+    PKCS7   *p7_2 = NULL;
     STACK_OF(X509) *chain;
     int result = 0, error;
     int flags = dont_detach ? 0 : PKCS7_DETACHED;
+    int level;
 
     dprint((9, "sign_outgoing_message()"));
 
@@ -3332,12 +3403,42 @@ sign_outgoing_message(METAENV *header, BODY **bodyP, int dont_detach)
     
     if(!pcert->key)
       goto end;
-    
+
+    if(((chain = get_chain_for_cert(pcert->cert, &error, &level)) != NULL && error)
+	|| level == 0){
+	sk_X509_pop_free(chain, X509_free);
+	chain = NULL;
+    }
+
+    if(error)
+      q_status_message(SM_ORDER, 1, 1, 
+	_("Not all certificates needed to verify signature included in signed message"));
+   
     in = body_to_bio(body);
 
-    chain = get_chain_for_cert(pcert->cert, &error);
-
     p7 = PKCS7_sign(pcert->cert, pcert->key, chain, in, flags);
+
+    if(bp && *bp){
+      int i, save_encoding;
+         
+      for(i = 0; (i <= ENCMAX) && body_encodings[i]; i++);
+
+      if(i > ENCMAX){             /* no empty encoding slots! */
+         *bp = NULL;
+      }
+      else {
+	save_encoding = (*bp)->encoding;
+	body_encodings[(*bp)->encoding = i] = body_encodings[ENC8BIT];
+
+	in_2 = body_to_bio(body);
+
+	body_encodings[i] = NULL;
+	(*bp)->encoding = save_encoding;
+      }
+    }
+
+    if(bp && *bp)
+       p7_2 = PKCS7_sign(pcert->cert, pcert->key, chain, in_2, flags);
 
     if(F_OFF(F_REMEMBER_SMIME_PASSPHRASE,ps_global))
       forget_private_keys();
@@ -3350,9 +3451,6 @@ sign_outgoing_message(METAENV *header, BODY **bodyP, int dont_detach)
 	goto end;
     }
 
-    if(error)
-      q_status_message(SM_ORDER, 1, 1, _("Not all certificates needed to verify signature included in signed message"));
-   
     outs = so_get(BioType, NULL, EDIT_ACCESS);
     out = bio_from_store(outs);
 
@@ -3360,6 +3458,16 @@ sign_outgoing_message(METAENV *header, BODY **bodyP, int dont_detach)
     (void) BIO_flush(out);
 
     so_seek(outs, 0, SEEK_SET);
+
+    if(bp && *bp && p7_2){
+      outs_2 = so_get(BioType, NULL, EDIT_ACCESS);
+      out_2 = bio_from_store(outs_2);
+
+      i2d_PKCS7_bio(out_2, p7_2);
+      (void) BIO_flush(out_2);
+
+      so_seek(outs_2, 0, SEEK_SET);
+    }
     
     if((flags&PKCS7_DETACHED)==0){
    
@@ -3408,6 +3516,7 @@ sign_outgoing_message(METAENV *header, BODY **bodyP, int dont_detach)
 	p1->next = p2;
 
 	setup_pkcs7_body_for_signature(&p2->body, "S/MIME Cryptographic Signature", "pkcs7-signature", "smime.p7s", NULL);
+    	p2->body.mime.text.data = (unsigned char *) outs_2;
     	p2->body.contents.text.data = (unsigned char *) outs;
 
     	newBody->nested.part = p1;
@@ -3421,6 +3530,11 @@ end:
 
     PKCS7_free(p7);
     BIO_free(in);
+
+    if(bp && *bp){
+      if(p7_2) PKCS7_free(p7_2);
+      BIO_free(in_2);
+    }
 
     dprint((9, "sign_outgoing_message returns %d", result));
     return result;

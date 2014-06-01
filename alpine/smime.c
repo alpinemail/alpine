@@ -332,7 +332,8 @@ output_cert_info(X509 *cert, gf_io_t pc)
     char    buf[256];
     STORE_S *left,*right;
     gf_io_t spc;
-    int len;
+    int len, error;
+    STACK_OF(X509) *chain;
         
     left = so_get(CharStar, NULL, EDIT_ACCESS);
     right = so_get(CharStar, NULL, EDIT_ACCESS);
@@ -435,16 +436,84 @@ output_cert_info(X509 *cert, gf_io_t pc)
 
     gf_puts_uline("SHA1 Fingerprint", pc);
     gf_puts(NEWLINE, pc);
-    get_fingerprint(cert, EVP_sha1(), buf, sizeof(buf));
+    get_fingerprint(cert, EVP_sha1(), buf, sizeof(buf), ":");
     gf_puts(buf, pc);
     gf_puts(NEWLINE, pc);
 
     gf_puts_uline("MD5 Fingerprint", pc);
     gf_puts(NEWLINE, pc);
-    get_fingerprint(cert, EVP_md5(), buf, sizeof(buf));
+    get_fingerprint(cert, EVP_md5(), buf, sizeof(buf), ":");
     gf_puts(buf, pc);
     gf_puts(NEWLINE, pc);
+    gf_puts(NEWLINE, pc);
+
+    gf_puts_uline("Certificate Chain Information", pc);
+    gf_puts(NEWLINE, pc);
     
+    if((chain = get_chain_for_cert(cert, &error, &len)) != NULL){
+       X509 *x;
+       X509_NAME_ENTRY *e;
+       int i, offset = 2;
+       char space[256];
+
+       for(i = 0; i < offset; i++) space[i] = ' ';
+
+       for(i = -1; i < sk_X509_num(chain); i++){
+	  char buf[256];
+
+	  x = i == -1 ? cert : sk_X509_value(chain, i);
+
+	  if(x && x->cert_info){
+	    if(i>=0){ 
+	      space[offset + i + 0] = ' ';
+	      space[offset + i + 1] = '\\';
+	      space[offset + i + 2] = '-';
+	      space[offset + i + 3] = ' ';
+	      space[offset + i + 4] = '\0';
+	      gf_puts(space, pc);
+	    }
+	    else{
+	      space[offset] = '\0';
+	      gf_puts(space, pc);
+	    }
+	    if(i >= 0)
+	      gf_puts_uline("Signed by: ", pc);
+	    else
+	      gf_puts_uline("Issued to: ", pc);
+
+	    e = X509_NAME_get_entry(x->cert_info->subject,
+			X509_NAME_entry_count(x->cert_info->subject)-1);
+
+	    if(e){
+	      X509_NAME_get_text_by_OBJ(x->cert_info->subject, e->object, buf, sizeof(buf));
+	      gf_puts(buf, pc);
+	      gf_puts(NEWLINE, pc);    
+	    }
+          }
+	  else{
+	    gf_puts("No certificate info found", pc);
+	    gf_puts(NEWLINE, pc);
+	    break;
+	  }
+       }
+       e = X509_NAME_get_entry(x->cert_info->issuer,
+			X509_NAME_entry_count(x->cert_info->issuer)-1);
+       if(e){
+	  X509_NAME_get_text_by_OBJ(x->cert_info->issuer, e->object, buf, sizeof(buf));
+	  space[offset + i + 0] = ' ';
+	  space[offset + i + 1] = '\\';
+	  space[offset + i + 2] = '-';
+	  space[offset + i + 3] = ' ';
+	  space[offset + i + 4] = '\0';
+	  gf_puts(space, pc);
+	  gf_puts_uline("Signed by: ", pc);
+	  gf_puts(buf, pc);
+	  gf_puts(NEWLINE, pc);    
+       }
+       sk_X509_pop_free(chain, X509_free);
+    }
+    gf_puts(NEWLINE, pc);
+
     so_give(&left);
     so_give(&right);
 }
@@ -939,6 +1008,8 @@ smime_config_init_display(struct pine *ps, CONF_S **ctmp, CONF_S **first_line)
     (*ctmp)->help           = h_config_smime_certificate_authorities;
     (*ctmp)->value          = cpystr(_("Manage Certificate Authorities"));
     (*ctmp)->varmem         = 11;
+
+    (*ctmp)->next	    = NULL;
 }
 
 void display_certificate_information(struct pine *ps, X509 *cert, char *email, WhichCerts ctype, int num)

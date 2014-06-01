@@ -46,8 +46,27 @@ static char rcsid[] = "$Id: smkeys.c 1266 2009-07-14 18:39:12Z hubert@u.washingt
 static char     *emailstrclean(char *string);
 static int       mem_add_extra_cacerts(char *contents, X509_LOOKUP *lookup);
 
+/* given a certificate and an email address, add the 
+ * extension and md5 key to the name. return an allocated
+ * name, freed by caller
+ */
+char *
+smime_name(char *email, X509 *x, WhichCerts ctype)
+{
+  char bufx[256];
+  char *rv;
+
+  snprintf(bufx, sizeof(bufx), "%08lx",X509_subject_name_hash(x));
+  rv = cpystr(bufx);
+//  get_fingerprint(x, EVP_md5(), bufx, sizeof(bufx), NULL);
+//  rv = fs_get(strlen(email) + 4 + 2 + strlen(bufx) + 1);
+//  sprintf(rv, "%s%s.%s", email, EXTCERT(ctype), bufx);
+  
+  return rv;
+}
+
 void
-get_fingerprint(X509 *cert, const EVP_MD *type, char *buf, size_t maxLen)
+get_fingerprint(X509 *cert, const EVP_MD *type, char *buf, size_t maxLen, char *s)
 {
     unsigned char md[128];
     char    *b;
@@ -63,8 +82,8 @@ get_fingerprint(X509 *cert, const EVP_MD *type, char *buf, size_t maxLen)
 	if(b-buf+3>=maxLen)
 	  break;
 
-	if(i != 0)
-	  *b++ = ':';
+	if(i != 0 && s && *s)
+	  *b++ = *s;
 
 	snprintf(b, maxLen - (b-buf), "%02x", md[i]);
 	b+=2;
