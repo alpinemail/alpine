@@ -2704,6 +2704,9 @@ format_msg_att(long int msgno, ATTACH_S **a, HANDLE_S **handlesp, gf_io_t pc, in
 		  && gf_puts("text segment]", pc)
 		  && gf_puts(NEWLINE, pc)))
 	  rv = 0;
+
+	++(*a);
+
     }
     else if((*a)->body->subtype 
 	    && strucmp((*a)->body->subtype, "external-body") == 0) {

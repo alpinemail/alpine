@@ -903,6 +903,8 @@ CertList *
 certlist_from_personal_certs(PERSONAL_CERT *pc)
 {
    CertList *cl;
+   X509 *x;
+   char buf[MAXPATH]; 
 
    if(pc == NULL)
      return NULL;
@@ -910,11 +912,20 @@ certlist_from_personal_certs(PERSONAL_CERT *pc)
    cl = fs_get(sizeof(CertList));
    memset((void *)cl, 0, sizeof(CertList));
    cl->name = cpystr(pc->name);
+   x = get_cert_for(pc->name, Public);
+   if(x){
+     if(x->cert_info){
+       cl->data.date_from = smime_get_date(x->cert_info->validity->notBefore);
+       cl->data.date_to   = smime_get_date(x->cert_info->validity->notAfter);
+       get_fingerprint(x, EVP_md5(), buf, sizeof(buf), NULL);
+       cl->data.md5       = cpystr(buf);
+     }
+     X509_free(x);
+   }
    cl->next = certlist_from_personal_certs(pc->next);
 
    return cl;
 }
-
 
 void
 renew_cert_data(CertList **data, WhichCerts ctype)
@@ -928,8 +939,10 @@ renew_cert_data(CertList **data, WhichCerts ctype)
 	free_personal_certs(&pc);
 	setup_privatekey_storage();
         *data = certlist_from_personal_certs((PERSONAL_CERT *)ps_global->smime->personal_certs);
-	if(data && *data)
+	if(data && *data){
+	    resort_certificates(data, ctype);
 	    RENEWCERT(*data) = 0;
+	}
         ps_global->smime->privatecertlist = *data;
      }
      if(ps_global->smime->privatecertlist)
@@ -948,8 +961,10 @@ renew_cert_data(CertList **data, WhichCerts ctype)
 	    add_certs_in_dir(lookup, PATHCERTDIR(ctype), EXTCERT(ctype), data);
 	  else /* if(SMHOLDERTYPE(ctype) == Container) */
 	    *data = mem_to_certlist(CONTENTCERTLIST(ctype), ctype);
-	  if(data && *data)
+	  if(data && *data){
+	    resort_certificates(data, ctype);
 	    RENEWCERT(*data) = 0;
+	  }
 	  if(ctype == Public)
 	    ps_global->smime->publiccertlist = *data;
 	  else

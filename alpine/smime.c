@@ -1211,12 +1211,12 @@ manage_certs_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
 	   if(PATHCERTDIR(ctype) == NULL)
 	     return 0;
 	   
-	   if((cert = get_cert_for((*cl)->value+3, ctype)) == NULL){
+	   if((cert = get_cert_for((*cl)->d.s.address, ctype)) == NULL){
 	      q_status_message(SM_ORDER, 1, 3, _("Problem Reading Certificate"));
 	      rv = 0;
 	   }
 	   else{
-	      display_certificate_information(ps, cert, (*cl)->value+3, ctype, (*cl)->varmem);
+	      display_certificate_information(ps, cert, (*cl)->d.s.address, ctype, (*cl)->varmem);
 	      rv = 10 + (*cl)->varmem;
 	   }
 	   break;
@@ -1288,6 +1288,20 @@ manage_certs_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
     return rv;
 }
 
+void
+smime_setup_size(char **s, size_t n)
+{
+   char *t = *s;
+  *t++ = ' ';
+  *t++ = '%';
+  *t++ = '-';
+   sprintf(t+strlen(t), "%d.%d", n, n);
+   t += strlen(t);
+   *t++ = 's';
+   *t++ = ' ';
+   *s = t;
+}
+
 void smime_manage_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line, WhichCerts ctype, int fline)
 {
     char            tmp[200];
@@ -1329,6 +1343,28 @@ void smime_manage_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line
 
     if(data){
       CertList *cl; int i;
+      int s, e, df, dt, md5;	/* sizes of certain fields */
+      int nf;			/* number of fields */
+      char u[MAILTMPLEN], *t;
+
+      for(cl = data, e = 0; cl; cl = cl->next)
+	 if(cl->name && strlen(cl->name) > e)
+	   e = strlen(cl->name);
+
+      if(ctype != Private)
+	e -= 4;		/* remove extension length */
+      nf = 5;		/* there are 5 fields */
+      s = 3;		/* status has fixed size */
+      df = dt = 8;	/* date from and date to have fixed size */
+      md5 = ps->ttyo->screen_cols - s - df - dt - e - 2*nf;
+
+      memset(u, '\0', sizeof(u));
+      t = u;
+      smime_setup_size(&t, s);
+      smime_setup_size(&t, e);
+      smime_setup_size(&t, df);
+      smime_setup_size(&t, dt);
+      smime_setup_size(&t, md5);
 
       for(cl = data, i = 0; cl; cl = cl->next)
 	 if(cl->name){
@@ -1343,10 +1379,16 @@ void smime_manage_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line
 	    (*ctmp)->help	= ctype == Public ? h_config_smime_manage_public_menu
 					: (ctype == Private ? h_config_smime_manage_private_menu
 							   : h_config_smime_manage_cacerts_menu);
-	    snprintf(tmp, sizeof(tmp), " %s\t%s", (*ctmp)->d.s.deleted ? "D" : " ", cl->name);
+	    if(ctype != Private)
+	       cl->name[strlen(cl->name) - 4] = '\0';
+	    strncpy((*ctmp)->d.s.address, cl->name, sizeof((*ctmp)->d.s.address));
+	    (*ctmp)->d.s.address[sizeof((*ctmp)->d.s.address) - 1] = '\0';
+	    snprintf(tmp, sizeof(tmp), u,
+			(*ctmp)->d.s.deleted ? "D" : " ", 
+			cl->name, DATEFROMCERT(cl), DATETOCERT(cl), MD5CERT(cl));
+	    if(ctype != Private)
+	       cl->name[strlen(cl->name)] = '.';
 	    (*ctmp)->value      = cpystr(tmp);
-	    for(s = (*ctmp)->value; s && (t = strstr(s, ext)) != NULL; s = t+1);
-	    if(s) *(s-1) = '\0';
 	    if(i == fline+1 && first_line && !*first_line)
 	       *first_line = *ctmp;
 	 }

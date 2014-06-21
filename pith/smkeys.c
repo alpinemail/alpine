@@ -32,6 +32,7 @@ static char rcsid[] = "$Id: smkeys.c 1266 2009-07-14 18:39:12Z hubert@u.washingt
 #include "../pith/busy.h"
 #include "../pith/osdep/lstcmpnt.h"
 #include "../pith/util.h"
+#include "../pith/mailindx.h"
 #include "smkeys.h"
 
 #ifdef APPLEKEYCHAIN
@@ -45,6 +46,57 @@ static char rcsid[] = "$Id: smkeys.c 1266 2009-07-14 18:39:12Z hubert@u.washingt
 /* internal prototypes */
 static char     *emailstrclean(char *string);
 static int       mem_add_extra_cacerts(char *contents, X509_LOOKUP *lookup);
+int		 compare_certs(const void *data1, const void *data2);
+
+int
+compare_certs(const void *data1, const void *data2)
+{
+   int rv;
+   char *s;
+        
+   CertList *cl1 = *(CertList **) data1;
+   CertList *cl2 = *(CertList **) data2;
+        
+   if((s = strchr(cl1->name, '@')) != NULL)
+     *s = '\0';
+            
+   if((s = strchr(cl2->name, '@')) != NULL)
+     *s = '\0';
+        
+   if((rv = strucmp(cl1->name, cl2->name)) == 0)
+     rv = strucmp(cl1->name + strlen(cl1->name) + 1, cl2->name + strlen(cl2->name) + 1);
+   cl1->name[strlen(cl1->name)] = '@';
+   cl2->name[strlen(cl2->name)] = '@';
+   return rv;
+}
+
+void
+resort_certificates(CertList **data, WhichCerts ctype)
+{
+   int i, j;
+   CertList *cl = *data;
+   CertList **cll;
+   char *s, *t;
+
+   for(i = 0; cl; cl = cl->next, i++)
+      if(ctype != Private){     /* ctype == Public or ctype == CACerts */
+         for(t = s = cl->name; t = strstr(s, ".crt"); s = t+1);
+         if (s) *(s-1) = '\0';
+      }
+   j = i;
+   cll = fs_get(i*sizeof(CertList *));
+   for(cl = *data, i = 0; cl; cl = cl->next, i++)
+        cll[i] = cl;
+   qsort((void *)cll, j, sizeof(CertList *), compare_certs);
+   for(i = 0; i < j - 1; i++){
+     cll[i]->next = cll[i+1];
+     if(ctype != Private)
+        cll[i]->name[strlen(cll[i]->name)]= '.';    /* restore ".crt" part */
+   }
+   cll[j-1]->next = NULL;
+   *data = cll[0];
+}
+
 
 /* given a certificate and an email address, add the 
  * extension and md5 key to the name. return an allocated
@@ -56,11 +108,9 @@ smime_name(char *email, X509 *x, WhichCerts ctype)
   char bufx[256];
   char *rv;
 
-  snprintf(bufx, sizeof(bufx), "%08lx",X509_subject_name_hash(x));
-  rv = cpystr(bufx);
-//  get_fingerprint(x, EVP_md5(), bufx, sizeof(bufx), NULL);
-//  rv = fs_get(strlen(email) + 4 + 2 + strlen(bufx) + 1);
-//  sprintf(rv, "%s%s.%s", email, EXTCERT(ctype), bufx);
+  get_fingerprint(x, EVP_md5(), bufx, sizeof(bufx), NULL);
+  rv = fs_get(strlen(email) + 4 + 2 + strlen(bufx) + 1);
+  sprintf(rv, "%s%s.%s", email, EXTCERT(ctype), bufx);
   
   return rv;
 }
@@ -128,8 +178,48 @@ emailstrclean(char *string)
 }
 
 
+char *
+smime_get_date(ASN1_GENERALIZEDTIME *tm)
+{
+   BIO *mb = BIO_new(BIO_s_mem());
+   char iobuf[4096];
+   char date[MAILTMPLEN];
+   char buf[MAILTMPLEN];
+   char *m, *d, *t, *y, *z;
+
+   (void) BIO_reset(mb);
+   ASN1_UTCTIME_print(mb, tm);
+   (void) BIO_flush(mb);
+   BIO_read(mb, iobuf, sizeof(iobuf));
+
+  /* openssl returns the date in the format:
+   *	"MONTH (as name) DAY (as number) TIME(hh:mm:ss) YEAR GMT"
+   */
+   m = iobuf;
+   d = strchr(iobuf, ' ');
+   *d++ = '\0';
+   while(*d == ' ') d++;
+   t = strchr(d+1, ' ');
+   *t++ = '\0';
+   while(*t == ' ') t++;
+   y = strchr(t+1, ' ');
+   *y++ = '\0';
+   while(*y == ' ') y++;
+   z = strchr(y+1, ' ');
+   *z++ = '\0';
+   while(*z == ' ') z++;
+
+   snprintf(date, sizeof(date), "%s %s %s %s (%s)", d, m, y, t, z);
+   date[sizeof(date)-1] = '\0';
+   date_str((char *) date, iSDateS1, 1, buf, sizeof(buf), 0);
+   if(buf[strlen(buf) - 1] == '!')
+     buf[strlen(buf) - 1] = '\0';
+
+   return cpystr(buf);
+}
+
 /*
- * Add a lookup for each "*.crt" file in the given directory.
+ * Add a lookup for each "*.crt*" file in the given directory.
  */
 int
 add_certs_in_dir(X509_LOOKUP *lookup, char *path, char *ext, CertList **cdata)
@@ -150,14 +240,29 @@ add_certs_in_dir(X509_LOOKUP *lookup, char *path, char *ext, CertList **cdata)
 		    ret = -1;
 		} else {
 		  if(cdata){
+		     BIO *in;
+		     X509 *x;
+
 		     cert = fs_get(sizeof(CertList));
 		     memset((void *)cert, 0, sizeof(CertList));
 		     cert->name = cpystr(d->d_name);
+		     /* read buf into a bio and fill the CertData structure */
+		     if((in = BIO_new_file(buf, "r"))!=0){
+			x = PEM_read_bio_X509(in, NULL, NULL, NULL);
+			if(x && x->cert_info){
+			   cert->data.date_from	= smime_get_date(x->cert_info->validity->notBefore);
+			   cert->data.date_to	= smime_get_date(x->cert_info->validity->notAfter);
+			   get_fingerprint(x, EVP_md5(), buf, sizeof(buf), NULL);
+			   cert->data.md5	= cpystr(buf);
+			   X509_free(x);
+			}
+			BIO_free(in);
+		     }
 		     if(*cdata == NULL)
 			*cdata = cert;
 		     else{
 		        for (cl = *cdata; cl && cl->next; cl = cl->next);
-		           cl->next = cert;
+		        cl->next = cert;
 		     }
 		  }
 
@@ -211,6 +316,7 @@ get_ca_store(void)
 	    X509_STORE_free(store);
 	    return NULL;
 	}
+	resort_certificates(&ps_global->smime->cacertlist, CACert);
     }
 
     if(!(lookup=X509_STORE_add_lookup(store, X509_LOOKUP_hash_dir()))){
@@ -966,12 +1072,22 @@ void
 free_certlist(CertList **cl)
 {
     if(cl && *cl){
-	free_certlist(&(*cl)->next);
+	if((*cl)->data.date_from)
+	  fs_give((void **) &(*cl)->data.date_from);
+
+	if((*cl)->data.date_to)
+	  fs_give((void **) &(*cl)->data.date_to);
+
+	if((*cl)->data.md5)
+	  fs_give((void **) &(*cl)->data.md5);
+
 	if((*cl)->name)
 	  fs_give((void **) &(*cl)->name);
 
 	if((*cl)->x509_cert)
 	  X509_free((X509 *) (*cl)->x509_cert);
+
+	free_certlist(&(*cl)->next);
 
 	fs_give((void **) cl);
     }

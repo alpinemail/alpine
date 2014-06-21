@@ -715,6 +715,11 @@ AC_ARG_WITH(ssl,
 
 if test "x$with_ssl" = "xno" ; then
   alpine_SSLTYPE="none"
+elif test -d /usr/local/ssl ; then
+dnl When the system has openssl installed in its default location
+dnl instead of the one used by the distribution assume that this
+dnl is the one intended to be used.
+  alpine_SSLDIR="/usr/local/ssl"
 else
   dnl preload c-client default locations/options
   case $host in
@@ -787,6 +792,8 @@ dnl find it anywhere else.
 	alpine_SSLLIB="/sw/lib"
 	alpine_SSLCERTS="/sw/etc/ssl/certs"
 	alpine_SSLKEYS="/sw/etc/ssl/private"
+      elif test -d /usr/local/ssl ; then
+	alpine_SSLDIR="/usr/local/ssl"
       elif test -d /System/Library/OpenSSL ; then
 	alpine_SSLDIR="/System/Library/OpenSSL"
         alpine_SSLCERTS="$alpine_SSLDIR/certs"
@@ -818,8 +825,13 @@ dnl find it anywhere else.
 	alpine_SSLDIR="/etc/ssl"
 	alpine_SSLCERTS="$alpine_SSLDIR/certs"
 	alpine_SSLKEYS="$alpine_SSLDIR/private"
-	alpine_SSLINCLUDE="/usr/include/openssl" 
-	alpine_SSLLIB="/usr/lib"
+	if test -d /usr/local/include/openssl ; then
+	  alpine_SSLINCLUDE="/usr/local/include/openssl" 
+	  alpine_SSLLIB="/usr/local/lib"
+	else
+	  alpine_SSLINCLUDE="/usr/include/openssl" 
+	  alpine_SSLLIB="/usr/lib"
+	fi
       ;;
     *-*-openbsd*)
 	alpine_SSLDIR="/etc/ssl"

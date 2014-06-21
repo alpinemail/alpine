@@ -46,9 +46,7 @@ static char rcsid[] = "$Id: reply.c 1074 2008-06-04 00:08:43Z hubert@u.washingto
 #include "../pith/ablookup.h"
 #include "../pith/mailcmd.h"
 #include "../pith/margin.h"
-#ifdef SMIME
 #include "../pith/smime.h"
-#endif /* SMIME */
 
 
 /*

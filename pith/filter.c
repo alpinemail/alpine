@@ -2803,8 +2803,10 @@ typedef struct handler_s {
  */
 typedef struct _element_properties {
     char      *element;
+    size_t     len;
     int	     (*handler)(HANDLER_S *, int, int);
     unsigned   blocklevel:1;
+    unsigned   alternate:1;
 } ELPROP_S;
 
 /*
@@ -3549,96 +3551,96 @@ static struct html_entities {
  * Table of supported elements and corresponding handlers
  */
 static ELPROP_S html_element_table[] = {
-    {"HTML"},					/* HTML ignore if seen? */
-    {"HEAD",		html_head},		/* slurp until <BODY> ? */
-    {"TITLE",		html_title},		/* Document Title */
-    {"BASE",		html_base},		/* HREF base */
-    {"BODY",		html_body},		/* HTML BODY */
-    {"A",		html_a},		/* Anchor */
-    {"ABBR",		html_abbr},		/* Abbreviation */
-    {"IMG",		html_img},		/* Image */
-    {"MAP",		html_map},		/* Image Map */
-    {"AREA",		html_area},		/* Image Map Area */
-    {"HR",		html_hr, 1},		/* Horizontal Rule */
-    {"BR",		html_br},		/* Line Break */
-    {"P",		html_p, 1},		/* Paragraph */
-    {"OL",		html_ol, 1},		/* Ordered List */
-    {"UL",		html_ul, 1},		/* Unordered List */
-    {"MENU",		html_menu},		/* Menu List */
-    {"DIR",		html_dir},		/* Directory List */
-    {"LI",		html_li},		/*  ... List Item */
-    {"DL",		html_dl, 1},		/* Definition List */
-    {"DT",		html_dt},		/*  ... Def. Term */
-    {"DD",		html_dd},		/*  ... Def. Definition */
-    {"I",		html_i},		/* Italic Text */
-    {"EM",		html_em},		/* Typographic Emphasis */
-    {"STRONG",		html_strong},		/* STRONG Typo Emphasis */
-    {"VAR",		html_i},		/* Variable Name */
-    {"B",		html_b},		/* Bold Text */
-    {"U",		html_u},		/* Underline Text */
-    {"S",		html_s},		/* Strike-Through Text */
-    {"STRIKE",		html_s},		/* Strike-Through Text */
-    {"BIG",		html_big},		/* Big Font Text */
-    {"SMALL",		html_small},		/* Small Font Text */
-    {"FONT",		html_font},		/* Font display directives */
-    {"BLOCKQUOTE", 	html_blockquote, 1}, 	/* Blockquote */
-    {"ADDRESS",		html_address, 1},	/* Address */
-    {"CENTER",		html_center},		/* Centered Text v3.2 */
-    {"DIV",		html_div, 1},		/* Document Division 3.2 */
-    {"SPAN",		html_span},		/* Text Span */
-    {"H1",		html_h1, 1},		/* Headings... */
-    {"H2",		html_h2, 1},
-    {"H3",		html_h3,1},
-    {"H4",		html_h4, 1},
-    {"H5",		html_h5, 1},
-    {"H6",		html_h6, 1},
-    {"PRE",		html_pre, 1},		/* Preformatted Text */
-    {"KBD",		html_kbd},		/* Keyboard Input (NO OP) */
-    {"DFN",		html_dfn},		/* Definition (NO OP) */
-    {"VAR",		html_var},		/* Variable (NO OP) */
-    {"TT",		html_tt},		/* Typetype (NO OP) */
-    {"SAMP",		html_samp},		/* Sample Text (NO OP) */
-    {"CITE",		html_cite},		/* Citation (NO OP) */
-    {"CODE",		html_code},		/* Code Text (NO OP) */
-    {"INS",		html_ins},		/* Text Inseted (NO OP) */
-    {"DEL",		html_del},		/* Text Deleted (NO OP) */
-    {"SUP",		html_sup},		/* Text Superscript (NO OP) */
-    {"SUB",		html_sub},		/* Text Superscript (NO OP) */
-    {"STYLE",		html_style},		/* CSS Definitions */
+    {"HTML", 4},					/* HTML ignore if seen? */
+    {"HEAD", 4,		html_head},		/* slurp until <BODY> ? */
+    {"TITLE", 5,	html_title},		/* Document Title */
+    {"BASE", 4,		html_base},		/* HREF base */
+    {"BODY", 4,		html_body},		/* HTML BODY */
+    {"A", 1,		html_a},		/* Anchor */
+    {"ABBR", 4,		html_abbr},		/* Abbreviation */
+    {"IMG", 3,		html_img},		/* Image */
+    {"MAP", 3,		html_map},		/* Image Map */
+    {"AREA", 4,		html_area},		/* Image Map Area */
+    {"HR", 2,		html_hr, 1, 1},		/* Horizontal Rule */
+    {"BR", 2,		html_br, 0, 1},		/* Line Break */
+    {"P", 1,		html_p, 1},		/* Paragraph */
+    {"OL", 2,		html_ol, 1},		/* Ordered List */
+    {"UL", 2,		html_ul, 1},		/* Unordered List */
+    {"MENU", 4,		html_menu},		/* Menu List */
+    {"DIR", 3,		html_dir},		/* Directory List */
+    {"LI", 2,		html_li},		/*  ... List Item */
+    {"DL", 2,		html_dl, 1},		/* Definition List */
+    {"DT", 2,		html_dt},		/*  ... Def. Term */
+    {"DD", 2,		html_dd},		/*  ... Def. Definition */
+    {"I", 1,		html_i},		/* Italic Text */
+    {"EM", 2, 		html_em},		/* Typographic Emphasis */
+    {"STRONG", 6,	html_strong},		/* STRONG Typo Emphasis */
+    {"VAR", 3,		html_i},		/* Variable Name */
+    {"B", 1,		html_b},		/* Bold Text */
+    {"U", 1,		html_u},		/* Underline Text */
+    {"S", 1,		html_s},		/* Strike-Through Text */
+    {"STRIKE", 6,	html_s},		/* Strike-Through Text */
+    {"BIG", 3,		html_big},		/* Big Font Text */
+    {"SMALL", 5,	html_small},		/* Small Font Text */
+    {"FONT", 4,		html_font},		/* Font display directives */
+    {"BLOCKQUOTE", 10, 	html_blockquote, 1}, 	/* Blockquote */
+    {"ADDRESS",	7,	html_address, 1},	/* Address */
+    {"CENTER", 6,	html_center},		/* Centered Text v3.2 */
+    {"DIV", 3,		html_div, 1},		/* Document Division 3.2 */
+    {"SPAN", 4,		html_span},		/* Text Span */
+    {"H1", 2,		html_h1, 1},		/* Headings... */
+    {"H2", 2,		html_h2, 1},
+    {"H3", 2,		html_h3,1},
+    {"H4", 2,		html_h4, 1},
+    {"H5", 2,		html_h5, 1},
+    {"H6", 2,		html_h6, 1},
+    {"PRE", 3,		html_pre, 1},		/* Preformatted Text */
+    {"KBD", 3,		html_kbd},		/* Keyboard Input (NO OP) */
+    {"DFN", 3,		html_dfn},		/* Definition (NO OP) */
+    {"VAR", 3,		html_var},		/* Variable (NO OP) */
+    {"TT", 2,		html_tt},		/* Typetype (NO OP) */
+    {"SAMP", 4,		html_samp},		/* Sample Text (NO OP) */
+    {"CITE", 4,		html_cite},		/* Citation (NO OP) */
+    {"CODE", 4,		html_code},		/* Code Text (NO OP) */
+    {"INS", 3,		html_ins},		/* Text Inseted (NO OP) */
+    {"DEL", 3,		html_del},		/* Text Deleted (NO OP) */
+    {"SUP", 3,		html_sup},		/* Text Superscript (NO OP) */
+    {"SUB", 3,		html_sub},		/* Text Superscript (NO OP) */
+    {"STYLE", 5,	html_style},		/* CSS Definitions */
 
 /*----- Handlers below UNIMPLEMENTED (and won't until later) -----*/
 
-    {"FORM",		html_form, 1},		/* form within a document */
-    {"INPUT",		html_input},		/* One input field, options */
-    {"BUTTON",		html_button},		/* Push Button */
-    {"OPTION",		html_option},		/* One option within Select */
-    {"OPTION",		html_optgroup},		/* Option Group Definition */
-    {"SELECT",		html_select},		/* Selection from a set */
-    {"TEXTAREA",	html_textarea},		/* A multi-line input field */
-    {"LABEL",		html_label},		/* Control Label */
-    {"FIELDSET",	html_fieldset, 1},	/* Fieldset Control Group */
+    {"FORM", 4,		html_form, 1},		/* form within a document */
+    {"INPUT", 5,	html_input},		/* One input field, options */
+    {"BUTTON", 6,	html_button},		/* Push Button */
+    {"OPTION", 6,	html_option},		/* One option within Select */
+    {"OPTION", 6,	html_optgroup},		/* Option Group Definition */
+    {"SELECT", 6,	html_select},		/* Selection from a set */
+    {"TEXTAREA", 8,	html_textarea},		/* A multi-line input field */
+    {"LABEL", 5,	html_label},		/* Control Label */
+    {"FIELDSET", 8,	html_fieldset, 1},	/* Fieldset Control Group */
 
 /*----- Handlers below NEVER TO BE IMPLEMENTED -----*/
-    {"SCRIPT",		html_script},		/* Embedded scripting statements */
-    {"APPLET",		NULL},			/* Embedded applet statements */
-    {"OBJECT",		NULL},			/* Embedded object statements */
-    {"LINK",		NULL},			/* References to external data */
-    {"PARAM",		NULL},			/* Applet/Object parameters */
+    {"SCRIPT", 6,	html_script},		/* Embedded scripting statements */
+    {"APPLET", 6,	NULL},			/* Embedded applet statements */
+    {"OBJECT", 6,	NULL},			/* Embedded object statements */
+    {"LINK", 4,		NULL},			/* References to external data */
+    {"PARAM", 5,	NULL},			/* Applet/Object parameters */
 
 /*----- Handlers below provide limited support for RFC 1942 Tables -----*/
 
-    {"TABLE",		html_table, 1},		/* Table */
-    {"CAPTION",		html_caption},		/* Table Caption */
-    {"TR",		html_tr},		/* Table Table Row */
-    {"TD",		html_td},		/* Table Table Data */
-    {"TH",		html_th},		/* Table Table Head */
-    {"THEAD",		html_thead},		/* Table Table Head */
-    {"TBODY",		html_tbody},		/* Table Table Body */
-    {"TFOOT",		html_tfoot},		/* Table Table Foot */
-    {"COL",		html_col},		/* Table Column Attibutes */
-    {"COLGROUP",	html_colgroup},		/* Table Column Group Attibutes */
+    {"TABLE", 5,	html_table, 1},		/* Table */
+    {"CAPTION", 7,		html_caption},		/* Table Caption */
+    {"TR", 2,		html_tr},		/* Table Table Row */
+    {"TD", 2,		html_td},		/* Table Table Data */
+    {"TH", 2,		html_th},		/* Table Table Head */
+    {"THEAD", 5,	html_thead},		/* Table Table Head */
+    {"TBODY", 5,	html_tbody},		/* Table Table Body */
+    {"TFOOT", 5,	html_tfoot},		/* Table Table Foot */
+    {"COL", 3,		html_col},		/* Table Column Attibutes */
+    {"COLGROUP", 8,	html_colgroup},		/* Table Column Group Attibutes */
 
-    {NULL,		NULL}
+    {NULL, 0,		NULL}
 };
 
 
@@ -3646,15 +3648,15 @@ static ELPROP_S html_element_table[] = {
  * Table of supported RSS 2.0 elements
  */
 static ELPROP_S rss_element_table[] = {
-    {"RSS",		rss_rss},		/* RSS 2.0 version */
-    {"CHANNEL",		rss_channel},		/* RSS 2.0 Channel */
-    {"TITLE",		rss_title},		/* RSS 2.0 Title */
-    {"IMAGE",		rss_image},		/* RSS 2.0 Channel Image */
-    {"LINK",		rss_link},		/* RSS 2.0 Channel/Item Link */
-    {"DESCRIPTION",	rss_description},	/* RSS 2.0 Channel/Item Description */
-    {"ITEM",		rss_item},		/* RSS 2.0 Channel ITEM */
-    {"TTL",		rss_ttl},		/* RSS 2.0 Item TTL */
-    {NULL,		NULL}
+    {"RSS", 3,		rss_rss},		/* RSS 2.0 version */
+    {"CHANNEL", 7,	rss_channel},		/* RSS 2.0 Channel */
+    {"TITLE", 5,	rss_title},		/* RSS 2.0 Title */
+    {"IMAGE", 5,	rss_image},		/* RSS 2.0 Channel Image */
+    {"LINK", 4,		rss_link},		/* RSS 2.0 Channel/Item Link */
+    {"DESCRIPTION", 11,	rss_description},	/* RSS 2.0 Channel/Item Description */
+    {"ITEM", 4,		rss_item},		/* RSS 2.0 Channel ITEM */
+    {"TTL", 3,		rss_ttl},		/* RSS 2.0 Item TTL */
+    {NULL, 0,		NULL}
 };
 
 
@@ -7167,9 +7169,14 @@ ELPROP_S *
 element_properties(FILTER_S *fd, char *el_name)
 {
     register ELPROP_S *el_table = ELEMENTS(fd);
+    size_t len_name = strlen(el_name);
 
     for(; el_table->element; el_table++)
-      if(!strucmp(el_name, el_table->element))
+      if(!strucmp(el_name, el_table->element)
+	|| (el_table->alternate 
+	&& len_name == el_table->len + 1
+	&& el_name[el_table->len] == '/'
+	&& !struncmp(el_name, el_table->element, el_table->len)))
 	return(el_table);
 
     return(NULL);
@@ -7426,6 +7433,24 @@ html_element_collector(FILTER_S *fd, int ch)
 
 	if(!ED(fd)->hit_equal)
 	  ED(fd)->hit_equal = (ch == '=');
+    }
+    else if(ch == '/' && ED(fd)->len && !ED(fd)->element){
+	ELPROP_S *ep;
+	ep = element_properties(fd, ED(fd)->buf);
+	if(ep){
+	  if(!ep->alternate)
+	    ED(fd)->badform = 1;
+	  else{
+	    if(ED(fd)->len < ((ED(fd)->element || !ED(fd)->hit_equal)
+			       ? HTML_BUF_LEN:MAX_ELEMENT)){
+	      ED(fd)->buf[(ED(fd)->len)++] = ch;	/* add this exception */
+	    }
+	    else
+	      ED(fd)->overrun = 1;
+	  }
+       }
+       else
+	 ED(fd)->badform = 1;
     }
     else
       ED(fd)->badform = 1;		/* unrecognized data?? */

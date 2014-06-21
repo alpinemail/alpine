@@ -277,7 +277,7 @@ describe_mime(struct mail_bodystruct *body, char *prefix, int num,
         snprintf(a->number, ll, "%s%d",prefix, num);
 	a->number[ll-1] = '\0';
         (a+1)->description = NULL;
-        if(body->type == TYPEMESSAGE && body->encoding <= ENCBINARY
+        if(body->type == TYPEMESSAGE && body->encoding <= ENCBASE64
 	   && body->subtype && strucmp(body->subtype, "rfc822") == 0){
 	    body = body->nested.msg->body;
 	    snprintf(numx, sizeof(numx), "%.*s%d.", sizeof(numx)-20, prefix, num);

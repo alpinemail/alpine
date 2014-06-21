@@ -61,6 +61,8 @@ void	       get_fingerprint(X509 *cert, const EVP_MD *type, char *buf, size_t ma
 int	       certlist_to_file(char *filename, CertList *certlist);
 int	       load_cert_for_key(char *pathdir, EVP_PKEY *pkey, char **certfile, X509 **pcert);
 char 	       *smime_name(char *email, X509 *x, WhichCerts ctype);
+char           *smime_get_date(ASN1_GENERALIZEDTIME *tm);
+void	       resort_certificates(CertList **data, WhichCerts ctype);
 
 
 #endif /* PITH_SMKEYS_INCLUDED */

@@ -4,8 +4,8 @@ static char rcsid[] = "$Id: arg.c 900 2008-01-05 01:13:26Z hubert@u.washington.e
 
 /*
  * ========================================================================
- * Copyright 2006-2008 University of Washington
  * Copyright 2013-2014 Eduardo Chappa
+ * Copyright 2006-2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1190,13 +1190,21 @@ pinerc_cmdline_opt(char *arg)
     if(!arg || !arg[0])
       return 0;
 
-    for(v = ps_global->vars; v->name != NULL; v++){
-      if(v->is_used && struncmp(v->name, arg, strlen(v->name)) == 0){
-	  p1 = arg + strlen(v->name);
+    if((value = strchr(arg, '=')) != NULL){
+	i = value - arg;
+	arg[i] = '\0';
+    }
+    else
+ 	i = -1;
 
-	  /*----- Skip to '=' -----*/
+    for(v = ps_global->vars; v->name != NULL; v++){
+	if(v->is_used && strucmp(v->name, arg) == 0){
+	  p1 = arg + strlen(v->name);
+	  if(i > 0) arg[i] = '=';
+
+	    /*----- Skip to '=' -----*/
 	  while(*p1 && (*p1 == '\t' || *p1 == ' '))
-	    p1++;
+	     p1++;
 
 	  if(*p1 != '='){
 	      char buf[MAILTMPLEN];
@@ -1208,8 +1216,11 @@ pinerc_cmdline_opt(char *arg)
 
 	  p1++;
           break;
-      }
+	}
     }
+	
+
+    if(i > 0) arg[i] = '=';
 
     /* no match, check for a feature name used directly */
     if(v->name == NULL){

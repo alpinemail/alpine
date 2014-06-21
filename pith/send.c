@@ -890,7 +890,10 @@ redraft_work(MAILSTREAM **streamp, long int cont_msg, ENVELOPE **outgoing,
 	else{
 	    *body	  = mail_newbody();
 	    (*body)->type = TYPETEXT;
-	    if(b->subtype)
+	    if(b->subtype 	/* these types are transformed to text/plain */
+		&& strucmp(b->subtype, "richtext")
+		&& strucmp(b->subtype, "enriched")
+		&& strucmp(b->subtype, "html"))
 	      (*body)->subtype = cpystr(b->subtype);
 
 	    if((charset = parameter_val(b->parameter,"charset")) != NULL){

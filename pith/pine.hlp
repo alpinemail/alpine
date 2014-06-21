@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 64 2014-05-31 21:36:57
+Alpine Commit 65 2014-06-20 23:23:15
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -205,6 +205,10 @@ Additions include:
   <LI> S/MIME: Forwarding a message will include the signed part as part
        of the text and not as a multipart message, just as the reply
        command does.
+  <LI> HTML: Style tag in body of html message causes Alpine to not write
+       its content until a new &lt;/style&gt;
+  <LI> HTML: &lt;BR&gt;, &lt;BR /&gt;, and &lt;BR/&gt; are considered
+       the same inline tag; the same is valid for the &lt;HR&gt; tag.
   <LI> Add support to selective expunge through a subcommand of the 
        select-apply commands. Read more in the <A 
        HREF="h_index_cmd_expunge">help</A> for the expunge command.
@@ -296,6 +300,10 @@ Bugs that have been addressed include:
        an index was based on scores that needed information from a remote
        addressbook in the same server as the folder opened. Reported by
        Peter Koellner.
+  <LI> Crash in message/rfc822 attachments encoded in base64.
+  <LI> Postponed messages whose content-type is text/html, text/enriched and
+       text/richtext are sent with that content-type, even though, after
+       resuming composition, Alpine had changed its type to text/plain.
   <LI> Alpine cannot handle correctly some characters in the Windows-1256 
        character set, which might lead to a crash or a corruption in the 
        screen. Work was done to contain the bug. A more complete fix will 
@@ -35154,8 +35162,20 @@ and private information about your key, with the <B>B</B> and
 
 UNIX Alpine only.
 <P>
-This screen allows you to manage your public certificates. Available commands and
-a short description of what they do follows.
+This screen allows you to manage your public certificates. 
+<P>
+The format of this screen is as follows. There are five fields: The 
+leftmost field is normally empty, but it could contain the letter 
+&quot;D&quot; to indicate that that certificate has been marked for 
+deletion. The next field is the e-mail address of the owner of the 
+certificate, shown in its entirety. The third field is the first day of 
+validity for that certificate; the fourth field in the last day that that 
+certificate is valid, and the fifth field is what can be displayed of the 
+MD5 hash of the certificate. You can use any of the last three fields to 
+distinguish between two certificates for the same owner.
+<P>
+Available commands in this screen and a short description of what they 
+do follows.
 <UL>
 <LI> <B>I</B> Imports a public certificate to this collection.
 <LI> <B>V</B> View information about a certificate such as the name of the person the
@@ -35189,8 +35209,20 @@ All commands provide feedback to let you know about their success or failure.
 
 UNIX Alpine only.
 <P>
-This screen allows you to manage your private key. Available commands and
-a short description of what they do follows.
+This screen allows you to manage your private key.
+<P>
+The format of this screen is as follows. There are five fields: The 
+leftmost field is normally empty, but it could contain the letter 
+&quot;D&quot; to indicate that that certificate has been marked for 
+deletion. The next field is the e-mail address of the owner of the 
+certificate, shown in its entirety. The third field is the first day of 
+validity for that certificate; the fourth field in the last day that that 
+certificate is valid, and the fifth field is what can be displayed of the 
+MD5 hash of the public certificate corresponding to this private key. You 
+can use any of the last three fields to distinguish between two 
+certificates for the same owner.
+<P>
+Available commands and a short description of what they do follows.
 <UL>
 <LI> <B>I</B> Imports a new public key to this collection.
 <LI> <B>V</B> View information about the public certificate corresponding to this
@@ -35225,7 +35257,19 @@ All commands provide feedback to let you know about their success or failure.
 UNIX Alpine only.
 <P>
 This screen allows you to manage your collection of certificates that you
-trust. Available commands and a short description of what they do follows.
+trust. 
+<P>
+The format of this screen is as follows. There are five fields: The 
+leftmost field is normally empty, but it could contain the letter 
+&quot;D&quot; to indicate that that certificate has been marked for 
+deletion. The next field is the e-mail address of the owner of the 
+certificate, shown in its entirety. The third field is the first day of 
+validity for that certificate; the fourth field in the last day that that 
+certificate is valid, and the fifth field is what can be displayed of the 
+MD5 hash of the certificate. You can use any of the last three fields to 
+distinguish between two certificates for the same owner.
+<P>
+Available commands and a short description of what they do follows.
 <UL>
 <LI> <B>I</B> Imports a trusted certificate to this collection. This is
 done by reading the certificate and validating it. Once a certificate

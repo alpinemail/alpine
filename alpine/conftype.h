@@ -64,6 +64,7 @@ typedef struct conf_line {
 	struct smime_data {
 	   WhichCerts ctype;
 	   int	      deleted;
+	   char	      address[MAILTMPLEN];
 	} s;
 #endif /* SMIME */
 	struct context_and_screen {

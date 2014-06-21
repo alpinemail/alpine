@@ -676,6 +676,9 @@ typedef enum {Public, Private, CACert} WhichCerts;
 typedef struct certdata {
   unsigned   deleted:1;		/* certificate is marked deleted	     */
   unsigned   renew:1;		/* we must renew this list, set at top cert  */
+  char	     *date_from;	/* date from which certificate is valid      */
+  char	     *date_to;		/* date certificate expires		     */
+  char	     *md5;		/* MD5 Hash				     */
 } CertData;
 
 typedef struct certlist {
@@ -740,8 +743,11 @@ typedef struct smime_stuff {
 			  : ((X) == Private ? ".key"	\
 				: ((X) == CACert ? ".crt" : ""))))
 
-#define DELETEDCERT(X) ((X)->data.deleted)
-#define RENEWCERT(X)   ((X)->data.renew)
+#define DELETEDCERT(X)	((X)->data.deleted)
+#define RENEWCERT(X)	((X)->data.renew)
+#define DATEFROMCERT(X)	((X)->data.date_from)
+#define DATETOCERT(X)	((X)->data.date_to)
+#define MD5CERT(X)	((X)->data.md5)
 
 #endif /* SMIME */
 

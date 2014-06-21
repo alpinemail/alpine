@@ -1,4 +1,5 @@
 /* ========================================================================
+ * Copyright 2013-2014 Eduardo Chappa
  * Copyright 2008-2010 Mark Crispin
  * ========================================================================
  */
@@ -34,6 +35,10 @@
 #include <stdio.h>
 #include <time.h>
 #include "c-client.h"
+
+
+/* internal prototype */
+void	initialize_body(BODY *b, char *h, char *t);
 
 
 /* Support for deprecated features in earlier specifications.  Note that this
@@ -259,6 +264,23 @@ void rfc822_parse_msg_full (ENVELOPE **en,BODY **bdy,char *s,unsigned long i,
 				/* now parse the body */
   if (body) rfc822_parse_content (body,bs,host,depth,flags);
 }
+
+void
+initialize_body(BODY *b, char *h, char *t)
+{
+    if(b->type==TYPEMULTIPART){
+        PART *p;
+	  cpytxt(&b->mime.text, h+b->mime.offset, b->mime.text.size);
+          cpytxt(&b->contents.text, t + b->contents.offset, b->size.bytes);
+
+          for(p=b->nested.part; p; p=p->next)
+            initialize_body((BODY *)p, h, t);
+    }
+    else {
+ 	cpytxt(&b->mime.text, h+b->mime.offset, b->mime.text.size);  
+        cpytxt(&b->contents.text, t + b->contents.offset, b->size.bytes);  
+    }
+}
 
 /* Parse a message body content
  * Accepts: pointer to body structure
@@ -337,33 +359,65 @@ void rfc822_parse_content (BODY *body,STRING *bs,char *h,unsigned long depth,
       case ENC7BIT:		/* these are valid nested encodings */
       case ENC8BIT:
       case ENCBINARY:
+      case ENCBASE64:		/* message/rfc822 message encoded as base64 */
 	break;
       default:
 	MM_LOG ("Ignoring nested encoding of message contents",PARSE);
       }
-				/* hunt for blank line */
+
       for (c = '\012',j = 0; (i > j) && ((c != '\012') || (CHR(bs) != '\012'));
 	   j++) if ((c1 = SNX (bs)) != '\015') c = c1;
-      if (i > j) {		/* unless no more text */
-	c1 = SNX (bs);		/* body starts here */
-	j++;			/* advance count */
+
+      switch(body->encoding){
+	case ENCBASE64: 
+	      SETPOS (bs,body->contents.offset);
+	      s = (char *) fs_get ((size_t) j + 1);
+	      for (s1 = s,k = j; k--; *s1++ = SNX (bs));
+	      s[j] = '\0';		/* decode encoded text */
+	      if((s1 = strstr(s, "--")) != NULL)
+		*(s1-2) = '\0';
+	      s1 = (char *) rfc822_base64 (s, strlen(s), &k);
+	      if(s1){
+		char *t = strstr(s1, "\r\n\r\n");
+
+		if(t != NULL){
+		   char *u;
+		   STRING b;
+
+		   t += 4;
+		   u = cpystr(t);
+                   INIT(&b, mail_string, t, strlen(t));
+		   rfc822_parse_msg_full(&body->nested.msg->env, &body->nested.msg->body, t, 
+					strlen(t), &b, BADHOST, 0, 0);
+		   initialize_body(body->nested.msg->body, u, u);
+		}
+		fs_give((void **)&s1);
+	      }
+	      fs_give((void **)&s);
+	      break;
+
+	default:
+	      if (i > j) {		/* unless no more text */
+		c1 = SNX (bs);		/* body starts here */
+		j++;			/* advance count */
+	      }
+					/* note body text offset and header size */
+	      body->nested.msg->header.text.size = j;
+	      body->nested.msg->text.text.size = body->contents.text.size - j;
+	      body->nested.msg->text.offset = GETPOS (bs);
+	      body->nested.msg->full.offset = body->nested.msg->header.offset =
+		body->contents.offset;
+	      body->nested.msg->full.text.size = body->contents.text.size;
+					/* copy header string */
+	      SETPOS (bs,body->contents.offset);
+	      s = (char *) fs_get ((size_t) j + 1);
+	      for (s1 = s,k = j; k--; *s1++ = SNX (bs));
+	      s[j] = '\0';		/* tie off string (not really necessary) */
+					/* now parse the body */
+	      rfc822_parse_msg_full (&body->nested.msg->env,&body->nested.msg->body,s,
+				     j,bs,h,depth+1,flags);
+	      fs_give ((void **) &s);	/* free header string */
       }
-				/* note body text offset and header size */
-      body->nested.msg->header.text.size = j;
-      body->nested.msg->text.text.size = body->contents.text.size - j;
-      body->nested.msg->text.offset = GETPOS (bs);
-      body->nested.msg->full.offset = body->nested.msg->header.offset =
-	body->contents.offset;
-      body->nested.msg->full.text.size = body->contents.text.size;
-				/* copy header string */
-      SETPOS (bs,body->contents.offset);
-      s = (char *) fs_get ((size_t) j + 1);
-      for (s1 = s,k = j; k--; *s1++ = SNX (bs));
-      s[j] = '\0';		/* tie off string (not really necessary) */
-				/* now parse the body */
-      rfc822_parse_msg_full (&body->nested.msg->env,&body->nested.msg->body,s,
-			     j,bs,h,depth+1,flags);
-      fs_give ((void **) &s);	/* free header string */
 				/* restore position */
       SETPOS (bs,body->contents.offset);
     }
