@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 65 2014-06-20 23:23:15
+Alpine Commit 66 2014-12-07 19:42:29
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -257,7 +257,13 @@ Additions include:
        by James Jerkins.
   <LI> Replace tabs by spaces in From and Subject fields to control for
        size in screen of these fields. Change only in index screen display.
+  <LI> Aggregate operations allows bouncing a list of messages using a role.
+       Suggested by Ulf-Dietrich Braumann.
+  <LI> Makefile: Add $(LIBINTL) to the flags to link rpdump, rpload, 
+     alpined and alpineldap because MAC OSX 10.8 x86_64 needs it. Reported by
+     Charles M. Register.
 </UL>
+
 
 <P>
 Bugs that have been addressed include:
@@ -294,6 +300,9 @@ Bugs that have been addressed include:
        that contains 8bit if the option "Enable 8bit ESMTP Negotiation" is 
        enabled, the message contains 8bit characters and the smtp server 
        supports 8bit sending.
+  <LI> When replying to several messages, subject will be decoded first,
+       and then stripped from re/fwd before they are compared to determine
+       the subject of the replied message.
   <LI> Crash when tcp connection to NNTP server was lost after connection
        had been established, but lost immediately afterwards.
   <LI> Crash with message &quot;lock when already locked&quot;, when painting
@@ -333,6 +342,11 @@ Bugs that have been addressed include:
   <LI> Move SSL configurations from UW-IMAP to configure script, and
        update OpenSSL configuration for Mac OS X.
   <LI> Remove -lregex from linker flags when building --with-supplied-regex.
+  <LI> When the download of an attachment is interrumpted, Alpine stills
+     caches what was downloaded, making the download incomplete for 
+     subsequent calls of Alpine attempting to open the attachment. In the 
+     future, Alpine will not cache any downloaded part of the attachment 
+     when it is interrupted.
 </UL>
 <P>
 
@@ -18714,7 +18728,7 @@ It has the format MMM DD. For example, &quot;Oct 23&quot;.
 The feature
 <A HREF="h_config_dates_to_local"><!--#echo var="FEAT_convert-dates-to-localtime"--></A>,
 which adjusts for the timezone the message was sent from,
-may have an affect on the value of this token as well as the values of
+may have an effect on the value of this token as well as the values of
 all of the other DATE or TIME tokens.
 Some of the DATE and TIME tokens are displayed in a locale-specific
 way unless the option
@@ -34310,17 +34324,40 @@ which gives you some information about the certificate used to sign or encrypt t
 
 <H2>MISCELLANEOUS</H2>
 
-You may have access to a private certificate in the PKCS12 format,
-which would sometimes be in a file with a &quot;.p12&quot; suffix.
-The UNIX shell command
-<P>
-<CENTER><SAMP>openssl pkcs12 -in file.p12 -out file.pem</SAMP></CENTER>
-<P>
-may work to convert that from the PKCS12 format to the PEM format.
-Then that file could be placed in the &quot;<SAMP>private</SAMP>&quot;
-directory with a filename of your email address followed by the
-suffix &quot;<SAMP>.key</SAMP>&quot;.
+If you have access to a private certificate in the PKCS12 format, which 
+would sometimes be in a file with a &quot;.p12&quot; extension, then you can 
+use the following commands to generate private keys, public and certificate
+authorities certificates. In the examples below, we assume that the 
+certificate in the p12 format is called &quot;certificate.p12&quot;, and 
+that your email address is &quot;your@address.com&quot;.
 
+<P>
+In order to create a private key use the command
+<P>
+<CENTER><SAMP>openssl pkcs12 -in certificate.p12 -out your@address.com.key</SAMP></CENTER>
+<P>
+In order to create a public certificate use the command
+<P>
+<CENTER><SAMP>
+openssl pkcs12 -in certificate.p12 -clcerts -nokeys -out your@address.com.crt
+</SAMP></CENTER>
+<P>
+In order to create a certificate authority certificate use the command
+<P>
+<CENTER><SAMP>
+openssl pkcs12 -in certificate.p12 -cacerts -nokeys -out certificate-ca.crt 
+</SAMP></CENTER>
+
+<P> If the previous command produces an empty file, it means that the 
+certificate authority was not included in the .p12 file, so you will have 
+to get it from some other sources. You will need these certificates, so 
+that you can validate correctly signatures.
+
+<P>
+After you have exported these certificates and keys, you can  use the import 
+command in Alpine, from the S/MIME configuration screen,
+to import these certificates into Alpine. They will be available for use
+as soon as you import them.
 <P>
 &lt;End of help on this topic&gt;
 </BODY>
@@ -35168,11 +35205,15 @@ The format of this screen is as follows. There are five fields: The
 leftmost field is normally empty, but it could contain the letter 
 &quot;D&quot; to indicate that that certificate has been marked for 
 deletion. The next field is the e-mail address of the owner of the 
-certificate, shown in its entirety. The third field is the first day of 
-validity for that certificate; the fourth field in the last day that that 
-certificate is valid, and the fifth field is what can be displayed of the 
-MD5 hash of the certificate. You can use any of the last three fields to 
-distinguish between two certificates for the same owner.
+certificate, shown in its entirety. The third and fourth field are the 
+first and last day validity for that certificate, respectively. The date
+is displayed in the user's locale unless the option 
+<A HREF="h_config_disable_index_locale_dates"><!--#echo var="FEAT_disable-index-locale-dates"--></A>
+is set. In this case, the month, day and year are represented by two
+digits, and the format used is mm/dd/yy. Finally, the fifth 
+field is what can be displayed of the MD5 hash of the certificate. You can 
+use any of the last three fields to distinguish between two certificates 
+for the same owner.
 <P>
 Available commands in this screen and a short description of what they 
 do follows.

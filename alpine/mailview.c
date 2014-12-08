@@ -985,7 +985,7 @@ scroll_handle_launch(HANDLE_S *handle, int force)
 
 
       default :
-	panic("Unexpected HANDLE type");
+	alpine_panic("Unexpected HANDLE type");
     }
 
     return(0);
@@ -1088,7 +1088,7 @@ scroll_handle_reframe(int key, int center)
 	}
 
 	if(l == start_line)
-	  panic("Internal Error: no handle found");
+	  alpine_panic("Internal Error: no handle found");
 	else
 	  start_line = l;
     }

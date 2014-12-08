@@ -488,7 +488,7 @@ sort_sort_callback(MAILSTREAM *stream, long unsigned int *list, long unsigned in
     dprint((2, "sort_sort_callback\n"));
 
     if(mn_get_total(g_sort.msgmap) < nmsgs)
-      panic("Message count shrank after sort!");
+      alpine_panic("Message count shrank after sort!");
 
     /* copy ulongs to array of longs */
     for(i = nmsgs; i > 0; i--)

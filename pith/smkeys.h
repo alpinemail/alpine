@@ -43,6 +43,9 @@ typedef struct personal_cert {
     struct personal_cert *next;
 } PERSONAL_CERT;
 
+/* flags that tell us where to look for certificates/keys */
+#define SM_NORMALCERT	0x1	/* look in normal user defined directory */
+#define SM_BACKUPCERT	0x2	/* look in backup directory */
 
 /* exported protoypes */
 int	       add_certs_in_dir(X509_LOOKUP *lookup, char *path, char *ext, CertList **cdata);
@@ -51,7 +54,7 @@ PERSONAL_CERT *get_personal_certs(char *d);
 X509          *get_cert_for(char *email, WhichCerts ctype);
 void           save_cert_for(char *email, X509 *cert, WhichCerts ctype);
 char         **get_x509_subject_email(X509 *x);
-EVP_PKEY      *load_key(PERSONAL_CERT *pc, char *pass);
+EVP_PKEY      *load_key(PERSONAL_CERT *pc, char *pass, int flag);
 CertList      *mem_to_certlist(char *contents, WhichCerts ctype);
 void           add_to_end_of_certlist(CertList **cl, char *name, X509 *cert);
 void           free_certlist(CertList **cl);
@@ -60,10 +63,9 @@ void           free_personal_certs(PERSONAL_CERT **pc);
 void	       get_fingerprint(X509 *cert, const EVP_MD *type, char *buf, size_t maxLen, char *s);
 int	       certlist_to_file(char *filename, CertList *certlist);
 int	       load_cert_for_key(char *pathdir, EVP_PKEY *pkey, char **certfile, X509 **pcert);
-char 	       *smime_name(char *email, X509 *x, WhichCerts ctype);
 char           *smime_get_date(ASN1_GENERALIZEDTIME *tm);
 void	       resort_certificates(CertList **data, WhichCerts ctype);
-
+int	       setup_certs_backup_by_type(WhichCerts ctype);
 
 #endif /* PITH_SMKEYS_INCLUDED */
 #endif /* SMIME */

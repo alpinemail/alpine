@@ -90,18 +90,10 @@ am__DEPENDENCIES_1 =
 alpine_DEPENDENCIES = $(LDADD) $(am__DEPENDENCIES_1)
 am_rpdump_OBJECTS = rpdump.$(OBJEXT)
 rpdump_OBJECTS = $(am_rpdump_OBJECTS)
-rpdump_LDADD = $(LDADD)
-rpdump_DEPENDENCIES = ../pico/libpico.a ../pico/osdep/libpicoosd.a \
-	../pith/libpith.a ../pith/osdep/libpithosd.a \
-	../pith/charconv/libpithcc.a osdep/libpineosd.a \
-	../c-client/c-client.a
+rpdump_DEPENDENCIES = $(LDADD) $(am__DEPENDENCIES_1)
 am_rpload_OBJECTS = rpload.$(OBJEXT)
 rpload_OBJECTS = $(am_rpload_OBJECTS)
-rpload_LDADD = $(LDADD)
-rpload_DEPENDENCIES = ../pico/libpico.a ../pico/osdep/libpicoosd.a \
-	../pith/libpith.a ../pith/osdep/libpithosd.a \
-	../pith/charconv/libpithcc.a osdep/libpineosd.a \
-	../c-client/c-client.a
+rpload_DEPENDENCIES = $(LDADD) $(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = 
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -325,6 +317,8 @@ alpine_SOURCES = addrbook.c adrbkcmd.c after.c alpine.c arg.c busy.c colorconf.c
 	roleconf.c send.c setup.c signal.c status.c takeaddr.c titlebar.c smime.c newmail.c
 
 alpine_LDADD = $(LDADD) $(INTLLIBS)
+rpdump_LDADD = $(LDADD) $(INTLLIBS)
+rpload_LDADD = $(LDADD) $(INTLLIBS)
 nodist_alpine_SOURCES = date.c
 rpdump_SOURCES = rpdump.c
 rpload_SOURCES = rpload.c

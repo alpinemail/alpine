@@ -280,7 +280,7 @@ radio_buttons(char *utf8prompt, int line, ESCKEY_S *esc_list, int dflt,
 
 	if(flags & RB_RET_HELP){
 	    if(help_text != NO_HELP)
-	      panic("RET_HELP and help in radio_buttons!");
+	      alpine_panic("RET_HELP and help in radio_buttons!");
 
 	    button_list[b].ch = '?';
 	    button_list[b].rval = 3;
@@ -360,7 +360,7 @@ radio_buttons(char *utf8prompt, int line, ESCKEY_S *esc_list, int dflt,
     clrbitmap(bitmap);
     memset(fkey_table, NO_OP_COMMAND, 12 * sizeof(int));
     if(flags & RB_RET_HELP && help_text != NO_HELP)
-      panic("RET_HELP and help in radio_buttons!");
+      alpine_panic("RET_HELP and help in radio_buttons!");
 
     /* if shown, always at position 0 */
     if(help_text != NO_HELP || flags & RB_RET_HELP){
@@ -398,7 +398,7 @@ radio_buttons(char *utf8prompt, int line, ESCKEY_S *esc_list, int dflt,
 	       && esc_list[i-start].label[0] != '\0'){  /* visible */
 		if(i == 12){  /* special case where we put it in help slot */
 		    if(help_text != NO_HELP)
-		  panic("Programming botch in radio_buttons(): too many keys");
+		  alpine_panic("Programming botch in radio_buttons(): too many keys");
 
 		    if(esc_list[i-start].ch != -2)
 		      setbitn(0, bitmap); /* the help slot */
@@ -420,7 +420,7 @@ radio_buttons(char *utf8prompt, int line, ESCKEY_S *esc_list, int dflt,
 		      rb_keymenu.keys[0].label = esc_list[i-start].label;
 		}
 		else
-		  panic("Botch in radio_buttons(): too many keys");
+		  alpine_panic("Botch in radio_buttons(): too many keys");
 	    }
 	}
 	else{
@@ -823,16 +823,16 @@ construct_combined_esclist(ESCKEY_S *list1, ESCKEY_S *list2)
      */
     for(i=0; list1 && list1[i].ch != -1; i++){
 	if(list1[i].rval == list[j].rval)
-	  panic("1bad rval in d_r");
+	  alpine_panic("1bad rval in d_r");
 	if(F_OFF(F_USE_FK,ps_global) && list1[i].ch == list[j].ch)
-	  panic("1bad ch in ccl");
+	  alpine_panic("1bad ch in ccl");
     }
 
     for(i=0; list2 && list2[i].ch != -1; i++){
 	if(list2[i].rval == list[j].rval)
-	  panic("2bad rval in d_r");
+	  alpine_panic("2bad rval in d_r");
 	if(F_OFF(F_USE_FK,ps_global) && list2[i].ch == list[j].ch)
-	  panic("2bad ch in ccl");
+	  alpine_panic("2bad ch in ccl");
     }
 
     j++;
@@ -840,7 +840,7 @@ construct_combined_esclist(ESCKEY_S *list1, ESCKEY_S *list2)
     /* the visible set */
     for(i=0; list1 && list1[i].ch != -1; i++){
 	if(i >= KEYS_PER_LIST && list1[i].label[0] != '\0')
-	  panic("too many visible keys in ccl");
+	  alpine_panic("too many visible keys in ccl");
 
 	list[j++] = list1[i];
     }

@@ -105,22 +105,18 @@ am_alpined_OBJECTS = alpined.$(OBJEXT) busy.$(OBJEXT) color.$(OBJEXT) \
 	signal.$(OBJEXT) debug.$(OBJEXT) status.$(OBJEXT) \
 	stubs.$(OBJEXT)
 alpined_OBJECTS = $(am_alpined_OBJECTS)
-alpined_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
-alpined_DEPENDENCIES = local.o @top_srcdir@/pith/libpith.a \
+am__DEPENDENCIES_2 = local.o @top_srcdir@/pith/libpith.a \
 	@top_srcdir@/pith/osdep/libpithosd.a \
 	@top_srcdir@/pith/charconv/libpithcc.a \
 	@top_srcdir@/c-client/c-client.a $(am__DEPENDENCIES_1)
+alpined_DEPENDENCIES = $(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1)
 am_alpineldap_OBJECTS = alpineldap.$(OBJEXT) busy.$(OBJEXT) \
 	color.$(OBJEXT) imap.$(OBJEXT) ldap.$(OBJEXT) remote.$(OBJEXT) \
 	signal.$(OBJEXT) debug.$(OBJEXT) status.$(OBJEXT) \
 	stubs.$(OBJEXT)
 alpineldap_OBJECTS = $(am_alpineldap_OBJECTS)
-alpineldap_LDADD = $(LDADD)
-alpineldap_DEPENDENCIES = local.o @top_srcdir@/pith/libpith.a \
-	@top_srcdir@/pith/osdep/libpithosd.a \
-	@top_srcdir@/pith/charconv/libpithcc.a \
-	@top_srcdir@/c-client/c-client.a $(am__DEPENDENCIES_1)
+alpineldap_DEPENDENCIES = $(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = 
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -312,6 +308,8 @@ alpineldap_SOURCES = alpineldap.c busy.c color.c imap.c ldap.c remote.c \
 		   signal.c debug.c status.c stubs.c \
 		   alpined.h color.h ldap.h
 
+alpined_LDADD = $(LDADD) $(INTLLIBS)
+alpineldap_LDADD = $(LDADD) $(INTLLIBS)
 LDADD = local.o \
 	@top_srcdir@/pith/libpith.a \
 	@top_srcdir@/pith/osdep/libpithosd.a \

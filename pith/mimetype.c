@@ -176,7 +176,7 @@ mt_srch_mime_type(MT_OPERATORPROC mt_operator, MT_MAP_T *mt_map)
 	    }
 	}
 	else
-	  panic("Unhandled mime type search");
+	  alpine_panic("Unhandled mime type search");
     }
 
     /* if we still can not find the type, but it is a .docx (or alike) extension

@@ -1203,7 +1203,8 @@ long dotlock_lock (char *file,DOTLOCK *base,int fd)
     if (closedBox || !lockpgm);	/* can't do on closed box or disabled */
     else if ((*lockpgm && stat (lockpgm,&sb)) ||
 	     (!*lockpgm && stat (lockpgm = LOCKPGM1,&sb) &&
-	      stat (lockpgm = LOCKPGM2,&sb) && stat (lockpgm = LOCKPGM3,&sb)))
+	      stat (lockpgm = LOCKPGM2,&sb) && stat (lockpgm = LOCKPGM3,&sb) &&
+	      stat (lockpgm = LOCKPGM4,&sb)))
       lockpgm = NIL;		/* disable if can't find lockpgm */
     else if (pipe (pi) >= 0) {	/* make command pipes */
       long cf;

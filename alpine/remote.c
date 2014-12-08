@@ -248,7 +248,7 @@ rd_answer_forge_warning(int cmd, MSGNO_S *msgmap, SCROLL_S *sparms)
 	break;
 
       default:
-	panic("Unexpected command in rd_answer_forge_warning");
+	alpine_panic("Unexpected command in rd_answer_forge_warning");
 	break;
     }
 

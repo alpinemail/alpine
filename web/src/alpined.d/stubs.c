@@ -100,7 +100,7 @@ exec_mailcap_test_cmd(cmd)
   This is also called from imap routines and fs_get and fs_resize.
   ----*/
 void
-panic(message)
+alpine_panic(message)
     char *message;
 {
     in_panic = 1;

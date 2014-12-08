@@ -1250,7 +1250,7 @@ first_recent:
 		break;
 
 	      default:
-		panic("Unexpected incoming startup case");
+		alpine_panic("Unexpected incoming startup case");
 		break;
 
 	    }

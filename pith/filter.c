@@ -364,10 +364,10 @@ gf_clear_so_readc(STORE_S *so)
 	    fs_give((void **) &sp);
 	}
 	else
-	  panic("Programmer botch: Can't unstack store readc");
+	  alpine_panic("Programmer botch: Can't unstack store readc");
     }
     else
-      panic("Programmer botch: NULL store clearing store readc");
+      alpine_panic("Programmer botch: NULL store clearing store readc");
 }
 
 
@@ -398,10 +398,10 @@ gf_clear_so_writec(STORE_S *so)
 	    fs_give((void **) &sp);
 	}
 	else
-	  panic("Programmer botch: Can't unstack store writec");
+	  alpine_panic("Programmer botch: Can't unstack store writec");
     }
     else
-      panic("Programmer botch: NULL store clearing store writec");
+      alpine_panic("Programmer botch: NULL store clearing store writec");
 }
 
 

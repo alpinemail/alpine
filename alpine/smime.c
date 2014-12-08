@@ -1352,7 +1352,7 @@ void smime_manage_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line
 	   e = strlen(cl->name);
 
       if(ctype != Private)
-	e -= 4;		/* remove extension length */
+	e -= 4;		/* remove extension length FIX FIX FIX */
       nf = 5;		/* there are 5 fields */
       s = 3;		/* status has fixed size */
       df = dt = 8;	/* date from and date to have fixed size */
@@ -1379,14 +1379,14 @@ void smime_manage_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line
 	    (*ctmp)->help	= ctype == Public ? h_config_smime_manage_public_menu
 					: (ctype == Private ? h_config_smime_manage_private_menu
 							   : h_config_smime_manage_cacerts_menu);
-	    if(ctype != Private)
-	       cl->name[strlen(cl->name) - 4] = '\0';
+	    if(ctype != Private && SMHOLDERTYPE(ctype) == Directory)
+	       cl->name[strlen(cl->name) - 4] = '\0';	 /* FIX FIX FIX */
 	    strncpy((*ctmp)->d.s.address, cl->name, sizeof((*ctmp)->d.s.address));
 	    (*ctmp)->d.s.address[sizeof((*ctmp)->d.s.address) - 1] = '\0';
 	    snprintf(tmp, sizeof(tmp), u,
 			(*ctmp)->d.s.deleted ? "D" : " ", 
 			cl->name, DATEFROMCERT(cl), DATETOCERT(cl), MD5CERT(cl));
-	    if(ctype != Private)
+	    if(ctype != Private && SMHOLDERTYPE(ctype) == Directory)
 	       cl->name[strlen(cl->name)] = '.';
 	    (*ctmp)->value      = cpystr(tmp);
 	    if(i == fline+1 && first_line && !*first_line)

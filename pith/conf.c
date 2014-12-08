@@ -1845,7 +1845,7 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
      */
 
     if(reset_character_set_stuff(&err) == -1)
-      panic(err ? err : "trouble with character set setup");
+      alpine_panic(err ? err : "trouble with character set setup");
     else if(err){
 	init_error(ps, SM_ORDER | SM_DING, 3, 5, err);
 	fs_give((void **) &err);
@@ -2646,7 +2646,7 @@ convert_configvar_to_utf8(struct variable *v, char *fromcharset)
 	      case 4: valptr = v->global_val.l; break;
 	      case 5: valptr = v->fixed_val.l; break;
 	      case 6: valptr = v->cmdline_val.l; break;
-	      default: panic("bad case in convert_configvar");
+	      default: alpine_panic("bad case in convert_configvar");
 	    }
 
 	    if(valptr){
@@ -2672,7 +2672,7 @@ convert_configvar_to_utf8(struct variable *v, char *fromcharset)
 	      case 4: valptr = &v->global_val.p; break;
 	      case 5: valptr = &v->fixed_val.p; break;
 	      case 6: valptr = &v->cmdline_val.p; break;
-	      default: panic("bad case in convert_configvar");
+	      default: alpine_panic("bad case in convert_configvar");
 	    }
 
 	    if(valptr && *valptr && (*valptr)[0]){
@@ -7606,7 +7606,7 @@ panic1(char *message, char *arg)
 
     snprintf(buf1, sizeof(buf1), "%.*s", MAX(sizeof(buf1) - 1 - strlen(message), 0), arg);
     snprintf(buf2, sizeof(buf2), message, buf1);
-    panic(buf2);
+    alpine_panic(buf2);
 }
 
 

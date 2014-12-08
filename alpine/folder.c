@@ -1024,7 +1024,7 @@ context_edit_screen(struct pine *ps, char *func, char *def_nick,
 		  strncat(servpart, "#news.", sizeof(servpart)-1-strlen(servpart));
 	    }
 	    else
-	      panic("Unexpected invalid server");
+	      alpine_panic("Unexpected invalid server");
 	}
 	else
 	  servpart[0] = '\0';

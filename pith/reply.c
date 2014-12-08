@@ -67,6 +67,39 @@ int	(*pith_opt_reply_to_all_prompt)(int *);
 
 char *(*pith_opt_user_agent_prefix)(void);
 
+/* compare two subjects and return if they are the same.
+   We compare stripped subjects, that is, those that do
+   not have re/fwd. Before we compare the subjects, we
+   decode them in case they were encoded.
+   Return value: 0 - not the same subject, 1 - same subject.
+*/
+
+int
+same_subject(char *s, char *t)
+{
+   int rv = 0;
+   int i, j, len;
+   char *s1, *s2;	/* holds decoded subjects from s and t */
+   char *u, *v;
+
+   if (s == NULL || t == NULL)
+     return s == t ? 1 : 0;
+
+   i = strlen(s); j = strlen(t);
+   len = i < j ? j : i;
+   u  = fs_get(6*len+1);
+   v  = fs_get(6*len+1);
+   s1 = (char *) rfc1522_decode_to_utf8(u, 6*len + 1, s);
+   s2 = (char *) rfc1522_decode_to_utf8(v, 6*len + 1, t);
+   mail_strip_subject(s1, &u);
+   mail_strip_subject(s2, &v);
+
+   rv = !strucmp(u, v);
+
+   fs_give((void **) &u);
+   fs_give((void **) &v);
+   return rv;
+}
 
 /*
  * reply_harvest - 
@@ -2259,9 +2292,9 @@ forward_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_bod
 			  && orig_body->nested.part->body.subtype
 			  && (!strucmp(orig_body->nested.part->body.subtype, OUR_PKCS7_ENCLOSURE_SUBTYPE)
 				|| !strucmp(orig_body->nested.part->body.subtype, "signed")))
-		    || !strucmp(orig_body->subtype, OUR_PKCS7_ENCLOSURE_SUBTYPE))
+		    || !strucmp(orig_body->subtype, OUR_PKCS7_ENCLOSURE_SUBTYPE)
 #endif /* SMIME */
-	   ){
+	   )){
 	    /* only operate on the signed data (not the signature) */
 	    body = forward_body(stream, env, &orig_body->nested.part->body,
 			msgno, 

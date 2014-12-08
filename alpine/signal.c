@@ -188,7 +188,7 @@ auger_in_signal(int sig)
     snprintf(buf, sizeof(buf), "Received abort signal(sig=%d)", sig);
     buf[sizeof(buf)-1] = '\0';
 
-    panic(buf);				/* clean up and get out */
+    alpine_panic(buf);				/* clean up and get out */
 
     exit(-1);				/* in case panic doesn't kill us */
 }

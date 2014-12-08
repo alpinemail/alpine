@@ -643,7 +643,7 @@ mm_nocritical(MAILSTREAM *stream)
 void
 mm_fatal(char *message)
 {
-    panic(message);
+    alpine_panic(message);
 }
 
 

@@ -1210,7 +1210,7 @@ setup_index_header_widths(MAILSTREAM *stream)
 		    break;
 		  
 		  default:
-		    panic("Unhandled fixed case in setup_index_header");
+		    alpine_panic("Unhandled fixed case in setup_index_header");
 		    break;
 		}
 	    }
@@ -3319,7 +3319,7 @@ simple_index_line(char *buf, size_t buflen, ICE_S *ice, long int msgno)
     IELEM_S  *ielem;
 
     if(!buf)
-      panic("NULL buf in simple_index_line()");
+      alpine_panic("NULL buf in simple_index_line()");
 
     if(buflen > 0)
       buf[0] = '\0';
@@ -5093,7 +5093,7 @@ prio_str(INDEXDATA_S *idata, IndexColType ctype, ICE_S *ice)
 		break;
 	  
 	      default:
-		panic("Unhandled case in prio_str");
+		alpine_panic("Unhandled case in prio_str");
 		break;
 	    }
 

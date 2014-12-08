@@ -429,7 +429,7 @@ redraft_work(MAILSTREAM **streamp, long int cont_msg, ENVELOPE **outgoing,
 	fields[++i]   = "X-Our-ReplyTo";	/* ReplyTo is real */
 	fields[++i]   = "Lcc";		/* Lcc: too... */
 	if(++i != FIELD_COUNT)
-	  panic("Fix FIELD_COUNT");
+	  alpine_panic("Fix FIELD_COUNT");
 
 	for(pf = *custom; pf && pf->name; pf = pf->next)
 	  if(!pf->standard)
@@ -1689,7 +1689,7 @@ ADDRESS *
 phone_home_from(void)
 {
     ADDRESS *addr = mail_newaddr();
-    char     tmp[32];
+    char     tmp[32];	
 
     /* garble up mailbox name */
     snprintf(tmp, sizeof(tmp), "hash_%08u", phone_home_hash(ps_global->VAR_USER_ID));
@@ -1718,7 +1718,7 @@ phone_home_hash(char *s)
 
         h = ((h+1) * ((unsigned char) *s)) & (PH_MAXHASH - 1);
     }
-    
+
     return (h);
 }
 
@@ -3108,7 +3108,7 @@ encode_header_value(char *d, size_t dlen, unsigned char *s, char *charset, int e
       return((char *)s);
     
     if(dlen < SIZEOF_20KBUF)
-      panic("bad call to encode_header_value");
+      alpine_panic("bad call to encode_header_value");
 
     if(!encode_all){
 	/*

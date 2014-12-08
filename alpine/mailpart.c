@@ -2635,7 +2635,7 @@ process_attachment_cmd(int cmd, MSGNO_S *msgmap, SCROLL_S *sparms)
 	break;
 
       default:
-	panic("Unexpected command case");
+	alpine_panic("Unexpected command case");
 	break;
     }
 

@@ -24,6 +24,10 @@ alpine_SOURCES = addrbook.c adrbkcmd.c after.c alpine.c arg.c busy.c colorconf.c
 
 alpine_LDADD = $(LDADD) $(INTLLIBS)
 
+rpdump_LDADD = $(LDADD) $(INTLLIBS)
+
+rpload_LDADD = $(LDADD) $(INTLLIBS)
+
 nodist_alpine_SOURCES = date.c
 
 rpdump_SOURCES = rpdump.c

@@ -33,6 +33,7 @@ static char rcsid[] = "$Id: smkeys.c 1266 2009-07-14 18:39:12Z hubert@u.washingt
 #include "../pith/osdep/lstcmpnt.h"
 #include "../pith/util.h"
 #include "../pith/mailindx.h"
+#include "../pith/readfile.h"
 #include "smkeys.h"
 
 #ifdef APPLEKEYCHAIN
@@ -46,27 +47,228 @@ static char rcsid[] = "$Id: smkeys.c 1266 2009-07-14 18:39:12Z hubert@u.washingt
 /* internal prototypes */
 static char     *emailstrclean(char *string);
 static int       mem_add_extra_cacerts(char *contents, X509_LOOKUP *lookup);
-int		 compare_certs(const void *data1, const void *data2);
+int		 compare_certs_by_name(const void *data1, const void *data2);
+
+#define SMIME_BACKUP_DIR	".backup"
+#define MAX_TRY_BACKUP		100
+
+/* return value: 0 - success, -1 error 
+ * Call this function after setting up paths in ps_global->smime
+ * and reading certificates names in certlist.
+ */
+int
+setup_certs_backup_by_type(WhichCerts ctype)
+{
+   int rv = 0; 	/* assume success */
+   int len;
+   int i, done;
+   char *d;
+   char p[MAXPATH+1];	/* path to where the backup is */
+   char buf[MAXPATH+1], buf2[MAXPATH+1];
+   struct stat sbuf;
+   CertList *data, *cl;
+   DIR *dirp;   
+   struct dirent *df;	/* file in the directory */
+   CertList *cert, *cl2;
+   X509 *x;
+   BIO *in;
+
+   return rv;	/* remove when this function is complete */
+
+   if(SMHOLDERTYPE(ctype) == Directory){
+     d = PATHCERTDIR(ctype);
+     if(d != NULL){
+       len = strlen(d) + strlen(S_FILESEP) + strlen(SMIME_BACKUP_DIR) + 1;
+       snprintf(p, MAXPATH, "%s%s%s", d, S_FILESEP, SMIME_BACKUP_DIR);
+       p[MAXPATH] = '\0';
+       if(our_stat(p, &sbuf) < 0){
+	 if(our_mkpath(p, 0700) != 0)
+	   return -1;
+       } else if((sbuf.st_mode & S_IFMT) != S_IFDIR){
+	 for(i = 0, done = 0; done == 0 && i < MAX_TRY_BACKUP; i++){
+	    snprintf(buf2, len+2, "%s%d", p, i);
+	    if(our_stat(buf2, &sbuf) < 0){
+	       if(our_mkpath(buf2, 0700) == 0)
+		 done++;
+	    }
+	    else if((sbuf.st_mode & S_IFMT) == S_IFDIR)
+		done++;
+	    if(done){
+		strncpy(p, buf2, MAXPATH);
+		p[MAXPATH] = '\0';
+	    }
+	 }
+	 if(done == 0)
+	   return -1;
+       }
+       /* if we are here, we have a backup directory where to
+        * backup certificates/keys, so now we will go
+        * through the list of certificates and back them up
+        * if we need to.
+        */
+	data = BACKUPDATACERT(ctype);
+	for(cl = DATACERT(ctype); cl; cl = cl->next){
+	   char clname[MAXPATH+1];
+
+	   snprintf(clname, MAXPATH, "%s%s", cl->name, ctype == Private ? ".key" : "");
+	   clname[MAXPATH] = '\0';
+	   len = strlen(d) + strlen(clname) + 2;
+	   if(len < MAXPATH){
+	     snprintf(buf, len, "%s%s%s", d, S_FILESEP, clname);
+	     buf[sizeof(buf)-1] = '\0';
+	     len = strlen(p) + strlen(clname) + strlen(cl->data.md5) + 3;
+	     if(len < MAXPATH){
+		snprintf(buf2, len, "%s%s%s.%s", p, S_FILESEP, clname, cl->data.md5);
+		buf2[sizeof(buf2)-1] = '\0';
+		done = 0;	/* recycle done: it means we have a file that may be a certifificate*/
+		if(stat(buf2, &sbuf) < 0){
+		  if (our_copy(buf2, buf) == 0)
+		     done++;
+		} else if((sbuf.st_mode & S_IFMT) == S_IFREG)
+		     done++;
+
+		if(done){
+		  switch(ctype){
+			case Public:
+			case CACert: 
+				if((in = BIO_new_file(buf2, "r"))!=0){
+				  cert = fs_get(sizeof(CertList));
+				  memset((void *)cert, 0, sizeof(CertList));
+				  cert->x509_cert = PEM_read_bio_X509(in, NULL, NULL, NULL);
+				  if(cl->data.date_from != NULL)
+				   cert->data.date_from	= cpystr(cl->data.date_from);
+				  if(cl->data.date_to != NULL)
+				   cert->data.date_to	= cpystr(cl->data.date_to);
+				  if(cl->data.md5 != NULL)
+				   cert->data.md5	= cpystr(cl->data.md5);
+				  snprintf(buf2, len, "%s.%s", cl->name, cl->data.md5);
+				  buf2[sizeof(buf2)-1] = '\0';
+				  cert->name = cpystr(buf2);
+				  if(data == NULL)
+				    data = cert;
+				  else{
+				    for (cl2 = data; cl2 && cl2->next; cl2 = cl2->next);
+				    cl2->next = cert;
+				  }
+				  BIO_free(in);
+				}
+				break;
+
+			case Private: break;
+			default: alpine_panic("Bad ctype (0)");
+		  }
+		}
+	     }
+	   }
+	}
+	/* if we are here, it means we just loaded the backup variable with
+	 * a copy of the data that comes from the certlist not coming from
+	 * backup. Now we are going to load the contents of the .backup
+	 * directory.
+	 */
+
+	/* Here is the plan: read the backup directory (in the variable "p")
+	 * and attempt to add it. If already there, skip it; otherwise continue
+	 */
+
+	if((dirp = opendir(p)) != NULL){
+	   while((df=readdir(dirp)) != NULL){
+	      if(df->d_name && *df->d_name == '.')	/* no hidden files here */
+		continue;
+
+	      /* make sure that we have a file */
+	      snprintf(buf2, sizeof(buf2), "%s%s%s", p, S_FILESEP, df->d_name);
+	      buf2[sizeof(buf2)-1] = '\0';
+	      if(our_stat(buf2, &sbuf) == 0 
+		  && (sbuf.st_mode & S_IFMT) != S_IFREG)
+	        continue;
+
+	      /* make sure it is not already in the list */
+	      for(cl = data; cl; cl = cl->next)
+		if(strcmp(cl->name, df->d_name) == 0)
+		   break;
+	      if(cl != NULL)
+		continue;
+
+	      /* ok, if it is not in the list, and it is a certificate. Add it */
+	      switch(ctype){
+		case Public:
+		case CACert:
+			if((in = BIO_new_file(buf2, "r"))!=0){
+			  x = PEM_read_bio_X509(in, NULL, NULL, NULL);
+			  if(x && x->cert_info){ /* for now copy this information */
+			    cert = fs_get(sizeof(CertList));
+			    memset((void *)cert, 0, sizeof(CertList));
+			    cert->x509_cert = x;
+			    cert->data.date_from = smime_get_date(x->cert_info->validity->notBefore);
+			    cert->data.date_to	 = smime_get_date(x->cert_info->validity->notAfter);
+			    get_fingerprint(x, EVP_md5(), buf, sizeof(buf), NULL);
+			    cert->data.md5	 = cpystr(buf);
+			    cert->name = cpystr(df->d_name);
+			    /* we will use the cert->data.md5 variable to find a backup 
+			       certificate, not the name */
+			    if(data == NULL)
+			      data = cert;
+			    else{
+			      for (cl2 = data; cl2 && cl2->next; cl2 = cl2->next);
+			      cl2->next = cert;
+			    }
+			  }
+			  BIO_free(in);
+			}
+			break;
+
+		case Private:
+			/* here we must check it is a key of some cert....*/
+			break;
+
+		default: alpine_panic("Bad ctype (1)");
+	      } /* end switch */
+	   }
+	   closedir(dirp);
+	}
+
+	/* Now that we are here, we have all the information in the backup
+	 * directory
+	 */
+
+	switch(ctype){
+	   case Public : ps_global->smime->backuppubliccertlist = data; break;
+	   case Private: ps_global->smime->backupprivatecertlist = data; break;
+	   case CACert : ps_global->smime->backupcacertlist = data; break;
+	   default : alpine_panic("Bad ctype (n)");
+	}
+     }
+   } else if(SMHOLDERTYPE(ctype) == Container){
+    
+   } /* else APPLEKEYCHAIN */
+   return rv;
+}
 
 int
-compare_certs(const void *data1, const void *data2)
+compare_certs_by_name(const void *data1, const void *data2)
 {
-   int rv;
+   int rv, i, j;
    char *s;
-        
+
    CertList *cl1 = *(CertList **) data1;
    CertList *cl2 = *(CertList **) data2;
-        
-   if((s = strchr(cl1->name, '@')) != NULL)
+
+   i = j = -1;
+   if((s = strchr(cl1->name, '@')) != NULL){
+     i = s - cl1->name;
      *s = '\0';
-            
-   if((s = strchr(cl2->name, '@')) != NULL)
+   }
+
+   if((s = strchr(cl2->name, '@')) != NULL){
+     j = s - cl2->name;
      *s = '\0';
-        
+   }
+
    if((rv = strucmp(cl1->name, cl2->name)) == 0)
-     rv = strucmp(cl1->name + strlen(cl1->name) + 1, cl2->name + strlen(cl2->name) + 1);
-   cl1->name[strlen(cl1->name)] = '@';
-   cl2->name[strlen(cl2->name)] = '@';
+     rv = strucmp(cl1->name + i + 1, cl2->name + j + 1);
+   if(i >= 0) cl1->name[i] = '@';
+   if(j >= 0) cl2->name[j] = '@';
    return rv;
 }
 
@@ -78,6 +280,9 @@ resort_certificates(CertList **data, WhichCerts ctype)
    CertList **cll;
    char *s, *t;
 
+   if(cl == NULL)
+     return;
+
    for(i = 0; cl; cl = cl->next, i++)
       if(ctype != Private){     /* ctype == Public or ctype == CACerts */
          for(t = s = cl->name; t = strstr(s, ".crt"); s = t+1);
@@ -87,33 +292,18 @@ resort_certificates(CertList **data, WhichCerts ctype)
    cll = fs_get(i*sizeof(CertList *));
    for(cl = *data, i = 0; cl; cl = cl->next, i++)
         cll[i] = cl;
-   qsort((void *)cll, j, sizeof(CertList *), compare_certs);
+   qsort((void *)cll, j, sizeof(CertList *), compare_certs_by_name);
    for(i = 0; i < j - 1; i++){
      cll[i]->next = cll[i+1];
      if(ctype != Private)
         cll[i]->name[strlen(cll[i]->name)]= '.';    /* restore ".crt" part */
    }
+   if(ctype != Private)
+      cll[j-1]->name[strlen(cll[j-1]->name)]= '.';    /* restore ".crt" part */
    cll[j-1]->next = NULL;
    *data = cll[0];
 }
 
-
-/* given a certificate and an email address, add the 
- * extension and md5 key to the name. return an allocated
- * name, freed by caller
- */
-char *
-smime_name(char *email, X509 *x, WhichCerts ctype)
-{
-  char bufx[256];
-  char *rv;
-
-  get_fingerprint(x, EVP_md5(), bufx, sizeof(bufx), NULL);
-  rv = fs_get(strlen(email) + 4 + 2 + strlen(bufx) + 1);
-  sprintf(rv, "%s%s.%s", email, EXTCERT(ctype), bufx);
-  
-  return rv;
-}
 
 void
 get_fingerprint(X509 *cert, const EVP_MD *type, char *buf, size_t maxLen, char *s)
@@ -186,6 +376,8 @@ smime_get_date(ASN1_GENERALIZEDTIME *tm)
    char date[MAILTMPLEN];
    char buf[MAILTMPLEN];
    char *m, *d, *t, *y, *z;
+   struct      date smd;
+   struct tm smtm;
 
    (void) BIO_reset(mb);
    ASN1_UTCTIME_print(mb, tm);
@@ -211,9 +403,17 @@ smime_get_date(ASN1_GENERALIZEDTIME *tm)
 
    snprintf(date, sizeof(date), "%s %s %s %s (%s)", d, m, y, t, z);
    date[sizeof(date)-1] = '\0';
-   date_str((char *) date, iSDateS1, 1, buf, sizeof(buf), 0);
-   if(buf[strlen(buf) - 1] == '!')
-     buf[strlen(buf) - 1] = '\0';
+   if(F_ON(F_DATES_TO_LOCAL,ps_global)){
+      parse_date(convert_date_to_local(date), &smd);
+      memset(&smtm, 0, sizeof(smtm));
+      smtm.tm_year = MIN(MAX(smd.year-1900, 0), 2000) % 100 - 1900;
+      smtm.tm_mon  = MIN(MAX(smd.month-1, 0), 11);
+      smtm.tm_mday = MIN(MAX(smd.day, 1), 31);
+      our_strftime(buf, sizeof(buf), "%x", &smtm);
+   }
+   else
+      snprintf(buf, sizeof(buf), "%s/%s/%s", m, d, y + strlen(y) - 2);
+   buf[sizeof(buf)-1] = '\0';
 
    return cpystr(buf);
 }
@@ -334,7 +534,7 @@ get_ca_store(void)
 
 
 EVP_PKEY *
-load_key(PERSONAL_CERT *pc, char *pass)
+load_key(PERSONAL_CERT *pc, char *pass, int flag)
 {
     BIO *in;
     EVP_PKEY *key = NULL;
@@ -853,7 +1053,7 @@ mem_to_personal_certs(char *contents)
 		    pc->name = cpystr(name);
 		    pc->keytext = keytext;	/* a pointer into contents */
 
-		    pc->key = load_key(pc, "");
+		    pc->key = load_key(pc, "", SM_NORMALCERT);
 
 		    pc->next = result;
 		    result = pc;

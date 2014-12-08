@@ -1502,7 +1502,7 @@ get_out:
 
           /*--------- Default, unknown command ----------*/
       default:
-	panic("Unexpected command case");
+	alpine_panic("Unexpected command case");
 	break;
     }
 
@@ -2366,12 +2366,62 @@ int
 cmd_bounce(struct pine *state, MSGNO_S *msgmap, int aopt)
 {
     int rv = 0;
+    ACTION_S *role = NULL;
 
     if(any_messages(msgmap, NULL, "to Bounce")){
 	if(MCMD_ISAGG(aopt) && !pseudo_selected(state->mail_stream, msgmap))
 	  return rv;
 
-	rv = bounce(state, NULL);
+	if(MCMD_ISAGG(aopt)){	/* check for possible role */
+	   PAT_STATE  pstate;
+	   int action;
+
+	   if(nonempty_patterns(ROLE_DO_ROLES, &pstate) && first_pattern(&pstate)){
+	     static ESCKEY_S yesno_opts[] = {
+	        {'y', 'y', "Y", N_("Yes")},
+	        {'n', 'n', "N", N_("No")},
+	        {-1, 0, NULL, NULL}
+	     };
+
+             action = radio_buttons(_("Bounce messages using a role? "),
+                                   -FOOTER_ROWS(state), yesno_opts,
+                                   'y', 'x', h_role_compose, RB_NORM);
+	     if(action == 'y'){
+	        void    (*prev_screen)(struct pine *) = NULL, (*redraw)(void) = NULL;
+
+	        redraw = state->redrawer;
+	        state->redrawer = NULL;
+	        prev_screen = state->prev_screen;
+	        role = NULL;
+	        state->next_screen = SCREEN_FUN_NULL;
+            
+	        if(role_select_screen(state, &role, MC_BOUNCE) < 0)
+	            cmd_cancelled(_("Bounce"));
+		else{
+		   if(role)
+		      role = combine_inherited_role(role);
+	           else{
+	               role = (ACTION_S *) fs_get(sizeof(*role));
+		       memset((void *) role, 0, sizeof(*role));
+		       role->nick = cpystr("Default Role");
+		   }
+		}
+
+		if(redraw)
+		   (*redraw)();
+
+		state->next_screen = prev_screen;
+		state->redrawer = redraw;
+		state->mangled_screen = 1;
+	     }
+           }
+        }
+
+	rv = bounce(state, role);
+
+	if(role)
+	  free_action(&role);
+
 	if(MCMD_ISAGG(aopt))
 	  restore_selected(msgmap);
 
@@ -2696,7 +2746,7 @@ save_prompt(struct pine *state, CONTEXT_S **cntxt, char *nfldr, size_t len_nfldr
     ESCKEY_S	      ekey[10];
 
     if(!cntxt)
-      panic("no context ptr in save_prompt");
+      alpine_panic("no context ptr in save_prompt");
 
     init_hist(&history, HISTSIZE);
 
@@ -3079,7 +3129,7 @@ save_prompt(struct pine *state, CONTEXT_S **cntxt, char *nfldr, size_t len_nfldr
 	    break;
 
 	  default :
-	    panic("Unhandled case");
+	    alpine_panic("Unhandled case");
 	    break;
 	}
 
@@ -5772,7 +5822,7 @@ broach_folder(int qline, int allow_list, int *notrealinbox, CONTEXT_S **context)
 	    break;
 
 	  default :
-	    panic("Unhandled case");
+	    alpine_panic("Unhandled case");
 	    break;
 	}
 

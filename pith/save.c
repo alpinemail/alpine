@@ -240,7 +240,7 @@ save_get_fldr_from_env(char *fbuf, int nfbuf, ENVELOPE *e, struct pine *state,
 	break;
       
       default:
-	panic(botch);
+	alpine_panic(botch);
 	break;
     }
 

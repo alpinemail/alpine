@@ -197,7 +197,7 @@ nuov_processor(int cmd, MSGNO_S *msgmap, SCROLL_S *sparms)
 	break;
 
       default :
-	panic("Unhandled case");
+	alpine_panic("Unhandled case");
     }
 
     return(rv);

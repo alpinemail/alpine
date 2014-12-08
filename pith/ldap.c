@@ -1700,7 +1700,7 @@ our_ldap_set_option(LDAP *ld, int option, void *optdata)
 	break;
     
       default:
-	panic("LDAP function not implemented");
+	alpine_panic("LDAP function not implemented");
     }
 #endif
 

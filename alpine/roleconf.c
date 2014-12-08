@@ -5930,7 +5930,7 @@ setup_dummy_pattern_var(struct variable *v, char *name, PATTERN_S *defpat)
     char ***alval;
 
     if(!(v && name))
-      panic("setup_dummy_pattern_var");
+      alpine_panic("setup_dummy_pattern_var");
 
     v->name = (char *) fs_get(strlen(name)+NOTLEN+1);
     snprintf(v->name, strlen(name)+NOTLEN+1, "%s%s", (defpat && defpat->not) ? NOT : "", name);

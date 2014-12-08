@@ -83,7 +83,7 @@ int	    df_trigger_cmp(long, char *, LT_INS_S **, void *);
 int	    df_trigger_cmp_text(char *, char *);
 int	    df_trigger_cmp_lwsp(char *, char *);
 int	    df_trigger_cmp_start(char *, char *);
-int	    fetch_readc_cleanup(void);
+int	    fetch_readc_cleanup(int);
 char	   *fetch_gets(readfn_t, void *, unsigned long, GETS_DATA *);
 int	    fetch_readc(unsigned char *);
 
@@ -644,7 +644,7 @@ fetch_readc_init(FETCH_READC_S *frd, MAILSTREAM *stream, long int msgno,
 
 
 int
-fetch_readc_cleanup(void)
+fetch_readc_cleanup(int store)
 {
     if(g_fr_desc){
 	if(g_fr_desc->we_turned_on)
@@ -653,7 +653,7 @@ fetch_readc_cleanup(void)
 	if(g_fr_desc->chunk && g_fr_desc->free_me)
 	  fs_give((void **) &g_fr_desc->chunk);
 
-	if(g_fr_desc->cache){
+	if(g_fr_desc->cache && store){
 	    SIZEDTEXT text;
 
 	    text.size = g_fr_desc->size;
@@ -695,7 +695,7 @@ fetch_readc(unsigned char *c)
     extern void gf_error(char *);
 
     if(ps_global->intr_pending){
-	(void) fetch_readc_cleanup();
+	(void) fetch_readc_cleanup(0);
 	/* TRANSLATORS: data transfer was interrupted by something */
 	gf_error(g_fr_desc->error ? g_fr_desc->error :_("Transfer interrupted!"));
 	/* no return */
@@ -822,13 +822,13 @@ fetch_readc(unsigned char *c)
 	    mail_parameters(g_fr_desc->stream, SET_GETS, old_gets);
 
 	    if(!rv){
-		(void) fetch_readc_cleanup();
+		(void) fetch_readc_cleanup(0);
 		gf_error("Partial fetch failed!");
 		/* no return */
 	    }
 	}
 	else				/* clean up and return done. */
-	  return(fetch_readc_cleanup());
+	  return(fetch_readc_cleanup(1));
     }
 
     *c = *g_fr_desc->chunkp++;

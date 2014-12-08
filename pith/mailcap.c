@@ -248,7 +248,7 @@ mc_process_file(char *file)
 	return;
 
       default:
-	panic("Programmer botch in mc_process_file");
+	alpine_panic("Programmer botch in mc_process_file");
 	/*NOTREACHED*/
     }
 

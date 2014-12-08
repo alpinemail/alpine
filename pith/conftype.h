@@ -709,19 +709,27 @@ typedef struct smime_stuff {
     char           *publicpath;
     char           *publiccontent;
     CertList       *publiccertlist;
+    CertList       *backuppubliccertlist;
 
     SmimeHolderType privatetype;
     char           *privatepath;
     char           *privatecontent;
     CertList	   *privatecertlist;
-    void           *personal_certs;	/* this is type (PERSONAL_CERT *) */
+    CertList	   *backupprivatecertlist;
+    void	   *backuppersonal_certs;	/* this is type (PERSONAL_CERT *) */
+    void           *personal_certs;		/* this is type (PERSONAL_CERT *) */
 
     SmimeHolderType catype;
     char           *capath;
     char           *cacontent;
     CertList	   *cacertlist;
+    CertList	   *backupcacertlist;
 
 } SMIME_STUFF_S;
+
+#define BACKUPDATACERT(X) (((X) == Public ? ps_global->smime->backuppubliccertlist	\
+			 : ((X) == Private ? ps_global->smime->backupprivatecertlist	\
+			   : ps_global->smime->backupcacertlist)))
 
 #define DATACERT(X) (((X) == Public ? ps_global->smime->publiccertlist		\
 			 : ((X) == Private ? ps_global->smime->privatecertlist	\

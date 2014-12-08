@@ -1729,7 +1729,7 @@ pine_mail_partial_fetch_wrapper(MAILSTREAM *stream, long unsigned int msgno,
 		 * partial text.
 		 */
 		if(!str_to_free)
-		  panic("Programmer botch: partial fetch attempt w/o string pointer");
+		  alpine_panic("Programmer botch: partial fetch attempt w/o string pointer");
 		else
 		  *str_to_free = (char *) new_text.data;
 	    }

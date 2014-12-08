@@ -27,6 +27,10 @@ alpineldap_SOURCES = alpineldap.c busy.c color.c imap.c ldap.c remote.c \
 		   signal.c debug.c status.c stubs.c \
 		   alpined.h color.h ldap.h
 
+alpined_LDADD = $(LDADD) $(INTLLIBS)
+
+alpineldap_LDADD = $(LDADD) $(INTLLIBS)
+
 LDADD = local.o \
 	@top_srcdir@/pith/libpith.a \
 	@top_srcdir@/pith/osdep/libpithosd.a \

@@ -424,7 +424,7 @@ rfc1522_copy_and_transliterate(unsigned char  *rv,
 	    if(utf8_charset(cset)){
 		if(!utf8_text(&src, cset, &xsrc, 0L)){
 		    /* should not happen */
-		    panic("c-client failed to transliterate recognized characterset");
+		    alpine_panic("c-client failed to transliterate recognized characterset");
 		}
 	    }
 	    else{
@@ -451,7 +451,7 @@ rfc1522_copy_and_transliterate(unsigned char  *rv,
 	    if(!(cs->type == CT_ASCII || cs->type == CT_UTF8)){
 		if(!utf8_text_cs(&src, cs, &xsrc, 0L, 0L)){
 		    /* should not happen */
-		    panic("c-client failed to transliterate recognized characterset");
+		    alpine_panic("c-client failed to transliterate recognized characterset");
 		}
 	    }
 	}
@@ -461,7 +461,7 @@ rfc1522_copy_and_transliterate(unsigned char  *rv,
 		&& utf8_charset(cset)){
 		if(!utf8_text(&src, cset, &xsrc, 0L)){
 		    /* should not happen */
-		    panic("c-client failed to transliterate recognized character set");
+		    alpine_panic("c-client failed to transliterate recognized character set");
 		}
 	}
 	else{

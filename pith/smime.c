@@ -473,7 +473,7 @@ smime_expunge_cert(WhichCerts ctype)
 	     removed = 0;
 	  }
 	}
-	else {	/* SMHOLDERTYPE(ctype) == Container */
+	else if(SMHOLDERTYPE(ctype) == Container){
 	  char *prefix= ctype == CACert ? CACERTSTORELEADER : EMAILADDRLEADER;
 	  char tmp[MAILTMPLEN], *s, *t;
 
@@ -495,6 +495,7 @@ smime_expunge_cert(WhichCerts ctype)
 	  }
 	  else
 	     removed = 0;
+	} else { /* unhandled case */
 	}
 
  	if(removed > 0){
@@ -972,6 +973,7 @@ renew_cert_data(CertList **data, WhichCerts ctype)
       }
     }
   }
+  setup_certs_backup_by_type(ctype);
 }
 
 void
@@ -1013,6 +1015,7 @@ smime_init(void)
 	setup_storage_locations();
 
 	s_cert_store = get_ca_store();
+	setup_certs_backup_by_type(CACert);
 
         OpenSSL_add_all_algorithms();
         ERR_load_crypto_strings();
@@ -1080,7 +1083,7 @@ get_personal_certs(char *path)
 		    pc->name = cpystr(buf2);
 
 		    /* Try to load the key with an empty password */
-		    pc->key = load_key(pc, "");
+		    pc->key = load_key(pc, "", SM_NORMALCERT);
 
 		    pc->next = result;
 		    result = pc;
@@ -1156,6 +1159,7 @@ setup_privatekey_storage(void)
 	if(ps_global->smime->privatetype == Directory)
 	   ps_global->smime->personal_certs = get_personal_certs(path);
     }
+    setup_certs_backup_by_type(Private);
 }
 
 
@@ -2030,7 +2034,7 @@ load_private_key(PERSONAL_CERT *pcert)
 
         ERR_clear_error();
 
-        if(!(pcert->key = load_key(pcert, password))){
+        if(!(pcert->key = load_key(pcert, password, SM_NORMALCERT))){
             long err = ERR_get_error();
 
     	    /* Couldn't load key... */
@@ -3586,11 +3590,20 @@ free_smime_struct(SMIME_STUFF_S **smime)
 	if((*smime)->publiccertlist)
 	  free_certlist(&(*smime)->publiccertlist);
 
+	if((*smime)->backuppubliccertlist)
+	  free_certlist(&(*smime)->backuppubliccertlist);
+
 	if((*smime)->cacertlist)
 	  free_certlist(&(*smime)->cacertlist);
 
+	if((*smime)->backupcacertlist)
+	  free_certlist(&(*smime)->backupcacertlist);
+
 	if((*smime)->privatecertlist)
 	  free_certlist(&(*smime)->privatecertlist);
+
+	if((*smime)->backupprivatecertlist)
+	  free_certlist(&(*smime)->backupprivatecertlist);
 
 	if((*smime)->publiccontent)
 	  fs_give((void **) &(*smime)->publiccontent);
@@ -3604,6 +3617,14 @@ free_smime_struct(SMIME_STUFF_S **smime)
 	    pc = (PERSONAL_CERT *) (*smime)->personal_certs;
 	    free_personal_certs(&pc);
 	    (*smime)->personal_certs = NULL;
+	}
+
+	if((*smime)->backuppersonal_certs){
+	    PERSONAL_CERT *pc;
+
+	    pc = (PERSONAL_CERT *) (*smime)->backuppersonal_certs;
+	    free_personal_certs(&pc);
+	    (*smime)->backuppersonal_certs = NULL;
 	}
 
 	if((*smime)->privatecontent)

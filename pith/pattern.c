@@ -1295,9 +1295,9 @@ parse_patgrp_slash(char *str, PATGRP_S *patgrp)
     char  *p;
 
     if(!patgrp)
-      panic("NULL patgrp to parse_patgrp_slash");
+      alpine_panic("NULL patgrp to parse_patgrp_slash");
     else if(!(str && *str)){
-	panic("NULL or empty string to parse_patgrp_slash");
+	alpine_panic("NULL or empty string to parse_patgrp_slash");
 	patgrp->bogus = 1;
     }
     else if(!strncmp(str, "/NICK=", 6))
@@ -1516,9 +1516,9 @@ parse_action_slash(char *str, ACTION_S *action)
     NAMEVAL_S *v;
 
     if(!action)
-      panic("NULL action to parse_action_slash");
+      alpine_panic("NULL action to parse_action_slash");
     else if(!(str && *str))
-      panic("NULL or empty string to parse_action_slash");
+      alpine_panic("NULL or empty string to parse_action_slash");
     else if(!strncmp(str, "/ROLE=1", 7))
       action->is_a_role = 1;
     else if(!strncmp(str, "/OTHER=1", 8))

@@ -2674,7 +2674,7 @@ add_escapes(char *src, char *quote_these_chars, int quoting_char,
     char *ans = NULL;
 
     if(!quote_these_chars)
-      panic("bad arg to add_escapes");
+      alpine_panic("bad arg to add_escapes");
 
     if(src){
 	char *q, *p, *qchar;

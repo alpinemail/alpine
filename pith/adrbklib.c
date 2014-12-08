@@ -4343,7 +4343,7 @@ exp_set_expanded(EXPANDED_S *exp_head, a_c_arg_t n)
 
     nn = (adrbk_cntr_t)n;
     if(!exp_head)
-      panic("exp_head not set in exp_set_expanded");
+      alpine_panic("exp_head not set in exp_set_expanded");
 
     for(e = exp_head; e->next; e = e->next)
       if(e->next->ent >= nn)
@@ -4375,7 +4375,7 @@ exp_unset_expanded(EXPANDED_S *exp_head, a_c_arg_t n)
 
     nn = (adrbk_cntr_t)n;
     if(!exp_head)
-      panic("exp_head not set in exp_unset_expanded");
+      alpine_panic("exp_head not set in exp_unset_expanded");
 
     for(e = exp_head; e->next; e = e->next)
       if(e->next->ent >= nn)
@@ -4407,7 +4407,7 @@ exp_del_nth(EXPANDED_S *exp_head, a_c_arg_t n)
 
     nn = (adrbk_cntr_t)n;
     if(!exp_head)
-      panic("exp_head not set in exp_del_nth");
+      alpine_panic("exp_head not set in exp_del_nth");
 
     e = exp_head->next;
     while(e && e->ent < nn)
@@ -4447,7 +4447,7 @@ exp_add_nth(EXPANDED_S *exp_head, a_c_arg_t n)
 
     nn = (adrbk_cntr_t)n;
     if(!exp_head)
-      panic("exp_head not set in exp_add_nth");
+      alpine_panic("exp_head not set in exp_add_nth");
 
     e = exp_head->next;
     while(e && e->ent < nn)

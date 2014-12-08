@@ -530,7 +530,7 @@ process_abook_view_cmd(int cmd, MSGNO_S *msgmap, SCROLL_S *sparms)
 	break;
 
       default:
-	panic("Unexpected command in process_abook_view_cmd");
+	alpine_panic("Unexpected command in process_abook_view_cmd");
 	break;
     }
 
@@ -2639,7 +2639,7 @@ convert_to_remote_config(struct pine *ps, int edit_exceptions)
     }
 
     if(!ps->prc)
-      panic("NULL prc in convert_to_remote_config");
+      alpine_panic("NULL prc in convert_to_remote_config");
 
     dprint((2, "convert_to_remote_config\n"));
     
@@ -5016,7 +5016,7 @@ write_single_vcard_entry(struct pine *ps, gf_io_t pc, VCARD_INFO_S *vinfo)
 	    break;
 	  
 	  default:
-	    panic("can't happen in write_single_vcard_entry");
+	    alpine_panic("can't happen in write_single_vcard_entry");
 	}
 
 	for(; ll && *ll; ll++){
@@ -5149,7 +5149,7 @@ write_single_tab_entry(gf_io_t pc, VCARD_INFO_S *vinfo)
 	    break;
 
 	  default:
-	    panic("can't happen in write_single_tab_entry");
+	    alpine_panic("can't happen in write_single_tab_entry");
 	}
 
 	if(i)
@@ -7371,7 +7371,7 @@ process_ldap_cmd(int cmd, MSGNO_S *msgmap, SCROLL_S *sparms)
 	break;
 
       default:
-	panic("Unexpected command in process_ldap_cmd");
+	alpine_panic("Unexpected command in process_ldap_cmd");
 	break;
     }
 

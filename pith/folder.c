@@ -592,7 +592,7 @@ init_folders(struct pine *ps)
      * collection???
      */
     if(!prime)
-      panic(_("No folder collections defined"));
+      alpine_panic(_("No folder collections defined"));
 
     /*
      * At this point, insert the INBOX mapping as the leading

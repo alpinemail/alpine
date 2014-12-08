@@ -56,7 +56,7 @@ int           *cpyint(int);
 /* currently mandatory to implement stubs */
 
 /* called when we detect a serious program error */
-void	  panic(char *);
+void	  alpine_panic(char *);
 
 /* called when testing to see if panic state is in effect */
 int	 panicking(void);

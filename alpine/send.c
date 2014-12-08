@@ -5490,9 +5490,9 @@ Returns: none
 void
 phone_home(char *addr)
 {
-    char      tmp[MAX_ADDRESS];
-    ENVELOPE *outgoing;
-    BODY     *body;
+    char       tmp[MAX_ADDRESS];
+    ENVELOPE  *outgoing;
+    BODY      *body;
 
     outgoing = mail_newenvelope();
     if(!addr || !strindex(addr, '@')){
@@ -5523,13 +5523,13 @@ phone_home(char *addr)
 	      && ps_global->VAR_NNTP_SERVER[0][0])
 	  so_puts((STORE_S *)body->contents.text.data, " and NNTP");
 
-	(void)pine_simple_send(outgoing, &body, NULL,NULL,NULL,NULL, SS_NULLRP);
+	(void) pine_simple_send(outgoing, &body, NULL,NULL,NULL,NULL, SS_NULLRP);
 
 	q_status_message(SM_ORDER, 1, 3, "Thanks for being counted!");
     }
     else
       q_status_message(SM_ORDER | SM_DING, 3, 4,
-		       "Problem creating space for message text.");
+	               "Problem creating space for message text.");
 
     mail_free_envelope(&outgoing);
     pine_free_body(&body);

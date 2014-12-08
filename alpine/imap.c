@@ -1842,7 +1842,7 @@ answer_cert_failure(int cmd, MSGNO_S *msgmap, SCROLL_S *sparms)
 	break;
 
       default:
-	panic("Unexpected command in answer_cert_failure");
+	alpine_panic("Unexpected command in answer_cert_failure");
 	break;
     }
 

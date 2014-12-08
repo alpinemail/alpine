@@ -50,8 +50,8 @@ static char rcsid[] = "$Id: alpine.c 1266 2009-07-14 18:39:12Z hubert@u.washingt
 #include "init.h"
 #include "remote.h"
 #include "pattern.h"
-#include "newuser.h"
 #include "setup.h"
+#include "newuser.h"
 #include "adrbkcmd.h"
 #include "signal.h"
 #include "kblock.h"
@@ -2328,7 +2328,7 @@ choose_setup_cmd(int cmd, MSGNO_S *msgmap, SCROLL_S *sparms)
 	break;
 
       default:
-	panic("Unexpected command in choose_setup_cmd");
+	alpine_panic("Unexpected command in choose_setup_cmd");
 	break;
     }
 
@@ -3324,7 +3324,7 @@ pine_gets_bytes(int reset)
   This is also called from imap routines and fs_get and fs_resize.
   ----*/
 void
-panic(char *message)
+alpine_panic(char *message)
 {
     char buf[256];
 

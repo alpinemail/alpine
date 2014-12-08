@@ -723,7 +723,7 @@ dnl is the one intended to be used.
 else
   dnl preload c-client default locations/options
   case $host in
-    *-linux-gnu*)
+    *-linux-gnu*|*-k*bsd*-gnu*|*-gnu*)
       if test -f /etc/fedora-release -o -f /etc/redhat-release -o -f /etc/redhat_version ; then  
         alpine_SSLTYPE="nopwd"
 	if test -d /etc/pki/tls ; then  
@@ -1055,7 +1055,7 @@ dnl Tests and assignments below are mostly to coax the appropriate
 dnl build from c-client.  Most of this will go away when c-client
 dnl adopts configure
 case "$host" in
-  *-linux-gnu*|*-k*bsd*-gnu*)
+  *-linux-gnu*|*-k*bsd*-gnu*|*-gnu*)
     alpine_path_delim="/"
     alpine_mode_readonly="(0600)"
     if test -f /etc/fedora-release ; then  
@@ -1364,7 +1364,7 @@ if test "x$alpine_SSLTYPE" != "xnone" ; then
      exit 1
   fi
 
-  AC_MSG_CHECKING([Openssl library version >= 1.0.0c])
+  AC_MSG_CHECKING([Openssl library version >= 1.0.1c])
   AC_RUN_IFELSE(
 	[AC_LANG_SOURCE([[
 #include <stdio.h>
@@ -1382,7 +1382,7 @@ int main(void) {
 	[ alpine_SSLTYPE="none" ])
 
     if test "x$alpine_SSLTYPE" = "xnone" ; then
-	AC_MSG_ERROR(Install openssl version >= 1.0.0c)
+	AC_MSG_ERROR(Install openssl version >= 1.0.1c)
 	exit 1
     fi
     AC_SEARCH_LIBS(TLSv1_2_client_method,ssl,

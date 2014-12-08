@@ -110,6 +110,7 @@ LOCKPGM=
 LOCKPGM1=/usr/libexec/mlock
 LOCKPGM2=/usr/sbin/mlock
 LOCKPGM3=/etc/mlock
+LOCKPGM4=/usr/bin/mlock
 
 
 # Default formats for creating new mailboxes and for empty mailboxes in the
@@ -984,7 +985,7 @@ onceenv:
 	 -DACTIVEFILE=\"$(ACTIVEFILE)\" -DNEWSSPOOL=\"$(NEWSSPOOL)\" \
 	 -DRSHPATH=\"$(RSHPATH)\" -DLOCKPGM=\"$(LOCKPGM)\" \
 	 -DLOCKPGM1=\"$(LOCKPGM1)\" -DLOCKPGM2=\"$(LOCKPGM2)\" \
-	 -DLOCKPGM3=\"$(LOCKPGM3)\" > OSCFLAGS
+	 -DLOCKPGM3=\"$(LOCKPGM3)\" -DLOCKPGM4=\"$(LOCKPGM4)\" > OSCFLAGS
 	echo $(BASELDFLAGS) $(EXTRALDFLAGS) > LDFLAGS
 	echo "$(ARRC) $(ARCHIVE) $(BINARIES);$(RANLIB) $(ARCHIVE)" > ARCHIVE
 	echo $(OS) > OSTYPE
