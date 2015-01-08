@@ -2,7 +2,7 @@
  * $Id: conftype.h 1155 2008-08-21 18:33:21Z hubert@u.washington.edu $
  *
  * ========================================================================
- * Copyright 2013-2014 Eduardo Chappa
+ * Copyright 2013-2015 Eduardo Chappa
  * Copyright 2006-2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -352,6 +352,7 @@ typedef enum {
 	F_AUTO_INCLUDE_IN_REPLY,
 	F_DISABLE_CONFIG_SCREEN,
 	F_DISABLE_PASSWORD_CACHING,
+	F_DISABLE_PASSWORD_FILE_SAVING,
 	F_DISABLE_REGEX,
 	F_DISABLE_PASSWORD_CMD,
 	F_DISABLE_UPDATE_CMD,

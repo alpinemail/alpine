@@ -4,7 +4,7 @@ static char rcsid[] = "$Id: imap.c 1266 2009-07-14 18:39:12Z hubert@u.washington
 
 /*
  * ========================================================================
- * Copyright 2013-2014 Eduardo Chappa
+ * Copyright 2013-2015 Eduardo Chappa
  * Copyright 2006-2009 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -1010,7 +1010,7 @@ mm_login_work(NETMBX *mb, char *user, char *pwd, long int trial,
 		      (mb->sslflag||mb->tlsflag), 0, 0);
 #ifdef	LOCAL_PASSWD_CACHE
     /* if requested, remember it on disk for next session */
-    if(save_password)
+      if(save_password && F_OFF(F_DISABLE_PASSWORD_FILE_SAVING,ps_global))
       set_passfile_passwd(ps_global->pinerc, pwd,
 		        altuserforcache ? altuserforcache : user, hostlist,
 			(mb->sslflag||mb->tlsflag),
@@ -2782,6 +2782,7 @@ preserve_prompt(void)
     }
     return(0);
 #else /* PASSFILE */
+if(F_OFF(F_DISABLE_PASSWORD_FILE_SAVING,ps_global))
     return(want_to(_("Preserve password on DISK for next login"), 
 		   'y', 'x', NO_HELP, WT_NORM)
 	   == 'y');

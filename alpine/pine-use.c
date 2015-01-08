@@ -73,7 +73,7 @@ main(argc, argv)
             printf("%5d users processed so far\n", so_far);
         }
 
-        if(strncmp(pw->pw_dir, "/", 1) == 0)
+        if(pw->pw_dir && *pw->pw_dir == '/' && pw->pw_dir[1] == '\0')
           continue;
 
         snprintf(filename, sizeof(filename), "%s/.pinerc", pw->pw_dir);

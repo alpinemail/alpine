@@ -3,7 +3,7 @@
 #        T H E   A L P I N E    M E S S A G E   S Y S T E M
 #
 #/* ========================================================================
-# * Copyright 2013-2014 Eduardo Chappa
+# * Copyright 2013-2015 Eduardo Chappa
 # * Copyright 2006-2008 University of Washington
 # *
 # * Licensed under the Apache License, Version 2.0 (the "License");
@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 66 2014-12-07 19:42:29
+Alpine Commit 67 2015-01-07 21:01:57
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -156,7 +156,7 @@ Version <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)
 <!--chtml endif-->
 
 <BR>
-<BR>Copyright 2013-2014 Eduardo Chappa
+<BR>Copyright 2013-2015 Eduardo Chappa
 <BR>Copyright 2006-2008 University of Washington
 </DIV>
 
@@ -259,6 +259,8 @@ Additions include:
        size in screen of these fields. Change only in index screen display.
   <LI> Aggregate operations allows bouncing a list of messages using a role.
        Suggested by Ulf-Dietrich Braumann.
+  <LI> Disable saving new passwords to the password file. Implemented
+       by Louis Raphael from dpslabs.com. <A HREF="h_config_disable_password_file_saving">Learn more.</A>
   <LI> Makefile: Add $(LIBINTL) to the flags to link rpdump, rpload, 
      alpined and alpineldap because MAC OSX 10.8 x86_64 needs it. Reported by
      Charles M. Register.
@@ -767,7 +769,7 @@ Since then, the effort of developing Alpine has been continued by
 a community of volunteers who make good software even better!
 
 <P>
-Alpine Copyright 2013-2014 Eduardo Chappa, 
+Alpine Copyright 2013-2015 Eduardo Chappa, 
 <BR> Copyright 2006-2008 University of Washington.
 
 <P>
@@ -1744,7 +1746,7 @@ Version <!--#echo var="ALPINE_VERSION"-->
 <BR>(built <!--#echo var=ALPINE_COMPILE_DATE-->)
 <!--chtml endif-->
 </DIV>
-<CENTER>Copyright 2013-2014 Eduardo Chappa,
+<CENTER>Copyright 2013-2015 Eduardo Chappa,
 <BR>Copyright 2006-2008 University of Washington.
 </CENTER>
 
@@ -2787,6 +2789,7 @@ if the connection is encrypted.
 <P>
 <UL>
 <LI> <A HREF="h_config_disable_password_caching"><!--#echo var="FEAT_disable-password-caching"--></A> feature to disable password caching </LI>
+<LI> <A HREF="h_config_disable_password_file_saving"><!--#echo var="FEAT_disable-password-file-saving"--></A> Disable password file saving</LI>
 <LI> <A HREF="h_config_mailcap_params"><!--#echo var="FEAT_enable-mailcap-param-substitution"--></A> feature </LI>
 <LI> <A HREF="h_config_disable_auths"><!--#echo var="VAR_disable-these-authenticators"--></A> option </LI>
 </UL>
@@ -32722,6 +32725,29 @@ core files unreadable.
 <P>
 NOTE: If PASSFILE caching is enabled, this does not disable it.
 That is a separate and independent feature.
+<UL>   
+<LI><A HREF="h_finding_help">Finding more information and requesting help</A>
+</UL><P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+====== h_config_disable_password_file_saving =====
+<HTML>
+<HEAD>
+<TITLE>FEATURE: <!--#echo var="FEAT_disable-password-file-saving"--></TITLE>
+</HEAD>
+<BODY>
+<H1>FEATURE: <!--#echo var="FEAT_disable-password-file-saving"--></H1>
+
+This feature changes the behavior of Alpine when a login name and password combination
+for a specific server is not found in the password file. The default behavior is that
+Alpine will ask the user if they wish to save this information in the password file for future
+use. It is assumed that if a user created a password file it is because they intend
+to use it, but in some instances a user might want to save some passwords and not others.
+In this case, enabling this feature will make Alpine not add any more passwords to the
+password file and will only use the passwords that it already saved. If you wish to allow
+Alpine to save more passwords in the password file, disable this feature.
+<P>
 <UL>   
 <LI><A HREF="h_finding_help">Finding more information and requesting help</A>
 </UL><P>

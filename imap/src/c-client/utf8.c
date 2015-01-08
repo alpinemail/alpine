@@ -1033,7 +1033,7 @@ unsigned long utf8_get_raw (unsigned char **s,unsigned long *i)
       }
       else if (c == 0xed) {	/* U+d000 - U+d7ff */
 	c &= 0x0f;
-	if ((c1 >= 0x80) && (c1 <= 0x9f)) more = 2;
+	if (j == 0 || ((c1 >= 0x80) && (c1 <= 0x9f))) more = 2;
       }
       else if (c < 0xf0) {	/* U+e000 - U+ffff */
 	c &= 0x0f;

@@ -4,7 +4,7 @@ static char rcsid[] = "$Id: conf.c 1266 2009-07-14 18:39:12Z hubert@u.washington
 
 /*
  * ========================================================================
- * Copyright 2013-2014 Eduardo Chappa
+ * Copyright 2013-2015 Eduardo Chappa
  * Copyright 2006-2009 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -3065,6 +3065,11 @@ feature_list(int index)
 	{"disable-password-caching", NULL,
 	 F_DISABLE_PASSWORD_CACHING, h_config_disable_password_caching,
 	 PREF_MISC, 0},
+#ifdef PASSFILE
+	{"disable-password-file-saving", NULL,
+	 F_DISABLE_PASSWORD_FILE_SAVING, h_config_disable_password_file_saving,
+	 PREF_MISC, 0},
+#endif
 	{"disable-regular-expression-matching-for-alternate-addresses", NULL,
 	 F_DISABLE_REGEX, h_config_disable_regex, PREF_MISC, 0},
 	{"disable-save-input-history", NULL,

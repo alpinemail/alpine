@@ -4,7 +4,7 @@ static char rcsid[] = "$Id: smime.c 1176 2008-09-29 21:16:42Z hubert@u.washingto
 
 /*
  * ========================================================================
- * Copyright 2013-2014 Eduardo Chappa
+ * Copyright 2013-2015 Eduardo Chappa
  * Copyright 2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -672,14 +672,18 @@ import_certificate(WhichCerts ctype)
       if((ins = BIO_new_file(full_filename, "r")) != NULL){
 	if((cert = PEM_read_bio_X509(ins, NULL, NULL, NULL)) != NULL){
 	  if(SMHOLDERTYPE(ctype) == Directory){
-	    char **email = get_x509_subject_email(cert);
-	    int i;
+	    char **email;
 
-	    for(i = 0; email[i] != NULL; i++){
-	       save_cert_for(email[i], cert, Public);
-	       fs_give((void **)&email[i]);
+	    if((email = get_x509_subject_email(cert)) != NULL){
+	       int i;
+	       for(i = 0; email[i] != NULL; i++){
+		  save_cert_for(email[i], cert, Public);
+		  fs_give((void **)&email[i]);
+	       }
+	       fs_give((void **)email);
 	    }
-	    fs_give((void **)email);
+	    else
+	      save_cert_for(filename, cert, Public);
 	  }
 	  else  /* if(SMHOLDERTYPE(ctype) == Container){ */
 	     add_file_to_container(ctype, full_filename, NULL);

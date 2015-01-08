@@ -10844,11 +10844,11 @@ peLoadConfig(struct pine *pine_state)
 
     if(pine_state->VAR_RSHOPENTIMEO
 	&& ((rv = atoi(pine_state->VAR_RSHOPENTIMEO)) == 0 || rv > 4))
-      mail_parameters(NULL, SET_RSHTIMEOUT, (void *) rv);
+      mail_parameters(NULL, SET_RSHTIMEOUT, (void *) (long) rv);
 
     if(pine_state->VAR_SSHOPENTIMEO
 	&& ((rv = atoi(pine_state->VAR_SSHOPENTIMEO)) == 0 || rv > 4))
-      mail_parameters(NULL, SET_SSHTIMEOUT, (void *) rv);
+      mail_parameters(NULL, SET_SSHTIMEOUT, (void *) (long) rv);
 
     /*
      * Tell c-client not to be so aggressive about uid mappings
