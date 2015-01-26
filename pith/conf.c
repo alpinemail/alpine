@@ -5938,16 +5938,21 @@ write_pinerc(struct pine *ps, EditWhich which, int flags)
 		slpath = cpystr(slink);
 	      else{
 		char * basep;
+	        int n;
+
 		basep = strrchr(filename, '/');
-	        if(basep == NULL){
+	        if(basep != NULL){
 		  *basep = '\0';
-		  slpath = (char *) fs_get((strlen(filename) + strlen(slink) + 2)*sizeof(char));
-		  snprintf(slpath, sizeof(slpath), "%s/%s", filename, slink);
+		  n = strlen(filename) + strlen(slink) + 2;
+		  slpath = (char *) fs_get(n*sizeof(char));
+		  snprintf(slpath, n, "%s/%s", filename, slink);
 		  *basep = '/';
 		} else {
-		  slpath = (char *) fs_get((strlen(ps_global->home_dir) + strlen(slink) + 2)*sizeof(char));
-		  snprintf(slpath, sizeof(slpath), "%s/%s", ps_global->home_dir, slink);
+		  n = strlen(ps_global->home_dir) + strlen(slink) + 2;
+		  slpath = (char *) fs_get(n*sizeof(char));
+		  snprintf(slpath, n, "%s/%s", ps_global->home_dir, slink);
 		}
+		slpath[n-1] = '\0';
 	      }
 	      file_attrib_copy(tmp, slpath);
 	      r = rename_file(tmp, slpath);

@@ -238,7 +238,7 @@ typedef struct  {
  */
 typedef	struct CELL {
 	unsigned int c : 24;		/* Character value in cell      */
-	unsigned int a : 8;		/* Its attributes               */
+	unsigned int a : 7;		/* Its attributes               */
 	unsigned int d : 1;		/* direction			*/
 } CELL;
 

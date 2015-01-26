@@ -148,7 +148,7 @@ main(argc, argv)
     printf("%5d: last year\n", user_count[3]);
     printf("%5d: more than a year\n", user_count[4]);
     printf("%5d: core files\n", core_files);
-    printf("%5d: Average messages in inbox  (%ld/%d)\n",
+    printf("%5ld: Average messages in inbox  (%ld/%ld)\n",
            inbox_mess/(inboxes ? inboxes : 1), inbox_mess, inboxes);
     printf("%5d: Largest inbox in messages\n", inbox_mess_max);
     printf("%5d: Total users checked\n", so_far);

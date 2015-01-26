@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 67 2015-01-07 21:01:57
+Alpine Commit 68 2015-01-25 18:52:07
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -175,6 +175,41 @@ Apache web server.
 
 Version <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)
 addresses bugs found in previous releases and has a few additions as well.
+
+<P>
+Additions include:
+<UL>
+  <LI> Ignore message from smtp server after a successful authentication
+     challenge.
+  <LI> If SSLDIR is defined somehow, do not disable S/MIME if the
+     SSLCERTSDIR is not found.
+</UL>
+
+<P>
+Bugs that have been addressed include:
+<UL>
+  <LI> Alpine would not set include and lib paths for OpenSSL if this was
+     installed in /usr/local/ssl.
+
+  <LI> If the .pinerc file is a symbolic link, Alpine might not write its
+     contents when saving its configuration.
+
+  <LI> The _INIT_ token does not skip over non-alpha numeric characters in
+     the name. Reported by Andreas Fehr.
+
+  <LI> Mismatch in size of UCS and CELL caused a corruption in the
+     content of a pointer, which made the speller in PC-Alpine get
+     the content of a word incorrectly.
+
+  <LI> Skip testing openssl compatibility version when cross-compilation 
+     is detected. Fix contributed by Antti Seppälä.
+
+</UL>
+
+
+<P>
+Version 2.20 addresses bugs found in previous releases and has several 
+additions as well.
 
 <P>
 Additions include:
@@ -362,7 +397,7 @@ Additions include:
 <P>
 
 <UL>
-   <LI> Alpine requires version 1.0.1c of Openssl to build.
+   <LI> Alpine requires version 1.0.0c of Openssl to build.
    <LI> Increase encryption of S/MIME encrypted messages.
    <LI> Pico: Improvements in justification of paragraphs: lines that begin
 with a quote string, followed by a space were considered individual paragraphs,

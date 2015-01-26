@@ -269,11 +269,11 @@ exec_mailcap_cmd(MCAP_CMD_S *mc_cmd, char *image_file, int needsterminal)
     q = cpystr("");
 #endif /* PSEFCMD */
 
-    l = 32 + strlen(cmd) + 2*strlen(image_file) + strlen(q);
+    l = 45 + strlen(cmd) + 2*strlen(image_file) + strlen(q);
     p = command = (char *)fs_get((l+1) * sizeof(char));
     if(!needsterminal)  /* put in background if it doesn't need terminal */
       *p++ = '(';
-    snprintf(p, l+1-(p-command), "%s ; %s rm -f %s", cmd, q, image_file);
+    snprintf(p, l+1-(p-command), "%s ; %s sleep 5 ; rm -f %s", cmd, q, image_file);
     fs_give((void **)&q);
     command[l] = '\0';
     p += strlen(p);

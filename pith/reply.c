@@ -820,6 +820,10 @@ reply_quote_initials(char *name)
 	  continue;
         }
 
+	/* skip over non-alpha stuff */
+	if(i == 0 && !isalnum((unsigned char) cbuf.cbuf[0]))
+	  goto reset_cbuf;
+
 	/* copy cbuf */
 	for(j = 0; j <= i; j++) *w++ =  cbuf.cbuf[j];
 	
@@ -827,6 +831,7 @@ reply_quote_initials(char *name)
 	while(*s && (unsigned char) *s != ' ')
 	  s++;
 
+reset_cbuf:
         cbuf.cbuf[i = 0] = '\0';
         cbuf.cbufp = cbuf.cbuf;
         cbuf.cbufend = cbuf.cbuf;

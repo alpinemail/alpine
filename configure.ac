@@ -15,7 +15,7 @@ dnl  */
 
 AC_PREREQ([2.69])
 
-AC_REVISION([Rev:14 by chappa@washington.edu])
+AC_REVISION([Rev:16 by chappa@washington.edu])
 
 dnl Alpine Version Number is in $srcdir/VERSION
 AC_INIT([alpine],[m4_normalize(m4_include(VERSION))],[chappa@washington.edu])
@@ -903,6 +903,9 @@ dnl find it anywhere else.
 	alpine_SSLLIB=$withval
       fi
     ])
+fi
+
+if test "x$alpine_SSLTYPE" != "xnone" ; then
   dnl setup globals so tests below work
   if test -n "$alpine_SSLINCLUDE" ; then
     CPPFLAGS="-I$alpine_SSLINCLUDE $CPPFLAGS"
@@ -915,6 +918,7 @@ dnl find it anywhere else.
     LDFLAGS="-L${alpine_SSLDIR}/lib $LDFLAGS"
   fi
 fi
+
 
 dnl Include Kerberos?
 dnl Set GSSDIR for c-client make
@@ -1346,6 +1350,39 @@ if test "x$alpine_DL" = "xnone" ; then
     exit 1	
 fi
 
+dnl Check Openssl/LibreSSL version first
+if test "x$alpine_SSLTYPE" != "xnone" ; then
+  AC_MSG_CHECKING([Openssl library version >= 1.0.0c])
+  AC_RUN_IFELSE(
+	[AC_LANG_SOURCE([[
+#include <stdio.h>
+#include <stdlib.h>
+#if HAVE_STDINT_H
+#include <stdint.h>
+#endif /* HAVE_STDINT_H */
+#include <openssl/ssl.h>
+int main(void) {
+
+	if (OPENSSL_VERSION_NUMBER >= 0x1000003f)
+		exit(0);
+
+	exit(2);
+}
+	]])],
+	[ AC_MSG_RESULT(yes) ],
+	[ alpine_SSLTYPE="none" ],
+	[ AC_MSG_WARN([cross compiling: not checking])])
+
+    if test "x$alpine_SSLTYPE" = "xnone" ; then
+	AC_MSG_ERROR(Install openssl version >= 1.0.0c)
+	exit 1
+    fi
+    AC_SEARCH_LIBS(TLSv1_2_client_method,ssl,
+	[ alpine_c_client_cflags="$alpine_c_client_cflags -DTLSV1_2"
+	  AC_DEFINE([SSL_SUPPORTS_TLSV1_2], [1], [SSL Supports TLSV1.2])
+	])
+fi
+
 dnl Crypto support is needed 
 if test "x$alpine_SSLTYPE" != "xnone" ; then
   AC_SEARCH_LIBS(SSLeay,crypto,, [ alpine_CRYPTO="none" ])
@@ -1364,31 +1401,6 @@ if test "x$alpine_SSLTYPE" != "xnone" ; then
      exit 1
   fi
 
-  AC_MSG_CHECKING([Openssl library version >= 1.0.1c])
-  AC_RUN_IFELSE(
-	[AC_LANG_SOURCE([[
-#include <stdio.h>
-#include <stdlib.h>
-#include <openssl/ssl.h>
-int main(void) {
-
-	if (OPENSSL_VERSION_NUMBER >= 0x1000003f)
-		exit(0);
-
-	exit(2);
-}
-	]])],
-	[ AC_MSG_RESULT(yes) ],
-	[ alpine_SSLTYPE="none" ])
-
-    if test "x$alpine_SSLTYPE" = "xnone" ; then
-	AC_MSG_ERROR(Install openssl version >= 1.0.1c)
-	exit 1
-    fi
-    AC_SEARCH_LIBS(TLSv1_2_client_method,ssl,
-	[ alpine_c_client_cflags="$alpine_c_client_cflags -DTLSV1_2"
-	  AC_DEFINE([SSL_SUPPORTS_TLSV1_2], [1], [SSL Supports TLSV1.2])
-	])
 fi
 
 dnl provide LDAP support?
@@ -1848,6 +1860,8 @@ else
     certdir="${alpine_SSLDIR}/ssl/certs"
   elif test -n "$alpine_SSLCERTS_ORIG" -a -d "$alpine_SSLCERTS_ORIG" ; then
     certdir="$alpine_SSLCERTS_ORIG"
+  elif test -n "$alpine_SSLCERTS" ; then
+    certdir="$alpine_SSLCERTS"
   else
     AC_MSG_NOTICE([SSL Problem: certificate directory not found])
   fi

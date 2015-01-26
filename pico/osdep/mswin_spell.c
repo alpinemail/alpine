@@ -437,6 +437,9 @@ spell_dlg_proc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 static int
 get_next_word(WORD_INFO *word_info)
 {
+    UCS *ucst;
+    int i, hibit;
+
     // Skip quoted lines
     while(lgetc(curwp->w_dotp, 0).c == '>')
     {
@@ -479,9 +482,19 @@ get_next_word(WORD_INFO *word_info)
             break;
     }
 
-    word_info->word_utf8 = ucs4_to_utf8_cpystr_n(
-        (UCS *)&word_info->word_dotp->l_text[word_info->word_doto],
-        word_info->word_size);
+    ucst = (UCS *)&word_info->word_dotp->l_text[word_info->word_doto];
+    for(i = 0, hibit = 0; i < word_info->word_size; i++)
+	if(ucst[i] & 0xff000000)
+	   hibit++;
+
+    if(hibit > 0){
+	ucst = ucs4_cpystr(ucst);
+	for(i = 0; i < word_info->word_size; i++)
+	   ucst[i] &= 0xffffff;
+    }
+    word_info->word_utf8 = ucs4_to_utf8_cpystr_n(ucst, word_info->word_size);
+    if(hibit > 0)
+      fs_give((void **)&ucst);
     return 1;
 }
 

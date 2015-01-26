@@ -1,4 +1,5 @@
 /* ========================================================================
+ * Copyright 2015 Eduardo Chappa
  * Copyright 2008 Mark Crispin
  * ========================================================================
  */
@@ -9,7 +10,8 @@
  * Author:	Mark Crispin
  *
  * Date:	27 July 1988
- * Last Edited:	19 November 2008
+ * Last Edited:	19 November 2008 (Crispin)
+ * Last Edited: 16 January 2015 (Chappa)
  *
  * Previous versions of this file were
  *
@@ -345,8 +347,9 @@ void *smtp_challenge (void *s,unsigned long *len)
   if ((stream->replycode == SMTPAUTHREADY) &&
       !(ret = rfc822_base64 ((unsigned char *) stream->reply + 4,
 			     strlen (stream->reply + 4),len))) {
-    sprintf (tmp,"SMTP SERVER BUG (invalid challenge): %.80s",stream->reply+4);
+    sprintf (tmp,"SMTP SERVER BUG (invalid challenge, continuing): %.80s",stream->reply+4);
     mm_log (tmp,ERROR);
+    ret = cpystr("");	/* This is silly: fake a reply, it will be ignored */
   }
   return ret;
 }
