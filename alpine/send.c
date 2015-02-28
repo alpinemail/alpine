@@ -5439,7 +5439,7 @@ filter_message_text(char *fcmd, ENVELOPE *outgoing, struct mail_bodystruct *body
     if(resultf){
 	if(name_file_size(resultf) > 0L)
 	  display_output_file(resultf, "Filter", NULL, DOF_BRIEF);
-
+	our_unlink(resultf);
 	fs_give((void **)&resultf);
     }
     else if(errstr){

@@ -2906,7 +2906,7 @@ pine_encode_body (struct mail_bodystruct *body)
 	  snprintf (tmp,sizeof(tmp),"%ld-%ld-%ld=:%ld",gethostid (),random (),(long) time (0),
 		    (long) getpid ());
 	  tmp[sizeof(tmp)-1] = '\0';
-	  set_parameter(&body->parameter, "BOUNDARY", tmp);
+	  set_parameter(&body->parameter, "boundary", tmp);
       }
 
       if(freethis)

@@ -148,7 +148,7 @@ dfilter(char *rawcmd, STORE_S *input_so, gf_io_t output_pc, FILTLIST_S *aux_filt
 	if(resultf){
 	    if(name_file_size(resultf) > 0L)
 	      display_output_file(resultf, "Filter", NULL, DOF_BRIEF);
-
+	    our_unlink(resultf);
 	    fs_give((void **)&resultf);
 	}
 

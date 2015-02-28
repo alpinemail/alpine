@@ -8499,7 +8499,7 @@ mswin_savefile(char *dir_utf8, int nMaxDName, char *fName_utf8, int nMaxFName)
  *      Possible return values:
  *      0   no file selected
  *      1   file selected
- *     -1   some sort of error
+ *     -1   some sort of error +++++++++++++
  */
 int
 mswin_openfile(char *dir_utf8, int nMaxDName, char *fName_utf8,

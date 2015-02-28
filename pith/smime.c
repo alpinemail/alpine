@@ -2829,15 +2829,19 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
 		char *h = (char *) so_text(msg_so);
 		char *bstart = strstr(h, "\r\n\r\n");
 		ENVELOPE *env;
-		BODY *body;
+		BODY *body, *tmpB;
 
 		bstart += 4;
 		INIT(&bs, mail_string, bstart, tlen);
-		rfc822_parse_msg_full(&env, &body, h, bstart-h, &bs, BADHOST, 0, 0);
+		rfc822_parse_msg_full(&env, &body, h, bstart-h-4, &bs, BADHOST, 0, 0);
 		mail_free_envelope(&env);
 
 		mail_free_body_part(&b->nested.part);
-		b->nested.part = mail_body_section(body, section)->nested.part;
+		tmpB = mail_body_section(body, section);
+		if(MIME_MSG(tmpB->type, tmpB->subtype))
+		   b->nested.part = tmpB->nested.msg->body->nested.part;
+		else
+		   b->nested.part = tmpB->nested.part;
 		create_local_cache(bstart, bstart, &b->nested.part->body, 1);
 		modified_the_body = 1;
 

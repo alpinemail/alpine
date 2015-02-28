@@ -15,7 +15,7 @@ dnl  */
 
 AC_PREREQ([2.69])
 
-AC_REVISION([Rev:16 by chappa@washington.edu])
+AC_REVISION([Rev:17 by chappa@washington.edu])
 
 dnl Alpine Version Number is in $srcdir/VERSION
 AC_INIT([alpine],[m4_normalize(m4_include(VERSION))],[chappa@washington.edu])
@@ -720,6 +720,8 @@ dnl When the system has openssl installed in its default location
 dnl instead of the one used by the distribution assume that this
 dnl is the one intended to be used.
   alpine_SSLDIR="/usr/local/ssl"
+  alpine_SSLINCLUDE="$alpine_SSLDIR/include" 
+  alpine_SSLLIB="$alpine_SSLDIR/lib"
 else
   dnl preload c-client default locations/options
   case $host in
@@ -869,7 +871,9 @@ dnl find it anywhere else.
       alpine_SSLDIR="/usr/local/ssl"
       ;;
   esac
+fi
 
+if test "x$alpine_SSLTYPE" != "xnone" ; then
   AC_ARG_WITH(ssl-dir,
     AS_HELP_STRING([--with-ssl-dir=DIR],[Root of SSL lib/include path]),
     [
@@ -903,9 +907,7 @@ dnl find it anywhere else.
 	alpine_SSLLIB=$withval
       fi
     ])
-fi
 
-if test "x$alpine_SSLTYPE" != "xnone" ; then
   dnl setup globals so tests below work
   if test -n "$alpine_SSLINCLUDE" ; then
     CPPFLAGS="-I$alpine_SSLINCLUDE $CPPFLAGS"
@@ -1874,18 +1876,26 @@ else
     fi
   fi
 
-  if test ! -f ${certdir}/factory.pem ; then
-    AC_MSG_NOTICE([* * * SSL file "${certdir}/factory.pem" is missing.])
-    AC_MSG_NOTICE([* * *   This might indicate that CA certs did not get properly])
-    AC_MSG_NOTICE([* * *   installed.  If you get certificate validation failures])
-    AC_MSG_NOTICE([* * *   in Alpine, this might be the reason for them.])
+
+  SSL_CERT_LINK="no"
+  if test -z "`ls ${certdir} | $EGREP '^@<:@0-9A-Fa-f@:>@{8}\.@<:@0-9@:>@'`" ; then
+     SSL_BUNDLE_EXISTS="no"
+     SSL_PEM="factory.pem ca-bundle.pem"
+     for SSL_BUNDLE in $SSL_PEM
+     do
+       if test -f ${certdir}/${SSL_BUNDLE} ; then
+          SSL_BUNDLE_EXISTS="yes"
+       fi
+     done
+  else
+     SSL_CERT_LINK="yes"
   fi
 
-  if test -z "`ls ${certdir} | $EGREP '^@<:@0-9A-Fa-f@:>@{8}\.@<:@0-9@:>@'`" ; then
-    AC_MSG_NOTICE([* * * No 8-hexdigit symlinks in certificate directory "${certdir}".])
-    AC_MSG_NOTICE([* * *   This might indicate that CA certs did not get properly])
-    AC_MSG_NOTICE([* * *   installed.  If you get certificate validation failures])
-    AC_MSG_NOTICE([* * *   in Alpine, this might be the reason for them.])
+  if test "x$SSL_BUNDLE_EXISTS" = "xno" -a "x$SSL_CERT_LINK" = "xno" ; then
+     AC_MSG_NOTICE([* * * No certificates found in "${certdir}".])
+     AC_MSG_NOTICE([* * *   This might indicate that CA certs did not get properly])
+     AC_MSG_NOTICE([* * *   installed.  If you get certificate validation failures])
+     AC_MSG_NOTICE([* * *   in Alpine, this might be the reason for them.])
   fi
 
   if test -n "$alpine_SSLINCLUDE" ; then
