@@ -560,18 +560,17 @@ load_pkey_with_prompt(char *fpath, char *text, char *prompt)
   in = text ? BIO_new_mem_buf(text, strlen(text)) : BIO_new_file(fpath, "r");
   if(in != NULL){
      pkey = PEM_read_bio_PrivateKey(in, NULL, NULL, "");
-     BIO_free(in);
      if(pkey != NULL) return pkey;
   }
 
   if(pith_smime_enter_password)
     while(pkey == NULL && rc != 1){
-       in = text ? BIO_new_mem_buf(text, strlen(text)) : BIO_new_file(fpath, "r");
        if(in != NULL){
 	 do {
 	   rc = (*pith_smime_enter_password)(prompt, (char *)pass, sizeof(pass));
 	 } while (rc!=0 && rc!=1 && rc>0);
 
+	 (void) BIO_reset(in);
 	 pkey = PEM_read_bio_PrivateKey(in, NULL, NULL, (char *)pass);
 	 BIO_free(in);
        }

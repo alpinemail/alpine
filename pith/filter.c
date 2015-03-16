@@ -7743,6 +7743,9 @@ html_element_output(FILTER_S *f, int ch)
       html_output(f, ch);
 }
 
+#define ISHEX_DIGIT(X)	(isdigit((X)) || \
+			((X) >= 'a' && (X) <= 'f') || \
+			((X) >= 'A' && (X) <= 'F'))
 
 /*
  * collect html entity and return its UCS value when done.
@@ -7772,6 +7775,9 @@ html_entity_collector(FILTER_S *f, int ch, UCS *ucs, char **alt)
     else if((len == 0)
 	      ? (isalpha((unsigned char) ch) || ch == '#')
 	      : ((isdigit((unsigned char) ch)
+		  || (len == 1 && (unsigned char) ch == 'x')
+		  || (len == 1 &&(unsigned char) ch == 'X')
+		  || (len > 1 && isxdigit((unsigned char) ch))
 		  || (isalpha((unsigned char) ch) && buf[0] != '#')))){
 	buf[len++] = ch;
 	return(HTML_MOREDATA);
@@ -7779,14 +7785,18 @@ html_entity_collector(FILTER_S *f, int ch, UCS *ucs, char **alt)
     else if(ch == ';' || ASCII_ISSPACE((unsigned char) ch)){
 	buf[len] = '\0';		/* got something! */
 	if(buf[0] == '#'){
-	    *ucs = (UCS) strtoul(&buf[1], NULL, 10);
+	    if(buf[1] == 'x' || buf[1] == 'X')
+	       *ucs = (UCS) strtoul(&buf[2], NULL, 16);
+	    else
+	       *ucs = (UCS) strtoul(&buf[1], NULL, 10);
+
 	    if(alt){
 		*alt = NULL;
 		for(i = 0; i < sizeof(entity_tab)/sizeof(struct html_entities); i++)
-		  if(entity_tab[i].value == *ucs){
-		      *alt = entity_tab[i].plain;
+		   if(entity_tab[i].value == *ucs){
+		     *alt = entity_tab[i].plain;
 		      break;
-		  }
+		   }
 	    }
 
 	    len = 0;

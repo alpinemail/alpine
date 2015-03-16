@@ -97,40 +97,40 @@ smime_get_passphrase(void)
     return rc;	/* better return rc and make the caller check its return value */
 }
 
+int
+smime_check(BODY *body)
+{
+  int rv = 0;
+  PKCS7 *p7 = NULL;
+
+  if(body->type == TYPEMULTIPART){
+	PART *p;
+        
+	for(p=body->nested.part; p && rv == 0; p=p->next)
+	  rv += smime_check(&p->body);
+  }
+  if(rv > 0) return rv;
+  if(body->sparep)
+	p7 = get_smime_sparep_type(body->sparep) == P7Type
+		? (PKCS7 *)get_smime_sparep_data(body->sparep)
+		: NULL;
+  if(p7 && (PKCS7_type_is_signed(p7) || PKCS7_type_is_enveloped(p7)))
+    rv += 1;
+  return rv;
+}
+
 
 void
-smime_info_screen(struct pine *ps)
-{
-    long      msgno;
-    OtherMenu what;
-    int       offset = 0;
-    BODY     *body;
-    ENVELOPE *env;
+display_smime_info(struct pine *ps, ENVELOPE *env, BODY *body)
+{    
+    OtherMenu what = FirstMenu;
     HANDLE_S *handles = NULL;
     SCROLL_S  scrollargs;
     STORE_S  *store = NULL;
-    
-    ps->prev_screen = smime_info_screen;
-    ps->next_screen = SCREEN_FUN_NULL;
-
-    if(mn_total_cur(ps->msgmap) > 1L){
-	q_status_message(SM_ORDER | SM_DING, 0, 3,
-			 _("Can only view one message's information at a time."));
-	return;
-    }
-    /* else check for existence of smime bits */
+    long  msgno;
+    int	  offset = 0;
 
     msgno = mn_m2raw(ps->msgmap, mn_get_cur(ps->msgmap));
-    
-    env = mail_fetch_structure(ps->mail_stream, msgno, &body, 0);
-    if(!env || !body){
-	q_status_message(SM_ORDER, 0, 3,
-			 _("Can't fetch body of message."));
-	return;
-    }
-    
-    what = FirstMenu;
-
     store = so_get(CharStar, NULL, EDIT_ACCESS);
 
     while(ps->next_screen == SCREEN_FUN_NULL){
@@ -181,6 +181,41 @@ smime_info_screen(struct pine *ps)
     }
 
     so_give(&store);
+}
+
+void
+smime_info_screen(struct pine *ps)
+{
+    long      msgno;
+    BODY     *body;
+    ENVELOPE *env;
+    
+/*    ps->prev_screen = smime_info_screen;
+    ps->next_screen = SCREEN_FUN_NULL; */
+
+    msgno = mn_m2raw(ps->msgmap, mn_get_cur(ps->msgmap));
+    
+    env = mail_fetch_structure(ps->mail_stream, msgno, &body, 0);
+
+    if(!env || !body){
+	q_status_message(SM_ORDER, 0, 3,
+			 _("Can't fetch body of message."));
+	return;
+    }
+
+    if(smime_check(body) == 0){
+      q_status_message(SM_ORDER | SM_DING, 0, 3,
+			 _("Not a signed or encrypted message"));
+      return;
+    }
+
+    if(mn_total_cur(ps->msgmap) > 1L){
+	q_status_message(SM_ORDER | SM_DING, 0, 3,
+			 _("Can only view one message's information at a time."));
+	return;
+    }
+
+    display_smime_info(ps, env, body);
 }
 
 

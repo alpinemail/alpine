@@ -29,7 +29,8 @@ int    smime_certificate_error_ask(int error);
 void   smime_info_screen(struct pine *ps);
 void   smime_config_screen(struct pine *, int edit_exceptions);
 int    smime_related_var(struct pine *, struct variable *);
-
+void   display_smime_info(struct pine *, ENVELOPE *, BODY *);
+int    smime_check(BODY *);	/* check that the message is smime */
 
 #endif /* PINE_SMIME_INCLUDED */
 #endif /* SMIME */

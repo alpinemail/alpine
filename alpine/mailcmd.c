@@ -1476,7 +1476,7 @@ get_out:
 	break;
 
       case MC_SECURITY:
-	state->next_screen = smime_info_screen;
+	smime_info_screen(state);
 	break;
 #endif
 

@@ -84,6 +84,13 @@
 #define CFFLBF  0x0010                  /* Last cmd was full buf fill   */
 #define CFFLPA  0x0020                  /* Last cmd was paragraph fill  */
 
+/* Constants for search type */
+#define SR_FORWARD 0x0001		/* search forward */
+#define SR_BACKWRD 0x0010		/* search backward */
+#define SR_BEGLINE 0x0100		/* search pattern at beginning of line */
+#define SR_ENDLINE 0x1000		/* search pattern at end of line */
+
+
 /*
  * macros to help filter character input
  */

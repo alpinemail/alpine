@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 69 2015-02-28 15:59:49
+Alpine Commit 70 2015-03-15 22:39:47
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -186,6 +186,22 @@ Additions include:
   <LI> When Alpine sends an attachment, it will set the boundary attribute
        in lower case, as some SMTP servers, such as those of libero.it 
        reject messages if the boundary attribute is in uppercase.
+  <LI> SMIME: The ^E command that gives infromation on the certificate
+       is only available for messages that have a signed or encrypted 
+       part.
+
+  <LI> SMIME: If a message contains a RFC822 atachment that is
+       signed/decrypted add the ability to view its SMIME information.
+
+  <LI> HTML: Add support for decoding entities in hexadecimal notation.
+       Suggested by Tulip&aacute;nt Gergely.
+
+  <LI> Pico: Add the ability to search for strings in the beginning or end
+       of a line. In the search menu, pressing Ctrl-^ toggles the prompt 
+       to search for a string at the beginning of a line. Another press of 
+       Ctrl-^ toggles the prompt to search for a string at the end of a 
+       line, and pressing Ctrl-^ one more time searches for the string 
+       anywhere in the text.
 </UL>
 
 <P>
@@ -194,6 +210,11 @@ Bugs that have been addressed include:
   <LI> SMIME: Crash when checking the signature of a message that contains
        a RFC822 attached message. Reported by Holger Trapp and Bj&ouml;rn 
        Krellner.
+
+  <LI> Fix vulnerability in regex library. This only affects those who use
+       this library, such as the windows version of Alpine. See 
+       <A HREF="http://www.kb.cert.org/vuls/id/695940">http://www.kb.cert.org/vuls/id/695940</A>
+       for more details.
 
   <LI> Alpine would not set include and lib paths for OpenSSL if this was
        installed in /usr/local/ssl.

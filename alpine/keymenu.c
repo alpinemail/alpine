@@ -813,7 +813,25 @@ struct key att_view_keys[] =
 	{"%", N_("Print"), {MC_PRINTMSG,1,{'%'}}, KS_PRINT},
 	NULL_MENU,
 	REPLY_MENU,
-	FORWARD_MENU};
+	FORWARD_MENU,
+
+	HELP_MENU,
+	OTHER_MENU,
+	HOMEKEY_MENU,
+	ENDKEY_MENU,
+	NULL_MENU,
+	NULL_MENU,
+#ifdef SMIME
+	{"^D","Decrypt", {MC_DECRYPT,1,{ctrl('d')},KS_NONE}},
+	{"^E","Security", {MC_SECURITY,1,{ctrl('e')},KS_NONE}},
+#else
+	NULL_MENU,
+	NULL_MENU,
+#endif
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU};
 INST_KEY_MENU(att_view_keymenu, att_view_keys);
 
 

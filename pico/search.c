@@ -114,7 +114,7 @@ eq(UCS bc, UCS pc)
 int
 forwsearch(int f, int n)
 {
-  int              status, bsearch;
+  int              status, flags;
   int              wrapt = FALSE, wrapt2 = FALSE;
   int              repl_mode = FALSE;
   UCS              defpat[NPAT];
@@ -130,15 +130,15 @@ forwsearch(int f, int n)
       FWS_RETURN(0);
 
     defpat[0] = '\0';
-    bsearch = 0;		/* search forward by default */
+    flags = SR_FORWARD;		/* search forward by default */
 
     /* ask the user for the text of a pattern */
     while(1){
 
 	if (gmode & MDREPLACE)
-	  status = srpat("Search", defpat, NPAT, repl_mode, bsearch);
+	  status = srpat("Search", defpat, NPAT, repl_mode, flags);
 	else
-	  status = readpattern("Search", TRUE, bsearch);
+	  status = readpattern("Search", TRUE, flags);
 
 	switch(status){
 	  case TRUE:                         /* user typed something */
@@ -166,7 +166,13 @@ forwsearch(int f, int n)
 	    break;
 
 	  case (CTRL|'P'):
-	    bsearch = bsearch == 0 ? 1 : 0;
+	    if(flags & SR_FORWARD){
+		flags &= ~SR_FORWARD;
+		flags |=  SR_BACKWRD;
+	    } else {
+		flags &= ~SR_BACKWRD;
+		flags |=  SR_FORWARD;
+	    }
 	    break;
 
 	  case  (CTRL|'V'):
@@ -178,6 +184,18 @@ forwsearch(int f, int n)
 	    gotobob(0, 1);
 	    mlerase();
 	    FWS_RETURN(TRUE); 
+
+	  case (CTRL|'^'):
+	    if(!(flags & (SR_BEGLINE|SR_ENDLINE))){
+		flags |= SR_BEGLINE;
+	    } else if (flags & SR_BEGLINE){
+		flags &= ~SR_BEGLINE;
+		flags |=  SR_ENDLINE;
+	    } else {
+		flags &= ~SR_ENDLINE;
+		flags |=  SR_FORWARD;
+	    }
+	    break;
 
 	  case (CTRL|'T') :
 	    switch(status = readnumpat(_("Search to Line Number : "))){
@@ -269,7 +287,7 @@ forwsearch(int f, int n)
 	}
     }
 
-    reverse_all(defpat, bsearch);
+    reverse_all(defpat, flags & SR_BACKWRD);
 
     /*
      * This code is kind of dumb.  What I want is successive C-W 's to 
@@ -295,7 +313,7 @@ forwsearch(int f, int n)
     /* search for the pattern */
     
     while (n-- > 0) {
-	if((status = forscan(&wrapt,defpat, bsearch, NULL,0,PTBEG)) == FALSE)
+	if((status = forscan(&wrapt,defpat, flags, NULL,0,PTBEG)) == FALSE)
 	  break;
     }
 
@@ -306,7 +324,7 @@ forwsearch(int f, int n)
 
       x[0] = '\0';
 
-      utf8 = sucs4_to_utf8_cpystr(defpat ? defpat : x, bsearch); 
+      utf8 = sucs4_to_utf8_cpystr(defpat ? defpat : x, flags & SR_BACKWRD); 
       /* TRANSLATORS: reporting the result of a failed search */
       eml.s = utf8;
       emlwrite(_("\"%s\" not found"), &eml);
@@ -314,7 +332,7 @@ forwsearch(int f, int n)
 	fs_give((void **) &utf8);
     }
     else if((gmode & MDREPLACE) && repl_mode == TRUE){
-        status = replace_pat(defpat, &wrapt2, bsearch);    /* replace pattern */
+        status = replace_pat(defpat, &wrapt2, flags & SR_BACKWRD);    /* replace pattern */
 	if (wrapt == TRUE || wrapt2 == TRUE){
 	    eml.s = (status == ABORT) ? "cancelled but wrapped" : "Wrapped";
 	    emlwrite("Replacement %s", &eml);
@@ -327,7 +345,7 @@ forwsearch(int f, int n)
 	emlwrite("", NULL);
     }
 
-    reverse_all(defpat, bsearch);
+    reverse_all(defpat, flags & SR_BACKWRD);
     if(curwp->w_doto == -1){
       curwp->w_doto  = 0;
       curwp->w_flag |= WFMOVE;
@@ -348,10 +366,15 @@ replace_pat(UCS *defpat, int *wrapt, int bsearch)
   char             utf8tmp[NPMT];
   UCS              prompt[NPMT];
   UCS             *promptp;
+  int		   flags;
 
-    if(bsearch)
+    if(bsearch){
+	flags = SR_BACKWRD;
 	curwp->w_doto -= ucs4_strlen(defpat) - 1;
-    forscan(wrapt, defpat, bsearch, NULL, 0, PTBEG);    /* go to word to be replaced */
+    }
+    else flags = SR_FORWARD;
+
+    forscan(wrapt, defpat, flags, NULL, 0, PTBEG);    /* go to word to be replaced */
 
     lpat[0] = '\0';
 
@@ -558,18 +581,23 @@ replace_all(UCS *orig, UCS *repl, int bsearch)
   LINE		  *stop_line   = curwp->w_dotp;
   int		   stop_offset = curwp->w_doto;
   EML              eml;
+  int		   flags;
 
   /* similar to replace_pat. When we come here, if bsearch is set,
    * the cursor is at the end of the match, so we must bring it back
    * to the beginning.
    */
   if(bsearch){
+    flags = SR_BACKWRD;
     curwp->w_doto -= ucs4_strlen(orig) - 1;
     curwp->w_flag |= WFMOVE;
   }
+  else
+    flags = SR_FORWARD;
+
   stop_offset = curwp->w_doto;
   while (1)
-    if (forscan(&wrapt, orig, bsearch, stop_line, stop_offset, PTBEG)){
+    if (forscan(&wrapt, orig, flags, stop_line, stop_offset, PTBEG)){
         curwp->w_flag |= WFMOVE;            /* put cursor back */
 
 	reverse_all(orig, bsearch); /* undo reverse buffer and pattern */
@@ -653,14 +681,21 @@ replace_all(UCS *orig, UCS *repl, int bsearch)
 
 /* Read a replacement pattern.  Modeled after readpattern(). */
 int
-srpat(char *utf8prompt, UCS *defpat, size_t defpatlen, int repl_mode, int bsearch)
+srpat(char *utf8prompt, UCS *defpat, size_t defpatlen, int repl_mode, int flags)
 {
 	register int s;
 	int	     i = 0;
+	int	     bsearch;
+	int	     bol;
+	int	     eol;
 	UCS         *b;
 	UCS	     prompt[NPMT];
 	UCS         *promptp;
 	EXTRAKEYS    menu_pat[9];
+
+	bsearch = flags & SR_BACKWRD;
+	bol	= flags & SR_BEGLINE;
+	eol	= flags & SR_ENDLINE;
 
 	menu_pat[i = 0].name = "^Y";
 	menu_pat[i].label    = N_("FirstLine");
@@ -675,6 +710,11 @@ srpat(char *utf8prompt, UCS *defpat, size_t defpatlen, int repl_mode, int bsearc
 	menu_pat[++i].name = "^R";
 	menu_pat[i].label  = repl_mode ? N_("No Replace") : N_("Replace");
 	menu_pat[i].key	   = (CTRL|'R');
+	KS_OSDATASET(&menu_pat[i], KS_NONE);
+
+	menu_pat[++i].name = "^^";
+	menu_pat[i].label  = bol ? N_("End Line") : eol ? N_("Anywhere") : N_("Bgn Line") ;
+	menu_pat[i].key    = (CTRL|'^');
 	KS_OSDATASET(&menu_pat[i], KS_NONE);
 
 	if(!repl_mode){
@@ -717,6 +757,17 @@ srpat(char *utf8prompt, UCS *defpat, size_t defpatlen, int repl_mode, int bsearc
 	    if(bsearch){
 	      fs_give((void **) &b);
 	      b = utf8_to_ucs4_cpystr(N_(" backward"));
+	      if(b) ucs4_strncat(prompt, b, ucs4_strlen(b));
+	      prompt[NPMT-1] = '\0';
+	    }
+	    if(bol){
+	      fs_give((void **) &b);
+	      b = utf8_to_ucs4_cpystr(N_(" at start of line"));
+	      if(b) ucs4_strncat(prompt, b, ucs4_strlen(b));
+	      prompt[NPMT-1] = '\0';
+	    } else if(eol){
+	      fs_give((void **) &b);
+	      b = utf8_to_ucs4_cpystr(N_(" at end of line"));
 	      if(b) ucs4_strncat(prompt, b, ucs4_strlen(b));
 	      prompt[NPMT-1] = '\0';
 	    }
@@ -833,14 +884,19 @@ readnumpat(char *utf8prompt)
 
 
 int
-readpattern(char *utf8prompt, int text_mode, int bsearch)
+readpattern(char *utf8prompt, int text_mode, int flags)
 {
 	register int s;
 	int	     i;
+	int	     bsearch, bol, eol;
 	UCS         *b;
 	UCS	     tpat[NPAT+20];
 	UCS         *tpatp;
 	EXTRAKEYS    menu_pat[8];
+
+	bsearch = flags & SR_BACKWRD;
+	bol	= flags & SR_BEGLINE;
+	eol	= flags & SR_ENDLINE;
 
 	menu_pat[i = 0].name = "^Y";
 	menu_pat[i].label    = N_("FirstLine");
@@ -852,7 +908,17 @@ readpattern(char *utf8prompt, int text_mode, int bsearch)
 	menu_pat[i].key	   = (CTRL|'V');
 	KS_OSDATASET(&menu_pat[i], KS_NONE);
 
+	menu_pat[++i].name = "^^";
+	menu_pat[i].label  = bol ? N_("End Line") : eol ? N_("Anywhere") : N_("Bgn Line") ;
+	menu_pat[i].key    = (CTRL|'^');
+	KS_OSDATASET(&menu_pat[i], KS_NONE);
+
 	if(text_mode){
+	    menu_pat[++i].name = "^^";
+	    menu_pat[i].label  = N_("Begn of Line");
+	    menu_pat[i].key    = (CTRL|'^');
+	    KS_OSDATASET(&menu_pat[i], KS_NONE);
+
 	    menu_pat[++i].name = "^T";
 	    menu_pat[i].label  = N_("LineNumber");
 	    menu_pat[i].key    = (CTRL|'T');
@@ -891,6 +957,17 @@ readpattern(char *utf8prompt, int text_mode, int bsearch)
 	      if(b) ucs4_strncat(tpat, b, ucs4_strlen(b));
 	      tpat[NPAT+20-1] = '\0';
 	    }
+	    if(bol){
+	      fs_give((void **) &b);
+	      b = utf8_to_ucs4_cpystr(N_(" at start of line"));
+	      if(b) ucs4_strncat(tpat, b, ucs4_strlen(b));
+	      tpat[NPAT+20-1] = '\0';
+	    } else if (eol){
+	      fs_give((void **) &b);
+	      b = utf8_to_ucs4_cpystr(N_(" at end of line"));
+	      if(b) ucs4_strncat(tpat, b, ucs4_strlen(b));
+	      tpat[NPAT+20-1] = '\0';
+	    } 
 	    if(b) fs_give((void **) &b);
 	}
 
@@ -1010,7 +1087,7 @@ void reverse_ucs4(UCS *s)
 int
 forscan(int *wrapt,	/* boolean indicating search wrapped */
 	UCS *patrn,	/* string to scan for */
-	int bsearch,	/* search backwards */
+	int flags,      /* direction and position */
 	LINE *limitp,	/* stop searching if reached */
 	int limito,	/* stop searching if reached */
 	int leavep)	/* place to leave point
@@ -1028,7 +1105,14 @@ forscan(int *wrapt,	/* boolean indicating search wrapped */
     UCS *patptr;	/* pointer into pattern */
     int stopoff;	/* offset to stop search */
     LINE *stopline;	/* line to stop search */
+    int ftest;		/* position of first character of test */
+    int bsearch;
+    int bol;
+    int eol;
 
+    bsearch = flags & SR_BACKWRD;
+    bol	= flags & SR_BEGLINE;
+    eol	= flags & SR_ENDLINE;
     *wrapt = FALSE;
 
     /* if bsearch is set we return the match at the beginning of the
@@ -1091,8 +1175,20 @@ forscan(int *wrapt,	/* boolean indicating search wrapped */
 	else
 	    c = lgetc(curline, curoff++).c;	/* get the char */
 
+	if(bol)
+	   ftest = bsearch == 0 ? 1 : llength(curline) - ucs4_strlen(patrn) + 1;
+	else if (eol)
+	   ftest = bsearch == 0 ? llength(curline) - ucs4_strlen(patrn) + 1 : 1;
 	/* test it against first char in pattern */
-	if (eq(c, patrn[0]) != FALSE) {	/* if we find it..*/
+	if (eq(c, patrn[0]) != FALSE 		/* if we find it..*/
+	       && ((bol == 0 && eol == 0)	/* ...and if it is anywhere */
+	            || (bol != 0		/* ...or is at the begin or line */
+		   	&& ((bsearch == 0 && curoff == ftest)	/* and search forward and found at beginning of line */
+			    || (bsearch != 0 && curoff == ftest))) /* or search backward and found at end of line */
+	            || (eol != 0		/* ...or is at the end or line */
+		   	&& ((bsearch == 0 && curoff == ftest)	/* and search forward and found at beginning of line */
+			    || (bsearch != 0 && curoff == ftest))) /* or search backward and found at end of line */
+		  )){
 	    /* setup match pointers */
 	    matchline = curline;
 	    matchoff = curoff;

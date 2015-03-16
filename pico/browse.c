@@ -317,7 +317,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
     UCS c, new_c;
     int status, i, j;
     int row, col, crow, ccol;
-    int bsearch;	/* search forward by default */
+    int flags;
     char *p, *envp, child[NLINE], tmp[NLINE];
     struct bmaster *mp;
     struct fcell *tp;
@@ -1597,11 +1597,11 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 	  case 'w':				/* Where is */
 	  case 'W':
 	  case (CTRL|'W'):
-	    bsearch = i = 0;
+	    i = 0;
+	    flags = SR_FORWARD;
 
 	    while(!i){
-
-		switch(readpattern(_("File name to find"), FALSE, bsearch)){
+		switch(readpattern(_("File name to find"), FALSE, flags)){
 		  case HELPCH:
 		    emlwrite(_("\007No help yet!"), NULL);
 /* remove break and sleep after help text is installed */
@@ -1611,7 +1611,13 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		    PaintBrowser(gmp, 0, &crow, &ccol);
 		    break;
 		  case (CTRL|'P'):
-		    bsearch = bsearch == 0 ? 1 : 0;
+		    if(flags & SR_FORWARD){
+			flags &= ~SR_FORWARD;
+			flags |=  SR_BACKWRD;
+		    } else {
+			flags &= ~SR_BACKWRD;
+			flags |=  SR_FORWARD;
+		    }
 		    break;
 		  case (CTRL|'Y'):		/* first first cell */
 		    for(tp = gmp->top; tp->prev; tp = tp->prev)
@@ -1673,7 +1679,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		    if(pat && pat[0])
 		      utf8 = ucs4_to_utf8_cpystr(pat);
 
-		    if(utf8 && (tp = FindCell(gmp, utf8, bsearch)) != NULL){
+		    if(utf8 && (tp = FindCell(gmp, utf8, flags & SR_BACKWRD)) != NULL){
 			PlaceCell(gmp, gmp->current, &row, &col);
 			PaintCell(row, col, gmp->cpf, gmp->current, 0);
 			gmp->current = tp;

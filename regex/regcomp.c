@@ -183,6 +183,7 @@ regcomp(regex_t *preg, const char *pattern, int cflags)
 	register struct parse *p = &pa;
 	register int i;
 	register size_t len;
+	register size_t maxlen;
 #ifdef REDEBUG
 #	define	GOODFLAGS(f)	(f)
 #else
@@ -205,7 +206,13 @@ regcomp(regex_t *preg, const char *pattern, int cflags)
 							(NC-1)*sizeof(cat_t));
 	if (g == NULL)
 		return(REG_ESPACE);
+	maxlen = ((size_t)-1 >> 1) / sizeof(sop) * 2 / 3;
+	if (len >= maxlen) {
+		free((char *)g);
+		return(REG_ESPACE);
+	}
 	p->ssize = len/(size_t)2*(size_t)3 + (size_t)1;	/* ugh */
+	assert(p->ssize >= len);
 	p->strip = (sop *)malloc(p->ssize * sizeof(sop));
 	p->slen = 0;
 	if (p->strip == NULL) {

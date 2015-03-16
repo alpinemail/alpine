@@ -60,7 +60,6 @@ int		alt_editor_valid(char *, char *, size_t);
 int		alt_editor_valid_fp(char *);
 #endif /* _WINDOWS */
 
-
 /*
  * alt_editor - fork off an alternate editor for mail message composition 
  *              if one is configured and passed from pine.  If not, only
@@ -548,7 +547,6 @@ pathcat(char *buf, char **path, char *file)
 
     return(TRUE);
 }
-
 
 #ifdef	SIGCHLD
 /*

@@ -291,6 +291,8 @@ uses the following environment variables:
 .br
 ~/.addressbook	Default address book file.
 .br
+~/.signature	File used for signature, appended to every message.
+.br
 ~/.pine-debug[1-4]	Diagnostic log for debugging.
 .br
 ~/.pinerc	Personal alpine config file.
@@ -313,11 +315,17 @@ uses the following environment variables:
 .br
 /usr/local/lib/pine.conf.fixed	 Non-overridable configuration file.
 .br
+~/.alpine-smime/ca	Directory that contains Certificate Authority files.
+.br
+~/.alpine-smime/private	Directory that contains private key(s).
+.br
+~/.alpine-smime/public	Directory that contains public key(s).
+.br
 /tmp/.\\usr\\spool\\mail\\xxxx	Per-folder mailbox lock files.
 .br
 ~/.pine-interrupted-mail	Message which was interrupted.
 .br
-~/mail/postponed-msgs	For postponed messages.
+~/mail/postponed-msgs	For postponed messages (drafts)
 .br
 ~/mail/sent-mail	Outgoing message archive (FCC).
 .br

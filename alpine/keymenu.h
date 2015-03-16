@@ -519,6 +519,8 @@ struct key_menu {
 #define	ATV_PRINT_KEY		20
 #define	ATV_REPLY_KEY		22
 #define	ATV_FORWARD_KEY		23
+#define ATV_DECRYPT_KEY		(ATV_PIPE_KEY + 14)
+#define ATV_SECURITY_KEY	(ATV_DECRYPT_KEY + 1)
 #define VIEW_ATT_KEY		 3
 #define VIEW_FULL_HEADERS_KEY	32
 #define	VIEW_VIEW_HANDLE	26

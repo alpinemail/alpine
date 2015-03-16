@@ -741,7 +741,7 @@ process_reap(pid_t pid, int *esp, int flags)
       wflags |= WNOHANG;
 #endif
 
-    while (((rv = waitpid(pid, &wstatus, wflags)) < 0) && (errno != ECHILD));
+    while (((rv = waitpid(pid, &wstatus, wflags)) < 0) 	&& (errno != ECHILD));
 
 #elif	HAVE_WAIT4
 

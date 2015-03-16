@@ -39,6 +39,7 @@ static char rcsid[] = "$Id: mailpart.c 1074 2008-06-04 00:08:43Z hubert@u.washin
 #include "signal.h"
 #include "send.h"
 #include "busy.h"
+#include "smime.h"
 #include "../pith/state.h"
 #include "../pith/conf.h"
 #include "../pith/store.h"
@@ -2522,6 +2523,15 @@ scroll_attachment(char *title, STORE_S *store, SourceType src, HANDLE_S *handles
 	clrbitn(ATV_REPLY_KEY, sargs.keys.bitmap);
 	clrbitn(ATV_EXPORT_KEY, sargs.keys.bitmap);
     }
+#ifdef SMIME
+    if(!(ps_global->smime && ps_global->smime->need_passphrase))
+	clrbitn(ATV_DECRYPT_KEY, sargs.keys.bitmap);
+
+    if(F_ON(F_DONT_DO_SMIME, ps_global) || !MIME_MSG_A(a)){
+	clrbitn(ATV_DECRYPT_KEY, sargs.keys.bitmap);
+	clrbitn(ATV_SECURITY_KEY, sargs.keys.bitmap);
+    }
+#endif
 
     sargs.use_indexline_color = 1;
 
@@ -2534,6 +2544,18 @@ scroll_attachment(char *title, STORE_S *store, SourceType src, HANDLE_S *handles
 #endif
 
     return(scrolltool(&sargs));
+}
+
+void
+display_smime_info_att(struct pine *ps, ATTACH_S *a)
+{
+  if(smime_check(a->body->nested.msg->body) == 0){
+      q_status_message(SM_ORDER | SM_DING, 0, 3,
+                         _("Not a signed or encrypted message"));
+      return;
+  }   
+
+  display_smime_info(ps, a->body->nested.msg->env, a->body->nested.msg->body);
 }
 
 
@@ -2633,6 +2655,17 @@ process_attachment_cmd(int cmd, MSGNO_S *msgmap, SCROLL_S *sparms)
 
 	rv = 1;
 	break;
+
+#ifdef SMIME
+      case MC_DECRYPT:
+        if(ps_global->smime && ps_global->smime->need_passphrase)
+          smime_get_passphrase();
+        break;
+
+      case MC_SECURITY:
+	display_smime_info_att(ps_global, sparms->proc.data.p);
+        break;
+#endif
 
       default:
 	alpine_panic("Unexpected command case");
