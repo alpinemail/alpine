@@ -299,6 +299,7 @@ main(int argc, char **argv)
 	exit(-1);
     }
 
+    mail_parameters(NULL, SET_UCS4WIDTH, (void *) pith_ucs4width);
     mail_parameters(NULL, SET_QUOTA, (void *) pine_parse_quota);
     /* set some default timeouts in case pinerc is remote */
     mail_parameters(NULL, SET_OPENTIMEOUT, (void *)(long)30);

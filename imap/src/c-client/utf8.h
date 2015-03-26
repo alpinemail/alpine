@@ -582,3 +582,4 @@ long utf8_strwidth (unsigned char *s);
 long utf8_textwidth (SIZEDTEXT *utf8);
 unsigned long ucs4_decompose (unsigned long c,void **more);
 unsigned long ucs4_decompose_recursive (unsigned long c,void **more);
+void *utf8_parameters (long function, void *value);

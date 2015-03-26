@@ -458,7 +458,7 @@ save_include(struct pine *ps, struct variable *v, int allow_hard_to_config_remot
  * this function.
  */
 int
-conf_scroll_screen(struct pine *ps, OPT_SCREEN_S *screen, CONF_S *start_line, char *title, char *pdesc, int multicol)
+conf_scroll_screen(struct pine *ps, OPT_SCREEN_S *screen, CONF_S *start_line, char *title, char *pdesc, int multicol, int *pos)
 {
     char	  tmp[MAXPATH+1];
     char         *utf8str;
@@ -1317,6 +1317,11 @@ no_down:
 	  case MC_RESIZE:
 	    ClearScreen();
 	    ps->mangled_screen = 1;
+	    if(pos){
+	      *pos = get_confline_number(screen->current);
+	       done++;
+	       retval = 0;
+	    }
 	    break;
 
 	  default:
@@ -4714,6 +4719,27 @@ snip_confline(CONF_S **p)
 	q->prev = q->next = NULL;
 	free_conflines(&q);
     }
+}
+
+int 
+get_confline_number(CONF_S *conf)
+{
+  int pos;
+  CONF_S *p;
+
+  for (p = first_confline(conf), pos = 0; p != conf; p = next_confline(p), pos++);
+
+  return pos;
+}
+
+
+CONF_S *
+set_confline_number(CONF_S *conf, int pos)
+{
+  CONF_S *p;
+  int i;
+  for(p = first_confline(conf), i = 0; p && i < pos; p=next_confline(p), i++);
+  return p;
 }
 
 

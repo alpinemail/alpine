@@ -726,7 +726,7 @@ smime_config_screen(struct pine *ps, int edit_exceptions)
 					      : _("SETUP S/MIME"),
 			      /* TRANSLATORS: Print something1 using something2.
 				 configuration is something1 */
-			      _("configuration"), 0)){
+			      _("configuration"), 0, NULL)){
       case 0:
 	break;
 
@@ -1468,7 +1468,7 @@ void manage_certificates(struct pine *ps, WhichCerts ctype)
 			       _("MANAGE CERTIFICATES"),
 			      /* TRANSLATORS: Print something1 using something2.
 				 configuration is something1 */
-			      _("configuration"), 0);
+			      _("configuration"), 0, NULL);
     } while (rv != 0);
 
     ps->mangled_screen = 1;

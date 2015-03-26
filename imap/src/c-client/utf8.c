@@ -38,6 +38,7 @@
  * details.
  */
 
+static ucs4width_t ucs4width = NIL;
 
 /* Character set conversion tables */
 
@@ -2315,6 +2316,7 @@ unsigned long ucs4_titlecase (unsigned long c)
 long ucs4_width (unsigned long c)
 {
   long ret;
+  ucs4width_t uw = (ucs4width_t) utf8_parameters(GET_UCS4WIDTH, NIL);
 				/* out of range, not-a-char, or surrogates */
   if ((c > UCS4_MAXUNICODE) || ((c & 0xfffe) == 0xfffe) ||
       ((c >= UTF16_SURR) && (c <= UTF16_MAXSURR))) ret = U4W_NOTUNCD;
@@ -2341,7 +2343,8 @@ long ucs4_width (unsigned long c)
   case 2:			/* double-width */
     break;
   case 3:			/* ambiguous width */
-    ret = (c >= 0x2100) ? 2 : 1;/* need to do something better than this */
+    ret = uw ? (*uw)(c)		/* this is better than the line below */
+	     : (c >= 0x2100) ? 2 : 1;/* need to do something better than this */
     break;
   }
   return ret;
@@ -2580,4 +2583,18 @@ unsigned long ucs4_decompose_recursive (unsigned long c,void **more)
     } while (c1 != c);		/* until nothing more to decompose */
   }
   return c;
+}
+
+void *utf8_parameters (long function,void *value)
+{
+  void *ret;
+
+  switch(function){
+     case SET_UCS4WIDTH:
+	ucs4width = (ucs4width_t) value;
+     case GET_UCS4WIDTH:
+	ret = (void *) ucs4width;
+	break;
+  }
+  return ret;
 }

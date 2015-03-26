@@ -6956,7 +6956,7 @@ abook_select_screen(struct pine *ps)
 	(void) conf_scroll_screen(ps, &screen, first_line,
 				  /* TRANSLATORS: Print something1 using something2.
 				     abooks is something1 */
-				  _("SELECT ADDRESS BOOK"), _("abooks"), 0);
+				  _("SELECT ADDRESS BOOK"), _("abooks"), 0, NULL);
     }
     else
       q_status_message(SM_ORDER|SM_DING, 3, 3, _("No address books defined!"));

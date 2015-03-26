@@ -62,7 +62,7 @@ void
 option_screen(struct pine *ps, int edit_exceptions)
 {
     char	    tmp[MAXPATH+1], *pval, **lval;
-    int		    i, j, ln = 0, readonly_warning = 0;
+    int		    i, j, ln = 0, readonly_warning = 0, pos;
     struct	    variable  *vtmp;
     CONF_S	   *ctmpa = NULL, *ctmpb, *first_line = NULL;
     FEATURE_S	   *feature;
@@ -106,6 +106,10 @@ option_screen(struct pine *ps, int edit_exceptions)
 
     if(ps->fix_fixed_warning)
       offer_to_fix_pinerc(ps);
+
+    pos = -1;
+    do {	/* Beginning of BIG LOOP */
+       ctmpa = first_line = NULL;
 
     /*
      * First, find longest variable name
@@ -426,35 +430,36 @@ option_screen(struct pine *ps, int edit_exceptions)
     }
 
     vsave = save_config_vars(ps, expose_hidden_config);
-    first_line = first_sel_confline(first_line);
-
+    first_line = pos < 0 ? first_sel_confline(first_line) : set_confline_number(first_line, pos);
+    pos = -1;
     memset(&screen, 0, sizeof(screen));
     screen.ro_warning = readonly_warning;
     /* TRANSLATORS: Print something1 using something2.
        "configuration" is something1 */
-    switch(conf_scroll_screen(ps, &screen, first_line,
+       switch(conf_scroll_screen(ps, &screen, first_line,
 			      edit_exceptions ? CONFIG_SCREEN_TITLE_EXC
 					      : CONFIG_SCREEN_TITLE,
-			      _("configuration"), 0)){
-      case 0:
-	break;
+			      _("configuration"), 0, &pos)){
+         case 0:
+	   break;
 
-      case 1:
-	write_pinerc(ps, ew, WRP_NONE);
-	break;
+         case 1:
+	   write_pinerc(ps, ew, WRP_NONE);
+	   break;
     
-      case 10:
-	revert_to_saved_config(ps, vsave, expose_hidden_config);
-	if(prc)
-	  prc->outstanding_pinerc_changes = 0;
+         case 10:
+	   revert_to_saved_config(ps, vsave, expose_hidden_config);
+	   if(prc)
+	     prc->outstanding_pinerc_changes = 0;
 
-	break;
+	   break;
       
-      default:
-	q_status_message(SM_ORDER,7,10,
+         default:
+	   q_status_message(SM_ORDER,7,10,
 	    "conf_scroll_screen bad ret, not supposed to happen");
-	break;
-    }
+	   break;
+       }
+    } while (pos >= 0);
 
     pval = PVAL(&ps->vars[V_SORT_KEY], ew);
     if(vsave[V_SORT_KEY].saved_user_val.p && pval

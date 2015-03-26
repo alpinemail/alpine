@@ -712,11 +712,6 @@ srpat(char *utf8prompt, UCS *defpat, size_t defpatlen, int repl_mode, int flags)
 	menu_pat[i].key	   = (CTRL|'R');
 	KS_OSDATASET(&menu_pat[i], KS_NONE);
 
-	menu_pat[++i].name = "^^";
-	menu_pat[i].label  = bol ? N_("End Line") : eol ? N_("Anywhere") : N_("Bgn Line") ;
-	menu_pat[i].key    = (CTRL|'^');
-	KS_OSDATASET(&menu_pat[i], KS_NONE);
-
 	if(!repl_mode){
 	    menu_pat[++i].name = "^T";
 	    menu_pat[i].label  = N_("LineNumber");
@@ -746,6 +741,11 @@ srpat(char *utf8prompt, UCS *defpat, size_t defpatlen, int repl_mode, int flags)
 	menu_pat[++i].name = "^P";
 	menu_pat[i].label  = bsearch ? N_("Forward") : N_("Backward") ;
 	menu_pat[i].key    = (CTRL|'P');
+	KS_OSDATASET(&menu_pat[i], KS_NONE);
+
+	menu_pat[++i].name = "^^";
+	menu_pat[i].label  = bol ? N_("End Line") : eol ? N_("Anywhere") : N_("Bgn Line") ;
+	menu_pat[i].key    = (CTRL|'^');
 	KS_OSDATASET(&menu_pat[i], KS_NONE);
 
 	menu_pat[++i].name = NULL;
@@ -908,17 +908,7 @@ readpattern(char *utf8prompt, int text_mode, int flags)
 	menu_pat[i].key	   = (CTRL|'V');
 	KS_OSDATASET(&menu_pat[i], KS_NONE);
 
-	menu_pat[++i].name = "^^";
-	menu_pat[i].label  = bol ? N_("End Line") : eol ? N_("Anywhere") : N_("Bgn Line") ;
-	menu_pat[i].key    = (CTRL|'^');
-	KS_OSDATASET(&menu_pat[i], KS_NONE);
-
 	if(text_mode){
-	    menu_pat[++i].name = "^^";
-	    menu_pat[i].label  = N_("Begn of Line");
-	    menu_pat[i].key    = (CTRL|'^');
-	    KS_OSDATASET(&menu_pat[i], KS_NONE);
-
 	    menu_pat[++i].name = "^T";
 	    menu_pat[i].label  = N_("LineNumber");
 	    menu_pat[i].key    = (CTRL|'T');
@@ -937,6 +927,11 @@ readpattern(char *utf8prompt, int text_mode, int flags)
 	    menu_pat[++i].name = "^U";
 	    menu_pat[i].label  = N_("FullJustify");
 	    menu_pat[i].key    = (CTRL|'U');
+	    KS_OSDATASET(&menu_pat[i], KS_NONE);
+
+	    menu_pat[++i].name = "^^";
+	    menu_pat[i].label  = bol ? N_("End Line") : eol ? N_("Anywhere") : N_("Bgn Line") ;
+	    menu_pat[i].key    = (CTRL|'^');
 	    KS_OSDATASET(&menu_pat[i], KS_NONE);
 	}
 

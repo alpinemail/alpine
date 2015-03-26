@@ -78,10 +78,12 @@ extern EditWhich ew;
 
 
 /* exported protoypes */
-int	 conf_scroll_screen(struct pine *, OPT_SCREEN_S *, CONF_S *, char *, char *, int);
+int	 conf_scroll_screen(struct pine *, OPT_SCREEN_S *, CONF_S *, char *, char *, int, int *);
 void     standard_radio_setup(struct pine *, CONF_S **, struct variable *, CONF_S **);
 int      standard_radio_var(struct pine *, struct variable *);
 int      delete_user_vals(struct variable *);
+int	 get_confline_number(CONF_S *);
+CONF_S  *set_confline_number(CONF_S *, int);
 CONF_S	*new_confline(CONF_S **);
 void	 free_conflines(CONF_S **);
 CONF_S	*first_confline(CONF_S *);

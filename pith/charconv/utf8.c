@@ -24,6 +24,8 @@ static char rcsid[] = "$Id: utf8.c 1184 2008-12-16 23:52:15Z hubert@u.washington
 #ifdef _WINDOWS
 /* wingdi.h uses ERROR (!) and we aren't using the c-client ERROR so... */
 #undef ERROR
+#else
+#define _XOPEN_SOURCE
 #endif
 
 #include <system.h>
@@ -98,6 +100,15 @@ wcellwidth(UCS ucs)
 #endif
 }
 
+int
+pith_ucs4width(UCS ucs)
+{
+#ifndef _WINDOWS
+  return wcwidth((wchar_t) ucs);
+#else
+  return 0;
+#endif /* _WINDOWS */
+}
 
 /*
  * Argument is a UCS-4 wide character.

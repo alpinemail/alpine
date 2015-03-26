@@ -191,7 +191,7 @@ select_from_list_screen(LIST_SEL_S *lsel, long unsigned int flags, char *title,
     }
 
     memset(&screen, 0, sizeof(screen));
-    switch(conf_scroll_screen(ps_global, &screen, first_line, title, pdesc, 0)){
+    switch(conf_scroll_screen(ps_global, &screen, first_line, title, pdesc, 0, NULL)){
       case 1:
         ret = 0;
 	break;

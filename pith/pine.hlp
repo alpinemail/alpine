@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 70 2015-03-15 22:39:47
+Alpine Commit 71 2015-03-25 20:26:58
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -202,6 +202,15 @@ Additions include:
        Ctrl-^ toggles the prompt to search for a string at the end of a 
        line, and pressing Ctrl-^ one more time searches for the string 
        anywhere in the text.
+
+  <LI> If the charset of a message can not be determined, use the value set
+       in the <A HREF="h_config_unk_char_set"><!--#echo var="VAR_unknown-character-set"--></A> for its value.
+
+  <LI> Resizing setup screen will redraw screen.
+
+  <LI> Unix Alpine only. Experimental: If Alpine/Pico finds a UCS4 code
+       in the width ambiguous zone, it will use other means to determine
+       the width, such as call wcwidth.
 </UL>
 
 <P>
@@ -22976,7 +22985,8 @@ Of course, if the unlabeled message is actually in some other character set,
 then you may see garbage on your screen.
 <P>
 Instead of just unlabeled text, this option also affects text which is labeled
-with the charsets &quot;X-Unknown&quot; or &quot;US-ASCII&quot;.
+with the charsets &quot;X-Unknown&quot;, &quot;MISSING_PARAMETER_VALUE&quot;
+or &quot;US-ASCII&quot;.
 
 <P>
 In the Setup/Config screen you may choose from a list of all the

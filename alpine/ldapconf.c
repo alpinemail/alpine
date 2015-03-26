@@ -471,7 +471,7 @@ ldap_addr_select(struct pine *ps, ADDR_CHOOSE_S *ac, LDAP_CHOOSE_S **result,
 	memset(&screen, 0, sizeof(screen));
 	/* TRANSLATORS: Print something1 using something2.
 	   "this" is something1 */
-	switch(conf_scroll_screen(ps,&screen,first_line,ac->title,_("this"),0)){
+	switch(conf_scroll_screen(ps,&screen,first_line,ac->title,_("this"),0, NULL)){
 	  case ADDR_SELECT_EXIT_VAL:
 	    retval = -1;
 	    break;
@@ -722,7 +722,7 @@ directory_config(struct pine *ps, int edit_exceptions)
     /* TRANSLATORS: Print something1 using something2.
        "servers" is something1 */
     (void)conf_scroll_screen(ps, &screen, first_line,
-			     _("SETUP DIRECTORY SERVERS"), _("servers"), 0);
+			     _("SETUP DIRECTORY SERVERS"), _("servers"), 0, NULL);
     ps->mangled_screen = 1;
 }
 
@@ -1758,7 +1758,7 @@ dir_edit_screen(struct pine *ps, LDAP_SERV_S *def, char *title, char **raw_serve
     screen.ro_warning = saved_screen ? saved_screen->deferred_ro_warning : 0;
     /* TRANSLATORS: Print something1 using something2.
        servers is something1 */
-    rv = conf_scroll_screen(ps, &screen, first_line, tmp, _("servers"), 0);
+    rv = conf_scroll_screen(ps, &screen, first_line, tmp, _("servers"), 0, NULL);
 
     /*
      * Now look at the fake variables and extract the information we

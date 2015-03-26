@@ -2805,7 +2805,7 @@ take_to_export(struct pine *ps, LINES_TO_TAKE *lines_to_take)
       q_status_message(SM_ORDER, 3, 3, _("No lines to export"));
     else{
 	memset(&screen, 0, sizeof(screen));
-	conf_scroll_screen(ps, &screen, first_line, _("Take Export"), NULL, 0);
+	conf_scroll_screen(ps, &screen, first_line, _("Take Export"), NULL, 0, NULL);
     }
 }
 

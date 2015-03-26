@@ -165,7 +165,7 @@ try_again:
      */
     if(conf_scroll_screen(ps, &screen, first_line,
 			  _("FLAG MAINTENANCE"),
-			  _("configuration"), 0) == FLAG_ADD_RETURN){
+			  _("configuration"), 0, NULL) == FLAG_ADD_RETURN){
 	int flags, r;
 	char keyword[500];
 	char nickname[500];

@@ -203,7 +203,7 @@ role_select_screen(struct pine *ps, ACTION_S **role, int alt_compose)
     /* TRANSLATORS: Print something1 using something2.
        "roles" is something1 */
     (void)conf_scroll_screen(ps, &screen, first_line, _("SELECT ROLE"),
-			     _("roles"), 0);
+			     _("roles"), 0, NULL);
 
     if(sel_pat){
 	*role = sel_pat->action;
@@ -374,7 +374,7 @@ uh_oh:
     screen.deferred_ro_warning = readonly_warning;
     /* TRANSLATORS: Print something1 using something2.
        "rules" is something1 */
-    switch(conf_scroll_screen(ps, &screen, first_line, title, _("rules"), 0)){
+    switch(conf_scroll_screen(ps, &screen, first_line, title, _("rules"), 0, NULL)){
 	case 0:
 	  break;
 
@@ -4909,7 +4909,7 @@ role_config_edit_screen(struct pine *ps, PAT_S *def, char *title, long int rflag
     /* TRANSLATORS: Print something1 using something2.
        "roles" is something1 */
     rv = conf_scroll_screen(ps, &screen, first_line, title, _("roles"),
-			    (edit_incol && pico_usingcolor()) ? 1 : 0);
+			    (edit_incol && pico_usingcolor()) ? 1 : 0, NULL);
 
     /*
      * Now look at the fake variables and extract the information we

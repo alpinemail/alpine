@@ -209,7 +209,9 @@ detach(MAILSTREAM *stream,		/* c-client stream to use         */
 	 * If the charset is unlabeled or unknown replace it
 	 * with the user's configured unknown charset.
 	 */
-	if(!charset || !strucmp(charset, UNKNOWN_CHARSET) || !strucmp(charset, "us-ascii")){
+	if(!charset || !strucmp(charset, UNKNOWN_CHARSET) 
+		|| !strucmp(charset, "MISSING_PARAMETER_VALUE")
+		|| !strucmp(charset, "us-ascii")){
 	    if(charset)
 	      fs_give((void **) &charset);
 

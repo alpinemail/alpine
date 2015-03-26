@@ -497,7 +497,7 @@ select_printer(struct pine *ps, int edit_exceptions)
     switch(conf_scroll_screen(ps, &screen, start_line,
 			      edit_exceptions ? _("SETUP PRINTER EXCEPTIONS")
 					      : _("SETUP PRINTER"),
-			      _("printer config"), 0)){
+			      _("printer config"), 0, NULL)){
       case 0:
 	break;
     

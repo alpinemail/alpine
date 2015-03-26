@@ -166,6 +166,10 @@ main(int argc, char *argv[])
     int      use_system = 0;
     char    *err = NULL;
 
+#ifndef _WINDOWS
+    utf8_parameters(SET_UCS4WIDTH, pith_ucs4width);
+#endif /* _WINDOWS */
+
     set_input_timeout(600);
     Pmaster = NULL;     		/* turn OFF composer functionality */
     km_popped = 0;

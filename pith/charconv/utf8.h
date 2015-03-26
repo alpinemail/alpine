@@ -97,6 +97,7 @@ char          *utf8_to_charset(char *, char *, int);
 char          *comatose(long);
 char          *tose(long);
 void           line_paint(int, struct display_line *, int *);
+int	       pith_ucs4width(UCS);
 
 #if	!defined(_WINDOWS) && HAVE_LANGINFO_H && defined(CODESET)
 char          *nl_langinfo_codeset_wrapper(void);

@@ -275,7 +275,7 @@ go_again:
     memset(&screen, 0, sizeof(screen));
     screen.ro_warning = readonly_warning;
     ret = conf_scroll_screen(ps, &screen, first_line, cs->title,
-			     cs->print_string, 0);
+			     cs->print_string, 0, NULL);
 
     free_contexts(&top);
     
@@ -470,7 +470,7 @@ context_select_screen(struct pine *ps, CONT_SCR_S *cs, int ro_warn)
     memset(&screen, 0, sizeof(screen));
     screen.ro_warning = readonly_warning;
     (void) conf_scroll_screen(ps, &screen, first_line, cs->title,
-			      cs->print_string, 0);
+			      cs->print_string, 0, NULL);
     opt_screen = saved_screen;
     ps->mangled_screen = 1;
     return(cs->selected);

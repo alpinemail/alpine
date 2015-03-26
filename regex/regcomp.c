@@ -212,7 +212,10 @@ regcomp(regex_t *preg, const char *pattern, int cflags)
 		return(REG_ESPACE);
 	}
 	p->ssize = len/(size_t)2*(size_t)3 + (size_t)1;	/* ugh */
-	assert(p->ssize >= len);
+	if(p->ssize < len || p->ssize > LONG_MAX / sizeof(sop)){
+	  free((char *)g);
+	  return REG_INVARG;
+	}
 	p->strip = (sop *)malloc(p->ssize * sizeof(sop));
 	p->slen = 0;
 	if (p->strip == NULL) {

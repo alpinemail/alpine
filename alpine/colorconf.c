@@ -106,7 +106,7 @@ color_config_screen(struct pine *ps, int edit_exceptions)
 					      : _("SETUP COLOR"),
 			      /* TRANSLATORS: Print something1 using something2.
 				 configuration is something1 */
-			      _("configuration"), 0)){
+			      _("configuration"), 0, NULL)){
       case 0:
 	break;
 
@@ -2918,7 +2918,7 @@ color_edit_screen(struct pine *ps, CONF_S **cl)
     rv = conf_scroll_screen(ps, &screen, first_line,
 			    ew == Post ? _("SETUP COLOR EXCEPTIONS")
 				       : _("SETUP COLOR"),
-			    _("configuration"), 1);
+			    _("configuration"), 1, NULL);
 
     opt_screen = saved_screen;
     ps->mangled_screen = 1;
