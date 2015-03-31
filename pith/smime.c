@@ -561,21 +561,19 @@ load_pkey_with_prompt(char *fpath, char *text, char *prompt)
   if(in != NULL){
      pkey = PEM_read_bio_PrivateKey(in, NULL, NULL, "");
      if(pkey != NULL) return pkey;
-  }
+  } else return NULL;
 
   if(pith_smime_enter_password)
     while(pkey == NULL && rc != 1){
-       if(in != NULL){
-	 do {
+	do {
 	   rc = (*pith_smime_enter_password)(prompt, (char *)pass, sizeof(pass));
 	 } while (rc!=0 && rc!=1 && rc>0);
 
 	 (void) BIO_reset(in);
 	 pkey = PEM_read_bio_PrivateKey(in, NULL, NULL, (char *)pass);
-	 BIO_free(in);
-       }
-       else rc = 1;
     }
+
+  BIO_free(in);
 
   return pkey;
 }

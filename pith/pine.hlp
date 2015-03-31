@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 71 2015-03-25 20:26:58
+Alpine Commit 72 2015-03-31 12:22:49
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -211,11 +211,28 @@ Additions include:
   <LI> Unix Alpine only. Experimental: If Alpine/Pico finds a UCS4 code
        in the width ambiguous zone, it will use other means to determine
        the width, such as call wcwidth.
+
+  <LI> Pico: Code reorganization in the search command to make it easier to
+       add subcommands of the search command.
+
+  <LI> Pico: Search command can do a case sensitive match. Use the Ctrl-^
+       subcommand of the search command to bring this choice into view.
+
+  <LI> For a multipart/alternative message, the Take Address command will 
+       work on the part that is being read.
 </UL>
 
+ 
 <P>
 Bugs that have been addressed include:
 <UL>
+  <LI> SMIME: Crash when a certificate has an invalid date of validity. Also
+       Alpine will use the function ASN1_TIME_print to determine the date 
+       of validity. Reported by Ben Stienstra.
+
+  <LI> SMIME: Crash when atempting to unlock the password file and an
+       incorrect password is entered.
+
   <LI> SMIME: Crash when checking the signature of a message that contains
        a RFC822 attached message. Reported by Holger Trapp and Bj&ouml;rn 
        Krellner.

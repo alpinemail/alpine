@@ -380,7 +380,9 @@ smime_get_date(ASN1_GENERALIZEDTIME *tm)
    struct tm smtm;
 
    (void) BIO_reset(mb);
-   ASN1_UTCTIME_print(mb, tm);
+   if(ASN1_TIME_print(mb, tm) == 0)
+     return cpystr(_("Invalid"));
+
    (void) BIO_flush(mb);
    BIO_read(mb, iobuf, sizeof(iobuf));
 

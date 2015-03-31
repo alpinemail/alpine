@@ -50,6 +50,47 @@ char   *sucs4_to_utf8_cpystr(UCS *, int);
 			    return(RV);			\
 			}
 
+/* The search menu leaves a number of keys free, some are taken
+ * as subcommands of the search command, and some are taken are
+ * editing commands. This leaves the following keys open:
+ * ^J, ^N, ^O, ^P, ^R, ^T, ^U, ^V, ^W, ^X and ^Y.
+ * Out of these keys, ^J, ^N, ^P and ^X are not defined as commands, however,
+ * in some patches ^N, ^P and ^X are defined. ^N is defined as part of
+ * an editing command, ^P and ^X are defined to delete paragraphs and to
+ * remove text to the end of file, so only ^J is undefined.
+ */
+
+#define REPLACE_KEY	2	/* the location of the replace key in the array below */
+
+EXTRAKEYS    menu_srchpat[] = {
+	{"^Y", N_("FirstLine"),	    (CTRL|'Y')},
+	{"^V", N_("LastLine"), 	    (CTRL|'V')},
+	{"^R", N_("No Replace"),    (CTRL|'R')},
+	{"^^", N_("Optns Menu"),    (CTRL|'^')},  /* toggle this menu or options menu */
+	{"^T", N_("LineNumber"),    (CTRL|'T')},
+	{"^W", N_("Start of Para"), (CTRL|'W')},
+	{"^O", N_("End of Para"),   (CTRL|'O')},
+	{"^U", N_("FullJustify"),   (CTRL|'U')},
+	{NULL, NULL, 0},
+	{NULL, NULL, 0}
+};
+
+#define EXACTSR_KEY     1	/* toggle an exact or approximate search */
+#define BGNLINE_KEY	3	/* the location of Bgn Line command  in the array below */
+#define ENDLINE_KEY	4	/* the location of End Line command  in the array below */
+#define BSEARCH_KEY	5	/* the location of the bsearch key in the array below */
+EXTRAKEYS    menu_srchopt[] = {
+	{"^^", N_("Orig Menu"),  (CTRL|'^')},	/* toggle original or options menu */
+	{"^X", N_("Exact"),      (CTRL|'X')},	/* toggle exact vs non exact */
+	{"^R", N_("No Replace"), (CTRL|'R')},	/* toggle replace or not replace */
+	{"^V", N_("Bgn Line"),   (CTRL|'V')},	/* toggle Bgn Line or anywhere */
+	{"^N", N_("End Line"),   (CTRL|'N')},	/* toggle End Line or anywhere */
+	{"^P", N_("BackSearch"), (CTRL|'P')},	/* toggle Backward or forward */
+	{NULL, NULL, 0},
+	{NULL, NULL, 0},
+	{NULL, NULL, 0},
+	{NULL, NULL, 0}
+};
 
 /*
  * Search forward. Get a search string from the user, and search, beginning at
@@ -130,7 +171,8 @@ forwsearch(int f, int n)
       FWS_RETURN(0);
 
     defpat[0] = '\0';
-    flags = SR_FORWARD;		/* search forward by default */
+	/* defaults: usual menu, search forward, not case sensitive */
+    flags = SR_ORIGMEN | SR_FORWARD | SR_NOEXACT;
 
     /* ask the user for the text of a pattern */
     while(1){
@@ -164,66 +206,112 @@ forwsearch(int f, int n)
 	    pico_refresh(FALSE, 1);
 	    update();
 	    break;
+	    
 
 	  case (CTRL|'P'):
-	    if(flags & SR_FORWARD){
+	    if(flags & SR_ORIGMEN){
+		/* Undefined still */
+	    }
+	    if(flags & SR_OPTNMEN){
+	      if(flags & SR_FORWARD){
 		flags &= ~SR_FORWARD;
 		flags |=  SR_BACKWRD;
-	    } else {
+	      } else {
 		flags &= ~SR_BACKWRD;
 		flags |=  SR_FORWARD;
+	      }
 	    }
 	    break;
 
 	  case  (CTRL|'V'):
-	    gotoeob(0, 1);
-	    mlerase();
-	    FWS_RETURN(TRUE);
+	    if(flags & SR_ORIGMEN){
+	       gotoeob(0, 1);
+	       mlerase();
+	       FWS_RETURN(TRUE);
+	    } else if (flags & SR_OPTNMEN){
+		if(flags & SR_ENDLINE)
+		  flags &= ~SR_ENDLINE;
+		if(flags & SR_BEGLINE)
+		  flags &= ~SR_BEGLINE;
+		else
+		  flags |= SR_BEGLINE;
+	    }
+	    break;
+
+	  case  (CTRL|'N'):
+	    if(flags & SR_ORIGMEN){
+		/* undefined still */
+	    } else if (flags & SR_OPTNMEN){
+		if(flags & SR_BEGLINE)
+		  flags &= ~SR_BEGLINE;
+		if(flags & SR_ENDLINE)
+		  flags &= ~SR_ENDLINE;
+		else
+		  flags |= SR_ENDLINE;
+	    }
+	    break;
 
 	  case (CTRL|'Y'):
-	    gotobob(0, 1);
-	    mlerase();
-	    FWS_RETURN(TRUE); 
+	    if(flags & SR_ORIGMEN){
+	      gotobob(0, 1);
+	      mlerase();
+	      FWS_RETURN(TRUE);
+	    }
 
 	  case (CTRL|'^'):
-	    if(!(flags & (SR_BEGLINE|SR_ENDLINE))){
-		flags |= SR_BEGLINE;
-	    } else if (flags & SR_BEGLINE){
-		flags &= ~SR_BEGLINE;
-		flags |=  SR_ENDLINE;
+	    if (flags & SR_ORIGMEN){
+		flags &= ~SR_ORIGMEN;
+		flags |=  SR_OPTNMEN;
 	    } else {
-		flags &= ~SR_ENDLINE;
-		flags |=  SR_FORWARD;
+		flags &= ~SR_OPTNMEN;
+		flags |=  SR_ORIGMEN;
+	    }
+	    break;
+
+	  case (CTRL|'X'):
+	    if(flags & SR_OPTNMEN){
+	      if (flags & SR_NOEXACT){
+		flags &= ~SR_NOEXACT;
+		flags |=  SR_EXACTSR;
+	      } else {
+		flags &= ~SR_EXACTSR;
+		flags |=  SR_NOEXACT;
+	      }
+	      if((curwp->w_bufp->b_mode & MDEXACT) == 0)
+		curwp->w_bufp->b_mode |= MDEXACT;
+	      else
+		curwp->w_bufp->b_mode &= ~MDEXACT;
 	    }
 	    break;
 
 	  case (CTRL|'T') :
-	    switch(status = readnumpat(_("Search to Line Number : "))){
-	      case -1 :
-		emlwrite(_("Search to Line Number Cancelled"), NULL);
-		FWS_RETURN(FALSE);
+	    if(flags & SR_ORIGMEN){
+	      switch(status = readnumpat(_("Search to Line Number : "))){
+	        case -1 :
+		  emlwrite(_("Search to Line Number Cancelled"), NULL);
+		  FWS_RETURN(FALSE);
 
-	      case  0 :
-		emlwrite(_("Line number must be greater than zero"), NULL);
-		FWS_RETURN(FALSE);
+	        case  0 :
+		  emlwrite(_("Line number must be greater than zero"), NULL);
+		  FWS_RETURN(FALSE);
 
-	      case -2 :
-		emlwrite(_("Line number must contain only digits"), NULL);
-		FWS_RETURN(FALSE);
+	        case -2 :
+		  emlwrite(_("Line number must contain only digits"), NULL);
+		  FWS_RETURN(FALSE);
 		
-	      case -3 :
-		continue;
+	        case -3 :
+		  continue;
 
-	      default :
-		gotoline(0, status);
-		mlerase();
-		FWS_RETURN(TRUE);
+	        default :
+		  gotoline(0, status);
+		  mlerase();
+		  FWS_RETURN(TRUE);
+	      }
 	    }
-
 	    break;
 
 	  case  (CTRL|'W'):
-	    {
+	    if(flags & SR_ORIGMEN){
 		LINE *linep = curwp->w_dotp;
 		int   offset = curwp->w_doto;
 
@@ -242,24 +330,29 @@ forwsearch(int f, int n)
 		    gotobop(0, 1);
 		    gotobol(0, 1);
 		}
+		mlerase();
+		FWS_RETURN(TRUE);
 	    }
-
-	    mlerase();
-	    FWS_RETURN(TRUE);
+	    break;
 
 	  case  (CTRL|'O'):
-	    if(curwp->w_dotp != curbp->b_linep){
+	    if(flags & SR_ORIGMEN){
+	      if(curwp->w_dotp != curbp->b_linep){
 		gotoeop(0, 1);
 		forwchar(0, 1);
+	      }
+	      mlerase();
+	      FWS_RETURN(TRUE);
 	    }
-
-	    mlerase();
-	    FWS_RETURN(TRUE);
+	    break;
 
 	  case (CTRL|'U'):
-	    fillbuf(0, 1);
-	    mlerase();
-	    FWS_RETURN(TRUE);
+	    if(flags & SR_ORIGMEN){
+	      fillbuf(0, 1);
+	      mlerase();
+	      FWS_RETURN(TRUE);
+	    }
+	    break;
 
 	  case  (CTRL|'R'):        /* toggle replacement option */
 	    repl_mode = !repl_mode;
@@ -685,71 +778,61 @@ srpat(char *utf8prompt, UCS *defpat, size_t defpatlen, int repl_mode, int flags)
 {
 	register int s;
 	int	     i = 0;
-	int	     bsearch;
-	int	     bol;
-	int	     eol;
+	int	     toggle, bsearch, bol, eol, exact;
 	UCS         *b;
 	UCS	     prompt[NPMT];
 	UCS         *promptp;
-	EXTRAKEYS    menu_pat[9];
+	EXTRAKEYS    menu_pat[10];
 
 	bsearch = flags & SR_BACKWRD;
 	bol	= flags & SR_BEGLINE;
 	eol	= flags & SR_ENDLINE;
+	exact   = flags & SR_EXACTSR;
+	toggle  = 0;	/* reserved for future use */
 
-	menu_pat[i = 0].name = "^Y";
-	menu_pat[i].label    = N_("FirstLine");
-	menu_pat[i].key	     = (CTRL|'Y');
-	KS_OSDATASET(&menu_pat[i], KS_NONE);
-
-	menu_pat[++i].name = "^V";
-	menu_pat[i].label  = N_("LastLine");
-	menu_pat[i].key	   = (CTRL|'V');
-	KS_OSDATASET(&menu_pat[i], KS_NONE);
-
-	menu_pat[++i].name = "^R";
-	menu_pat[i].label  = repl_mode ? N_("No Replace") : N_("Replace");
-	menu_pat[i].key	   = (CTRL|'R');
-	KS_OSDATASET(&menu_pat[i], KS_NONE);
-
-	if(!repl_mode){
-	    menu_pat[++i].name = "^T";
-	    menu_pat[i].label  = N_("LineNumber");
-	    menu_pat[i].key    = (CTRL|'T');
-	    KS_OSDATASET(&menu_pat[i], KS_NONE);
-
-	    menu_pat[++i].name = "^W";
-	    /* TRANSLATORS: Start of paragraph */
-	    menu_pat[i].label  = N_("Start of Para");
-	    menu_pat[i].key    = (CTRL|'W');
-	    KS_OSDATASET(&menu_pat[i], KS_NONE);
-
-	    menu_pat[++i].name = "^O";
-	    menu_pat[i].label  = N_("End of Para");
-	    menu_pat[i].key    = (CTRL|'O');
-	    KS_OSDATASET(&menu_pat[i], KS_NONE);
-
-	    menu_pat[++i].name = "^U";
-	    /* TRANSLATORS: Instead of justifying (formatting) just a
-	       single paragraph, Full Justify justifies the entire
-	       message. */
-	    menu_pat[i].label  = N_("FullJustify");
-	    menu_pat[i].key    = (CTRL|'U');
-	    KS_OSDATASET(&menu_pat[i], KS_NONE);
+	memset(&menu_pat, 0, 10*sizeof(EXTRAKEYS));
+	/* add exceptions here based on the location of the items in the menu */
+	for(i = 0; i < 10; i++){
+	    if(flags & SR_ORIGMEN){
+	      menu_pat[i].name  = menu_srchpat[10*toggle + i].name;
+	      menu_pat[i].label = menu_srchpat[10*toggle + i].label;
+	      menu_pat[i].key   = menu_srchpat[10*toggle + i].key;
+	      if(toggle == 0){
+		if (i == REPLACE_KEY)
+		   menu_pat[i].label  = repl_mode ? N_("No Replace")
+						  : N_("Replace");
+	      }
+	    } else if(flags & SR_OPTNMEN){
+	      menu_pat[i].name  = menu_srchopt[i].name;
+	      menu_pat[i].label = menu_srchopt[i].label;
+	      menu_pat[i].key   = menu_srchopt[i].key;
+	      switch(i){
+		case EXACTSR_KEY:
+			menu_pat[i].label = exact ? N_("No Exact")
+						  : N_("Exact");
+			break;
+		case REPLACE_KEY:
+			menu_pat[i].label  = repl_mode ? N_("No Replace")
+						       : N_("Replace");
+			break;
+		case BSEARCH_KEY: 
+			menu_pat[i].label  = bsearch ? N_("Srch Fwd")
+						     : N_("Srch Back");
+			break;
+		case BGNLINE_KEY:
+			menu_pat[i].label  = bol ? N_("Anywhere")
+						 : N_("Bgn Line"); 
+			break;
+		case ENDLINE_KEY:
+			menu_pat[i].label  = eol ? N_("Anywhere")
+						 : N_("End Line"); 
+			break;
+		default : break;
+	      }
+	      if(menu_pat[i].name)
+	        KS_OSDATASET(&menu_pat[i], KS_NONE);
+	   }
 	}
-
-	menu_pat[++i].name = "^P";
-	menu_pat[i].label  = bsearch ? N_("Forward") : N_("Backward") ;
-	menu_pat[i].key    = (CTRL|'P');
-	KS_OSDATASET(&menu_pat[i], KS_NONE);
-
-	menu_pat[++i].name = "^^";
-	menu_pat[i].label  = bol ? N_("End Line") : eol ? N_("Anywhere") : N_("Bgn Line") ;
-	menu_pat[i].key    = (CTRL|'^');
-	KS_OSDATASET(&menu_pat[i], KS_NONE);
-
-	menu_pat[++i].name = NULL;
-
 	b = utf8_to_ucs4_cpystr(utf8prompt);
 	if(b){
 	    ucs4_strncpy(prompt, b, NPMT);
@@ -768,6 +851,12 @@ srpat(char *utf8prompt, UCS *defpat, size_t defpatlen, int repl_mode, int flags)
 	    } else if(eol){
 	      fs_give((void **) &b);
 	      b = utf8_to_ucs4_cpystr(N_(" at end of line"));
+	      if(b) ucs4_strncat(prompt, b, ucs4_strlen(b));
+	      prompt[NPMT-1] = '\0';
+	    }
+	    if(exact){
+	      fs_give((void **) &b);
+	      b = utf8_to_ucs4_cpystr(N_(" exactly for"));
 	      if(b) ucs4_strncat(prompt, b, ucs4_strlen(b));
 	      prompt[NPMT-1] = '\0';
 	    }
@@ -888,59 +977,58 @@ readpattern(char *utf8prompt, int text_mode, int flags)
 {
 	register int s;
 	int	     i;
-	int	     bsearch, bol, eol;
+	int	     toggle, bsearch, bol, eol, exact;
 	UCS         *b;
 	UCS	     tpat[NPAT+20];
 	UCS         *tpatp;
-	EXTRAKEYS    menu_pat[8];
+	EXTRAKEYS    menu_pat[10];
 
 	bsearch = flags & SR_BACKWRD;
 	bol	= flags & SR_BEGLINE;
 	eol	= flags & SR_ENDLINE;
+	exact   = flags & SR_EXACTSR;
+	toggle  = 0;	/* reserved for future use */
 
-	menu_pat[i = 0].name = "^Y";
-	menu_pat[i].label    = N_("FirstLine");
-	menu_pat[i].key	     = (CTRL|'Y');
-	KS_OSDATASET(&menu_pat[i], KS_NONE);
-
-	menu_pat[++i].name = "^V";
-	menu_pat[i].label  = N_("LastLine");
-	menu_pat[i].key	   = (CTRL|'V');
-	KS_OSDATASET(&menu_pat[i], KS_NONE);
-
-	if(text_mode){
-	    menu_pat[++i].name = "^T";
-	    menu_pat[i].label  = N_("LineNumber");
-	    menu_pat[i].key    = (CTRL|'T');
-	    KS_OSDATASET(&menu_pat[i], KS_NONE);
-
-	    menu_pat[++i].name = "^W";
-	    menu_pat[i].label  = N_("Start of Para");
-	    menu_pat[i].key    = (CTRL|'W');
-	    KS_OSDATASET(&menu_pat[i], KS_NONE);
-
-	    menu_pat[++i].name = "^O";
-	    menu_pat[i].label  = N_("End of Para");
-	    menu_pat[i].key    = (CTRL|'O');
-	    KS_OSDATASET(&menu_pat[i], KS_NONE);
-
-	    menu_pat[++i].name = "^U";
-	    menu_pat[i].label  = N_("FullJustify");
-	    menu_pat[i].key    = (CTRL|'U');
-	    KS_OSDATASET(&menu_pat[i], KS_NONE);
-
-	    menu_pat[++i].name = "^^";
-	    menu_pat[i].label  = bol ? N_("End Line") : eol ? N_("Anywhere") : N_("Bgn Line") ;
-	    menu_pat[i].key    = (CTRL|'^');
-	    KS_OSDATASET(&menu_pat[i], KS_NONE);
+	memset(&menu_pat, 0, 10*sizeof(EXTRAKEYS));
+	/* add exceptions here based on the location of the items in the menu */
+	for(i = 0; i < 10; i++){
+	    if(flags & SR_ORIGMEN){
+	      menu_pat[i].name  = menu_srchpat[10*toggle + i].name;
+	      menu_pat[i].label = menu_srchpat[10*toggle + i].label;
+	      menu_pat[i].key   = menu_srchpat[10*toggle + i].key;
+	      if(toggle == 0){
+		if (i == REPLACE_KEY)
+		   memset(&menu_pat[i], 0, sizeof(EXTRAKEYS));
+		if (i > REPLACE_KEY && !text_mode)
+		   memset(&menu_pat[i], 0, sizeof(EXTRAKEYS));
+	      }
+	    } else if(flags & SR_OPTNMEN){
+	      menu_pat[i].name  = menu_srchopt[i].name;
+	      menu_pat[i].label = menu_srchopt[i].label;
+	      menu_pat[i].key   = menu_srchopt[i].key;
+	      switch(i){
+		case EXACTSR_KEY:
+			menu_pat[i].label  = exact ? N_("No Exact")
+						   : N_("Exact");
+			break;
+		case BSEARCH_KEY: 
+			menu_pat[i].label  = bsearch ? N_("Srch Fwd")
+						     : N_("Srch Back");
+			break;
+		case BGNLINE_KEY:
+			menu_pat[i].label  = bol ? N_("Anywhere")
+						 : N_("Bgn Line"); 
+			break;
+		case ENDLINE_KEY:
+			menu_pat[i].label  = eol ? N_("Anywhere")
+						 : N_("End Line"); 
+			break;
+		default : break;
+	     }
+	     if(menu_pat[i].name)
+	       KS_OSDATASET(&menu_pat[i], KS_NONE);
+	   }
 	}
-
-	menu_pat[++i].name = "^P";
-	menu_pat[i].label  = bsearch ? N_("Forward") : N_("Backward") ;
-	menu_pat[i].key    = (CTRL|'P');
-	KS_OSDATASET(&menu_pat[i], KS_NONE);
-
-	menu_pat[++i].name = NULL;
 
 	b = utf8_to_ucs4_cpystr(utf8prompt);
 	if(b){
@@ -960,6 +1048,12 @@ readpattern(char *utf8prompt, int text_mode, int flags)
 	    } else if (eol){
 	      fs_give((void **) &b);
 	      b = utf8_to_ucs4_cpystr(N_(" at end of line"));
+	      if(b) ucs4_strncat(tpat, b, ucs4_strlen(b));
+	      tpat[NPAT+20-1] = '\0';
+	    }
+	    if (exact){
+	      fs_give((void **) &b);
+	      b = utf8_to_ucs4_cpystr(N_(" exactly for"));
 	      if(b) ucs4_strncat(tpat, b, ucs4_strlen(b));
 	      tpat[NPAT+20-1] = '\0';
 	    } 

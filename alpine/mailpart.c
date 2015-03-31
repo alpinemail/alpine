@@ -2546,6 +2546,7 @@ scroll_attachment(char *title, STORE_S *store, SourceType src, HANDLE_S *handles
     return(scrolltool(&sargs));
 }
 
+#ifdef SMIME
 void
 display_smime_info_att(struct pine *ps, ATTACH_S *a)
 {
@@ -2557,7 +2558,7 @@ display_smime_info_att(struct pine *ps, ATTACH_S *a)
 
   display_smime_info(ps, a->body->nested.msg->env, a->body->nested.msg->body);
 }
-
+#endif /* SMIME */
 
 int
 process_attachment_cmd(int cmd, MSGNO_S *msgmap, SCROLL_S *sparms)

@@ -1824,6 +1824,8 @@ grab_addrs_from_body(MAILSTREAM *stream, long int msgno,
     gf_io_t    pc;
     SourceType src = CharStar;
     int        added = 0, failure;
+    char      *partno = "1";
+    ATTACH_S  *a = ps_global->atmts;
 
     dprint((9, "\n - grab_addrs_from_body - \n"));
 
@@ -1848,7 +1850,12 @@ grab_addrs_from_body(MAILSTREAM *stream, long int msgno,
 
     gf_set_so_writec(&pc, so);
 
-    failure = !get_body_part_text(stream, body, msgno, "1", 0L, pc,
+    if(body->type == TYPEMULTIPART 
+	&& strucmp(body->subtype, "ALTERNATIVE") == 0
+	&& a && a+1 && (a+1)->shown) 
+	partno = "2";
+
+    failure = !get_body_part_text(stream, body, msgno, partno, 0L, pc,
 				  NULL, NULL, GBPT_NONE);
 
     gf_clear_so_writec(so);

@@ -1598,7 +1598,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 	  case 'W':
 	  case (CTRL|'W'):
 	    i = 0;
-	    flags = SR_FORWARD;
+	    flags = SR_ORIGMEN | SR_FORWARD | SR_NOEXACT;
 
 	    while(!i){
 		switch(readpattern(_("File name to find"), FALSE, flags)){
