@@ -75,9 +75,9 @@ int		      smime_extract_and_save_cert(PKCS7 *p7);
 int		      same_cert(X509 *, X509 *);
 CertList *	      certlist_from_personal_certs(PERSONAL_CERT *pc);
 #ifdef PASSFILE
-void		      load_key_and_cert(char *pathkeydir, char *pathcertdir, char **keyfile, char **certfile, EVP_PKEY **pkey, X509 **pcert);
+int		      load_key_and_cert(char *pathkeydir, char *pathcertdir, char **keyfile, char **certfile, EVP_PKEY **pkey, X509 **pcert);
 #endif /* PASSFILE */
-EVP_PKEY 	     *load_pkey_with_prompt(char *fpath, char *text, char *prompt);
+EVP_PKEY 	     *load_pkey_with_prompt(char *fpath, char *text, char *prompt, int *);
 void		      smime_remove_trailing_crlf(char **mimetext, unsigned long *mimelen, char **bodytext, unsigned long *bodylen);
 void		      smime_remove_folding_space(char **mimetext, unsigned long *mimelen, char **bodytext, unsigned long *bodylen);
 int		      smime_validate_extra_test(char *mimetext, unsigned long mimelen, char *bodytext, unsigned long bodylen, PKCS7 *p7, int nflag);
@@ -122,19 +122,23 @@ get_smime_sparep_data(void *s)
  * key/certificate pair that matches. Delete pairs that you do not want used, 
  * if you do not want them selected. All parameters must be non-null. 
  * Memory freed by caller.
+ * Return values:
+ * -1 : user cancelled load
+ *  0 : load was successful
+ *  1 : there was an error in the loading.
  */
-void
+int
 load_key_and_cert(char *pathkeydir, char *pathcertdir, char **keyfile, 
 		char **certfile, EVP_PKEY **pkey, X509 **pcert)
 {
    char buf[MAXPATH+1], pathkey[MAXPATH+1], prompt[MAILTMPLEN];
    DIR *dirp;
    struct dirent *d;
-   int b = 0;
+   int b = 0, ret = 1; /* assume error */
 
    if(pathkeydir == NULL || pathcertdir == NULL || keyfile == NULL 
 	|| pkey == NULL	|| certfile == NULL || pcert == NULL)
-     return;
+     return 1;
 
    *keyfile = NULL;
    *certfile = NULL;
@@ -153,7 +157,7 @@ load_key_and_cert(char *pathkeydir, char *pathcertdir, char **keyfile,
  	      buf[strlen(buf)-4] = '\0';
 	      snprintf(prompt, sizeof(prompt),
 		_("Enter password of key <%s> to unlock password file: "), buf);
-	      if((*pkey = load_pkey_with_prompt(pathkey, NULL, prompt)) != NULL){
+	      if((*pkey = load_pkey_with_prompt(pathkey, NULL, prompt, &ret)) != NULL){
 		if(load_cert_for_key(pathcertdir, *pkey, certfile, pcert)){
 		  b = 1;	/* break */
 		  *keyfile = cpystr(buf);
@@ -169,6 +173,7 @@ load_key_and_cert(char *pathkeydir, char *pathcertdir, char **keyfile,
       }
       closedir(dirp);
    }
+   return ret;
 }
 
 
@@ -231,7 +236,8 @@ setup_pwdcert(void **pwdcert)
   if(setup_dir == 0)
     return;
 
-  load_key_and_cert(pathdir, pathdir, &keyfile, &certfile, &pkey, &pcert);
+  if(load_key_and_cert(pathdir, pathdir, &keyfile, &certfile, &pkey, &pcert) < 0)
+    return;
 
   if(certfile && keyfile){
      pc = (PERSONAL_CERT *) fs_get(sizeof(PERSONAL_CERT));
@@ -296,7 +302,7 @@ setup_pwdcert(void **pwdcert)
       snprintf(prompt, sizeof(prompt),
 	_("Enter password of key <%s> to unlock password file: "), pc->name);
 
-      if((pkey = load_pkey_with_prompt(pathkey, text, prompt)) != NULL){
+      if((pkey = load_pkey_with_prompt(pathkey, text, prompt, NULL)) != NULL){
 	 pc2 = (PERSONAL_CERT *) fs_get(sizeof(PERSONAL_CERT));
 	 memset((void *)pc2, 0, sizeof(PERSONAL_CERT));
 	 pc2->name = cpystr(pc->name);
@@ -549,7 +555,7 @@ get_cert_deleted(WhichCerts ctype, int num)
 }
 
 EVP_PKEY *
-load_pkey_with_prompt(char *fpath, char *text, char *prompt)
+load_pkey_with_prompt(char *fpath, char *text, char *prompt, int *ret)
 {
   EVP_PKEY *pkey;
   int rc = 0;   /* rc == 1, cancel, rc == 0 success */
@@ -575,6 +581,7 @@ load_pkey_with_prompt(char *fpath, char *text, char *prompt)
 
   BIO_free(in);
 
+  if(ret) *ret = rc == 1 ? -1 : pkey != NULL ? 0 : 1;
   return pkey;
 }
 
@@ -614,7 +621,7 @@ import_certificate(WhichCerts ctype)
 
 	snprintf(prompt, sizeof(prompt), _("Enter passphrase for <%s>: "), filename);
 	prompt[sizeof(prompt)-1] = '\0';
-        if((key = load_pkey_with_prompt(full_filename, NULL, prompt)) != NULL){
+        if((key = load_pkey_with_prompt(full_filename, NULL, prompt, NULL)) != NULL){
 	  if(SMHOLDERTYPE(ctype) == Directory){
 	    build_path(buf, PATHCERTDIR(ctype), filename, sizeof(buf));
 	    if(strcmp(buf + strlen(buf) - 4, EXTCERT(ctype)) != 0 && strlen(buf) + 4 < sizeof(buf)){

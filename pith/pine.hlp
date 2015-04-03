@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 72 2015-03-31 12:22:49
+Alpine Commit 73 2015-04-03 17:07:19
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -236,6 +236,8 @@ Bugs that have been addressed include:
   <LI> SMIME: Crash when checking the signature of a message that contains
        a RFC822 attached message. Reported by Holger Trapp and Bj&ouml;rn 
        Krellner.
+
+  <LI> SMIME: Cancelling entering password to unlock key will not reprompt.
 
   <LI> Fix vulnerability in regex library. This only affects those who use
        this library, such as the windows version of Alpine. See 
