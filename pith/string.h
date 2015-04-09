@@ -40,6 +40,7 @@
 #define FLD_NONE	0x00
 #define FLD_CRLF	0x01	/* use CRLF end of line instead of LF */
 #define FLD_PWS		0x02	/* preserve whitespace when folding   */
+#define FLD_NEXTSPC	0x04	/* fold at next available space	after given length      */
 
 
 typedef enum {FrontDots, MidDots, EndDots} WhereDots;

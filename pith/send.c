@@ -2981,6 +2981,7 @@ pine_header_line(char *field, METAENV *header, char *text, soutr_t f, void *s,
 		 int writehdr, int localcopy)
 {
     int   ret = 1;
+    int   flags;
     int   big = 10000;
     char *value, *folded = NULL, *cs;
     char *converted;
@@ -3026,15 +3027,22 @@ pine_header_line(char *field, METAENV *header, char *text, soutr_t f, void *s,
 	     * We upped the references folding from 75 to 256 because we were
 	     * encountering longer-than-75 message ids, and to break one line
 	     * in references is to break them all.
+	     *
+	     * Also, some users are adding long text without spaces to the subject
+	     * line (e.g. URLs) so we up that number too. For the moment this is
+	     * going to 512 (a url that is about 6 lines long.)
 	     */
-	    if(field && !strucmp("Subject", field))
+	    flags = FLD_CRLF;
+	    if(field && !strucmp("Subject", field)){
 	      fold_by = 75;
+	      flags |= FLD_NEXTSPC;
+	    }
 	    else if(field && !strucmp("References", field))
 	      fold_by = 256;
 	    else
 	      fold_by = big;
 
-	    folded = fold(value, fold_by, big, actual_field, " ", FLD_CRLF);
+	    folded = fold(value, fold_by, big, actual_field, " ", flags);
 
 	    if(actual_field)
 	      fs_give((void **)&actual_field);

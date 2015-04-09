@@ -1588,6 +1588,18 @@ fold(char *src, int width, int maxwidth, char *first_indent, char *indent, unsig
 		}
 	    }
 
+	    if(winner == -1 && (flags & FLD_NEXTSPC)){
+		for(i = starting_point; winner == -1 && i <= strlen(next_piece) != '\0' && i < 512; i++){
+		    endptr = utf8_count_forw_width(next_piece, i, &got_width);
+		    if(endptr && got_width == i && isspace((unsigned char) *endptr))
+		      winner = (int) i;
+		}
+		if(winner == -1){
+		   winner = got_width < 512 ? got_width : 512;
+		   endptr = NULL;
+		}
+	    }
+
 	    if(winner == -1){ /* if no good folding spot, fold at width */
 		winner = starting_point;
 		endptr = NULL;
@@ -1649,6 +1661,18 @@ fold(char *src, int width, int maxwidth, char *first_indent, char *indent, unsig
 		    endptr = utf8_count_forw_width(next_piece, longer, &got_width);
 		    if(endptr && got_width == longer && isspace((unsigned char) *endptr))
 		      winner = (int) longer;
+		}
+	    }
+
+	    if(winner == -1 && (flags & FLD_NEXTSPC)){
+		for(i = starting_point; winner == -1 && i <= strlen(next_piece) && i < 512; i++){
+		    endptr = utf8_count_forw_width(next_piece, i, &got_width);
+		    if(endptr && got_width == i && isspace((unsigned char) *endptr))
+		      winner = (int) i;
+		}
+		if(winner == -1){
+		   winner = got_width < 512 ? got_width : 512;
+		   endptr = NULL;
 		}
 	    }
 

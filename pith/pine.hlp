@@ -220,6 +220,9 @@ Additions include:
 
   <LI> For a multipart/alternative message, the Take Address command will 
        work on the part that is being read.
+
+  <LI> When sending a message, allow for 512 characters of consecutive non-white
+       space before folding the subject line.
 </UL>
 
  
