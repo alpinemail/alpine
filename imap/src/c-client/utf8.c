@@ -2595,6 +2595,8 @@ void *utf8_parameters (long function,void *value)
      case GET_UCS4WIDTH:
 	ret = (void *) ucs4width;
 	break;
+     default: ret = NULL;
+	break;
   }
   return ret;
 }

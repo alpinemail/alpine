@@ -31,11 +31,11 @@ static char rcsid[] = "$Id: main.c 1184 2008-12-16 23:52:15Z hubert@u.washington
 #include	"headers.h"
 #include	"../c-client/mail.h"
 #include	"../c-client/rfc822.h"
+#include	"../c-client/utf8.h"
 #include	"../pith/osdep/collate.h"
 #include	"../pith/charconv/filesys.h"
 #include	"../pith/charconv/utf8.h"
 #include	"../pith/conf.h"
-
 
 /*
  * Useful internal prototypes
@@ -167,7 +167,7 @@ main(int argc, char *argv[])
     char    *err = NULL;
 
 #ifndef _WINDOWS
-    utf8_parameters(SET_UCS4WIDTH, pith_ucs4width);
+    utf8_parameters(SET_UCS4WIDTH, (void *) pith_ucs4width);
 #endif /* _WINDOWS */
 
     set_input_timeout(600);
