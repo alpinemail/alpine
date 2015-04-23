@@ -115,12 +115,13 @@ insfile(int f, int n)
     char	 fname[NLINE], dir[NLINE];
     int		 retval, bye = 0, msg = 0;
     char	 prompt[64], *infile;
-    EXTRAKEYS    menu_ins[5];
+    EXTRAKEYS    menu_ins[10];
     EML          eml;
     
     if (curbp->b_mode&MDVIEW) /* don't allow this command if */
       return(rdonly()); /* we are in read only mode */
 
+    memset(&menu_ins, 0, 10*sizeof(EXTRAKEYS));
     fname[0] = dir[0] = '\0';
     while(!bye){
 	/* set up keymenu stuff */
@@ -566,9 +567,10 @@ filewrite(int f, int n)
         register int    s;
         char            fname[NFILEN];
 	char		shows[NLINE], origshows[NLINE], *bufp;
-	EXTRAKEYS	menu_write[3];
+	EXTRAKEYS	menu_write[10];
 	EML             eml;
 
+	memset(&menu_write, 0, 10*sizeof(EXTRAKEYS));
 	if(curbp->b_fname[0] != 0){
 	  strncpy(fname, curbp->b_fname, sizeof(curbp->b_fname));
 	  curbp->b_fname[sizeof(curbp->b_fname)-1] = '\0';

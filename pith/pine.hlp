@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 75 2015-04-17 09:40:25
+Alpine Commit 76 2015-04-23 00:24:02
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -196,13 +196,6 @@ Additions include:
   <LI> HTML: Add support for decoding entities in hexadecimal notation.
        Suggested by Tulip&aacute;nt Gergely.
 
-  <LI> Pico: Add the ability to search for strings in the beginning or end
-       of a line. In the search menu, pressing Ctrl-^ toggles the prompt 
-       to search for a string at the beginning of a line. Another press of 
-       Ctrl-^ toggles the prompt to search for a string at the end of a 
-       line, and pressing Ctrl-^ one more time searches for the string 
-       anywhere in the text.
-
   <LI> If the charset of a message can not be determined, use the value set
        in the <A HREF="h_config_unk_char_set"><!--#echo var="VAR_unknown-character-set"--></A> for its value.
 
@@ -217,6 +210,10 @@ Additions include:
 
   <LI> Pico: Search command can do a case sensitive match. Use the Ctrl-^
        subcommand of the search command to bring this choice into view.
+
+  <LI> Pico: Add the ability to search for strings in the beginning or end
+       of a line. Use the Ctrl-^ subcommand of the search command to bring 
+       this choice into view.
 
   <LI> For a multipart/alternative message, the Take Address command will 
        work on the part that is being read.

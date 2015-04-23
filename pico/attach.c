@@ -62,9 +62,10 @@ AskAttach(char *cmnt, size_t cmntlen, LMLIST **lm)
 
     while(i){
 	if(i == 2){
-	    EXTRAKEYS menu_attach[4];
+	    EXTRAKEYS menu_attach[10];
 	    int	      n;
 
+	    memset(&menu_attach, 0, 10*sizeof(EXTRAKEYS));
 	    menu_attach[n = 0].name  = "^T";
 	    menu_attach[n].label     = N_("To Files");
 	    menu_attach[n].key	     = (CTRL|'T');

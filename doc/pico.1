@@ -1,4 +1,4 @@
-.TH pico 1 "Version 5.07"
+.TH pico 1 "Version 5.08"
 .SH Name
 pico \- simple text editor in the style of the Alpine Composer
 .SH Syntax
@@ -29,9 +29,11 @@ immediately below.  Paragraphs are delimited by blank lines, or by lines
 beginning with a space or tab.  Unjustification can be done immediately
 after justification using the control-U key combination. 
 .PP
-String searches are not sensitive to case.  A search begins at the current
-cursor position and wraps around the end of the text.  The most recent   
-search string is offered as the default in subsequent searches.
+String searches are not sensitive to case, but one can be done
+by pressing the control-W followed by control-^.  A search begins at 
+the current cursor position and wraps around the end of the text.  
+The most recent search string is offered as the default in subsequent 
+searches.
 .PP
 Blocks of text can be moved, copied or deleted with creative use of the
 command for mark (ctrl-^), delete (ctrl-k) and undelete (ctrl-u).
@@ -172,4 +174,4 @@ alpine(1)
 Source distribution (part of the Alpine Message System):
 
 .nf
-$Date: 2009-02-02 13:54:23 -0600 (Mon, 02 Feb 2009) $
+$Date: 2015-04-19 12:28:01 -0500 (Sun, 19 Apr 2015) $

@@ -172,7 +172,17 @@ forwsearch(int f, int n)
 
     defpat[0] = '\0';
 	/* defaults: usual menu, search forward, not case sensitive */
-    flags = SR_ORIGMEN | SR_FORWARD | SR_NOEXACT;
+
+    flags = SR_ORIGMEN | SR_FORWARD;
+
+    /* exact search is sticky -- that is, once one is done, so will be
+     * the next ones. This is consistent with all all searches being
+     * case insensitive by default.
+     */
+    if((curwp->w_bufp->b_mode & MDEXACT) == 0)
+	flags |= SR_NOEXACT;
+    else
+	flags |= SR_EXACTSR;
 
     /* ask the user for the text of a pattern */
     while(1){
@@ -934,8 +944,9 @@ readnumpat(char *utf8prompt)
 {
     int		 i, n;
     char	 numpat[NPMT];
-    EXTRAKEYS    menu_pat[2];
+    EXTRAKEYS    menu_pat[10];
 
+    memset(&menu_pat, 0, 10*sizeof(EXTRAKEYS));
     menu_pat[i = 0].name  = "^T";
     menu_pat[i].label	  = N_("No Line Number");
     menu_pat[i].key	  = (CTRL|'T');

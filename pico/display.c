@@ -1558,6 +1558,8 @@ writeachar(UCS ucs)
  *	      answer already typed in.  Carriage return accepts the
  *	      default.  answer returned in buf which also holds the initial
  *            default, nbuf is its length, def set means use default value.
+ *	      In order to be able to eliminate keys from a menu, EXTRAKEYS
+ *	      always has size 10.
  */
 int
 mlreplyd(UCS *prompt, UCS *buf, int nbuf, int flg, EXTRAKEYS *extras)
@@ -1619,6 +1621,7 @@ mlreplyd(UCS *prompt, UCS *buf, int nbuf, int flg, EXTRAKEYS *extras)
     }
 #endif
 
+    memset(&menu_mlreply, 0, 12*sizeof(KEYMENU));
     menu_mlreply[0].name = "^G";
     menu_mlreply[0].label = N_("Get Help");
     KS_OSDATASET(&menu_mlreply[0], KS_SCREENHELP);
@@ -1627,9 +1630,7 @@ mlreplyd(UCS *prompt, UCS *buf, int nbuf, int flg, EXTRAKEYS *extras)
 	KS_OSDATASET(&menu_mlreply[i], KS_NONE);
 	rfkm[2*i][1] = 0;
 	if(extras){
-	    for(; extras[j].name && j != 2*(i-1); j++)
-	      ;
-
+	    j = 2*(i-1);
 	    if(extras[j].name){
 		rfkm[2*i][1]	      = extras[j].key;
 		menu_mlreply[i].name  = extras[j].name;
@@ -1646,9 +1647,7 @@ mlreplyd(UCS *prompt, UCS *buf, int nbuf, int flg, EXTRAKEYS *extras)
 	menu_mlreply[i].name = NULL;
 	rfkm[2*(i-6)+1][1] = 0;
 	if(extras){
-	    for(; extras[j].name && j != (2*(i-6)) - 1; j++)
-	      ;
-
+	    j = 2*(i-6) - 1;
 	    if(extras[j].name){
 		rfkm[2*(i-6)+1][1]    = extras[j].key;
 		menu_mlreply[i].name  = extras[j].name;

@@ -208,12 +208,12 @@ BEGIN
             VALUE "Comments", "see http://www.washington.edu/pine\0"
             VALUE "CompanyName", "University of Washington\0"
             VALUE "FileDescription", "Pico\0"
-            VALUE "FileVersion", "5.07\0"
+            VALUE "FileVersion", "5.08\0"
             VALUE "InternalName", "pico\0"
             VALUE "LegalCopyright", "Copyright 2006-2009\0"
             VALUE "OriginalFilename", "pico.exe\0"
             VALUE "ProductName", "  pico\0"
-            VALUE "ProductVersion", "5.07\0"
+            VALUE "ProductVersion", "5.08\0"
         END
     END
     BLOCK "VarFileInfo"

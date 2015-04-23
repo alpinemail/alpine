@@ -803,6 +803,14 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		static EXTRAKEYS opts[] = {
 		    {"^X", N_("Add Name"), CTRL|'X', KS_NONE},
 		    {NULL, NULL, 0, KS_NONE},
+		    {NULL, NULL, 0, KS_NONE},
+		    {NULL, NULL, 0, KS_NONE},
+		    {NULL, NULL, 0, KS_NONE},
+		    {NULL, NULL, 0, KS_NONE},
+		    {NULL, NULL, 0, KS_NONE},
+		    {NULL, NULL, 0, KS_NONE},
+		    {NULL, NULL, 0, KS_NONE},
+		    {NULL, NULL, 0, KS_NONE}
 		};
 
 		status = mlreply_utf8(_("Command to execute: "),
