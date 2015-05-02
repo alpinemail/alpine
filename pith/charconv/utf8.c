@@ -100,13 +100,14 @@ wcellwidth(UCS ucs)
 #endif
 }
 
+/* ambiguous width zone character function */
 int
 pith_ucs4width(UCS ucs)
 {
 #ifndef _WINDOWS
   return wcwidth((wchar_t) ucs);
 #else
-  return 0;
+  return (ucs >= 0x2100) ? 2 : 1; 
 #endif /* _WINDOWS */
 }
 

@@ -299,7 +299,13 @@ main(int argc, char **argv)
 	exit(-1);
     }
 
+    /* Windows has its own functions to determine width of a character
+     * in the screen, so this is not necessary to do in Window, and
+     * using pith_ucs4width does not produce the correct result
+     */
+#ifndef _WINDOWS
     mail_parameters(NULL, SET_UCS4WIDTH, (void *) pith_ucs4width);
+#endif /* _WINDOWS */
     mail_parameters(NULL, SET_QUOTA, (void *) pine_parse_quota);
     /* set some default timeouts in case pinerc is remote */
     mail_parameters(NULL, SET_OPENTIMEOUT, (void *)(long)30);

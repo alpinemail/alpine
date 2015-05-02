@@ -396,6 +396,8 @@ current_titlebar_color(void)
         "Title".  The rule for existence is that in the
         space between 1) and 2) there must be one space between
         3) and 4) AND at least 50% of 4) must be displayed.
+	However, if the folder name can be displayed, then do
+	so, and display as much as possible of the collection name.
 
    Returns - Formatted title bar 
  ----*/
@@ -758,6 +760,15 @@ try_smaller_loc:
 			else if(ss_len > 0 && ss_len <= avail){
 			    q = fold_tmp;
 			    strncpy(q, ss_string, sizeof(fold_tmp)-(q-fold_tmp));
+			} else if(fold_len < avail){
+			    q = fold_tmp;
+			    if(fold_len + 7 < avail){
+			       *q++ = '<';
+			       q += utf8_pad_to_width(q, as.context_name, sizeof(fold_tmp)-(q-fold_tmp), avail - fold_len - 3, 1);
+			       *q++ = '>';
+			       *q++ = ' ';
+			    }
+			    strncpy(q, as.folder_name, sizeof(fold_tmp)-(q-fold_tmp));
 			}
 			/* else leave it out */
 		    }

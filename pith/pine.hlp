@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 76 2015-04-23 00:24:02
+Alpine Commit 77 2015-05-01 23:22:47
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -218,8 +218,12 @@ Additions include:
   <LI> For a multipart/alternative message, the Take Address command will 
        work on the part that is being read.
 
-  <LI> When sending a message, allow for 512 characters of consecutive non-white
-       space before folding the subject line.
+  <LI> When sending a message, allow for 512 characters of consecutive 
+       non-white space before folding the subject line.
+
+  <LI> Make sure titlebar (the line at the top of the screen) always 
+       contains the name of the folder/newsgroup that is open, if this 
+       fits in the title.
 </UL>
 
  
