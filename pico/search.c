@@ -463,13 +463,13 @@ replace_pat(UCS *defpat, int *wrapt, int bsearch)
 {
   register         int status;
   UCS              lpat[NPAT], origpat[NPAT];	/* case sensitive pattern */
-  EXTRAKEYS        menu_pat[2];
+  EXTRAKEYS        menu_pat[10];
   int              repl_all = FALSE;
   UCS             *b;
   char             utf8tmp[NPMT];
   UCS              prompt[NPMT];
   UCS             *promptp;
-  int		   flags;
+  int		   i, flags;
 
     if(bsearch){
 	flags = SR_BACKWRD;
@@ -486,7 +486,8 @@ replace_pat(UCS *defpat, int *wrapt, int bsearch)
     menu_pat[0].key   = (CTRL|'X');
     menu_pat[0].label = N_("Repl All");
     KS_OSDATASET(&menu_pat[0], KS_NONE);
-    menu_pat[1].name  = NULL;
+    for (i = 1; i < 10; i++)
+       menu_pat[i].name  = NULL;
 
     while(1) {
 

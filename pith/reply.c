@@ -3217,6 +3217,9 @@ generate_message_id(void)
     time_t       now;
     struct tm   *now_x;
     char        *hostpart = NULL;
+    char	*alpine_name = NULL;
+    char	*alpine_version = NULL;
+    char	*system_os = NULL;
 
     now   = time((time_t *)0);
     now_x = localtime(&now);
@@ -3228,23 +3231,33 @@ generate_message_id(void)
 	osec = now_x->tm_sec;
     }
 
-    hostpart = F_ON(F_ROT13_MESSAGE_ID, ps_global)
-		 ? rot13(ps_global->hostname)
-		 : cpystr(ps_global->hostname);
+    if(F_ON(F_ROT13_MESSAGE_ID, ps_global)){
+       hostpart       = rot13(ps_global->hostname);
+       alpine_name    = rot13("alpine");
+       alpine_version = rot5n(ALPINE_VERSION);
+       system_os      = rot13(SYSTYPE);
+    } else {
+       hostpart	      = cpystr(ps_global->hostname);
+       alpine_name    = cpystr("alpine");
+       alpine_version = cpystr(ALPINE_VERSION);
+       system_os      = cpystr(SYSTYPE);
+    }
     
     if(!hostpart)
       hostpart = cpystr("huh");
 
-    snprintf(idbuf, sizeof(idbuf), "<alpine.%.4s.%.20s.%02d%02d%02d%02d%02d%02d%X.%d@%.50s>",
-	    SYSTYPE, ALPINE_VERSION, (now_x->tm_year) % 100, now_x->tm_mon + 1,
+    snprintf(idbuf, sizeof(idbuf), "<%.6s.%.4s.%.20s.%02d%02d%02d%02d%02d%02d%X.%d@%.50s>",
+	    alpine_name, system_os, alpine_version, (now_x->tm_year) % 100, now_x->tm_mon + 1,
 	    now_x->tm_mday, now_x->tm_hour, now_x->tm_min, now_x->tm_sec, 
 	    cnt, getpid(), hostpart);
     idbuf[sizeof(idbuf)-1] = '\0';
 
     id = cpystr(idbuf);
 
-    if(hostpart)
-      fs_give((void **) &hostpart);
+    if(hostpart) fs_give((void **) &hostpart);
+    if(alpine_name) fs_give((void **) & alpine_name);
+    if(alpine_version) fs_give((void **)&alpine_version);
+    if(system_os) fs_give((void **)&system_os);
 
     return(id);
 }
@@ -3284,6 +3297,23 @@ rot13(char *src)
 		    ? ((byte - 'A' + 13) % 26 + 'A') : byte) | cap;
 	}
 
+	*p = '\0';
+    }
+
+    return(ret);
+}
+
+char *
+rot5n(char *src)
+{
+    char byte, *p, *ret = NULL;
+
+    if(src && *src){
+	ret = (char *) fs_get((strlen(src)+1) * sizeof(char));
+	p = ret;
+	while((byte = *src++) != '\0')
+	    *p++ = ((byte >= '0') && (byte <= '9')
+		    ? ((byte - '0' + 5) % 10 + '0') : byte);
 	*p = '\0';
     }
 

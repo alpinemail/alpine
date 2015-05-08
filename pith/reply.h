@@ -95,6 +95,7 @@ char	   *reply_in_reply_to(ENVELOPE *);
 char	   *generate_message_id(void);
 char	   *generate_user_agent(void);
 char       *rot13(char *);
+char       *rot5n(char *);
 ADDRESS    *first_addr(ADDRESS *);
 char       *get_signature_lit(char *, int, int, int, int);
 int         sigdashes_are_present(char *);
