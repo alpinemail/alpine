@@ -2925,10 +2925,10 @@ set_passfile_passwd(pinerc, passwd, user, hostlist, altflag, already_prompted)
     int	       altflag, already_prompted;
 {
     dprint((10, "set_passfile_passwd\n"));
-    if((passfile_cache || read_passfile(pinerc, &passfile_cache))
+    if(((already_prompted == 0 && preserve_prompt())
+	   || already_prompted == 1)
        && !ps_global->nowrite_password_cache
-       && ((already_prompted == 0 && preserve_prompt())
-	   || already_prompted == 1)){
+       && (passfile_cache || read_passfile(pinerc, &passfile_cache))){
 	imap_set_passwd(&passfile_cache, passwd, user, hostlist, altflag, 0, 0);
 	write_passfile(pinerc, passfile_cache);
     }

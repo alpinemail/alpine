@@ -224,10 +224,14 @@ Additions include:
   <LI> Make sure titlebar (the line at the top of the screen) always 
        contains the name of the folder/newsgroup that is open, if this 
        fits in the title.
+
   <LI> The feature <a href="h_config_scramble_message_id">FEATURE: <!--#echo var="FEAT_scramble-message-id"--></a>
        will also scramble the name, version and operative system in the message-id header. 
        Based on a contribution by Dennis Davis, which is itself based on a contribution by 
        Mark Hills.
+
+  <LI> Change in logic in imap_set_password function to make Alpine ask if
+       a user wants to save a password before reading the password file.
 </UL>
 
  
