@@ -57,7 +57,7 @@ extern FETCH_READC_S *g_fr_desc;
  */
 #define DT_NODFILTER   (long) 0x10000
 #define DT_NOINTR      (long) 0x20000
-
+#define DT_BINARY      (long) 0x40000
 
 /* exported protoypes */
 char	   *detach_raw(MAILSTREAM *, long, char *, gf_io_t, int);

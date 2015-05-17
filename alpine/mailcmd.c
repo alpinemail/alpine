@@ -4143,6 +4143,7 @@ fini:
  *                                        existence at all. Don't use this
  *                                        together with GE_NO_APPEND.
  *                     GE_ALLPARTS      - Turn on AllParts toggle.
+ *                     GE_BINARY        - Turn on Binary toggle.
  *
  *  Returns:  -1  cancelled
  *            -2  prohibited by VAR_OPER_DIR
@@ -4160,7 +4161,7 @@ get_export_filename(struct pine *ps, char *filename, char *deefault,
     char      precolon[MAXPATH+1], postcolon[MAXPATH+1];
     char      filename2[MAXPATH+1], tmp[MAXPATH+1], *fn, *ill;
     int       l, i, ku = -1, r, fatal, homedir = 0, was_abs_path=0, avail, ret = 0;
-    int       allparts = 0;
+    int       allparts = 0, binary = 0;
     char      prompt_buf[400];
     char      def[500];
     ESCKEY_S *opts = NULL;
@@ -4177,6 +4178,9 @@ get_export_filename(struct pine *ps, char *filename, char *deefault,
 	  i += 2;
 	
 	if(flags & GE_ALLPARTS)
+	  i++;
+
+	if(flags & GE_BINARY)
 	  i++;
 
 	opts = (ESCKEY_S *) fs_get((i+1) * sizeof(*opts));
@@ -4196,6 +4200,14 @@ get_export_filename(struct pine *ps, char *filename, char *deefault,
 	    opts[i].name    = "^P";
 	    /* TRANSLATORS: Export all attachment parts */
 	    opts[i++].label = N_("AllParts");
+	}
+
+	if(flags & GE_BINARY){
+	    binary = i;
+	    opts[i].ch      = ctrl('R');
+	    opts[i].rval    = 15;
+	    opts[i].name    = "^R";
+	    opts[i++].label = N_("Binary");
 	}
 
 	if(history){
@@ -4636,6 +4648,20 @@ get_export_filename(struct pine *ps, char *filename, char *deefault,
 	    continue;
 	}
 #endif
+	else if(r == 15){	/* toggle Binary bit */
+	    if(rflags){
+		if(*rflags & GER_BINARY){
+		    *rflags &= ~GER_BINARY;
+		    opts[binary].label = N_("Binary");
+		}
+		else{
+		    *rflags |=  GER_BINARY;
+		    opts[binary].label = N_("No Binary");
+		}
+	    }
+
+	    continue;
+	}
         else if(r == 1){	/* Cancel */
 	    ret = -1;
 	    goto done;

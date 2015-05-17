@@ -1293,7 +1293,7 @@ write_attachment(int qline, long int msgno, ATTACH_S *a, char *method)
 {
     char	filename[MAXPATH+1], full_filename[MAXPATH+1],
 	        title_buf[64], *err;
-    int         r, rflags = GER_NONE, we_cancel = 0;
+    int         r, rflags = GER_NONE, we_cancel = 0, flags;
     static HISTORY_S *history = NULL;
     static ESCKEY_S att_save_opts[] = {
 	{ctrl('T'), 10, "^T", N_("To Files")},
@@ -1330,9 +1330,12 @@ write_attachment(int qline, long int msgno, ATTACH_S *a, char *method)
     snprintf(title_buf, sizeof(title_buf), "%s ATTACHMENT", method);
     title_buf[sizeof(title_buf)-1] = '\0';
 
+    flags = (a && a->body && a->body->type == TYPETEXT ? GE_BINARY : 0)
+	    | GE_SEQ_SENSITIVE;
+
     r = get_export_filename(ps_global, filename, NULL, full_filename,
 			    sizeof(filename), "attachment", title_buf,
-			    att_save_opts, &rflags, qline, GE_SEQ_SENSITIVE, &history);
+			    att_save_opts, &rflags, qline, flags, &history);
 
     if(r < 0){
 	switch(r){
@@ -1440,7 +1443,7 @@ int
 write_attachment_to_file(MAILSTREAM *stream, long int msgno, ATTACH_S *a, int flags, char *file)
 {
     char       *l_string, sbuf[256], *err;
-    int         is_text, we_cancel = 0;
+    int         is_text, we_cancel = 0, dt_flags = 0, so_flags;
     long        len, orig_size;
     gf_io_t     pc;
     STORE_S    *store;
@@ -1454,7 +1457,13 @@ write_attachment_to_file(MAILSTREAM *stream, long int msgno, ATTACH_S *a, int fl
     if(flags & GER_APPEND)
       orig_size = name_file_size(file);
 
-    store = so_get(FileStar, file, WRITE_ACCESS | (is_text ? WRITE_TO_LOCALE : 0));
+    if(flags & GER_BINARY)
+      dt_flags |= DT_BINARY;
+
+    so_flags = (is_text & !(flags & GER_BINARY) ? WRITE_TO_LOCALE : 0)
+		| WRITE_ACCESS ;
+
+    store = so_get(FileStar, file, so_flags);
     if(store == NULL){
 	q_status_message2(SM_ORDER | SM_DING, 3, 5,
 			  /* TRANSLATORS: Error opening destination <filename>: <error text> */
@@ -1468,7 +1477,7 @@ write_attachment_to_file(MAILSTREAM *stream, long int msgno, ATTACH_S *a, int fl
     we_cancel = init_att_progress(sbuf, stream, a->body);
 
     gf_set_so_writec(&pc, store);
-    err = detach(stream, msgno, a->number, 0L, &len, pc, NULL, 0);
+    err = detach(stream, msgno, a->number, 0L, &len, pc, NULL, dt_flags);
     gf_clear_so_writec(store);
 
     if(we_cancel)

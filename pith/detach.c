@@ -202,7 +202,7 @@ detach(MAILSTREAM *stream,		/* c-client stream to use         */
     }
 
     /* convert all text to UTF-8 */
-    if(is_text){
+    if(is_text & !(flags & DT_BINARY)){
 	charset = parameter_val(body->parameter, "charset");
 
 	/*
@@ -261,7 +261,9 @@ detach(MAILSTREAM *stream,		/* c-client stream to use         */
      * a multipart segment since an external handler's going to have to
      * make sense of it...
      */
-    if(is_text || body->type == TYPEMESSAGE || body->type == TYPEMULTIPART)
+    if((is_text & !(flags & DT_BINARY)) 
+	|| body->type == TYPEMESSAGE 
+	|| body->type == TYPEMULTIPART)
       gf_link_filter(gf_nvtnl_local, NULL);
 
     /*
@@ -296,7 +298,7 @@ detach(MAILSTREAM *stream,		/* c-client stream to use         */
 	    FILTLIST_S *p, *aux = NULL;
 	    size_t	count;
 
-	    if(aux_filters){
+	    if(aux_filters && !(flags & DT_BINARY)){
 		/* insert NL conversion filters around remaining aux_filters
 		 * so they're not tripped up by local NL convention
 		 */
@@ -336,7 +338,8 @@ detach(MAILSTREAM *stream,		/* c-client stream to use         */
 		for( ; aux_filters->filter ; aux_filters++)
 		  gf_link_filter(aux_filters->filter, aux_filters->data);
 
-		gf_link_filter(gf_nvtnl_local, NULL);
+		if(!(flags & DT_BINARY))
+		  gf_link_filter(gf_nvtnl_local, NULL);
 	    }
 
 	    if((status = gf_pipe(gc, pc)) != NULL){	/* Second pass, sheesh */

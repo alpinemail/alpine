@@ -181,11 +181,14 @@ Additions include:
 <UL>
   <LI> Ignore message from smtp server after a successful authentication
        challenge.
+
   <LI> If SSLDIR is defined somehow, do not disable S/MIME if the
        SSLCERTSDIR is not found.
+
   <LI> When Alpine sends an attachment, it will set the boundary attribute
        in lower case, as some SMTP servers, such as those of libero.it 
        reject messages if the boundary attribute is in uppercase.
+
   <LI> SMIME: The ^E command that gives infromation on the certificate
        is only available for messages that have a signed or encrypted 
        part.
@@ -232,6 +235,14 @@ Additions include:
 
   <LI> Change in logic in imap_set_password function to make Alpine ask if
        a user wants to save a password before reading the password file.
+
+  <LI> Add the Control-R subcommand to the save command for attachments. 
+       This subcommand toggles if the saving will be done in binary mode 
+       for text attachments. When a user saves an attachment using binary
+       mode it will be saved as it was sent, otherwise the attachment will
+       be transformed to UTF-8 for further transformation through internal
+       and user defined filters for saving.
+
 </UL>
 
  
@@ -6723,6 +6734,15 @@ you may wish to save all of the attachments by typing the &quot;^P&quot;
 This subcommand will only be visible if the message actually has attachments.
 You may also View the attachment list and save individual attachments from
 there.
+<P>
+If you are SAVING a text part (text/plain, text/html, etc.) you can use
+the Control-R subcommand to toggle if saving will be done in binary mode,
+meaning that the attachment will be decoded, but will not be transformed
+to UTF-8 for further processing (either in internal filters, or user
+supplied filters.) This is useful in case you either want to preserve
+the text as it was encoded originally to you, or the attachment was
+incorrectly attached (the attachment is not of text type) and you need
+the original text to process the attachment.
 <P>
 You may cancel the Export operation by typing &quot;^C&quot; after exiting
 this help.

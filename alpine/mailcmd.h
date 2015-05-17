@@ -43,11 +43,13 @@
 #define GE_NO_APPEND		0x04	/* No appending to file allowed */
 #define GE_IS_IMPORT		0x08	/* No writing of file           */
 #define GE_ALLPARTS		0x10	/* Add AllParts toggle to options */
+#define GE_BINARY		0x20	/* Enable binary download 	*/
 
 #define GER_NONE		0x00	/* get_export_filename return flags */
 #define GER_OVER		0x01	/* overwrite of existing file       */
 #define GER_APPEND		0x02	/* append of existing file          */
 #define GER_ALLPARTS		0x04	/* AllParts toggle is on            */
+#define GER_BINARY		0x08	/* Binary download enabled	    */
 
 
 #define CAC_NONE		0x00	/* flags for choose_a_charset		   */
