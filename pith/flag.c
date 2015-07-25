@@ -585,7 +585,7 @@ set_lflag(MAILSTREAM *stream, MSGNO_S *msgs, long int n, int f, int v)
 	int was_invisible, is_invisible;
 	int chk_thrd_cnt = 0, thrd_was_visible, was_hidden, is_hidden;
 
-	if((*(peltp = (PINELT_S **) &mc->sparep) == NULL)){
+	if(*(peltp = (PINELT_S **) &mc->sparep) == NULL){
 	    *peltp = (PINELT_S *) fs_get(sizeof(PINELT_S));
 	    memset(*peltp, 0, sizeof(PINELT_S));
 	}
@@ -702,12 +702,13 @@ copy_lflags(MAILSTREAM *stream, MSGNO_S *msgmap, int from, int to)
 
     set_lflags(stream, msgmap, to, 0);
 
-    if(any_lflagged(msgmap, from))
+    if(any_lflagged(msgmap, from)){
       for(i = 1L; i <= mn_get_total(msgmap); i++)
 	if(get_lflag(stream, msgmap, i, from))
 	  set_lflag(stream, msgmap, i, to, 1);
 	else if(hide)
 	  set_lflag(stream, msgmap, i, MN_HIDE, 1);
+    }
 }
 
 

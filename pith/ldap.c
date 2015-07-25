@@ -402,7 +402,7 @@ ldap_lookup(LDAP_SERV_S *info, char *string, CUSTOM_FILT_S *cust,
     char    *mailattr, *snattr, *gnattr, *cnattr;
     int      we_cancel = 0, we_turned_on = 0;
     LDAP_SERV_RES_S *serv_res = NULL;
-    LDAP *ld;
+    LDAP *ld = NULL;
     long  pwdtrial = 0L;
     int   ld_errnum;
     char *ld_errstr;
@@ -472,7 +472,14 @@ ldap_lookup(LDAP_SERV_S *info, char *string, CUSTOM_FILT_S *cust,
     if((ld = ldap_init(serv, info->port)) == NULL)
 #else
 #if (LDAPAPI >= 11)
+#ifdef _WINDOWS
     if((ld = ldap_init(serv, info->port)) == NULL)
+#else
+    snprintf(tmp_20k_buf, SIZEOF_20KBUF, "ldap://%s:%d", serv, info->port);
+    tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+
+    if(ldap_initialize(&ld, tmp_20k_buf) != LDAP_SUCCESS) 
+#endif
 #else
     if((ld = ldap_open(serv, info->port)) == NULL)
 #endif
@@ -498,7 +505,11 @@ ldap_lookup(LDAP_SERV_S *info, char *string, CUSTOM_FILT_S *cust,
     else if(!ps_global->intr_pending){
       int proto = 3, tlsmustbail = 0;
       char pwd[NETMAXPASSWD], user[NETMAXUSER];
+#ifdef _WINDOWS
       char *passwd = NULL;
+#else
+      struct berval passwd = { 0 };
+#endif
       char hostbuf[1024];
       NETMBX mb;
 #ifndef _WINDOWS
@@ -573,7 +584,12 @@ try_password_again:
 	      snprintf(pmt, sizeof(pmt), "  %s", (info->nick && *info->nick) ? info->nick : serv);
 	      mm_login_work(&mb, user, pwd, pwdtrial, pmt, info->binddn);
 	      if(pwd && pwd[0])
+#ifdef _WINDOWS
 		passwd = pwd;
+#else
+		passwd.bv_len = strlen(pwd);
+		passwd.bv_val = pwd;		
+#endif
 	  }
       }
 
@@ -583,7 +599,12 @@ try_password_again:
        * to tell the server we're v3 if the server supports v3, and if the
        * server doesn't support v3 the bind is required.
        */
-      if(tlsmustbail || ldap_simple_bind_s(ld, info->binddn, passwd) != LDAP_SUCCESS){
+      if(tlsmustbail 
+#ifdef _WINDOWS
+	|| ldap_simple_bind_s(ld, info->binddn, passwd) != LDAP_SUCCESS){
+#else
+	|| ldap_sasl_bind_s(ld, info->binddn, LDAP_SASL_SIMPLE, &passwd, NULL, NULL, NULL) != LDAP_SUCCESS){
+#endif 
 	wp_err->wp_err_occurred = 1;
 
 	ld_errnum = our_ldap_get_lderrno(ld, NULL, &ld_errstr);
@@ -606,8 +627,11 @@ try_password_again:
 
         if(we_cancel)
           cancel_busy_cue(-1);
-
+#ifdef _WINDOWS
 	ldap_unbind(ld);
+#else
+	ldap_unbind_ext(ld, NULL, NULL);
+#endif
         wp_err->error = cpystr(ebuf);
         q_status_message(SM_ORDER, 3, 5, wp_err->error);
         display_message('x');
@@ -831,11 +855,22 @@ try_password_again:
 	else{
 	  int msgid;
 	  time_t start_time;
+	  struct timeval tv = {0}, *tvp = NULL;
+
+	  memset((void *)&tv, 0, sizeof(struct timeval));
+          tv.tv_sec = info->time;
+	  tvp = &tv;
 
 	  start_time = time((time_t *)0);
 
 	  dprint((6, "ldap_lookup: calling ldap_search\n"));
+#ifdef _WINDOWS
 	  msgid = ldap_search(ld, base, info->scope, filter, NULL, 0);
+#else
+	  if(ldap_search_ext(ld, base, info->scope, filter, NULL, 0,
+			NULL, NULL, tvp, info->size, &msgid) != LDAP_SUCCESS)
+	    msgid = -1;
+#endif
 
 	  if(msgid == -1)
 	    srch_res = our_ldap_get_lderrno(ld, NULL, NULL);
@@ -863,7 +898,11 @@ try_password_again:
 	      }
 	      else if(lres == 0){  /* timeout, no results available */
 		if(intr_happened){
+#ifdef _WINDOWS
 		  ldap_abandon(ld, msgid);
+#else
+		  ldap_abandon_ext(ld, msgid, NULL, NULL);
+#endif
 		  srch_res = LDAP_PROTOCOL_ERROR;
 		  if(our_ldap_get_lderrno(ld, NULL, NULL) == LDAP_SUCCESS)
 		    our_ldap_set_lderrno(ld, LDAP_PROTOCOL_ERROR, NULL, NULL);
@@ -882,7 +921,11 @@ try_password_again:
 		  }
 		  else{
 		    if(lres == 0)
+#ifdef _WINDOWS
 		      ldap_abandon(ld, msgid);
+#else
+		      ldap_abandon_ext(ld, msgid, NULL, NULL);
+#endif
 
 		    srch_res = LDAP_TIMEOUT;
 		    if(our_ldap_get_lderrno(ld, NULL, NULL) == LDAP_SUCCESS)
@@ -898,9 +941,25 @@ try_password_again:
 		}
 	      }
 	      else{
+#ifdef _WINDOWS
 		srch_res = ldap_result2error(ld, res, 0);
 	        dprint((6, "lres=0x%x, srch_res=%d\n", lres,
 			   srch_res));
+#else
+		int err;
+		char *dn, *text, **ref;
+		LDAPControl **srv;
+
+		dn = text = NULL; ref = NULL; srv = NULL;
+		srch_res = ldap_parse_result(ld, res,
+			&err, &dn, &text, &ref, &srv, 0);
+	        dprint((6, "lres=0x%x, srch_res=%d, dn=%s, text=%s\n", lres,
+			   srch_res, dn ? dn : "", text ? text : ""));
+		if(dn) ber_memfree(dn);
+		if(text) ber_memfree(text);
+		if(ref) ber_memvfree((void **) ref);
+		if(srv) ldap_controls_free(srv);
+#endif
 	      }
 	    }while(lres == 0 &&
 		    !(intr_happened ||
@@ -925,7 +984,11 @@ try_password_again:
 	  if(res)
 	    ldap_msgfree(res);
 	  if(ld)
+#ifdef _WINDOWS
 	    ldap_unbind(ld);
+#else
+	    ldap_unbind_ext(ld, NULL, NULL);
+#endif
 	  
 	  res = NULL; ld  = NULL;
 	}
@@ -957,8 +1020,12 @@ try_password_again:
 	  if(res)
 	    ldap_msgfree(res);
 	  if(ld)
+#ifdef _WINDOWS
 	    ldap_unbind(ld);
-	  
+#else
+	    ldap_unbind_ext(ld, NULL, NULL);
+#endif
+
 	  res = NULL; ld  = NULL;
 	}
 	else{
@@ -1043,7 +1110,11 @@ try_password_again:
 	    if(res)
 	      ldap_msgfree(res);
 	    if(ld)
+#ifdef _WINDOWS
 	      ldap_unbind(ld);
+#else
+	      ldap_unbind_ext(ld, NULL, NULL);
+#endif
 
 	    res = NULL; ld  = NULL;
 	  }
@@ -1184,41 +1255,41 @@ address_from_ldap(LDAP_CHOOSE_S *winning_e)
 	    a = ldap_next_attribute(winning_e->ld, winning_e->selected_entry, ber)){
 	    int i;
 	    char  *p;
-	    char **vals;
+	    struct berval **vals;
 
 	    dprint((9, "attribute: %s\n", a ? a : "?"));
 	    if(!ret_a->personal &&
 	       strcmp(a, winning_e->info_used->cnattr) == 0){
 		dprint((9, "Got cnattr:"));
-		vals = ldap_get_values(winning_e->ld, winning_e->selected_entry, a);
-		for(i = 0; vals[i] != NULL; i++)
+		vals = ldap_get_values_len(winning_e->ld, winning_e->selected_entry, a);
+		for(i = 0; i < ldap_count_values_len(vals); i++)
 		  dprint((9, "       %s\n",
-		         vals[i] ? vals[i] : "?"));
+		         vals[i] ? vals[i]->bv_val : "?"));
 	    
-		if(vals && vals[0])
-		  ret_a->personal = cpystr(vals[0]);
+		if(ALPINE_LDAP_can_use(vals))
+		  ret_a->personal = cpystr(vals[0]->bv_val);
 
-		ldap_value_free(vals);
+		ldap_value_free_len(vals);
 	    }
 	    else if(!ret_a->mailbox &&
 		    strcmp(a, winning_e->info_used->mailattr) == 0){
 		dprint((9, "Got mailattr:"));
-		vals = ldap_get_values(winning_e->ld, winning_e->selected_entry, a);
-		for(i = 0; vals[i] != NULL; i++)
+		vals = ldap_get_values_len(winning_e->ld, winning_e->selected_entry, a);
+		for(i = 0; i < ldap_count_values_len(vals); i++)
 		  dprint((9, "         %s\n",
-		         vals[i] ? vals[i] : "?"));
+		         vals[i] ? vals[i]->bv_val : "?"));
 		    
 		/* use first one */
-		if(vals && vals[0]){
-		    if((p = strindex(vals[0], '@')) != NULL){
+		if(ALPINE_LDAP_can_use(vals)){
+		    if((p = strindex(vals[0]->bv_val, '@')) != NULL){
 			ret_a->host = cpystr(p+1);
 			*p = '\0';
 		    }
 
-		    ret_a->mailbox = cpystr(vals[0]);
+		    ret_a->mailbox = cpystr(vals[0]->bv_val);
 		}
 
-		ldap_value_free(vals);
+		ldap_value_free_len(vals);
 	    }
 
 	    our_ldap_memfree(a);
@@ -1569,7 +1640,11 @@ free_ldap_result_list(LDAP_SERV_RES_S **r)
 	if((*r)->res)
 	  ldap_msgfree((*r)->res);
 	if((*r)->ld)
+#ifdef _WINDOWS
 	  ldap_unbind((*r)->ld);
+#else
+	  ldap_unbind_ext((*r)->ld, NULL, NULL);
+#endif
 	if((*r)->info_used)
 	  free_ldap_server_info(&(*r)->info_used);
 	if((*r)->serv)
@@ -1794,5 +1869,24 @@ ldap_translate(char *a, LDAP_SERV_S *info_used)
     return(a);
 }
 
+char **
+berval_to_array(struct berval **v)
+{
+  char **rv = NULL;
+  int i, len;
+
+  if(v == NULL) return rv; 
+  len = ldap_count_values_len(v);
+
+  rv = fs_get((len+1)*sizeof(char *));
+  for(i = 0; i < len; i++)
+    if(ALPINE_LDAP_can_use_num(v, i))
+	rv[i] = cpystr(v[i]->bv_val);
+    else
+	rv[i] = NULL;
+  rv[len] = NULL;
+
+  return rv;
+}
 
 #endif	/* ENABLE_LDAP */

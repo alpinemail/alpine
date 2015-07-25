@@ -296,7 +296,7 @@ short c_helo (char *t,int argc,char *argv[])
   pass = cpystr (tmp);
   if (!(s = strchr (u,':'))) {	/* want remote mailbox? */
 				/* no, delimit user from possible admin */
-    if (s = strchr (u,'*')) *s++ = '\0';
+    if ((s = strchr (u,'*')) != NULL) *s++ = '\0';
     if (server_login (user = cpystr (u),pass,s,argc,argv)) {
       syslog (LOG_INFO,"%sLogin user=%.80s host=%.80s",s ? "Admin " : "",
 	      user,tcp_clienthost ());
@@ -355,7 +355,7 @@ short c_fold (char *t)
   }
 #endif
 				/* open mailbox, note # of messages */
-  if (j = (stream = mail_open (stream,t,NIL)) ? stream->nmsgs : 0) {
+  if ((j = (stream = mail_open (stream,t,NIL)) ? stream->nmsgs : 0) != 0L){
     sprintf (tmp,"1:%lu",j);	/* fetch fast information for all messages */
     mail_fetch_fast (stream,tmp,NIL);
     msg = (unsigned long *) fs_get ((stream->nmsgs + 1) *
@@ -429,7 +429,7 @@ short c_retr (char *t)
     }
     fputs (status,stdout);	/* yes, output message */
     fputs ("\015\012",stdout);	/* delimit header from text */
-    if (t = mail_fetch_text (stream,msg[current],NIL,&i,FT_RETURNSTRINGSTRUCT))
+    if ((t = mail_fetch_text (stream,msg[current],NIL,&i,FT_RETURNSTRINGSTRUCT)) != NULL)
       while (i) {		/* blat the text */
 	if (!(j = fwrite (t,sizeof (char),i,stdout))) return DONE;
 	if (i -= j) t += j;	/* advance to incomplete data */

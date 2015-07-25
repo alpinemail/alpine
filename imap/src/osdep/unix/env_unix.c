@@ -514,7 +514,7 @@ static void do_date (char *date,char *prefix,char *fmt,int suffix)
    *   -1  local time is 1 day behind UTC, offset -24 hours
    * -36x  local time is January 1, UTC is December 31, offset +24 hours
    */
-  if (julian = t->tm_yday -julian)
+  if ((julian = t->tm_yday -julian) != 0)
     zone += ((julian < 0) == (abs (julian) == 1)) ? -24*60 : 24*60;
   if (prefix) {			/* want day of week? */
     sprintf (date,prefix,days[t->tm_wday]);
@@ -672,14 +672,14 @@ static struct passwd *valpwd (char *user,char *pwd,int argc,char *argv[])
   struct passwd *pw;
   struct passwd *ret = NIL;
   if (auth_md5.server) {	/* using CRAM-MD5 authentication? */
-    if (s = auth_md5_pwd (user)) {
+    if ((s = auth_md5_pwd (user)) != NULL) {
       if (!strcmp (s,pwd) || ((*pwd == ' ') && pwd[1] && !strcmp (s,pwd+1)))
 	ret = pwuser (user);	/* validated, get passwd entry for user */
       memset (s,0,strlen (s));	/* erase sensitive information */
       fs_give ((void **) &s);
     }
   }
-  else if (pw = pwuser (user)) {/* can get user? */
+  else if ((pw = pwuser (user)) != NULL) {/* can get user? */
     s = cpystr (pw->pw_name);	/* copy returned name in case we need it */
     if (*pwd && !(ret = checkpw (pw,pwd,argc,argv)) &&
 	(*pwd == ' ') && pwd[1] && (ret = pwuser (s)))
@@ -1257,7 +1257,7 @@ long dotlock_lock (char *file,DOTLOCK *base,int fd)
 
     MM_NOCRITICAL (NIL);	/* no longer critical */
 				/* find directory/file delimiter */
-    if (s = strrchr (base->lock,'/')) {
+    if ((s = strrchr (base->lock,'/')) != NULL) {
       *s = '\0';		/* tie off at directory */
       sprintf(tmp,		/* generate default message */
 	      "Mailbox vulnerable - directory %.80s must have 1777 protection",
@@ -1588,7 +1588,7 @@ void dorc (char *file,long flag)
 	  if (!compare_cstring (s,"set new-mailbox-format") ||
 	      !compare_cstring (s,"set new-folder-format")) {
 	    if (!compare_cstring (k,"same-as-inbox")) {
-	      if (d = mail_valid (NIL,"INBOX",NIL)) {
+	      if ((d = mail_valid (NIL,"INBOX",NIL)) != NULL) {
 		if (!compare_cstring (d->name,"mbox"))
 		  d = (DRIVER *) mail_parameters (NIL,GET_DRIVER,
 						  (void *) "unix");
@@ -1601,7 +1601,7 @@ void dorc (char *file,long flag)
 	    else {		/* canonicalize mbox to unix */
 	      if (!compare_cstring (k,"mbox")) k = "unix";
 				/* see if a driver name */
-	      if (d = (DRIVER *) mail_parameters (NIL,GET_DRIVER,(void *) k))
+	      if ((d = (DRIVER *) mail_parameters (NIL,GET_DRIVER,(void *) k)) != NULL)
 		createProto = (*d->open) (NIL);
 	      else {		/* duh... */
 		sprintf (tmpx,"Unknown new mailbox format in %s: %s",

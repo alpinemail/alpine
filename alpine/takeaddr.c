@@ -2980,16 +2980,15 @@ save_ldap_entry(struct pine *ps, LDAP_CHOOSE_S *e, int save)
 	  *first = NULL,
 	  *last = NULL,
 	  *comment = NULL;
-    char **cn = NULL,
+    struct berval **cn = NULL,
 	 **mail = NULL,
 	 **sn = NULL,
 	 **givenname = NULL,
 	 **title = NULL,
 	 **telephone = NULL,
 	 **elecmail = NULL,
-	 **note = NULL,
-	 **ll;
-    int    j,
+	 **note = NULL;
+    int    j, num,
 	   export = 0;
 
 
@@ -3006,35 +3005,35 @@ save_ldap_entry(struct pine *ps, LDAP_CHOOSE_S *e, int save)
 	    dprint((9, " %s", a ? a : "?"));
 	    if(strcmp(a, e->info_used->cnattr) == 0){
 		if(!cn)
-		  cn = ldap_get_values(e->ld, e->selected_entry, a);
+		  cn = ldap_get_values_len(e->ld, e->selected_entry, a);
 	    }
 	    else if(strcmp(a, e->info_used->mailattr) == 0){
 		if(!mail)
-		  mail = ldap_get_values(e->ld, e->selected_entry, a);
+		  mail = ldap_get_values_len(e->ld, e->selected_entry, a);
 	    }
 	    else if(strcmp(a, "electronicmail") == 0){
 		if(!elecmail)
-		  elecmail = ldap_get_values(e->ld, e->selected_entry, a);
+		  elecmail = ldap_get_values_len(e->ld, e->selected_entry, a);
 	    }
 	    else if(strcmp(a, "comment") == 0){
 		if(!note)
-		  note = ldap_get_values(e->ld, e->selected_entry, a);
+		  note = ldap_get_values_len(e->ld, e->selected_entry, a);
 	    }
 	    else if(strcmp(a, e->info_used->snattr) == 0){
 		if(!sn)
-		  sn = ldap_get_values(e->ld, e->selected_entry, a);
+		  sn = ldap_get_values_len(e->ld, e->selected_entry, a);
 	    }
 	    else if(strcmp(a, e->info_used->gnattr) == 0){
 		if(!givenname)
-		  givenname = ldap_get_values(e->ld, e->selected_entry, a);
+		  givenname = ldap_get_values_len(e->ld, e->selected_entry, a);
 	    }
 	    else if(strcmp(a, "telephonenumber") == 0){
 		if(!telephone)
-		  telephone = ldap_get_values(e->ld, e->selected_entry, a);
+		  telephone = ldap_get_values_len(e->ld, e->selected_entry, a);
 	    }
 	    else if(strcmp(a, "title") == 0){
 		if(!title)
-		  title = ldap_get_values(e->ld, e->selected_entry, a);
+		  title = ldap_get_values_len(e->ld, e->selected_entry, a);
 	    }
 	}
 
@@ -3065,10 +3064,10 @@ save_ldap_entry(struct pine *ps, LDAP_CHOOSE_S *e, int save)
     }
 
     if(elecmail){
-	if(elecmail[0] && elecmail[0][0] && !mail)
+	if(ALPINE_LDAP_can_use(elecmail) && !mail)
 	  mail = elecmail;
 	else
-	  ldap_value_free(elecmail);
+	  ldap_value_free_len(elecmail);
 
 	elecmail = NULL;
     }
@@ -3078,51 +3077,51 @@ save_ldap_entry(struct pine *ps, LDAP_CHOOSE_S *e, int save)
 	char    *d,
 		*fakedomain = "@";
 	size_t   len;
-	char   **cm;
+	struct berval  **cm;
 	int      how_many_selected = 0;
 
 	
-	if(cn && cn[0] && cn[0][0])
-	  fullname = cpystr(cn[0]);
-	if(sn && sn[0] && sn[0][0])
-	  last = cpystr(sn[0]);
-	if(givenname && givenname[0] && givenname[0][0])
-	  first = cpystr(givenname[0]);
+	if(ALPINE_LDAP_can_use(cn))
+	  fullname = cpystr(cn[0]->bv_val);
+	if(ALPINE_LDAP_can_use(sn))
+	  last = cpystr(sn[0]->bv_val);
+	if(ALPINE_LDAP_can_use(givenname))
+	  first = cpystr(givenname[0]->bv_val);
 
-	if(note && note[0] && note[0][0])
+	if(ALPINE_LDAP_can_use(note))
 	  cm = note;
 	else
 	  cm = title;
 
-	for(ll = cm, len = 0; ll && *ll; ll++)
-	  len += strlen(*ll) + 2;
+	for(len = 0, num = 0; ALPINE_LDAP_usable(cm, num); num++)
+	  len += strlen(cm[num]->bv_val) + 2;
 
 	if(len){
 	    comment = (char *)fs_get(len * sizeof(char));
 	    d = comment;
-	    ll = cm;
-	    while(*ll){
-		sstrncpy(&d, *ll, len-(d-comment));
-		ll++;
-		if(*ll)
+	    num = 0;
+	    while(ALPINE_LDAP_usable(cm, num)){
+		sstrncpy(&d, cm[num]->bv_val, len-(d-comment));
+		num++;
+		if(ALPINE_LDAP_usable(cm, num))
 		  sstrncpy(&d, "; ", len-(d-comment));
 	    }
 
 	    comment[len-1] = '\0';
 	}
 
-	for(ll = mail, len = 0; ll && *ll; ll++)
-	  len += strlen(*ll) + 1;
+	for(len = 0, num = 0; ALPINE_LDAP_usable(mail, num); num++)
+	  len += strlen(mail[num]->bv_val) + 2;
 	
 	/* paste the email addresses together */
 	if(len){
 	    address = (char *)fs_get(len * sizeof(char));
 	    d = address;
-	    ll = mail;
-	    while(*ll){
-		sstrncpy(&d, *ll, len-(d-address));
-		ll++;
-		if(*ll)
+	    num = 0;
+	    while(ALPINE_LDAP_usable(mail, num)){
+		sstrncpy(&d, mail[num]->bv_val, len-(d-address));
+		num++;
+		if(ALPINE_LDAP_usable(mail, num))
 		  sstrncpy(&d, ", ", len-(d-address));
 	    }
 
@@ -3295,14 +3294,14 @@ save_ldap_entry(struct pine *ps, LDAP_CHOOSE_S *e, int save)
 	    break;
 	
 	  case 'a':
-	    if(mail && mail[0] && mail[0][0]){
+	    if(ALPINE_LDAP_can_use(mail)){
 
 		srctype = CharStar;
 		if(!(srcstore = so_get(srctype, NULL, EDIT_ACCESS)))
 		  q_status_message(SM_ORDER,0,2, _("Error allocating space"));
 		else{
-		    for(ll = mail; ll && *ll; ll++){
-			so_puts(srcstore, *ll);
+		    for(num = 0; ALPINE_LDAP_usable(mail, num); num++){
+			so_puts(srcstore, mail[num]->bv_val);
 			so_puts(srcstore, "\n");
 		    }
 
@@ -3325,26 +3324,26 @@ save_ldap_entry(struct pine *ps, LDAP_CHOOSE_S *e, int save)
 		vinfo = (VCARD_INFO_S *)fs_get(sizeof(VCARD_INFO_S));
 		memset((void *)vinfo, 0, sizeof(VCARD_INFO_S));
 
-		if(cn && cn[0] && cn[0][0])
-		  vinfo->fullname = copy_list_array(cn);
+		if(ALPINE_LDAP_can_use(cn))
+		  vinfo->fullname = berval_to_array(cn);
 
-		if(note && note[0] && note[0][0])
-		  vinfo->note = copy_list_array(note);
+		if(ALPINE_LDAP_can_use(note))
+		  vinfo->note = berval_to_array(note);
 
-		if(title && title[0] && title[0][0])
-		  vinfo->title = copy_list_array(title);
+		if(ALPINE_LDAP_can_use(title))
+		  vinfo->title = berval_to_array(title);
 
-		if(telephone && telephone[0] && telephone[0][0])
-		  vinfo->tel = copy_list_array(telephone);
+		if(ALPINE_LDAP_can_use(telephone))
+		  vinfo->tel = berval_to_array(telephone);
 
-		if(mail && mail[0] && mail[0][0])
-		  vinfo->email = copy_list_array(mail);
+		if(ALPINE_LDAP_can_use(mail))
+		  vinfo->email = berval_to_array(mail);
 
-		if(sn && sn[0] && sn[0][0])
-		  vinfo->last = cpystr(sn[0]);
+		if(ALPINE_LDAP_can_use(sn))
+		  vinfo->last = cpystr(sn[0]->bv_val);
 
-		if(givenname && givenname[0] && givenname[0][0])
-		  vinfo->first = cpystr(givenname[0]);
+		if(ALPINE_LDAP_can_use(givenname))
+		  vinfo->first = cpystr(givenname[0]->bv_val);
 
 		gf_set_so_writec(&pc, srcstore);
 
@@ -3366,21 +3365,21 @@ save_ldap_entry(struct pine *ps, LDAP_CHOOSE_S *e, int save)
     }
 
     if(cn)
-      ldap_value_free(cn);
+      ldap_value_free_len(cn);
     if(mail)
-      ldap_value_free(mail);
+      ldap_value_free_len(mail);
     if(elecmail)
-      ldap_value_free(elecmail);
+      ldap_value_free_len(elecmail);
     if(note)
-      ldap_value_free(note);
+      ldap_value_free_len(note);
     if(sn)
-      ldap_value_free(sn);
+      ldap_value_free_len(sn);
     if(givenname)
-      ldap_value_free(givenname);
+      ldap_value_free_len(givenname);
     if(telephone)
-      ldap_value_free(telephone);
+      ldap_value_free_len(telephone);
     if(title)
-      ldap_value_free(title);
+      ldap_value_free_len(title);
     if(fullname)
       fs_give((void **)&fullname);
     if(address)

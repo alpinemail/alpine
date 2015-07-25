@@ -100,7 +100,7 @@ long auth_md5_client (authchallenge_t challenger,authrespond_t responder,
   unsigned long clen;
   long ret = NIL;
 				/* get challenge */
-  if (challenge = (*challenger) (stream,&clen)) {
+  if ((challenge = (*challenger) (stream,&clen)) != NULL) {
     pwd[0] = NIL;		/* prompt user */
     mm_login (mb,user,pwd,*trial);
     if (!pwd[0]) {		/* user requested abort */
@@ -115,7 +115,7 @@ long auth_md5_client (authchallenge_t challenger,authrespond_t responder,
       fs_give ((void **) &challenge);
 				/* send credentials, allow retry if OK */
       if ((*responder) (stream,pwd,strlen (pwd))) {
-	if (challenge = (*challenger) (stream,&clen))
+	if ((challenge = (*challenger) (stream,&clen)) != NULL)
 	  fs_give ((void **) &challenge);
 	else {
 	  ++*trial;		/* can try again if necessary */
@@ -150,14 +150,14 @@ char *auth_md5_server (authresponse_t responder,int argc,char *argv[])
   sprintf (chal,"<%lu.%lu@%s>",(unsigned long) getpid (),
 	   (unsigned long) time (0),mylocalhost ());
 				/* send challenge, get user and hash */
-  if (user = (*responder) (chal,cl = strlen (chal),NIL)) {
+  if ((user = (*responder) (chal,cl = strlen (chal),NIL)) != NULL) {
 				/* got user, locate hash */
-    if (hash = strrchr (user,' ')) {
+    if ((hash = strrchr (user,' ')) != NULL) {
       *hash++ = '\0';		/* tie off user */
 				/* see if authentication user */
-      if (authuser = strchr (user,'*')) *authuser++ = '\0';
+      if ((authuser = strchr (user,'*')) != NULL) *authuser++ = '\0';
 				/* get password */
-      if (p = auth_md5_pwd ((authuser && *authuser) ? authuser : user)) {
+      if ((p = auth_md5_pwd ((authuser && *authuser) ? authuser : user)) != NULL) {
 	pl = strlen (p);
 	u = (md5try && !strcmp (hash,hmac_md5 (hshbuf,chal,cl,p,pl))) ?
 	  user : NIL;
@@ -234,9 +234,9 @@ char *apop_login (char *chal,char *user,char *md5,int argc,char *argv[])
   MD5CONTEXT ctx;
   char *hex = "0123456789abcdef";
 				/* see if authentication user */
-  if (authuser = strchr (user,'*')) *authuser++ = '\0';
+  if ((authuser = strchr (user,'*')) != NULL) *authuser++ = '\0';
 				/* get password */
-  if (s = auth_md5_pwd ((authuser && *authuser) ? authuser : user)) {
+  if ((s = auth_md5_pwd ((authuser && *authuser) ? authuser : user)) != NULL) {
     md5_init (&ctx);		/* initialize MD5 context */
 				/* build string to get MD5 digest */
     sprintf (tmp,"%.128s%.128s",chal,s);

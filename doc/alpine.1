@@ -164,6 +164,9 @@ Use function keys for commands. This is the same as running the command
 .IP \fB-n\ \fInumber\fR 20
 Start up with current message-number set to 
 .I number.
+.IP \fB-nowrite_password_cache\fR 20
+Read from a password cache if there is one, but
+never offer to write a password to the cache
 .IP \fB-o\fR 20
 Open first folder read-only.
 .IP \fB-p\ \fIconfig-file\fR 20
@@ -177,11 +180,24 @@ Use
 as the configuration file instead of default
 system-wide configuration file 
 .IR pine.conf .
+.IP \fB-passfile\ \fI<fully-qualified-path>\fR 20
+When password file support is compiled in, use the file specified in
+.I <fully-qualified-path>
+instead of the default.
 .IP \fB-pinerc\ \fIfile\fR 20
 Output fresh pinerc configuration to 
 .I file, preserving the settings of variables that the user has made.
 Use \fIfile\fR set to ``-'' to make output go to standard out.
-<IP> \fB-registry\ \fIcmd\fR 20
+.IP \fB-pwdcertdir\ \fI<fully-qualified-path>\fR 20
+When SMIME and password file support are compiled in, this variable sets 
+the directory to store your personal key and certificate to encrypt and 
+decrypt your password file.
+.IP \fB-r\fR 20
+Use restricted/demo mode.
+.I Alpine
+will only send mail to itself
+and functions like save and export are restricted.
+.IP \fB-registry\ \fIcmd\fR 20
 For PC-Alpine only, this option affects the values of 
 Alpine's registry entries.
 Possible values for \fIcmd\fR are set, clear, and dump.
@@ -193,11 +209,11 @@ entries according to its current settings.
 Note that the dump command is currently disabled.
 Without the -registry option, PC-Alpine will write values into
 the registry only if there currently aren't any values set.
-.IP \fB-r\fR 20
-Use restricted/demo mode.
-.I Alpine
-will only send mail to itself
-and functions like save and export are restricted.
+.IP \fB-smimedir\ \fI<fully-qualified-path>\fR
+If SMIME is compiled in, this argument sets the directory where the 
+public, private, and certificate authorities certificates and keys 
+are stored. If not set by the command line the default is 
+~/.alpine-smime
 .IP \fB-sort\ \fIorder\fR
 Sort the FOLDER INDEX display in one of the following orders: 
 .I arrival, date, subject, orderedsubj, thread, from, size, score, to, cc,

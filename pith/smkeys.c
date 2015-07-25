@@ -285,7 +285,7 @@ resort_certificates(CertList **data, WhichCerts ctype)
 
    for(i = 0; cl; cl = cl->next, i++)
       if(ctype != Private){     /* ctype == Public or ctype == CACerts */
-         for(t = s = cl->name; t = strstr(s, ".crt"); s = t+1);
+         for(t = s = cl->name; (t = strstr(s, ".crt")) != NULL; s = t+1);
          if (s) *(s-1) = '\0';
       }
    j = i;

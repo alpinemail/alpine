@@ -123,9 +123,10 @@ long newsrc_newmessages (FILE *f,MAILSTREAM *stream,char *nl)
       }
       else if (j) {		/* unread message, ending a range */
 				/* calculate end of range */
-	if (k = elt->private.uid - 1) {
+	if ((k = elt->private.uid - 1) != 0L) {
 				/* dump range */
-	  sprintf (tmp,(j == k) ? "%c%ld" : "%c%ld-%ld",c,j,k);
+	  if(j == k) sprintf (tmp, "%c%ld",c,j);
+	  else sprintf (tmp, "%c%ld-%ld",c,j,k);
 	  if (fputs (tmp,f) == EOF) return NIL;
 	  c = ',';		/* need a comma after the first time */
 	}
@@ -133,7 +134,8 @@ long newsrc_newmessages (FILE *f,MAILSTREAM *stream,char *nl)
       }
     }
     if (j) {			/* dump trailing range */
-      sprintf (tmp,(j == k) ? "%c%ld" : "%c%ld-%ld",c,j,k);
+      if(j == k) sprintf (tmp, "%c%ld",c,j);
+      else sprintf (tmp,"%c%ld-%ld",c,j,k);
       if (fputs (tmp,f) == EOF) return NIL;
     }
   }
@@ -340,7 +342,7 @@ long newsrc_write (char *group,MAILSTREAM *stream)
   char *s,tmp[MAILTMPLEN],backup[MAILTMPLEN],nl[3];
   FILE *f,*bf;
   nl[0] = nl[1] = nl[2] = '\0';	/* no newline known yet */
-  if (f = fopen (newsrc,"rb")) {/* have existing newsrc file? */
+  if ((f = fopen (newsrc,"rb")) != NULL) {/* have existing newsrc file? */
     if (!(bf = fopen ((strcat (strcpy (backup,newsrc),OLDFILESUFFIX)),"wb"))) {
       fclose (f);		/* punt input file */
       return newsrc_error("Can't create backup news state %.80s",backup,ERROR);
@@ -365,7 +367,7 @@ long newsrc_write (char *group,MAILSTREAM *stream)
       return newsrc_error ("Error closing backup news state %.80s",
 			   newsrc,ERROR);
     if (d == EOF) {		/* open for write if empty file */
-      if (f = newsrc_create (stream,NIL)) bf = NIL;
+      if ((f = newsrc_create (stream,NIL)) != NULL) bf = NIL;
       else return NIL;
     }
     else if (!nl[0])		/* make sure newlines valid */
@@ -381,7 +383,7 @@ long newsrc_write (char *group,MAILSTREAM *stream)
     }
   }
   else {			/* create new newsrc file */
-    if (f = newsrc_create (stream,T)) bf = NIL;
+    if ((f = newsrc_create (stream,T)) != NULL) bf = NIL;
     else return NIL;		/* can't create newsrc */
   }
   

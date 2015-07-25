@@ -3293,7 +3293,7 @@ streams_died(void)
 	    else{
 		if(!sp_noticed_dead_stream(m)){
 		    sp_set_noticed_dead_stream(m, 1);
-		    folder = STREAMNAME(m);
+		    folder = (unsigned char *) STREAMNAME(m);
 		    /*
 		     * If a cached stream died and then we tried to use it
 		     * it could cause problems. We could warn about it here

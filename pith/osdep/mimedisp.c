@@ -28,6 +28,7 @@ static char rcsid[] = "$Id: mimedisp.c 942 2008-03-04 18:21:33Z hubert@u.washing
 #include "mimedisp.h"
 #include "../charconv/utf8.h"
 #ifdef OSX_TARGET
+#include "../../pith/osdep/collate.h"	/* for strucmp */
 #include <Security/AuthSession.h>
 #endif
 

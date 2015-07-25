@@ -287,10 +287,11 @@ long mtx_rename (MAILSTREAM *stream,char *old,char *newname)
   if (!mtx_file (file,old) ||
       (newname && (!((s = mailboxfile (tmp,newname)) && *s) ||
 		   ((s = strrchr (tmp,'/')) && !s[1])))) {
-    sprintf (tmp,newname ?
-	     "Can't rename mailbox %.80s to %.80s: invalid name" :
-	     "Can't delete mailbox %.80s: invalid name",
-	     old,newname);
+    if(newname)
+       sprintf (tmp,
+	 "Can't rename mailbox %.80s to %.80s: invalid name", old,newname);
+    else
+       sprintf (tmp, "Can't delete mailbox %.80s: invalid name", old);
     MM_LOG (tmp,ERROR);
     return NIL;
   }
@@ -314,7 +315,7 @@ long mtx_rename (MAILSTREAM *stream,char *old,char *newname)
   }
 
   if (newname) {		/* want rename? */
-    if (s = strrchr (tmp,'/')) {/* found superior to destination name? */
+    if ((s = strrchr (tmp,'/')) != NULL) {/* found superior to destination name? */
       c = *++s;			/* remember first character of inferior */
       *s = '\0';		/* tie off to get just superior */
 				/* name doesn't exist, create it */
@@ -680,7 +681,7 @@ void mtx_snarf (MAILSTREAM *stream)
 	hdr = cpystr (mail_fetchheader_full (sysibx,i,NIL,&hdrlen,NIL));
 	txt = mail_fetchtext_full (sysibx,i,&txtlen,FT_PEEK);
 				/* if have a message */
-	if (j = hdrlen + txtlen) {
+	if ((j = hdrlen + txtlen) != 0L) {
 				/* calculate header line */
 	  mail_date (LOCAL->buf,elt = mail_elt (sysibx,i));
 	  sprintf (LOCAL->buf + strlen (LOCAL->buf),

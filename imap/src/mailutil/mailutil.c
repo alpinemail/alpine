@@ -284,8 +284,8 @@ int main (int argc,char *argv[])
 
   else if ((i = !strcmp (cmd,"move")) || !strcmp (cmd,"copy")) {
     if (!src || !dst || merge) printf (usage3,pgm,cmd,usgcpymov,stdsw);
-    else if (source = mail_open (NIL,src,((i || rwcopyp) ? NIL : OP_READONLY) |
-				 (debugp ? OP_DEBUG : NIL))) {
+    else if ((source = mail_open (NIL,src,((i || rwcopyp) ? NIL : OP_READONLY) |
+				 (debugp ? OP_DEBUG : NIL))) != NULL) {
       dest = NIL;		/* open destination stream if network */
       if ((*dst != '{') || (dest = mail_open (NIL,dst,OP_HALFOPEN |
 					      (debugp ? OP_DEBUG : NIL)))) {
@@ -295,8 +295,8 @@ int main (int argc,char *argv[])
   }
   else if ((i = !strcmp (cmd,"appenddelete")) || !strcmp (cmd,"append")) {
     if (!src || !dst || merge) printf (usage3,pgm,cmd,usgappdel,stdsw);
-    else if (source = mail_open (NIL,src,((i || rwcopyp) ? NIL : OP_READONLY) |
-				 (debugp ? OP_DEBUG : NIL))) {
+    else if ((source = mail_open (NIL,src,((i || rwcopyp) ? NIL : OP_READONLY) |
+				 (debugp ? OP_DEBUG : NIL))) != NULL) {
       dest = NIL;		/* open destination stream if network */
       if ((*dst != '{') || (dest = mail_open (NIL,dst,OP_HALFOPEN |
 					      (debugp ? OP_DEBUG : NIL)))) {
@@ -376,7 +376,7 @@ int main (int argc,char *argv[])
       rewind (f);
 				/* read back mailbox names */
       for (retcode = 0; !retcode && (fgets (tmp,MAILTMPLEN-1,f)); ) {
-	if (t = strchr (tmp+1,'\n')) *t = '\0';
+	if ((t = strchr (tmp+1,'\n')) != NULL) *t = '\0';
 	for (t = mbx,t1 = dest ? dest->mailbox : "",c = NIL; (c != '}') && *t1;
 	     *t++ = c= *t1++);
 	for (t1 = dp; *t1; *t++ = *t1++);
@@ -384,7 +384,7 @@ int main (int argc,char *argv[])
 	t1 = source ? (strchr (tmp+1,'}') + 1) : tmp + 1;
 				/* src and mbx have different delimiters? */
 	if (ddelim && (ddelim != tmp[0]))
-	  while (c = *t1++) {	/* swap delimiters then */
+	  while ((c = *t1++) != '\0') {	/* swap delimiters then */
 	    if (c == ddelim) c = tmp[0] ? tmp[0] : 'x';
 	    else if (c == tmp[0]) c = ddelim;
 	    *t++ = c;
@@ -396,8 +396,8 @@ int main (int argc,char *argv[])
 	  printf ("Copying %s\n  => %s\n",tmp+1,mbx);
 	  fflush (stdout);
 	}
-	if (source = mail_open (source,tmp+1,(debugp ? OP_DEBUG : NIL) | 
-				(rwcopyp ? NIL : OP_READONLY))) {
+	if ((source = mail_open (source,tmp+1,(debugp ? OP_DEBUG : NIL) | 
+				(rwcopyp ? NIL : OP_READONLY))) != NULL) {
 	  if (!mbxcopy (source,dest,mbx,T,NIL,merge)) retcode = 1;
 	  if (source->dtb->flags & DR_LOCAL) source = mail_close (source);
 	}
@@ -595,7 +595,7 @@ int mbxcopy (MAILSTREAM *source,MAILSTREAM *dest,char *dst,int create,int del,
 	fputs ("alternative name: ",stdout);
 	fflush (stdout);
 	fgets (tmp,MAILTMPLEN-1,stdin);
-	if (s = strchr (tmp,'\n')) *s = '\0';
+	if ((s = strchr (tmp,'\n')) != NULL) *s = '\0';
       }
       if (ndst) fs_give ((void **) &ndst);
       ndst = cpystr (tmp);
@@ -624,7 +624,7 @@ int mbxcopy (MAILSTREAM *source,MAILSTREAM *dest,char *dst,int create,int del,
       char *tail = "\\Deleted)";
       char *flags = (char *) fs_get (1 + len + strlen (tail) + 1);
       s = flags; *s++ = '(';
-      for (i = 0; i < NUSERFLAGS; ++i) if (t = source->user_flags[i]) {
+      for (i = 0; i < NUSERFLAGS; ++i) if ((t = source->user_flags[i]) != NULL) {
 	while (*t) *s++ = *t++;
 	*s++ = ' ';
       }
@@ -895,7 +895,7 @@ void mm_login (NETMBX *mb,char *username,char *password,long trial)
     printf ("%s} username: ",tmp);
     fgets (username,NETMAXUSER-1,stdin);
     username[NETMAXUSER-1] = '\0';
-    if (s = strchr (username,'\n')) *s = '\0';
+    if ((s = strchr (username,'\n')) != NULL) *s = '\0';
     s = "password: ";
   }
   if(strlen (s = getpass (s)) < MAILTMPLEN) strcpy (password,s);

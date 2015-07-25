@@ -251,7 +251,7 @@ char *mh_path (char *tmp)
 				/* parse profile file */
       for (s = strtok_r (t,"\r\n",&r); s && *s; s = strtok_r (NIL,"\r\n",&r)) {
 				/* found space in line? */
-	if (v = strpbrk (s," \t")) {
+	if ((v = strpbrk (s," \t")) != NULL) {
 	  *v++ = '\0';		/* tie off, is keyword "Path:"? */
 	  if (!compare_cstring (s,"Path:")) {
 				/* skip whitespace */
@@ -324,7 +324,7 @@ long mh_dirfmttest (char *s)
   if (strcmp (s,MHSEQUENCE) && strcmp (s,MHSEQUENCES)) {
     if (*s == MHCOMMA) ++s;	/* else comma + all numeric name */
 				/* success if all-numeric */
-    while (c = *s++) if (!isdigit (c)) return NIL;
+    while ((c = *s++) != '\0') if (!isdigit (c)) return NIL;
   }
   return LONGT;
 }
@@ -343,7 +343,7 @@ void mh_scan (MAILSTREAM *stream,char *ref,char *pat,char *contents)
   if (!pat || !*pat) {		/* empty pattern? */
     if (mh_canonicalize (test,ref,"*")) {
 				/* tie off name at root */
-      if (s = strchr (test,'/')) *++s = '\0';
+      if ((s = strchr (test,'/')) != NULL) *++s = '\0';
       else test[0] = '\0';
       mm_list (stream,'/',test,LATT_NOSELECT);
     }
@@ -356,14 +356,14 @@ void mh_scan (MAILSTREAM *stream,char *ref,char *pat,char *contents)
     }
     if (test[3] == '/') {	/* looking down levels? */
 				/* yes, found any wildcards? */
-      if (s = strpbrk (test,"%*")) {
+      if ((s = strpbrk (test,"%*")) != NULL) {
 				/* yes, copy name up to that point */
 	strncpy (file,test+4,i = s - (test+4));
 	file[i] = '\0';		/* tie off */
       }
       else strcpy (file,test+4);/* use just that name then */
 				/* find directory name */
-      if (s = strrchr (file,'/')) {
+      if ((s = strrchr (file,'/')) != NULL) {
 	*s = '\0';		/* found, tie off at that point */
 	s = file;
       }
@@ -401,7 +401,7 @@ void mh_lsub (MAILSTREAM *stream,char *ref,char *pat)
 				/* get canonical form of name */
   if (mh_canonicalize (test,ref,pat) && (s = sm_read (tmp,&sdb))) {
     do if (pmatch_full (s,test,'/')) mm_lsub (stream,'/',s,NIL);
-    while (s = sm_read (tmp,&sdb)); /* until no more subscriptions */
+    while ((s = sm_read (tmp,&sdb)) != NULL); /* until no more subscriptions */
   }
 }
 
@@ -425,8 +425,8 @@ void mh_list_work (MAILSTREAM *stream,char *dir,char *pat,long level)
   if (!mh_file (curdir,name)) return;
   cp = curdir + strlen (curdir);/* end of directory name */
   np = name + strlen (name);	/* end of MH name */
-  if (dp = opendir (curdir)) {	/* open directory */
-    while (d = readdir (dp))	/* scan, ignore . and numeric names */
+  if ((dp = opendir (curdir)) != NULL) {	/* open directory */
+    while ((d = readdir (dp)) != NULL)	/* scan, ignore . and numeric names */
       if ((d->d_name[0] != '.') && !mh_select (d)) {
 	strcpy (cp,d->d_name);	/* make directory name */
 	if (!stat (curdir,&sbuf) && ((sbuf.st_mode & S_IFMT) == S_IFDIR)) {
@@ -510,10 +510,10 @@ long mh_delete (MAILSTREAM *stream,char *mailbox)
   }
 				/* get name of directory */
   i = strlen (mh_file (tmp,mailbox));
-  if (dirp = opendir (tmp)) {	/* open directory */
+  if ((dirp = opendir (tmp)) != NULL) {	/* open directory */
     tmp[i++] = '/';		/* now apply trailing delimiter */
 				/* massacre all mh owned files */
-    while (d = readdir (dirp)) if (mh_dirfmttest (d->d_name)) {
+    while ((d = readdir (dirp)) != NULL) if (mh_dirfmttest (d->d_name)) {
       strcpy (tmp + i,d->d_name);
       unlink (tmp);		/* sayonara */
     }
@@ -550,7 +550,7 @@ long mh_rename (MAILSTREAM *stream,char *old,char *newname)
 	     newname);
 				/* success if can rename the directory */
   else {			/* found superior to destination name? */
-    if (s = strrchr (mh_file (tmp1,newname),'/')) {
+    if ((s = strrchr (mh_file (tmp1,newname),'/')) != NULL) {
       c = *++s;			/* remember first character of inferior */
       *s = '\0';		/* tie off to get just superior */
 				/* name doesn't exist, create it */
@@ -734,7 +734,7 @@ void mh_load_message (MAILSTREAM *stream,unsigned long msgno,long flags)
 	  switch (c = SNX (&bs)) {
 	  case '\015':		/* unlikely carriage return */
 	    *t++ = c;
-	    if ((CHR (&bs) == '\012')) {
+	    if (CHR (&bs) == '\012') {
 	      *t++ = SNX (&bs);
 	      i++;
 	    }
@@ -760,7 +760,7 @@ void mh_load_message (MAILSTREAM *stream,unsigned long msgno,long flags)
 	  switch (c = SNX (&bs)) {
 	  case '\015':		/* unlikely carriage return */
 	    *t++ = c;
-	    if ((CHR (&bs) == '\012')) {
+	    if (CHR (&bs) == '\012') {
 	      *t++ = SNX (&bs);
 	      i++;
 	    }
@@ -883,7 +883,7 @@ long mh_ping (MAILSTREAM *stream)
       fs_give ((void **) &names[i]);
     }
 				/* free directory */
-    if (s = (void *) names) fs_give ((void **) &s);
+    if ((s = (void *) names) != NULL) fs_give ((void **) &s);
   }
 
 				/* if INBOX, snarf from system INBOX  */
@@ -934,7 +934,7 @@ long mh_ping (MAILSTREAM *stream)
 	    unlink (LOCAL->buf);/* flush this file */
 	  }
 	  sprintf (tmp,"Message copy to MH mailbox failed: %.80s",
-		   s,strerror (errno));
+		   strerror (errno));
 	  mm_log (tmp,ERROR);
 	  r = 0;		/* stop the snarf in its tracks */
 	}
@@ -977,9 +977,9 @@ long mh_expunge (MAILSTREAM *stream,char *sequence,long options)
   unsigned long i = 1;
   unsigned long n = 0;
   unsigned long recent = stream->recent;
-  if (ret = sequence ? ((options & EX_UID) ?
+  if ((ret = sequence ? ((options & EX_UID) ?
 			mail_uid_sequence (stream,sequence) :
-			mail_sequence (stream,sequence)) : LONGT) {
+			mail_sequence (stream,sequence)) : LONGT) != 0L) {
     mm_critical (stream);	/* go critical */
     while (i <= stream->nmsgs) {/* for each message */
       elt = mail_elt (stream,i);/* if deleted, need to trash it */
@@ -1132,7 +1132,7 @@ long mh_append (MAILSTREAM *stream,char *mailbox,append_t af,void *data)
       fs_give ((void **) &names[i]);
   }
   else last = 0;		/* no messages here yet */
-  if (s = (void *) names) fs_give ((void **) &s);
+  if ((s = (void *) names) != NULL) fs_give ((void **) &s);
 
   mm_critical (stream);		/* go critical */
   do {
@@ -1195,7 +1195,7 @@ int mh_select (struct direct *name)
 {
   char c;
   char *s = name->d_name;
-  while (c = *s++) if (!isdigit (c)) return NIL;
+  while ((c = *s++) != '\0') if (!isdigit (c)) return NIL;
   return T;
 }
 
@@ -1258,7 +1258,7 @@ long mh_canonicalize (char *pattern,char *ref,char *pat)
   else strcpy (pattern,pat);	/* just have basic name */
   if (mh_isvalid (pattern,tmp,T)) {
 				/* count wildcards */
-    for (i = 0, s = pattern; *s; *s++) if ((*s == '*') || (*s == '%')) ++i;
+    for (i = 0, s = pattern; *s; s++) if ((*s == '*') || (*s == '%')) ++i;
 				/* success if not too many */
     if (i <= MAXWILDCARDS) return LONGT;
     mm_log ("Excessive wildcards in LIST/LSUB",ERROR);

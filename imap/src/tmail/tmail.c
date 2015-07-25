@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <pwd.h>
 #include <errno.h>
+#include <ctype.h>
 extern int errno;		/* just in case */
 #include <sysexits.h>
 #include <sys/file.h>
@@ -115,7 +116,7 @@ void file_string_setpos (STRING *s,unsigned long i)
   s->offset = i;		/* set new offset */
   s->curpos = s->chunk;		/* reset position */
 				/* set size of data */
-  if (s->cursize = min (s->chunksize,SIZE (s))) {
+  if ((s->cursize = min (s->chunksize,SIZE (s))) != 0L) {
 				/* move to that position in the file */
     fseek ((FILE *) s->data,s->offset,SEEK_SET);
     fread (s->curpos,sizeof (char),(unsigned int) s->cursize,(FILE *) s->data);
@@ -600,7 +601,7 @@ int fail (char *string,int code)
 
 char *getusername (char *s,char **t)
 {
-  if (*t = strchr (s,'+')) {	/* have a mailbox specifier? */
+  if ((*t = strchr (s,'+')) != NULL) {	/* have a mailbox specifier? */
     *(*t)++ = '\0';		/* yes, tie off user name */
 				/* forbid overlong name */
     if (strlen (*t) > NETMAXMBX) return NIL;

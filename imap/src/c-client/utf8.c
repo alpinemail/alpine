@@ -657,7 +657,7 @@ unsigned short *utf8_rmap_cs (const CHARSET *cs)
   unsigned short *ret = NIL;
   if (!cs);			/* have charset? */
   else if (cs == currmapcs) ret = currmap;
-  else if (ret = utf8_rmap_gen (cs,currmap)) {
+  else if ((ret = utf8_rmap_gen (cs,currmap)) != NULL) {
     currmapcs = cs;
     currmap = ret;
   }
@@ -789,7 +789,7 @@ long utf8_rmaptext (SIZEDTEXT *text,unsigned short *rmap,SIZEDTEXT *ret,
 {
   unsigned long i,u,c;
 				/* get size of buffer */
-  if (i = utf8_rmapsize (text,rmap,errch,iso2022jp)) {
+  if ((i = utf8_rmapsize (text,rmap,errch,iso2022jp)) != 0L) {
     unsigned char *s = text->data;
     unsigned char *t = ret->data = (unsigned char *) fs_get (i);
     ret->size = i - 1;		/* number of octets in destination buffer */
@@ -1320,7 +1320,7 @@ unsigned long *utf8_csvalidmap (char *charsets[])
 				/* substitute EUC-JP for ISO-2022-JP */
     if (!compare_cstring (s,"ISO-2022-JP")) s = "EUC-JP";
 				/* look up charset */
-    if (cs = utf8_charset (s)) {
+    if ((cs = utf8_charset (s)) != NULL) {
       csb = 1 << csi;		/* charset bit */
       switch (cs->type) {
       case CT_ASCII:		/* 7-bit ASCII no table */
@@ -2424,7 +2424,7 @@ unsigned long ucs4_decompose (unsigned long c,void **more)
   struct decomposemore *m;
   if (c & U8G_ERROR) {		/* want to chase more? */
 				/* do sanity check */
-    if (m = (struct decomposemore *) *more) switch (m->type) {
+    if ((m = (struct decomposemore *) *more) != NULL) switch (m->type) {
     case MORESINGLE:		/* single value */
       ret = m->data.single;
       fs_give (more);		/* no more decomposition */
@@ -2447,7 +2447,7 @@ unsigned long ucs4_decompose (unsigned long c,void **more)
     else if (c == UCS4_BMPLOMIN) ret = ucs4_dbmplotab[0];
     else if (c <= UCS4_BMPLOMAX) {
 				/* within range - have a decomposition? */
-      if (i = ucs4_dbmploixtab[c - UCS4_BMPLOMIN]) {
+      if ((i = ucs4_dbmploixtab[c - UCS4_BMPLOMIN]) != 0L) {
 				/* get first value of decomposition */
 	ret = ucs4_dbmplotab[ix = i & UCS4_BMPLOIXMASK];
 				/* has continuation? */
@@ -2477,7 +2477,7 @@ unsigned long ucs4_decompose (unsigned long c,void **more)
     else if (c < UCS4_BMPHIMIN) ret = c;
     else if (c <= UCS4_BMPHIMAX) {
 				/* within range - have a decomposition? */
-      if (i = ucs4_dbmphiixtab[c - UCS4_BMPHIMIN]) {
+      if ((i = ucs4_dbmphiixtab[c - UCS4_BMPHIMIN]) != 0L) {
 				/* get first value of decomposition */
 	ret = ucs4_dbmphitab[ix = i & UCS4_BMPHIIXMASK];
 				/* has continuation? */
@@ -2542,7 +2542,7 @@ unsigned long ucs4_decompose_recursive (unsigned long c,void **more)
   RECURSIVEMORE *mr;
   if (c & U8G_ERROR) {		/* want to chase more? */
     mn = NIL;
-    if (mr = (RECURSIVEMORE *) *more) switch (mr->more->type) {
+    if ((mr = (RECURSIVEMORE *) *more) != NULL) switch (mr->more->type) {
     case MORESINGLE:		/* decompose single value */
       c = ucs4_decompose_recursive (mr->more->data.single,&mn);
       *more = mr->next;		/* done with this more, remove it */
@@ -2562,7 +2562,7 @@ unsigned long ucs4_decompose_recursive (unsigned long c,void **more)
       fatal ("invalid more block argument to ucs4_decompose_recursive!");
     }
     else fatal ("no more block provided to ucs4_decompose_recursive!");
-    if (mr = mn) {		/* did this value recurse on us? */
+    if ((mr = mn) != NULL) {	/* did this value recurse on us? */
       mr->next = *more;		/* yes, insert new more at head */
       *more = mr;
     }

@@ -952,12 +952,13 @@ stripwhitespace(void)
       if(!(cur_line->l_used == 3 && 
 	   lgetc(cur_line, 0).c == '-' &&
 	   lgetc(cur_line, 1).c == '-' &&
-	   lgetc(cur_line, 2).c == ' '))
+	   lgetc(cur_line, 2).c == ' ')){
 	for(i = cur_line->l_used - 1; i >= 0; i--)
 	  if(ucs4_isspace(lgetc(cur_line, i).c))
 	    cur_line->l_used--;
 	  else
 	    break;
+      }
     }while((cur_line = lforw(cur_line)) != curbp->b_linep);
     return 0;
 }

@@ -273,10 +273,10 @@ void pop3_lsub (MAILSTREAM *stream,char *ref,char *pat)
   if (ref && *ref) sprintf (mbx,"%s%s",ref,pat);
   else strcpy (mbx,pat);
 
-  if (s = sm_read (tmp,&sdb)) do if (pop3_valid (s) && pmatch (s,mbx))
+  if ((s = sm_read (tmp,&sdb)) != NULL) do if (pop3_valid (s) && pmatch (s,mbx))
     mm_lsub (stream,NIL,s,NIL);
 				/* until no more subscriptions */
-  while (s = sm_read (tmp,&sdb));
+  while ((s = sm_read (tmp,&sdb)) != NULL);
 }
 
 
@@ -428,7 +428,7 @@ MAILSTREAM *pop3_open (MAILSTREAM *stream)
       if (mb.notlsflag) strcat (tmp,"/notls");
       if (mb.sslflag) strcat (tmp,"/ssl");
       if (mb.novalidate) strcat (tmp,"/novalidate-cert");
-      if (LOCAL->loser = mb.loser) strcat (tmp,"/loser");
+      if ((LOCAL->loser = mb.loser) != 0) strcat (tmp,"/loser");
       if (stream->secure) strcat (tmp,"/secure");
       sprintf (tmp + strlen (tmp),"/user=\"%s\"}%s",usr,mb.mailbox);
       stream->inbox = T;	/* always INBOX */
@@ -498,7 +498,7 @@ long pop3_capa (MAILSTREAM *stream,long flags)
   while ((t = net_getline (LOCAL->netstream)) && (t[1] || (*t != '.'))) {
     if (stream->debug) mm_dlog (t);
 				/* get optional capability arguments */
-    if (args = strchr (t,' ')) *args++ = '\0';
+    if ((args = strchr (t,' ')) != NULL) *args++ = '\0';
     if (!compare_cstring (t,"STLS")) LOCAL->cap.stls = T;
     else if (!compare_cstring (t,"PIPELINING")) LOCAL->cap.pipelining = T;
     else if (!compare_cstring (t,"RESP-CODES")) LOCAL->cap.respcodes = T;
@@ -509,7 +509,7 @@ long pop3_capa (MAILSTREAM *stream,long flags)
       LOCAL->cap.implementation = cpystr (args);
     else if (!compare_cstring (t,"EXPIRE") && args) {
       LOCAL->cap.expire = T;	/* note that it is present */
-      if (s = strchr(args,' ')){/* separate time from possible USER */
+      if ((s = strchr(args,' ')) != NULL){/* separate time from possible USER */
 	*s++ = '\0';
 				/* in case they add something after USER */
 	if ((strlen (s) > 4) && (s[4] == ' ')) s[4] = '\0';
@@ -520,7 +520,7 @@ long pop3_capa (MAILSTREAM *stream,long flags)
     }
     else if (!compare_cstring (t,"LOGIN-DELAY") && args) {
       LOCAL->cap.logindelay = T;/* note that it is present */
-      if (s = strchr(args,' ')){/* separate time from possible USER */
+      if ((s = strchr(args,' ')) != NULL){/* separate time from possible USER */
 	*s++ = '\0';
 				/* in case they add something after USER */
 	if ((strlen (s) > 4) && (s[4] == ' ')) s[4] = '\0';
@@ -841,7 +841,7 @@ char *pop3_header (MAILSTREAM *stream,unsigned long msgno,unsigned long *size,
 			  &elt->private.msg.header.text.size);
     }
 				/* otherwise load the cache with the message */
-    else if (elt->private.msg.header.text.size = pop3_cache (stream,elt))
+    else if ((elt->private.msg.header.text.size = pop3_cache (stream,elt)) != 0L)
       f = LOCAL->txt;
     if (f) {			/* got it, make sure at start of file */
       fseek (f,(unsigned long) 0,SEEK_SET);
@@ -945,10 +945,10 @@ long pop3_expunge (MAILSTREAM *stream,char *sequence,long options)
   MESSAGECACHE *elt;
   unsigned long i = 1,n = 0;
   long ret;
-  if (ret = sequence ? ((options & EX_UID) ?
+  if ((ret = sequence ? ((options & EX_UID) ?
 			mail_uid_sequence (stream,sequence) :
 			mail_sequence (stream,sequence)) :
-      LONGT) {			/* build selected sequence if needed */
+      LONGT) != 0L) {			/* build selected sequence if needed */
     while (i <= stream->nmsgs) {
       elt = mail_elt (stream,i);
       if (elt->deleted && (sequence ? elt->sequence : T) &&

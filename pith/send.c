@@ -5701,7 +5701,7 @@ pine_pipe_soutr_nl (void *stream, char *s)
     size_t  n;
 
     while(*s && rv){
-	if((n = (p = strstr(s, "\015\012")) ? p - s : strlen(s)) != 0)
+	if((n = (p = strstr(s, "\015\012")) ? p - s : strlen(s)) != 0){
 	  while((rv = write(((PIPE_S *)stream)->out.d, s, n)) != n)
 	    if(rv < 0){
 		if(errno != EINTR){
@@ -5713,6 +5713,7 @@ pine_pipe_soutr_nl (void *stream, char *s)
 		s += rv;
 		n -= rv;
 	    }
+	}
 
 	if(p && rv){
 	    s = p + 2;			/* write UNIX EOL */

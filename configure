@@ -18045,56 +18045,8 @@ $as_echo "$as_me: * * * Including LDAP Support" >&6;}
 
 $as_echo "#define ENABLE_LDAP /**/" >>confdefs.h
 
-
-            { $as_echo "$as_me:${as_lineno-$LINENO}: checking if we should define LDAP_DEPRECATED" >&5
-$as_echo_n "checking if we should define LDAP_DEPRECATED... " >&6; }
-    if test "$cross_compiling" = yes; then :
-
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: cross compiling: not checking" >&5
-$as_echo "$as_me: WARNING: cross compiling: not checking" >&2;}
-
-
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <ldap.h>
-int main(void) {
-
-	if (LDAP_VENDOR_VERSION >= 20300)
-		exit(0);
-
-	exit(2);
-}
-
-_ACEOF
-if ac_fn_c_try_run "$LINENO"; then :
-
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-
-$as_echo "#define LDAP_DEPRECATED 1" >>confdefs.h
-
-
-
-else
-
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-
-
-  else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: Cannot find LDAP functions!  Excluding LDAP support." >&5
-$as_echo "$as_me: Cannot find LDAP functions!  Excluding LDAP support." >&6;}
   fi
-fi
+        fi
 
 if test "x$alpine_PAM" != "xnone" ; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing pam_start" >&5

@@ -104,7 +104,7 @@ int main ()
     if (pwd) {
       strcpy (tmp,pwd->pw_gecos);
 				/* dyke out the office and phone poop */
-      if (suffix = strchr (tmp,',')) suffix[0] = '\0';
+      if ((suffix = strchr (tmp,',')) != NULL) suffix[0] = '\0';
       strcpy (personalname,tmp);/* make a permanent copy of it */
     }
     else personalname[0] = '\0';
@@ -125,10 +125,10 @@ int main ()
       puts ("Enter INBOX, mailbox name, or IMAP mailbox as {host}mailbox");
       puts ("Known local mailboxes:");
       mail_list (NIL,NIL,"%");
-      if (s = sm_read (tmpx,&sdb)) {
+      if ((s = sm_read (tmpx,&sdb)) != NULL) {
 	puts ("Local subscribed mailboxes:");
 	do (mm_lsub (NIL,NIL,s,NIL));
-	while (s = sm_read (tmpx,&sdb));
+	while ((s = sm_read (tmpx,&sdb)) != NULL);
       }
       puts ("or just hit return to quit");
     }
@@ -158,7 +158,7 @@ void mm (MAILSTREAM *stream,long debug)
   while (stream) {
     prompt ("MTest> ",cmd, sizeof(cmd)); /* prompt user, get command */
 				/* get argument */
-    if (arg = strchr (cmd,' ')) *arg++ = '\0';
+    if ((arg = strchr (cmd,' ')) != NULL) *arg++ = '\0';
     switch (*ucase (cmd)) {	/* dispatch based on command */
     case 'B':			/* Body command */
       if (arg) last = atoi (arg);
@@ -198,10 +198,10 @@ void mm (MAILSTREAM *stream,long debug)
     case 'F':			/* Find command */
       if (!arg) {
 	arg = "%";
-	if (s = sm_read (tmp,&sdb)) {
+	if ((s = sm_read (tmp,&sdb)) != NULL) {
 	  puts ("Local network subscribed mailboxes:");
 	  do if (*s == '{') (mm_lsub (NIL,NIL,s,NIL));
-	  while (s = sm_read (tmp,&sdb));
+	  while ((s = sm_read (tmp,&sdb)) != NULL);
 	}
       }
       puts ("Subscribed mailboxes:");
@@ -398,7 +398,7 @@ void overview_header (MAILSTREAM *stream,unsigned long uid,OVERVIEW *ov,
       memcpy (tmp+18,t,(size_t) min (20,(long) strlen (t)));
     }
     strcat (tmp," ");
-    if (i = elt->user_flags) {
+    if ((i = elt->user_flags) != 0L) {
       strcat (tmp,"{");
       while (i) {
 	strcat (tmp,stream->user_flags[find_rightmost_bit (&i)]);
@@ -436,7 +436,7 @@ void header (MAILSTREAM *stream,long msgno)
   tmp[18] = '\0';
   mail_fetchfrom (tmp+18,stream,msgno,(long) 20);
   strcat (tmp," ");
-  if (i = cache->user_flags) {
+  if ((i = cache->user_flags) != 0L) {
     strcat (tmp,"{");
     while (i) {
       strcat (tmp,stream->user_flags[find_rightmost_bit (&i)]);
@@ -473,9 +473,9 @@ void display_body (BODY *body,char *pfx,long i)
     sprintf (s," %s%ld %s",pfx,++i,body_types[body->type]);
     if (body->subtype) sprintf (s += strlen (s),"/%s",body->subtype);
     if (body->description) sprintf (s += strlen (s)," (%s)",body->description);
-    if (par = body->parameter) do
+    if ((par = body->parameter) != NULL) do
       sprintf (s += strlen (s),";%s=%s",par->attribute,par->value);
-    while (par = par->next);
+    while ((par = par->next) != NULL);
     if (body->id) sprintf (s += strlen (s),", id = %s",body->id);
     switch (body->type) {	/* bytes or lines depending upon body type */
     case TYPEMESSAGE:		/* encapsulated message */
@@ -530,10 +530,10 @@ void status (MAILSTREAM *stream)
       else s = "IMAP2 (RFC 1064)";
       printf ("%s server %s\n",s,imap_host (stream));
       if (LEVELIMAP4 (stream)) {
-	if (i = imap_cap (stream)->auth) {
+	if ((i = imap_cap (stream)->auth) != 0L) {
 	  s = "";
 	  printf ("Mutually-supported SASL mechanisms:");
-	  while (auth = mail_lookup_auth (find_rightmost_bit (&i) + 1)) {
+	  while ((auth = mail_lookup_auth (find_rightmost_bit (&i) + 1)) != NULL) {
 	    printf (" %s",auth->name);
 	    if (!strcmp (auth->name,"PLAIN"))
 	      s = "\n  [LOGIN will not be listed here if PLAIN is supported]";
@@ -579,7 +579,7 @@ void status (MAILSTREAM *stream)
 	  putchar ('\n');
 	}
 	if (LEVELSCAN (stream)) puts (" Mailbox text scan");
-	if (i = imap_cap (stream)->extlevel) {
+	if ((i = imap_cap (stream)->extlevel) != 0L) {
 	  printf ("Supported BODYSTRUCTURE extensions:");
 	  switch (i) {
 	  case BODYEXTLOC: printf (" location");
@@ -719,7 +719,7 @@ void mm_login (NETMBX *mb,char *user,char *pwd,long trial)
     printf ("%s} username: ",tmp);
     fgets (user,NETMAXUSER-1,stdin);
     user[NETMAXUSER-1] = '\0';
-    if (s = strchr (user,'\n')) *s = '\0';
+    if ((s = strchr (user,'\n')) != NULL) *s = '\0';
     s = "password: ";
   }
   if (curusr) fs_give ((void **) &curusr);
@@ -810,14 +810,14 @@ void smtptest (long debug)
   strcpy (msg->date,line);
   if (msg->to) {
     puts ("Sending...");
-    if (stream = smtp_open (hostlist,debug)) {
+    if ((stream = smtp_open (hostlist,debug)) != NULL) {
       if (smtp_mail (stream,"MAIL",msg,body)) puts ("[Ok]");
       else printf ("[Failed - %s]\n",stream->reply);
     }
   }
   else {
     puts ("Posting...");
-    if (stream = nntp_open (newslist,debug)) {
+    if ((stream = nntp_open (newslist,debug)) != NULL) {
       if (nntp_mail (stream,msg,body)) puts ("[Ok]");
       else printf ("[Failed - %s]\n",stream->reply);
     }

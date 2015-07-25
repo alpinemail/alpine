@@ -1804,7 +1804,7 @@ detach_vcard_att(MAILSTREAM *stream, long int msgno, struct mail_bodystruct *bod
     if(dtext)
       fs_give((void **)&dtext);
 
-    res[count] = '\0';
+    res[count] = NULL;
     return(res);
 }
 

@@ -355,6 +355,7 @@ struct pine {
     PRINT_S	*print;
 
 #ifdef SMIME
+    char	  *smimedir;
     SMIME_STUFF_S *smime;
 #ifdef PASSFILE
     void *pwdcert;	/* this is of type PERSONAL_CERT */

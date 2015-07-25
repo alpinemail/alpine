@@ -176,7 +176,7 @@ TCPSTREAM *tcp_open (char *host,char *service,unsigned long port)
   if (host[0] == '[' && host[(strlen (host))-1] == ']') {
     strcpy (tmp,host+1);	/* yes, copy number part */
     tmp[(strlen (tmp))-1] = '\0';
-    if (adr = ip_stringtoaddr (tmp,&adrlen,&family)) {
+    if ((adr = ip_stringtoaddr (tmp,&adrlen,&family)) != NULL) {
       (*bn) (BLOCK_TCPOPEN,NIL);
 				/* get an open socket for this system */
       sock = tcp_socket_open (family,adr,adrlen,port,tmp,ctrp,
@@ -223,7 +223,7 @@ TCPSTREAM *tcp_open (char *host,char *service,unsigned long port)
 				/* init sockets */
     stream->tcpsi = stream->tcpso = sock;
 				/* stash in the snuck-in byte */
-    if (stream->ictr = ctr) *(stream->iptr = stream->ibuf) = tmp[0];
+    if ((stream->ictr = ctr) != 0) *(stream->iptr = stream->ibuf) = tmp[0];
     stream->host = hostname;	/* copy official host name */
     if (tcpdebug) mm_log ("Stream open and ready for read",TCPDEBUG);
   }
@@ -371,7 +371,7 @@ TCPSTREAM *tcp_aopen (NETMBX *mb,char *service,char *usrbuf)
     strcpy (host,mb->host+1);	/* yes, copy without brackets */
     host[i-1] = '\0';
 				/* validate domain literal */
-    if (adr = ip_stringtoaddr (host,&len,&i)) fs_give ((void **) &adr);
+    if ((adr = ip_stringtoaddr (host,&len,&i)) != NULL) fs_give ((void **) &adr);
     else {
       sprintf (tmp,"Bad format domain-literal: %.80s",host);
       mm_log (tmp,ERROR);
@@ -550,7 +550,7 @@ long tcp_getbuffer (TCPSTREAM *stream,unsigned long size,char *s)
 				/* make sure socket still alive */
   if (stream->tcpsi < 0) return NIL;
 				/* can transfer bytes from buffer? */
-  if (n = min (size,stream->ictr)) {
+  if ((n = min (size,stream->ictr)) != 0L) {
     memcpy (s,stream->iptr,n);	/* yes, slurp as much as we can from it */
     s += n;			/* update pointer */
     stream->iptr +=n;
@@ -871,7 +871,7 @@ char *tcp_clienthost ()
       if ((s = getenv (t = "SSH_CLIENT")) ||
 	  (s = getenv (t = "KRB5REMOTEADDR")) ||
 	  (s = getenv (t = "SSH2_CLIENT"))) {
-	if (v = strchr (s,' ')) *v = '\0';
+	if ((v = strchr (s,' ')) != NULL) *v = '\0';
 	sprintf (v = tmp,"%.80s=%.80s",t,s);
       }
       else v = "UNKNOWN";
@@ -1000,7 +1000,7 @@ char *tcp_name (struct sockaddr *sadr,long flag)
     (*bn) (BLOCK_DNSLOOKUP,NIL);/* quell alarms */
     data = (*bn) (BLOCK_SENSITIVE,NIL);
 				/* translate address to name */
-    if (t = tcp_name_valid (ip_sockaddrtoname (sadr,buf))) {
+    if ((t = tcp_name_valid (ip_sockaddrtoname (sadr,buf))) != NULL) {
 				/* produce verbose form if needed */
       if (flag)	sprintf (ret = tmp,"%s %s",t,adr);
       else ret = t;

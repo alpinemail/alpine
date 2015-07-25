@@ -289,7 +289,7 @@ MAILSTREAM *phile_open (MAILSTREAM *stream)
   t = localtime(&sbuf.st_mtime);/* get local time */
 				/* calculate time delta */
   i = t->tm_hour * 60 + t->tm_min - i;
-  if (k = t->tm_yday - k) i += ((k < 0) == (abs (k) == 1)) ? -24*60 : 24*60;
+  if ((k = t->tm_yday - k) != 0) i += ((k < 0) == (abs (k) == 1)) ? -24*60 : 24*60;
   k = abs (i);			/* time from UTC either way */
   elt->hours = t->tm_hour; elt->minutes = t->tm_min; elt->seconds = t->tm_sec;
   elt->day = t->tm_mday; elt->month = t->tm_mon + 1;
@@ -306,7 +306,7 @@ MAILSTREAM *phile_open (MAILSTREAM *stream)
 
 				/* fill in From field from file owner */
   LOCAL->env->from = mail_newaddr ();
-  if (pw = getpwuid (sbuf.st_uid)) strcpy (tmp,pw->pw_name);
+  if ((pw = getpwuid (sbuf.st_uid)) != NULL) strcpy (tmp,pw->pw_name);
   else sprintf (tmp,"User-Number-%ld",(long) sbuf.st_uid);
   LOCAL->env->from->mailbox = cpystr (tmp);
   LOCAL->env->from->host = cpystr (mylocalhost ());
@@ -318,7 +318,7 @@ MAILSTREAM *phile_open (MAILSTREAM *stream)
   buf->data[buf->size] = '\0';
   close (fd);			/* close the file */
 				/* analyze data type */
-  if (i = phile_type (buf->data,buf->size,&j)) {
+  if ((i = phile_type (buf->data,buf->size,&j)) != 0){
     LOCAL->body->type = TYPETEXT;
     LOCAL->body->subtype = cpystr ("PLAIN");
     if (!(i & PTYPECRTEXT)) {	/* change Internet newline format as needed */

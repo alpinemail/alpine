@@ -192,9 +192,9 @@ int main (int argc,char *argv[])
 	AUTHENTICATOR *auth;
 	PSOUT ("+OK Capability list follows:\015\012");
 	PSOUT ("TOP\015\012LOGIN-DELAY 180\015\012UIDL\015\012");
-	if (s = ssl_start_tls (NIL)) fs_give ((void **) &s);
+	if ((s = ssl_start_tls (NIL)) != NULL) fs_give ((void **) &s);
 	else PSOUT ("STLS\015\012");
-	if (i = !mail_parameters (NIL,GET_DISABLEPLAINTEXT,NIL))
+	if ((i = !mail_parameters (NIL,GET_DISABLEPLAINTEXT,NIL)) != 0L)
 	  PSOUT ("USER\015\012");
 				/* display secure server authenticators */
 	for (auth = mail_lookup_auth (1), s = "SASL"; auth; auth = auth->next)
@@ -219,7 +219,7 @@ int main (int argc,char *argv[])
 	    if (pass) fs_give ((void **) &pass);
 	    s = strtok (t," ");	/* get mechanism name */
 				/* get initial response */
-	    if (initial = strtok (NIL,"\015\012")) {
+	    if ((initial = strtok (NIL,"\015\012")) != NULL) {
 	      if ((*initial == '=') && !initial[1]) ++initial;
 	      else if (!*initial) initial = NIL;
 	    }
@@ -272,7 +272,7 @@ int main (int argc,char *argv[])
 	else if (!strcmp (s,"RPOP"))
 	  PSOUT ("-ERR Nice try, bunkie\015\012");
 	else if (!strcmp (s,"STLS")) {
-	  if (t = ssl_start_tls (pgmname)) {
+	  if ((t = ssl_start_tls (pgmname)) != NULL) {
 	    PSOUT ("-ERR STLS failed: ");
 	    PSOUT (t);
 	    CRLF;
@@ -288,7 +288,7 @@ int main (int argc,char *argv[])
 				/* skip leading whitespace (bogus clients!) */
 	    while (*t == ' ') ++t;
 				/* remote user name? */
-	    if (s = strchr (t,':')) {
+	    if ((s = strchr (t,':')) != NULL) {
 	      *s++ = '\0';	/* tie off host name */
 	      host = cpystr (t);/* copy host name */
 	      user = cpystr (s);/* copy user name */
@@ -661,7 +661,7 @@ int pass_login (char *t,int argc,char *argv[])
   pass = cpystr (t);		/* copy password argument */
   if (!host) {			/* want remote mailbox? */
 				/* no, delimit user from possible admin */
-    if (t = strchr (user,'*')) *t++ ='\0';
+    if ((t = strchr (user,'*')) != NULL) *t++ ='\0';
 				/* attempt the login */
     if (server_login (user,pass,t,argc,argv)) {
       int ret = mbxopen ("INBOX");
@@ -777,7 +777,7 @@ int mbxopen (char *mailbox)
     goodbye = "-ERR Can't get lock.  Mailbox in use\015\012";
   else {
     nmsgs = 0;			/* no messages yet */
-    if (j = stream->nmsgs) {	/* if mailbox non-empty */
+    if ((j = stream->nmsgs) != 0L) {	/* if mailbox non-empty */
       sprintf (tmp,"1:%lu",j);	/* fetch fast information for all messages */
       mail_fetch_fast (stream,tmp,NIL);
     }

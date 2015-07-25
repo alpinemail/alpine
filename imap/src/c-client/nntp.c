@@ -352,12 +352,12 @@ void nntp_list (MAILSTREAM *stream,char *ref,char *pat)
 				/* namespace format name? */
     if (*(lcl = strchr (strcpy (name,pattern),'}') + 1) == '#') lcl += 6;
 				/* process data until we see final dot */
-    while (s = net_getline (LOCAL->nntpstream->netstream)) {
+    while ((s = net_getline (LOCAL->nntpstream->netstream)) != NULL) {
       if ((*s == '.') && !s[1]){/* end of text */
 	fs_give ((void **) &s);
 	break;
       }
-      if (t = strchr (s,' ')) {	/* tie off after newsgroup name */
+      if ((t = strchr (s,' ')) != NULL) {	/* tie off after newsgroup name */
 	*t = '\0';
 	strcpy (lcl,s);		/* make full form of name */
 				/* report if match */
@@ -396,10 +396,10 @@ void nntp_lsub (MAILSTREAM *stream,char *ref,char *pat)
   if (ref && *ref) sprintf (mbx,"%s%s",ref,pat);
   else strcpy (mbx,pat);
 
-  if (s = sm_read (tmp,&sdb)) do if (nntp_valid (s) && pmatch (s,mbx))
+  if ((s = sm_read (tmp,&sdb)) != NULL) do if (nntp_valid (s) && pmatch (s,mbx))
     mm_lsub (stream,NIL,s,NIL);
 				/* until no more subscriptions */
-  while (s = sm_read (tmp,&sdb));
+  while ((s = sm_read (tmp,&sdb)) != NULL);
 }
 
 /* NNTP canonicalize newsgroup name
@@ -430,7 +430,7 @@ long nntp_canonicalize (char *ref,char *pat,char *pattern,char *wildmat)
 				/* don't return wildmat if specials present */
     if (strpbrk (wildmat,",?![\\]")) wildmat[0] = '\0';
 				/* replace all % with * */
-    for (s = wildmat; s = strchr (s,'%'); *s = '*');
+    for (s = wildmat; (s = strchr (s,'%')) != NULL; *s = '*');
   }
   return ret ? LONGT : NIL;
 }
@@ -556,7 +556,7 @@ long nntp_status (MAILSTREAM *stream,char *mbx,long flags)
     else if (!(flags & (SA_RECENT | SA_UNSEEN))) status.messages = k;
 
 				/* have newsrc state? */
-    else if (state = newsrc_state (stream,name)) {
+    else if ((state = newsrc_state (stream,name)) != NULL) {
 				/* yes, get the UID/sequence map */
       if (nntp_getmap (stream,name,i,status.uidnext - 1,rnmsgs,
 		       status.messages,tmp)) {
@@ -938,15 +938,15 @@ long nntp_overview (MAILSTREAM *stream,overview_t ofn)
 	   (j <= stream->nmsgs) && (elt = mail_elt (stream,j))->sequence &&
 	   !elt->private.spare.ptr; j++);
 				/* make NNTP range */
-      sprintf (tmp,(i == (j - 1)) ? "%lu" : "%lu-%lu",mail_uid (stream,i),
-	       mail_uid (stream,j - 1));
+      if(i == (j - 1)) sprintf (tmp, "%lu", mail_uid (stream,i));
+      else sprintf (tmp, "%lu-%lu",mail_uid (stream,i), mail_uid (stream,j - 1));
       i = j;			/* advance beyond gap */
 				/* ask server for overview data to cache */
       if (nntp_over (stream,tmp)) {
 	while ((s = net_getline (LOCAL->nntpstream->netstream)) &&
 	       strcmp (s,".")) {
 				/* death to embedded newlines */
-	  for (t = v = s; c = *v++;)
+	  for (t = v = s; (c = *v++) != '\0';)
 	    if ((c != '\012') && (c != '\015')) *t++ = c;
 	  *t++ = '\0';		/* tie off string in case it was shortened */
 				/* cache the overview if found its sequence */
@@ -1056,34 +1056,34 @@ long nntp_parse_overview (OVERVIEW *ov,char *text,MESSAGECACHE *elt)
   if (!(text && *text)) return NIL;
   ov->subject = cpystr (text);	/* make hackable copy of overview */
 				/* find end of Subject */
-  if (t = strchr (ov->subject,'\t')) {
+  if ((t = strchr (ov->subject,'\t')) != NULL) {
     *t++ = '\0';		/* tie off Subject, point to From */
 				/* find end of From */
-    if (ov->date = strchr (t,'\t')) {
+    if ((ov->date = strchr (t,'\t')) != NULL) {
       *ov->date++ = '\0';	/* tie off From, point to Date */
 				/* load internaldate too */
       if (!elt->day) mail_parse_date (elt,ov->date);
 				/* parse From */
       rfc822_parse_adrlist (&ov->from,t,BADHOST);
 				/* find end of Date */
-      if (ov->message_id = strchr (ov->date,'\t')) {
+      if ((ov->message_id = strchr (ov->date,'\t')) != NULL) {
 				/* tie off Date, point to Message-ID */
 	*ov->message_id++ = '\0';
 				/* find end of Message-ID */
-	if (ov->references = strchr (ov->message_id,'\t')) {
+	if ((ov->references = strchr (ov->message_id,'\t')) != NULL) {
 				/* tie off Message-ID, point to References */
 	  *ov->references++ = '\0';
 				/* fine end of References */
-	  if (t = strchr (ov->references,'\t')) {
+	  if ((t = strchr (ov->references,'\t')) != NULL) {
 	    *t++ = '\0';	/* tie off References, point to octet size */
 				/* parse size of message in octets */
 	    ov->optional.octets = atol (t);
 				/* find end of size */
-	    if (t = strchr (t,'\t')) {
+	    if ((t = strchr (t,'\t')) != NULL) {
 				/* parse size of message in lines */
 	      ov->optional.lines = atol (++t);
 				/* find Xref */
-	      if (ov->optional.xref = strchr (t,'\t'))
+	      if ((ov->optional.xref = strchr (t,'\t')) != NULL)
 		*ov->optional.xref++ = '\0';
 	    }
 	  }
@@ -1116,7 +1116,7 @@ char *nntp_header (MAILSTREAM *stream,unsigned long msgno,unsigned long *size,
 				/* get header text */
     switch (nntp_send (LOCAL->nntpstream,"HEAD",tmp)) {
     case NNTPHEAD:
-      if (f = netmsg_slurp (LOCAL->nntpstream->netstream,size,NIL)) {
+      if ((f = netmsg_slurp (LOCAL->nntpstream->netstream,size,NIL)) != NULL) {
 	fread (elt->private.msg.header.text.data =
 	       (unsigned char *) fs_get ((size_t) *size + 3),
 	       (size_t) 1,(size_t) *size,f);
@@ -1168,8 +1168,8 @@ long nntp_text (MAILSTREAM *stream,unsigned long msgno,STRING *bs,long flags)
     sprintf (tmp,"%lu",elt->private.uid);
     switch (nntp_send (LOCAL->nntpstream,"BODY",tmp)) {
     case NNTPBODY:
-      if (LOCAL->txt = netmsg_slurp (LOCAL->nntpstream->netstream,
-				     &LOCAL->txtsize,NIL)) break;
+      if ((LOCAL->txt = netmsg_slurp (LOCAL->nntpstream->netstream,
+			     &LOCAL->txtsize,NIL)) != NULL) break;
 				/* fall into default case */
     default:			/* failed, mark as deleted */
       elt->deleted = T;
@@ -1233,7 +1233,7 @@ long nntp_search (MAILSTREAM *stream,char *charset,SEARCHPGM *pgm,long flags)
   OVERVIEW ov;
   char *msg;
 				/* make sure that charset is good */
-  if (msg = utf8_badcharset (charset)) {
+  if ((msg = utf8_badcharset (charset)) != NULL) {
     MM_LOG (msg,ERROR);		/* output error */
     fs_give ((void **) &msg);
     return NIL;
@@ -1286,7 +1286,7 @@ long nntp_search_msg (MAILSTREAM *stream,unsigned long msgno,SEARCHPGM *pgm,
   if (pgm->msgno || pgm->uid) {	/* message set searches */
     SEARCHSET *set;
 				/* message sequences */
-    if (set = pgm->msgno) {	/* must be inside this sequence */
+    if ((set = pgm->msgno) != NULL) {	/* must be inside this sequence */
       while (set) {		/* run down until find matching range */
 	if (set->last ? ((msgno < set->first) || (msgno > set->last)) :
 	    msgno != set->first) set = set->next;
@@ -1294,7 +1294,7 @@ long nntp_search_msg (MAILSTREAM *stream,unsigned long msgno,SEARCHPGM *pgm,
       }
       if (!set) return NIL;	/* not found within sequence */
     }
-    if (set = pgm->uid) {	/* must be inside this sequence */
+    if ((set = pgm->uid) != NULL) {	/* must be inside this sequence */
       unsigned long uid = mail_uid (stream,msgno);
       while (set) {		/* run down until find matching range */
 	if (set->last ? ((uid < set->first) || (uid > set->last)) :
@@ -1530,7 +1530,7 @@ SORTCACHE **nntp_sort_loadcache (MAILSTREAM *stream,SORTPGM *pgm,
     if (!nntp_over (stream,tmp)) return mail_sort_loadcache (stream,pgm);
     while ((s = net_getline (LOCAL->nntpstream->netstream)) && strcmp (s,".")){
 				/* death to embedded newlines */
-      for (t = v = s; c = *v++;) if ((c != '\012') && (c != '\015')) *t++ = c;
+      for (t = v = s; (c = *v++) != '\0';) if ((c != '\012') && (c != '\015')) *t++ = c;
       *t++ = '\0';		/* tie off resulting string */
 				/* parse OVER response */
       if ((i = mail_msgno (stream,atol (s))) &&
@@ -1539,14 +1539,14 @@ SORTCACHE **nntp_sort_loadcache (MAILSTREAM *stream,SORTPGM *pgm,
 				/* put stripped subject in sortcache */
 	r = (SORTCACHE *) (*mailcache) (stream,i,CH_SORTCACHE);
 	  r->refwd = mail_strip_subject (t,&r->subject);
-	if (t = strchr (v,'\t')) {
+	if ((t = strchr (v,'\t')) != NULL) {
 	  *t++ = '\0';		/* tie off from */
-	  if (adr = rfc822_parse_address (&adr,adr,&v,BADHOST,0)) {
+	  if ((adr = rfc822_parse_address (&adr,adr,&v,BADHOST,0)) != NULL) {
 	    r->from = adr->mailbox;
 	    adr->mailbox = NIL;
 	    mail_free_address (&adr);
 	  }
-	  if (v = strchr (t,'\t')) {
+	  if ((v = strchr (t,'\t')) != NULL) {
 	    *v++ = '\0';	/* tie off date */
 	    if (mail_parse_date (&telt,t)) r->date = mail_longdate (&telt);
 	    if ((v = strchr (v,'\t')) && (v = strchr (++v,'\t')))
@@ -1696,10 +1696,10 @@ SENDSTREAM *nntp_open_full (NETDRIVER *dv,char **hostlist,char *service,
 				/* default port */
       if (mb.port) port = mb.port;
       else if (!port) port = nntp_port ? nntp_port : NNTPTCPPORT;
-      if (netstream =		/* try to open ordinary connection */
+      if ((netstream =		/* try to open ordinary connection */
 	  net_open (&mb,dv,port,
 		    (NETDRIVER *) mail_parameters (NIL,GET_SSLDRIVER,NIL),
-		    "*nntps",nntp_sslport ? nntp_sslport : NNTPSSLPORT)) {
+		    "*nntps",nntp_sslport ? nntp_sslport : NNTPSSLPORT)) != NULL) {
 	stream = (SENDSTREAM *) fs_get (sizeof (SENDSTREAM));
 				/* initialize stream */
 	memset ((void *) stream,0,sizeof (SENDSTREAM));
@@ -1737,9 +1737,9 @@ SENDSTREAM *nntp_open_full (NETDRIVER *dv,char **hostlist,char *service,
     mb.tlsflag = T;		/* TLS OK, get into TLS at this end */
     stream->netstream->dtb = ssld;
 				/* negotiate TLS */
-    if (stream->netstream->stream =
+    if ((stream->netstream->stream =
 	(*stls) (stream->netstream->stream,mb.host,
-		 SSL_MTHD(mb) | (mb.novalidate ? NET_NOVALIDATECERT:NIL)))
+		 SSL_MTHD(mb) | (mb.novalidate ? NET_NOVALIDATECERT:NIL))) != NULL)
       extok = nntp_extensions (stream,(mb.secflag ? AU_SECURE : NIL) |
 			       (mb.authuser[0] ? AU_AUTHUSER : NIL));
     else {
@@ -1834,7 +1834,7 @@ long nntp_extensions (SENDSTREAM *stream,long flags)
   while ((t = net_getline (stream->netstream)) && (t[1] || (*t != '.'))) {
     if (stream->debug) mm_dlog (t);
 				/* get optional capability arguments */
-    if (args = strchr (t,' ')) *args++ = '\0';
+    if ((args = strchr (t,' ')) != NULL) *args++ = '\0';
     if (!compare_cstring (t,"LISTGROUP")) NNTP.ext.listgroup = T;
     else if (!compare_cstring (t,"OVER")) NNTP.ext.over = T;
     else if (!compare_cstring (t,"HDR")) NNTP.ext.hdr = T;
@@ -1933,7 +1933,7 @@ long nntp_mail (SENDSTREAM *stream,ENVELOPE *env,BODY *body)
 	   env->sender ? env->sender->mailbox :
 	   (env->from ? env->from->mailbox : "not-for-mail"));
 				/* here's another cretinism */
-  if (s = strstr (env->date," (")) *s = NIL;
+  if ((s = strstr (env->date," (")) != NULL) *s = NIL;
   do if ((ret = nntp_send_work (stream,"POST",NIL)) == NNTPREADY)
 				/* output data, return success status */
     ret = (net_soutr (stream->netstream,
@@ -2231,7 +2231,7 @@ long nntp_soutr (void *stream,char *s)
 				/* "." on first line */
   if (s[0] == '.') net_soutr (stream,".");
 				/* find lines beginning with a "." */
-  while (t = strstr (s,"\015\012.")) {
+  while ((t = strstr (s,"\015\012.")) != NULL) {
     c = *(t += 3);		/* remember next character after "." */
     *t = '\0';			/* tie off string */
 				/* output prefix */

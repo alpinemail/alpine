@@ -2782,10 +2782,11 @@ preserve_prompt(void)
     }
     return(0);
 #else /* PASSFILE */
-if(F_OFF(F_DISABLE_PASSWORD_FILE_SAVING,ps_global))
-    return(want_to(_("Preserve password on DISK for next login"), 
+    if(F_OFF(F_DISABLE_PASSWORD_FILE_SAVING,ps_global))
+	return(want_to(_("Preserve password on DISK for next login"), 
 		   'y', 'x', NO_HELP, WT_NORM)
 	   == 'y');
+    return(0);
 #endif /* PASSFILE */
 }
 

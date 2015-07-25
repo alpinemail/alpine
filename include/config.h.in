@@ -472,9 +472,6 @@
 /* Enable keyboard lock support */
 #undef KEYBOARD_LOCK
 
-/* Define if you use OpenLDAP 2.3.x deprecated functions */
-#undef LDAP_DEPRECATED
-
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */
 #undef LT_OBJDIR

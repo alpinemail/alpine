@@ -215,7 +215,7 @@ void news_list (MAILSTREAM *stream,char *ref,char *pat)
   if (!pat || !*pat) {		/* empty pattern? */
     if (news_canonicalize (ref,"*",pattern)) {
 				/* tie off name at root */
-      if (s = strchr (pattern,'.')) *++s = '\0';
+      if ((s = strchr (pattern,'.')) != NULL) *++s = '\0';
       else pattern[0] = '\0';
       mm_list (stream,'.',pattern,LATT_NOSELECT);
     }
@@ -231,7 +231,7 @@ void news_list (MAILSTREAM *stream,char *ref,char *pat)
     strcpy (name,"#news.");	/* write initial prefix */
     i = strlen (pattern);	/* length of pattern */
     if (pattern[--i] != '%') i = 0;
-    if (t = strtok_r (s,"\n",&r)) do if (u = strchr (t,' ')) {
+    if ((t = strtok_r (s,"\n",&r)) != NULL) do if ((u = strchr (t,' ')) != NULL) {
       *u = '\0';		/* tie off at end of name */
       strcpy (name + 6,t);	/* make full form of name */
       if (pmatch_full (name,pattern,'.')) mm_list (stream,'.',name,NIL);
@@ -240,7 +240,7 @@ void news_list (MAILSTREAM *stream,char *ref,char *pat)
 	if (pmatch_full (name,pattern,'.'))
 	  mm_list (stream,'.',name,LATT_NOSELECT);
       }
-    } while (t = strtok_r (NIL,"\n",&r));
+    } while ((t = strtok_r (NIL,"\n",&r)) != NULL);
     fs_give ((void **) &s);
   }
 }
@@ -283,7 +283,7 @@ long news_canonicalize (char *ref,char *pat,char *pattern)
   if ((pattern[0] == '#') && (pattern[1] == 'n') && (pattern[2] == 'e') &&
       (pattern[3] == 'w') && (pattern[4] == 's') && (pattern[5] == '.') &&
       !strchr (pattern,'/')) {	/* count wildcards */
-    for (i = 0, s = pattern; *s; *s++) if ((*s == '*') || (*s == '%')) ++i;
+    for (i = 0, s = pattern; *s; s++) if ((*s == '*') || (*s == '%')) ++i;
 				/* success if not too many */
     if (i <= MAXWILDCARDS) return LONGT;
     MM_LOG ("Excessive wildcards in LIST/LSUB",ERROR);
@@ -365,7 +365,7 @@ MAILSTREAM *news_open (MAILSTREAM *stream)
 				/* build directory name */
   sprintf (s = tmp,"%s/%s",(char *) mail_parameters (NIL,GET_NEWSSPOOL,NIL),
 	   stream->mailbox + 6);
-  while (s = strchr (s,'.')) *s = '/';
+  while ((s = strchr (s,'.')) != NULL) *s = '/';
 				/* scan directory */
   if ((nmsgs = scandir (tmp,&names,news_select,news_numsort)) >= 0) {
     mail_exists (stream,nmsgs);	/* notify upper level that messages exist */
@@ -406,7 +406,7 @@ int news_select (struct direct *name)
 {
   char c;
   char *s = name->d_name;
-  while (c = *s++) if (!isdigit (c)) return NIL;
+  while ((c = *s++) != '\0') if (!isdigit (c)) return NIL;
   return T;
 }
 
@@ -566,7 +566,7 @@ void news_load_message (MAILSTREAM *stream,unsigned long msgno,long flags)
 	  switch (c = SNX (&bs)) {
 	  case '\015':		/* unlikely carriage return */
 	    *t++ = c;
-	    if ((CHR (&bs) == '\012')) *t++ = SNX (&bs);
+	    if (CHR (&bs) == '\012') *t++ = SNX (&bs);
 	    break;
 	  case '\012':		/* line feed? */
 	    *t++ = '\015';
@@ -586,7 +586,7 @@ void news_load_message (MAILSTREAM *stream,unsigned long msgno,long flags)
 	  switch (c = SNX (&bs)) {
 	  case '\015':		/* unlikely carriage return */
 	    *t++ = c;
-	    if ((CHR (&bs) == '\012')) *t++ = SNX (&bs);
+	    if (CHR (&bs) == '\012') *t++ = SNX (&bs);
 	    break;
 	  case '\012':		/* line feed? */
 	    *t++ = '\015';

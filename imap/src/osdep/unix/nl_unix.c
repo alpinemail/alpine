@@ -46,7 +46,7 @@ unsigned long strcrlfcpy (unsigned char **dst,unsigned long *dstl,
     if (i > *dstl) fs_give ((void **) dst);
   }
 				/* make a new buffer if needed */
-  if (!*dst) *dst = (char *) fs_get ((*dstl = i) + 1);
+  if (!*dst) *dst = (unsigned char *) fs_get ((*dstl = i) + 1);
   d = *dst;			/* destination string */
   if (srcl) do {		/* main copy loop */
     if ((c = *src++) < '\016') {

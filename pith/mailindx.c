@@ -2945,7 +2945,7 @@ format_index_index_line(INDEXDATA_S *idata)
 	  if(!ifield->ielem){
 	      ielem  = new_ielem(&ifield->ielem);
 
-	      if(color = hdr_color(itokens[itokensinv[cdesc->ctype].ctype].name, NULL, ps_global->index_token_colors)){
+	      if((color = hdr_color(itokens[itokensinv[cdesc->ctype].ctype].name, NULL, ps_global->index_token_colors)) != NULL){
 		if(pico_usingcolor()){
 		  ielem->color = new_color_pair(color->fg, color->bg);
 		  ielem->type = eTypeCol;

@@ -97,7 +97,7 @@ long auth_gssapi_client (authchallenge_t challenger,authrespond_t responder,
   long ret = NIL;
   *trial = 65535;		/* never retry */
 				/* get initial (empty) challenge */
-  if (chal.value = (*challenger) (stream,(unsigned long *) &chal.length)) {
+  if ((chal.value = (*challenger) (stream,(unsigned long *) &chal.length)) != NULL) {
     if (chal.length) {		/* abort if challenge non-empty */
       mm_log ("Server bug: non-empty initial GSSAPI challenge",WARN);
       (*responder) (stream,NIL,0);
@@ -336,7 +336,7 @@ char *auth_gssapi_server (authresponse_t responder,int argc,char *argv[])
       GSS_S_COMPLETE) {
     if ((smj = gss_acquire_cred (&smn,crname,0,NIL,GSS_C_ACCEPT,&crd,NIL,NIL))
 	== GSS_S_COMPLETE) {
-      if (resp.value = (*responder) ("",0,(unsigned long *) &resp.length)) {
+      if ((resp.value = (*responder) ("",0,(unsigned long *) &resp.length)) != NULL) {
 	do {			/* negotiate authentication */
 	  smj = gss_accept_sec_context (&smn,&ctx,crd,&resp,
 					GSS_C_NO_CHANNEL_BINDINGS,&name,&mech,

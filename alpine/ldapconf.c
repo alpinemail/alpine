@@ -130,7 +130,7 @@ ldap_addr_select(struct pine *ps, ADDR_CHOOSE_S *ac, LDAP_CHOOSE_S **result,
 	    e != NULL;
 	    e = ldap_next_entry(res_list->ld, e)){
 	    char       *dn, *a;
-	    char      **cn, **org, **unit, **title, **mail, **sn;
+	    struct berval **cn, **org, **unit, **title, **mail, **sn;
 	    BerElement *ber;
 	    int         indent, have_mail;
 	    
@@ -143,28 +143,28 @@ ldap_addr_select(struct pine *ps, ADDR_CHOOSE_S *ac, LDAP_CHOOSE_S **result,
 		dprint((9, " %s", a ? a : "?"));
 		if(strcmp(a, res_list->info_used->cnattr) == 0){
 		    if(!cn)
-		      cn = ldap_get_values(res_list->ld, e, a);
+		      cn = ldap_get_values_len(res_list->ld, e, a);
 
-		    if(cn && !(cn[0] && cn[0][0])){
-			ldap_value_free(cn);
+		    if(cn && !ALPINE_LDAP_can_use(cn)){
+			ldap_value_free_len(cn);
 			cn = NULL;
 		    }
 		}
 		else if(strcmp(a, res_list->info_used->mailattr) == 0){
 		    if(!mail)
-		      mail = ldap_get_values(res_list->ld, e, a);
+		      mail = ldap_get_values_len(res_list->ld, e, a);
 		}
 		else if(strcmp(a, "o") == 0){
 		    if(!org)
-		      org = ldap_get_values(res_list->ld, e, a);
+		      org = ldap_get_values_len(res_list->ld, e, a);
 		}
 		else if(strcmp(a, "ou") == 0){
 		    if(!unit)
-		      unit = ldap_get_values(res_list->ld, e, a);
+		      unit = ldap_get_values_len(res_list->ld, e, a);
 		}
 		else if(strcmp(a, "title") == 0){
 		    if(!title)
-		      title = ldap_get_values(res_list->ld, e, a);
+		      title = ldap_get_values_len(res_list->ld, e, a);
 		}
 
 		our_ldap_memfree(a);
@@ -179,10 +179,10 @@ ldap_addr_select(struct pine *ps, ADDR_CHOOSE_S *ac, LDAP_CHOOSE_S **result,
 
 		    if(strcmp(a,  res_list->info_used->snattr) == 0){
 			if(!sn)
-			  sn = ldap_get_values(res_list->ld, e, a);
+			  sn = ldap_get_values_len(res_list->ld, e, a);
 
-			if(sn && !(sn[0] && sn[0][0])){
-			    ldap_value_free(sn);
+			if(sn && !ALPINE_LDAP_can_use(sn)){
+			    ldap_value_free_len(sn);
 			    sn = NULL;
 			}
 		    }
@@ -191,7 +191,7 @@ ldap_addr_select(struct pine *ps, ADDR_CHOOSE_S *ac, LDAP_CHOOSE_S **result,
 		}
 	    }
 
-	    if(mail && mail[0] && mail[0][0])
+	    if(ALPINE_LDAP_can_use(mail))
 	      have_mail = 1;
 	    else
 	      have_mail = 0;
@@ -212,8 +212,8 @@ ldap_addr_select(struct pine *ps, ADDR_CHOOSE_S *ac, LDAP_CHOOSE_S **result,
 		if(need_mail && !have_mail)
 		  ctmpa->flags     |= CF_PRIVATE;
 
-		ctmpa->value      = cpystr(cn[0]);
-		ldap_value_free(cn);
+		ctmpa->value      = cpystr(cn[0]->bv_val);
+		ldap_value_free_len(cn);
 		ctmpa->valoffset  = indent;
 		ctmpa->keymenu    = km;
 		ctmpa->help       = help;
@@ -238,8 +238,8 @@ ldap_addr_select(struct pine *ps, ADDR_CHOOSE_S *ac, LDAP_CHOOSE_S **result,
 		if(need_mail && !have_mail)
 		  ctmpa->flags     |= CF_PRIVATE;
 
-		ctmpa->value      = cpystr(sn[0]);
-		ldap_value_free(sn);
+		ctmpa->value      = cpystr(sn[0]->bv_val);
+		ldap_value_free_len(sn);
 		ctmpa->valoffset  = indent;
 		ctmpa->keymenu    = km;
 		ctmpa->help       = help;
@@ -289,11 +289,11 @@ ldap_addr_select(struct pine *ps, ADDR_CHOOSE_S *ac, LDAP_CHOOSE_S **result,
 	    }
 
 	    if(title){
-		for(i = 0; title[i] && title[i][0]; i++){
+		for(i = 0; ALPINE_LDAP_usable(title, i); i++){
 		    new_confline(&ctmpa);
 		    ctmpa->flags     |= CF_NOSELECT;
 		    ctmpa->valoffset  = indent + 2;
-		    ctmpa->value      = cpystr(title[i]);
+		    ctmpa->value      = cpystr(title[i]->bv_val);
 		    ctmpa->keymenu    = km;
 		    ctmpa->help       = help;
 		    ctmpa->help_title = _(srch_res_help_title);
@@ -305,15 +305,15 @@ ldap_addr_select(struct pine *ps, ADDR_CHOOSE_S *ac, LDAP_CHOOSE_S **result,
 		    ctmpa->d.a.ac     = ac;
 		}
 
-		ldap_value_free(title);
+		ldap_value_free_len(title);
 	    }
 
 	    if(unit){
-		for(i = 0; unit[i] && unit[i][0]; i++){
+		for(i = 0; ALPINE_LDAP_usable(unit, i); i++){
 		    new_confline(&ctmpa);
 		    ctmpa->flags     |= CF_NOSELECT;
 		    ctmpa->valoffset  = indent + 2;
-		    ctmpa->value      = cpystr(unit[i]);
+		    ctmpa->value      = cpystr(unit[i]->bv_val);
 		    ctmpa->keymenu    = km;
 		    ctmpa->help       = help;
 		    ctmpa->help_title = _(srch_res_help_title);
@@ -325,15 +325,15 @@ ldap_addr_select(struct pine *ps, ADDR_CHOOSE_S *ac, LDAP_CHOOSE_S **result,
 		    ctmpa->d.a.ac     = ac;
 		}
 
-		ldap_value_free(unit);
+		ldap_value_free_len(unit);
 	    }
 
 	    if(org){
-		for(i = 0; org[i] && org[i][0]; i++){
+		for(i = 0; ALPINE_LDAP_usable(org, i); i++){
 		    new_confline(&ctmpa);
 		    ctmpa->flags     |= CF_NOSELECT;
 		    ctmpa->valoffset  = indent + 2;
-		    ctmpa->value      = cpystr(org[i]);
+		    ctmpa->value      = cpystr(org[i]->bv_val);
 		    ctmpa->keymenu    = km;
 		    ctmpa->help       = help;
 		    ctmpa->help_title = _(srch_res_help_title);
@@ -345,20 +345,20 @@ ldap_addr_select(struct pine *ps, ADDR_CHOOSE_S *ac, LDAP_CHOOSE_S **result,
 		    ctmpa->d.a.ac     = ac;
 		}
 
-		ldap_value_free(org);
+		ldap_value_free_len(org);
 	    }
 
 	    if(have_mail){
 		/* Don't show long list of email addresses. */
-		if(!(mail[0] && mail[0][0]) ||
-		   !(mail[1] && mail[1][0]) ||
-		   !(mail[2] && mail[2][0]) ||
-		   !(mail[3] && mail[3][0])){
-		    for(i = 0; mail[i] && mail[i][0]; i++){
+		if(!ALPINE_LDAP_can_use_num(mail, 0) ||
+		   !ALPINE_LDAP_can_use_num(mail, 1) ||
+		   !ALPINE_LDAP_can_use_num(mail, 2) ||
+		   !ALPINE_LDAP_can_use_num(mail, 3)){
+		    for(i = 0; ALPINE_LDAP_usable(mail, i); i++){
 			new_confline(&ctmpa);
 			ctmpa->flags     |= CF_NOSELECT;
 			ctmpa->valoffset  = indent + 2;
-			ctmpa->value      = cpystr(mail[i]);
+			ctmpa->value      = cpystr(mail[i]->bv_val);
 			ctmpa->keymenu    = km;
 			ctmpa->help       = help;
 			ctmpa->help_title = _(srch_res_help_title);
@@ -373,7 +373,7 @@ ldap_addr_select(struct pine *ps, ADDR_CHOOSE_S *ac, LDAP_CHOOSE_S **result,
 		else{
 		    char tmp[200];
 
-		    for(i = 4; mail[i] && mail[i][0]; i++)
+		    for(i = 4; ALPINE_LDAP_usable(mail, i); i++)
 		      ;
 		    
 		    new_confline(&ctmpa);
@@ -410,7 +410,7 @@ ldap_addr_select(struct pine *ps, ADDR_CHOOSE_S *ac, LDAP_CHOOSE_S **result,
 	    }
 
 	    if(mail)
-	      ldap_value_free(mail);
+	      ldap_value_free_len(mail);
 
 	    new_confline(&ctmpa);		/* blank line */
 	    ctmpa->keymenu    = km;

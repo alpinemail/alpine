@@ -67,7 +67,7 @@ typedef struct ldap_serv {
  *                                 ldap_get_dn
  *                                 ldap_first_attribute
  *                                 ldap_next_attribute
- *                                 ldap_get_values
+ *                                 ldap_get_values_len
  * We call those from a half dozen functions. We could fix it by
  * having a directory-character-set per server and passing that around
  * in the LDAP_SERV_RES_S structure, I think. For now, let's go with
@@ -114,6 +114,14 @@ typedef	enum {AlwaysDisplay,
 	      DisplayForURL
 	      } LDAPLookupStyle;
 
+#define ALPINE_LDAP_can_use_num(X, Y)   		\
+		((X) != NULL && (X)[(Y)] != NULL	\
+		  && (X)[(Y)]->bv_val != NULL		\
+		  && (X)[(Y)]->bv_val[0] != '\0')
+
+#define ALPINE_LDAP_can_use(X)   ALPINE_LDAP_can_use_num((X), 0)
+#define ALPINE_LDAP_usable(X, Y) ((Y) < ldap_count_values_len((X)) \
+				&& ALPINE_LDAP_can_use_num((X), (Y)))
 
 #define	LDAP_TYPE_CN		0
 #define	LDAP_TYPE_SUR		1
@@ -162,6 +170,7 @@ ADDRESS       *wp_lookups(char *, WP_ERR_S *, int);
 int            ldap_lookup_all(char *, int, int, LDAPLookupStyle, CUSTOM_FILT_S *,
 			       LDAP_CHOOSE_S **, WP_ERR_S *, LDAP_SERV_RES_S **);
 char	      *ldap_translate(char *, LDAP_SERV_S *);
+char	     **berval_to_array(struct berval **);
 ADDRESS       *address_from_ldap(LDAP_CHOOSE_S *);
 LDAP_SERV_S   *break_up_ldap_server(char *);
 void           free_ldap_server_info(LDAP_SERV_S **);

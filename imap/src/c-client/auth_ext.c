@@ -59,11 +59,11 @@ long auth_external_client (authchallenge_t challenger,authrespond_t responder,
   unsigned long clen;
   long ret = NIL;
   *trial = 65535;		/* never retry */
-  if (challenge = (*challenger) (stream,&clen)) {
+  if ((challenge = (*challenger) (stream,&clen)) != NULL) {
     fs_give ((void **) &challenge);
 				/* send authorization id (empty string OK) */
     if ((*responder) (stream,strcpy (user,mb->user),strlen (mb->user))) {
-      if (challenge = (*challenger) (stream,&clen))
+      if ((challenge = (*challenger) (stream,&clen)) != NULL)
 	fs_give ((void **) &challenge);
       else ret = LONGT;		/* check the authentication */
     }

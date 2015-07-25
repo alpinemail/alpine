@@ -156,7 +156,7 @@ void dummy_scan (MAILSTREAM *stream,char *ref,char *pat,char *contents)
   if (!pat || !*pat) {		/* empty pattern? */
     if (dummy_canonicalize (test,ref,"*")) {
 				/* tie off name at root */
-      if (s = strchr (test,'/')) *++s = '\0';
+      if ((s = strchr (test,'/')) != NULL) *++s = '\0';
       else test[0] = '\0';
       dummy_listed (stream,'/',test,LATT_NOSELECT,NIL);
     }
@@ -164,13 +164,13 @@ void dummy_scan (MAILSTREAM *stream,char *ref,char *pat,char *contents)
 				/* get canonical form of name */
   else if (dummy_canonicalize (test,ref,pat)) {
 				/* found any wildcards? */
-    if (s = strpbrk (test,"%*")) {
+    if ((s = strpbrk (test,"%*")) != NULL) {
 				/* yes, copy name up to that point */
       strncpy (file,test,i = s - test);
       file[i] = '\0';		/* tie off */
     }
     else strcpy (file,test);	/* use just that name then */
-    if (s = strrchr (file,'/')){/* find directory name */
+    if ((s = strrchr (file,'/')) != NULL){/* find directory name */
       *++s = '\0';		/* found, tie off at that point */
       s = file;
     }
@@ -228,7 +228,7 @@ void dummy_lsub (MAILSTREAM *stream,char *ref,char *pat)
       }
     }
 				/* until no more subscriptions */
-  while (s = sm_read (tmpx,&sdb));
+  while ((s = sm_read (tmpx,&sdb)) != NULL);
 }
 
 
@@ -277,7 +277,7 @@ void dummy_list_work (MAILSTREAM *stream,char *dir,char *pat,char *contents,
   size_t len = 0;
 				/* punt if bogus name */
   if (!mailboxdir (tmp,dir,NIL)) return;
-  if (dp = opendir (tmp)) {	/* do nothing if can't open directory */
+  if ((dp = opendir (tmp)) != NULL) {	/* do nothing if can't open directory */
 				/* see if a non-namespace directory format */
     for (drivers = (DRIVER *) mail_parameters (NIL,GET_DRIVERS,NIL), dt = NIL;
 	 dir && !dt && drivers; drivers = drivers->next)
@@ -289,7 +289,7 @@ void dummy_list_work (MAILSTREAM *stream,char *dir,char *pat,char *contents,
       dummy_listed (stream,'/',dir,dt ? NIL : LATT_NOSELECT,contents);
 
 				/* scan directory, ignore . and .. */
-    if (!dir || dir[(len = strlen (dir)) - 1] == '/') while (d = readdir (dp))
+    if (!dir || dir[(len = strlen (dir)) - 1] == '/') while ((d = readdir (dp)) != NULL)
       if ((!(dt && (*dt) (d->d_name))) &&
 	  ((d->d_name[0] != '.') ||
 	   (((long) mail_parameters (NIL,GET_HIDEDOTFILES,NIL)) ? NIL :
@@ -480,7 +480,7 @@ long dummy_create_path (MAILSTREAM *stream,char *path,long dirmode)
   int wantdir = t && !t[1];
   int mask = umask (0);
   if (wantdir) *t = '\0';	/* flush trailing delimiter for directory */
-  if (s = strrchr (path,'/')) {	/* found superior to this name? */
+  if ((s = strrchr (path,'/')) != NULL) {	/* found superior to this name? */
     c = *++s;			/* remember first character of inferior */
     *s = '\0';			/* tie off to get just superior */
 				/* name doesn't exist, create it */
@@ -798,7 +798,7 @@ long dummy_canonicalize (char *tmp,char *ref,char *pat)
     else return NIL;		/* unknown namespace */
   }
 				/* count wildcards */
-  for (i = 0, s = tmp; *s; *s++) if ((*s == '*') || (*s == '%')) ++i;
+  for (i = 0, s = tmp; *s; s++) if ((*s == '*') || (*s == '%')) ++i;
   if (i > MAXWILDCARDS) {	/* ridiculous wildcarding? */
     MM_LOG ("Excessive wildcards in LIST/LSUB",ERROR);
     return NIL;

@@ -55,6 +55,10 @@ static char args_err_missing_pinerc[] =	N_("missing argument for option \"-piner
 #if	defined(DOS) || defined(OS2)
 static char args_err_missing_aux[] =		N_("missing argument for option \"-aux\"");
 #endif
+#ifdef SMIME
+static char args_err_missing_smimedir[] =	N_("missing argument for option \"-smimedir\"");
+static char args_err_non_abs_smimedir[] =	N_("argument to \"-smimedir\" should be fully-qualified");
+#endif /* SMIME */
 #ifdef	PASSFILE
 static char args_err_missing_passfile[] =	N_("missing argument for option \"-passfile\"");
 static char args_err_non_abs_passfile[] =	N_("argument to \"-passfile\" should be fully-qualified");
@@ -130,6 +134,10 @@ N_(" -nosplash \tDisable the PC-Alpine splash screen"),
 #if defined(APPLEKEYCHAIN) || (WINCRED > 0)
 N_(" -erase_stored_passwords\tEliminate any stored passwords"),
 #endif
+
+#ifdef SMIME
+N_(" -smimedir <fully_qualified_path>\tdirectory where smime personal certificates are saved"),
+#endif /* SMIME */
 
 #ifdef	PASSFILE
 N_(" -passfile <fully_qualified_filename>\tSet the password file to something other"),
@@ -274,6 +282,31 @@ Loop: while(--ac > 0)
 	      }
 #endif /* defined(APPLEKEYCHAIN) || (WINCRED > 0) */
 
+#ifdef SMIME
+	      else if(strcmp(*av, "smimedir") == 0){
+		  if(--ac){
+		      if((str = *++av) != NULL){
+			  if(!is_absolute_path(str)){
+			      display_args_err(_(args_err_non_abs_smimedir),
+					       NULL, 1);
+			      ++usage;
+			  }
+			  else{
+			      if(pine_state->smimedir)
+				fs_give((void **)&pine_state->pwdcertdir);
+
+			      pine_state->smimedir = cpystr(str);
+			  }
+		      }
+		  }
+		  else{
+		      display_args_err(_(args_err_missing_smimedir), NULL, 1);
+		      ++usage;
+		  }
+
+		  goto Loop;
+	      }
+#endif /* SMIME */
 #ifdef	PASSFILE
 	      else if(strcmp(*av, "passfile") == 0){
 		  if(--ac){

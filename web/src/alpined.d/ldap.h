@@ -39,8 +39,9 @@ extern WPLDAP_S *wpldap_global;
 
 char	    *peLdapPname(char *, char *);
 int          peLdapEntryParse(LDAP_SERV_RES_S *, LDAPMessage *,
-			      char ***, char ***, char ***, char ***,
-			      char ***, char ***);
+			      struct berval ***, struct berval ***, 
+			      struct berval ***, struct berval ***, 
+			      struct berval ***, struct berval ***);
 WPLDAPRES_S *free_wpldapres(WPLDAPRES_S *);
 
 #endif  /* ENABLE_LDAP */

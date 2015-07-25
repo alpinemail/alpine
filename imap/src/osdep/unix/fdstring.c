@@ -91,7 +91,7 @@ static void fd_string_setpos (STRING *s,unsigned long i)
   s->offset = i;		/* set new offset */
   s->curpos = s->chunk;		/* reset position */
 				/* set size of data */
-  if (s->cursize = min (s->chunksize,SIZE (s))) {
+  if ((s->cursize = min (s->chunksize,SIZE (s))) != 0L) {
 				/* move to that position in the file */
     lseek ((long) s->data,s->data1 + s->offset,L_SET);
     read ((long) s->data,s->curpos,(size_t) s->cursize);

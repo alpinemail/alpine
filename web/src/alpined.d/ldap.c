@@ -40,7 +40,8 @@ ldap_addr_select(ps, ac, result, style, wp_err, srchstr)
 {
     LDAP_SERV_RES_S *res_list, *tmp_rl;
     LDAPMessage     *e, *tmp_e;
-    char           **mail = NULL, *a;
+    struct berval  **mail = NULL;
+    char *a;
     int              got_n_entries = 0, retval = -5;
     BerElement      *ber;
     
@@ -59,11 +60,11 @@ ldap_addr_select(ps, ac, result, style, wp_err, srchstr)
 	    a != NULL;
 	    a = ldap_next_attribute(tmp_rl->ld, tmp_e, ber)){
 	    if(strcmp(a, tmp_rl->info_used->mailattr) == 0){
-		mail = ldap_get_values(tmp_rl->ld, tmp_e, a);
+		mail = ldap_get_values_len(tmp_rl->ld, tmp_e, a);
 		break;
 	    }
 	}
-	if(mail && mail[0] && mail[0][0]){
+	if(ALPINE_LDAP_can_use(mail)){
 	    retval = 0;
 	    if(result){
 		(*result) =
@@ -91,7 +92,8 @@ peLdapPname(mailbox, host)
      char *host;
 {
     char *retstr = NULL;
-    char              adrstr[1024], **cn;
+    char  adrstr[1024];
+    struct berval **cn = NULL;
     int               ecnt;
     CUSTOM_FILT_S    *filter;
     WP_ERR_S          wp_err;
@@ -125,8 +127,8 @@ peLdapPname(mailbox, host)
 	    peLdapEntryParse(trl, e, &cn, NULL, NULL, NULL,
 			     NULL, NULL);
 	    if(cn){
-	      retstr = cpystr(cn[0]);
-	      ldap_value_free(cn);
+	      retstr = cpystr(cn[0]->bv_val);
+	      ldap_value_free_len(cn);
 	    }
 	}
     }
@@ -138,14 +140,15 @@ peLdapEntryParse(trl, e, ret_cn, ret_org, ret_unit,
 		 ret_title, ret_mail, ret_sn)
      LDAP_SERV_RES_S *trl;
      LDAPMessage     *e;
-     char          ***ret_cn;
-     char          ***ret_org;
-     char          ***ret_unit;
-     char          ***ret_title;
-     char          ***ret_mail;
-     char          ***ret_sn;
+     struct berval ***ret_cn;
+     struct berval ***ret_org;
+     struct berval ***ret_unit;
+     struct berval ***ret_title;
+     struct berval ***ret_mail;
+     struct berval ***ret_sn;
 {
-    char       *a, **cn, **org, **unit, **title, **mail, **sn;
+    char       *a;
+    struct berval **cn, **org, **unit, **title, **mail, **sn;
     BerElement *ber;
     
     cn = org = title = unit = mail = sn = NULL;
@@ -156,28 +159,28 @@ peLdapEntryParse(trl, e, ret_cn, ret_org, ret_unit,
         dprint((9, " %s", a));
 	if(strcmp(a, trl->info_used->cnattr) == 0){
 	    if(!cn)
-	      cn = ldap_get_values(trl->ld, e, a);
+	      cn = ldap_get_values_len(trl->ld, e, a);
 	    
-	    if(cn && !(cn[0] && cn[0][0])){
-	        ldap_value_free(cn);
+	    if(cn && !ALPINE_LDAP_can_use(cn)){
+	        ldap_value_free_len(cn);
 		cn = NULL;
 	    }
 	}
 	else if(strcmp(a, trl->info_used->mailattr) == 0){
 	    if(!mail)
-	      mail = ldap_get_values(trl->ld, e, a);
+	      mail = ldap_get_values_len(trl->ld, e, a);
 	}
 	else if(strcmp(a, "o") == 0){
 	    if(!org)
-	      org = ldap_get_values(trl->ld, e, a);
+	      org = ldap_get_values_len(trl->ld, e, a);
 	}
 	else if(strcmp(a, "ou") == 0){
 	    if(!unit)
-	      unit = ldap_get_values(trl->ld, e, a);
+	      unit = ldap_get_values_len(trl->ld, e, a);
 	}
 	else if(strcmp(a, "title") == 0){
 	    if(!title)
-	      title = ldap_get_values(trl->ld, e, a);
+	      title = ldap_get_values_len(trl->ld, e, a);
 	}
 	
 	our_ldap_memfree(a);
@@ -190,10 +193,10 @@ peLdapEntryParse(trl, e, ret_cn, ret_org, ret_unit,
 	  
 	    if(strcmp(a,  trl->info_used->snattr) == 0){
 	        if(!sn)
-		  sn = ldap_get_values(trl->ld, e, a);
+		  sn = ldap_get_values_len(trl->ld, e, a);
 		
-		if(sn && !(sn[0] && sn[0][0])){
-		  ldap_value_free(sn);
+		if(sn && !ALPINE_LDAP_can_use(sn)){
+		  ldap_value_free_len(sn);
 		  sn = NULL;
 		}
 	    }
@@ -202,22 +205,22 @@ peLdapEntryParse(trl, e, ret_cn, ret_org, ret_unit,
     }
     if(ret_cn)
       (*ret_cn)    = cn;
-    else if(cn) ldap_value_free(cn);
+    else if(cn) ldap_value_free_len(cn);
     if(ret_org)
       (*ret_org)   = org;
-    else if(org) ldap_value_free(org);
+    else if(org) ldap_value_free_len(org);
     if(ret_unit)
       (*ret_unit)  = unit;
-    else if(unit) ldap_value_free(unit);
+    else if(unit) ldap_value_free_len(unit);
     if(ret_title)
       (*ret_title) = title;
-    else if(title) ldap_value_free(title);
+    else if(title) ldap_value_free_len(title);
     if(ret_mail)
       (*ret_mail)  = mail;
-    else if(mail) ldap_value_free(mail);
+    else if(mail) ldap_value_free_len(mail);
     if(ret_sn)
       (*ret_sn)    = sn;
-    else if(sn) ldap_value_free(sn);
+    else if(sn) ldap_value_free_len(sn);
 
     return 0;
 }

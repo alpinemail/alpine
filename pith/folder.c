@@ -871,7 +871,7 @@ update_bboard_spec(char *bboard, char *buf, size_t buflen)
 	if(*bboard == '*')
 	  bboard++;
 
-	if(!nntp)
+	if(!nntp){
 	  /*
 	   * See if path portion looks newsgroup-ish while being aware
 	   * of the "view" portion of the spec...
@@ -891,6 +891,7 @@ update_bboard_spec(char *bboard, char *buf, size_t buflen)
 	    }
 	    else if(!(isalnum((unsigned char) *p) || strindex(".-", *p)))
 	      break;
+	}
 
 	snprintf(buf, buflen-(buf-origbuf), "%s%s%s",
 		(!nntp && *p) ? "#public" : "#news.",

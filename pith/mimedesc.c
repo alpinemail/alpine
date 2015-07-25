@@ -222,7 +222,7 @@ describe_mime(struct mail_bodystruct *body, char *prefix, int num,
                 (description && description[0]) ? ", \"" : "",
                 (description && description[0]) ? description : "",
                 (description && description[0]) ? "\"": "");
-	string[sizeof(string)-1] =- '\0';
+	string[sizeof(string)-1] = '\0';
         a->description = cpystr(string);
         a->body        = body;
 

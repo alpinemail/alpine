@@ -44,7 +44,7 @@ static void utf8_stringlist (STRINGLIST *st,char *charset)
     fs_give ((void **) &st->text.data);
     st->text.data = txt.data; /* transfer this text */
     st->text.size = txt.size;
-  } while (st = st->next);
+  } while ((st = st->next) != NULL);
 }
 
 
@@ -133,7 +133,7 @@ long utf8_mime2text (SIZEDTEXT *src,SIZEDTEXT *dst,long flags)
 	((te - s) < MAXENCWORD)) {
       if (mime2_decode (e,t,te,&txt)) {
 	*ce = '\0';		/* temporarily tie off charset */
-	if (ls = strchr (cs,'*')) *ls = '\0';
+	if ((ls = strchr (cs,'*')) != NULL) *ls = '\0';
 				/* convert to UTF-8 as best we can */
 	if (!utf8_text (&txt,cs,&rtxt,flags)) utf8_text (&txt,NIL,&rtxt,flags);
 	if (dst->data) {	/* make sure existing buffer fits */
@@ -238,7 +238,7 @@ long mime2_decode (unsigned char *e,unsigned char *t,unsigned char *te,
     txt->data[txt->size] = '\0';
     break;
   case 'B': case 'b':		/* BASE64 */
-    if (txt->data = (unsigned char *) rfc822_base64 (t,te - t,&txt->size))
+    if ((txt->data = (unsigned char *) rfc822_base64 (t,te - t,&txt->size)) != NULL)
       break;
   default:			/* any other encoding is unknown */
     return NIL;			/* syntax error: unknown encoding */

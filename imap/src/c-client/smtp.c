@@ -167,10 +167,10 @@ SENDSTREAM *smtp_open_full (NETDRIVER *dv,char **hostlist,char *service,
       }
 				/* else port argument overrides SMTP port */
       else if (!port) port = smtp_port ? smtp_port : SMTPTCPPORT;
-      if (netstream =		/* try to open ordinary connection */
+      if ((netstream =		/* try to open ordinary connection */
 	  net_open (&mb,dv,port,
 		    (NETDRIVER *) mail_parameters (NIL,GET_SSLDRIVER,NIL),
-		    "*smtps",smtp_sslport ? smtp_sslport : SMTPSSLPORT)) {
+		    "*smtps",smtp_sslport ? smtp_sslport : SMTPSSLPORT)) != NULL) {
 	stream = (SENDSTREAM *) memset (fs_get (sizeof (SENDSTREAM)),0,
 					sizeof (SENDSTREAM));
 	stream->netstream = netstream;
@@ -788,7 +788,7 @@ long smtp_soutr (void *stream,char *s)
 				/* "." on first line */
   if (s[0] == '.') net_sout (stream,".",1);
 				/* find lines beginning with a "." */
-  while (t = strstr (s,"\015\012.")) {
+  while ((t = strstr (s,"\015\012.")) != NULL) {
     c = *(t += 3);		/* remember next character after "." */
     *t = '\0';			/* tie off string */
 				/* output prefix */

@@ -1701,9 +1701,24 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     GLO_SPELLER			= cpystr(DF_VAR_SPELLER);
 #endif
 #ifdef	SMIME
-    GLO_PUBLICCERT_DIR		= cpystr(DF_PUBLICCERT_DIR);
-    GLO_PRIVATEKEY_DIR		= cpystr(DF_PRIVATEKEY_DIR);
-    GLO_CACERT_DIR		= cpystr(DF_CACERT_DIR);
+    if(ps->smimedir){
+	snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s/public", ps->smimedir);
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+	GLO_PUBLICCERT_DIR	= cpystr(tmp_20k_buf);
+
+	snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s/private", ps->smimedir);
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+	GLO_PRIVATEKEY_DIR	= cpystr(tmp_20k_buf);
+
+	snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s/ca", ps->smimedir);
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+	GLO_CACERT_DIR		= cpystr(tmp_20k_buf);
+    }
+    else{
+	GLO_PUBLICCERT_DIR	= cpystr(DF_PUBLICCERT_DIR);
+	GLO_PRIVATEKEY_DIR	= cpystr(DF_PRIVATEKEY_DIR);
+	GLO_CACERT_DIR		= cpystr(DF_CACERT_DIR);
+    }
 #endif	/* SMIME */
 
     /*

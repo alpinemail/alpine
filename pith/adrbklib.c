@@ -4108,7 +4108,7 @@ delete_ab_entry(AdrBk *ab, a_c_arg_t delete_this_one, int save_it)
 	     * #DELETED-YY/MM/DD#
 	     * to the nickname.
 	     */
-	    now = time((time_t) 0);
+	    now = time((time_t *) NULL);
 	    tm_now = localtime(&now);
 
 	    oldnick = ae_deleted->nickname;

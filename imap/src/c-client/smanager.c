@@ -41,9 +41,9 @@ long sm_subscribe (char *mailbox)
 				/* canonicalize INBOX */
   if (!compare_cstring (mailbox,"INBOX")) mailbox = "INBOX";
   SUBSCRIPTIONFILE (db);	/* open subscription database */
-  if (f = fopen (db,"r")) {	/* make sure not already there */
+  if ((f = fopen (db,"r")) != NULL) {	/* make sure not already there */
     while (fgets (tmp,MAILTMPLEN,f)) {
-      if (s = strchr (tmp,'\n')) *s = '\0';
+      if ((s = strchr (tmp,'\n')) != NULL) *s = '\0';
       if (!strcmp (tmp,mailbox)) {/* already subscribed? */
 	sprintf (tmp,"Already subscribed to mailbox %.80s",mailbox);
 	MM_LOG (tmp,ERROR);
@@ -83,7 +83,7 @@ long sm_unsubscribe (char *mailbox)
   }
   else {
     while (fgets (tmp,MAILTMPLEN,f)) {
-      if (s = strchr (tmp,'\n')) *s = '\0';
+      if ((s = strchr (tmp,'\n')) != NULL) *s = '\0';
       if (strcmp (tmp,mailbox)) fprintf (tf,"%s\n",tmp);
       else found = T;		/* found the name */
     }
@@ -113,11 +113,11 @@ char *sm_read (char *sbname,void **sdb)
   if (!f) {			/* first time through? */
     SUBSCRIPTIONFILE (sbname);	/* open subscription database */
 				/* make sure not already there */
-    if (f = fopen (sbname,"r")) *sdb = (void *) f;
+    if ((f = fopen (sbname,"r")) != NULL) *sdb = (void *) f;
     else return NIL;
   }
   if (fgets (sbname,MAILTMPLEN,f)) {
-    if (s = strchr (sbname,'\n')) *s = '\0';
+    if ((s = strchr (sbname,'\n')) != NULL) *s = '\0';
     return sbname;
   }
   fclose (f);			/* all done */

@@ -63,7 +63,7 @@ long auth_login_client (authchallenge_t challenger,authrespond_t responder,
   unsigned long clen;
   long ret = NIL;
 				/* get user name prompt */
-  if (challenge = (*challenger) (stream,&clen)) {
+  if ((challenge = (*challenger) (stream,&clen)) != NULL) {
     fs_give ((void **) &challenge);
     pwd[0] = NIL;		/* prompt user */
     mm_login (mb,user,pwd,*trial);
@@ -78,7 +78,7 @@ long auth_login_client (authchallenge_t challenger,authrespond_t responder,
       fs_give ((void **) &challenge);
 				/* send password */
       if ((*responder) (stream,pwd,strlen (pwd))) {
-	if (challenge = (*challenger) (stream,&clen))
+	if ((challenge = (*challenger) (stream,&clen)) != NULL)
 	  fs_give ((void **) &challenge);
 	else {
 	  ++*trial;		/* can try again if necessary */
@@ -104,10 +104,10 @@ char *auth_login_server (authresponse_t responder,int argc,char *argv[])
 {
   char *ret = NIL;
   char *user,*pass,*authuser;
-  if (user = (*responder) (PWD_USER,sizeof (PWD_USER),NIL)) {
-    if (pass = (*responder) (PWD_PWD,sizeof (PWD_PWD),NIL)) {
+  if ((user = (*responder) (PWD_USER,sizeof (PWD_USER),NIL)) != NULL) {
+    if ((pass = (*responder) (PWD_PWD,sizeof (PWD_PWD),NIL)) != NULL) {
 				/* delimit user from possible admin */
-      if (authuser = strchr (user,'*')) *authuser++ = '\0';
+      if ((authuser = strchr (user,'*')) != NULL) *authuser++ = '\0';
       if (server_login (user,pass,authuser,argc,argv)) ret = myusername ();
       fs_give ((void **) &pass);
     }

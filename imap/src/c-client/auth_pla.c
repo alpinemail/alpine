@@ -63,7 +63,7 @@ long auth_plain_client (authchallenge_t challenger,authrespond_t responder,
   if (!mb->sslflag && !mb->tlsflag)
     mm_log ("SECURITY PROBLEM: insecure server advertised AUTH=PLAIN",WARN);
 				/* get initial (empty) challenge */
-  if (challenge = (*challenger) (stream,&clen)) {
+  if ((challenge = (*challenger) (stream,&clen)) != NULL) {
     fs_give ((void **) &challenge);
     if (clen) {			/* abort if challenge non-empty */
       mm_log ("Server bug: non-empty initial PLAIN challenge",WARN);
@@ -91,7 +91,7 @@ long auth_plain_client (authchallenge_t challenger,authrespond_t responder,
       for (u = pwd; *u; *t++ = *u++);
 				/* send credentials */
       if ((*responder) (stream,response,rlen)) {
-	if (challenge = (*challenger) (stream,&clen))
+	if ((challenge = (*challenger) (stream,&clen)) != NULL)
 	  fs_give ((void **) &challenge);
 	else {
 	  ++*trial;		/* can try again if necessary */
@@ -120,7 +120,7 @@ char *auth_plain_server (authresponse_t responder,int argc,char *argv[])
   char *user,*aid,*pass;
   unsigned long len;
 				/* get user name */
-  if (aid = (*responder) ("",0,&len)) {
+  if ((aid = (*responder) ("",0,&len)) != NULL) {
 				/* note: responders null-terminate */
     if ((((unsigned long) ((user = aid + strlen (aid) + 1) - aid)) < len) &&
 	(((unsigned long) ((pass = user + strlen (user) + 1) - aid)) < len) &&

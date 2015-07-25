@@ -477,7 +477,7 @@ long mbx_rename (MAILSTREAM *stream,char *old,char *newname)
 
   if (newname) {		/* want rename? */
 				/* found superior to destination name? */
-    if (s = strrchr (tmp,'/')) {
+    if ((s = strrchr (tmp,'/')) != NULL) {
       c = *++s;			/* remember first character of inferior */
       *s = '\0';		/* tie off to get just superior */
 				/* superior name doesn't exist, create it */
@@ -822,11 +822,11 @@ long mbx_ping (MAILSTREAM *stream)
 				/* reparse header if not flagchecking */
       if (!LOCAL->flagcheck) ret = mbx_parse (stream);
 				/* sweep mailbox for changed message status */
-      else if (ret = mbx_parse (stream)) {
+      else if ((ret = mbx_parse (stream)) != 0L) {
 	unsigned long recent = 0;
 	LOCAL->filetime = sbuf.st_mtime;
 	for (i = 1; i <= stream->nmsgs; )
-	  if (elt = mbx_elt (stream,i,LOCAL->expok)) {
+	  if ((elt = mbx_elt (stream,i,LOCAL->expok)) != NULL) {
 	    if (elt->recent) ++recent;
 	    ++i;
 	  }
@@ -885,14 +885,14 @@ long mbx_expunge (MAILSTREAM *stream,char *sequence,long options)
 {
   long ret;
   unsigned long nexp,reclaimed;
-  if (ret = sequence ? ((options & EX_UID) ?
+  if ((ret = sequence ? ((options & EX_UID) ?
 			mail_uid_sequence (stream,sequence) :
-			mail_sequence (stream,sequence)) : LONGT) {
+			mail_sequence (stream,sequence)) : LONGT) != 0L) {
     if (!mbx_ping (stream));	/* do nothing if stream dead */
     else if (stream->rdonly)	/* won't do on readonly files! */
       MM_LOG ("Expunge ignored on readonly mailbox",WARN);
 				/* if expunged any messages */
-    else if (nexp = mbx_rewrite (stream,&reclaimed,sequence ? -1 : 1)) {
+    else if ((nexp = mbx_rewrite (stream,&reclaimed,sequence ? -1 : 1)) != 0L){
       sprintf (LOCAL->buf,"Expunged %lu messages",nexp);
       MM_LOG (LOCAL->buf,(long) NIL);
     }
@@ -935,7 +935,7 @@ void mbx_snarf (MAILSTREAM *stream)
 	hdr = cpystr (mail_fetchheader_full (sysibx,i,NIL,&hdrlen,NIL));
 	txt = mail_fetchtext_full (sysibx,i,&txtlen,FT_PEEK);
 				/* if have a message */
-	if (j = hdrlen + txtlen) {
+	if ((j = hdrlen + txtlen) != 0L){
 				/* build header line */
 	  mail_date (LOCAL->buf,elt = mail_elt (sysibx,i));
 	  sprintf (LOCAL->buf + strlen (LOCAL->buf),
@@ -1032,7 +1032,7 @@ long mbx_copy (MAILSTREAM *stream,char *sequence,char *mailbox,long options)
       mail_date(LOCAL->buf,elt);/* build target header */
 				/* get target keyword mask */
       for (j = elt->user_flags, k = 0; j; )
-	if (s = stream->user_flags[find_rightmost_bit (&j)])
+	if ((s = stream->user_flags[find_rightmost_bit (&j)]) != NULL)
 	  for (m = 0; (m < NUSERFLAGS) && (t = dstream->user_flags[m]); m++)
 	    if (!compare_cstring (s,t) && (k |= 1 << m)) break;
       sprintf (LOCAL->buf+strlen(LOCAL->buf),",%lu;%08lx%04x-%08lx\015\012",
@@ -1041,7 +1041,7 @@ long mbx_copy (MAILSTREAM *stream,char *sequence,char *mailbox,long options)
 		(fFLAGGED * elt->flagged) + (fANSWERED * elt->answered) +
 		(fDRAFT * elt->draft)),cu ? ++dstream->uid_last : 0);
 				/* write target header */
-      if (ret = (write (fd,LOCAL->buf,strlen (LOCAL->buf)) > 0)) {
+      if ((ret = (write (fd,LOCAL->buf,strlen (LOCAL->buf)) > 0)) != 0L) {
 	for (k = elt->rfc822_size; ret && (j = min (k,LOCAL->buflen)); k -= j){
 	  read (LOCAL->fd,LOCAL->buf,j);
 	  ret = write (fd,LOCAL->buf,j) >= 0;
@@ -1641,7 +1641,7 @@ unsigned long mbx_hdrpos (MAILSTREAM *stream,unsigned long msgno,
     elt->private.special.text.size;
   if (hdr) *hdr = NIL;		/* assume no header returned */
 				/* is header size known? */ 
-  if (*size = elt->private.msg.header.text.size) return ret;
+  if ((*size = elt->private.msg.header.text.size) != 0L) return ret;
 				/* paranoia check */
   if (LOCAL->buflen < (HDRBUFLEN + SLOP))
     fatal ("LOCAL->buf smaller than HDRBUFLEN");
@@ -1733,7 +1733,7 @@ unsigned long mbx_rewrite (MAILSTREAM *stream,unsigned long *reclaimed,
     MM_CRITICAL (stream);	/* go critical */
     for (i = 1,delta = 0,pos = ppos = HDRSIZE; i <= stream->nmsgs; ) {
 				/* note if message not at predicted location */
-      if (m = (elt = mbx_elt (stream,i,NIL))->private.special.offset - ppos) {
+      if ((m = (elt = mbx_elt (stream,i,NIL))->private.special.offset - ppos) != 0L) {
 	ppos = elt->private.special.offset;
 	*reclaimed += m;	/* note reclaimed message space */
 	delta += m;		/* and as expunge delta  */
@@ -1773,7 +1773,7 @@ unsigned long mbx_rewrite (MAILSTREAM *stream,unsigned long *reclaimed,
       }
     }
 				/* deltaed file size match position? */
-    if (m = (LOCAL->filesize -= delta) - pos) {
+    if ((m = (LOCAL->filesize -= delta) - pos) != 0L) {
       *reclaimed += m;		/* probably an fEXPUNGED msg */
       LOCAL->filesize = pos;	/* set correct size */
     }
@@ -1792,7 +1792,7 @@ unsigned long mbx_rewrite (MAILSTREAM *stream,unsigned long *reclaimed,
     (*bn) (BLOCK_NONE,NIL);
 				/* do hide-expunge when shared */
     if (flags) for (i = 1; i <= stream->nmsgs; ) {
-      if (elt = mbx_elt (stream,i,T)) {
+      if ((elt = mbx_elt (stream,i,T)) != NULL) {
 				/* make the message invisible */
 	if (elt->deleted && ((flags > 0) || elt->sequence)) {
 	  mbx_update_status (stream,elt->msgno,LONGT);

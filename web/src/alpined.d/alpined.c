@@ -450,7 +450,7 @@ char	   **sml_getmsgs(void);
 void	     sml_seen(void);
 #ifdef ENABLE_LDAP
 int	     peLdapQueryResults(Tcl_Interp *);
-int          peLdapStrlist(Tcl_Interp *, Tcl_Obj *, char **);
+int          peLdapStrlist(Tcl_Interp *, Tcl_Obj *, struct berval **);
 int          init_ldap_pname(struct pine *);
 #endif /* ENABLE_LDAP */
 char	    *strqchr(char *, int, int *, int);
@@ -10815,7 +10815,7 @@ peLoadConfig(struct pine *pine_state)
 
     peInitVars(pine_state);
 
-    if(s = peAuthException())
+    if((s = peAuthException()) != NULL)
       return(s);
     else if(ps_global->c_client_error[0])
       return(ps_global->c_client_error);
@@ -11763,7 +11763,7 @@ peDoPost(METAENV *metaenv, BODY *body, char *fcc, CONTEXT_S **fcc_cntxtp, char *
 	
 	if((recipients = (metaenv->env->to || metaenv->env->cc || metaenv->env->bcc))
 	   && call_mailer(metaenv, body, NULL, 0, NULL, NULL) < 0){
-	    if(s = peAuthException()){
+	    if((s = peAuthException()) != NULL){
 		strcpy(errp, s);
 	    }
 	    else if(ps_global->last_error[0]){
@@ -12396,7 +12396,7 @@ peMsgCollector(Tcl_Interp *interp,
 			      priority = "Lowest";
 
 			    if(priority){
-				if(pf = set_priority_header(md.metaenv, priority))
+				if((pf = set_priority_header(md.metaenv, priority)) != NULL)
 				  pf->text = &pf->textbuf;
 			    }
 			}
@@ -15209,7 +15209,8 @@ PELdapCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST ob
 		 *  {"dn" {{attrib {val, ...}}, ...}}
 		 */
 	        char *whichrec = Tcl_GetStringFromObj(objv[3], NULL);
-		char *tmpstr, *tmp, *tmp2, **vals, *a;
+		char *tmpstr, *tmp, *tmp2, *a;
+		struct berval **vals;
 		WPLDAPRES_S     *curres;
 		LDAP_CHOOSE_S   *winning_e = NULL;
 		LDAP_SERV_RES_S *trl;
@@ -15280,14 +15281,14 @@ PELdapCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST ob
 						  winning_e->info_used), -1)) != TCL_OK)
 			  return(TCL_ERROR);
 			resObj = Tcl_NewListObj(0, NULL);
-			vals = ldap_get_values(winning_e->ld, winning_e->selected_entry, a);
+			vals = ldap_get_values_len(winning_e->ld, winning_e->selected_entry, a);
 			if(vals){
 			    for(i = 0; vals[i]; i++){
 			        if(Tcl_ListObjAppendElement(interp, resObj,
-					  Tcl_NewStringObj(vals[i], -1)) != TCL_OK)
+					  Tcl_NewStringObj(vals[i]->bv_val, -1)) != TCL_OK)
 				  return(TCL_ERROR);
 			    }
-			    ldap_value_free(vals);
+			    ldap_value_free_len(vals);
 			    if(Tcl_ListObjAppendElement(interp, secObj, resObj) != TCL_OK)
 			      return(TCL_ERROR);
 			}
@@ -15517,7 +15518,7 @@ peLdapQueryResults(Tcl_Interp *interp)
 	    e != NULL;
 	    e = ldap_next_entry(trl->ld, e)){
 	    char       *dn;
-	    char      **cn, **org, **unit, **title, **mail, **sn;
+	    struct berval **cn, **org, **unit, **title, **mail, **sn;
 	    
 	    dn = NULL;
 	    cn = org = title = unit = mail = sn = NULL;
@@ -15527,15 +15528,15 @@ peLdapQueryResults(Tcl_Interp *interp)
 			     &mail, &sn);
 	    if(cn){
 	        if(Tcl_ListObjAppendElement(interp, itemObj,
-			Tcl_NewStringObj(cn[0], -1)) != TCL_OK)
+			Tcl_NewStringObj(cn[0]->bv_val, -1)) != TCL_OK)
 		    return(TCL_ERROR);
-		ldap_value_free(cn);
+		ldap_value_free_len(cn);
 	    }
 	    else if(sn){
 	        if(Tcl_ListObjAppendElement(interp, itemObj,
-		        Tcl_NewStringObj(sn[0], -1)) != TCL_OK)
+		        Tcl_NewStringObj(sn[0]->bv_val, -1)) != TCL_OK)
 		    return(TCL_ERROR);
-		ldap_value_free(sn);
+		ldap_value_free_len(sn);
 	    }
 	    else{
 		dn = ldap_get_dn(trl->ld, e);
@@ -15563,13 +15564,13 @@ peLdapQueryResults(Tcl_Interp *interp)
 	    if(Tcl_ListObjAppendElement(interp, resObj, itemObj) != TCL_OK)
 	      return(TCL_ERROR);
 	    if(title)
-	      ldap_value_free(title);
+	      ldap_value_free_len(title);
 	    if(unit)
-	      ldap_value_free(unit);
+	      ldap_value_free_len(unit);
 	    if(org)
-	      ldap_value_free(org);
+	      ldap_value_free_len(org);
 	    if(mail)
-	      ldap_value_free(mail);
+	      ldap_value_free_len(mail);
 	}
 	}
 	if(Tcl_ListObjAppendElement(interp, secObj, resObj) != TCL_OK)
@@ -15582,16 +15583,16 @@ peLdapQueryResults(Tcl_Interp *interp)
 }
 
 int
-peLdapStrlist(Tcl_Interp *interp, Tcl_Obj *itemObj, char **strl)
+peLdapStrlist(Tcl_Interp *interp, Tcl_Obj *itemObj, struct berval **strl)
 {
     Tcl_Obj *strlObj;
     int i;
 
     strlObj = Tcl_NewListObj(0, NULL);
     if(strl){
-        for(i = 0; strl[i] && strl[i][0]; i++){
+        for(i = 0; ALPINE_LDAP_usable(strl, i); i++){
 	    if(Tcl_ListObjAppendElement(interp, strlObj,
-		       Tcl_NewStringObj(strl[i], -1)) != TCL_OK)
+		       Tcl_NewStringObj(strl[i]->bv_val, -1)) != TCL_OK)
 	        return(TCL_ERROR);
 	}
     }
@@ -16265,7 +16266,7 @@ peRssFetch(Tcl_Interp *interp, char *link)
 			      so_puts(feed_so, p);
 			}
 			else{				/* in header, grok fields */
-			    if(q = strchr(p,':')){
+			    if((q = strchr(p,':')) != NULL){
 				int l = q - p;
 
 				*q++ = '\0';

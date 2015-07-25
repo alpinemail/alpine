@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 81 2015-05-17 19:13:29
+Alpine Commit 82 2015-07-24 22:13:48
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -243,6 +243,11 @@ Additions include:
        be transformed to UTF-8 for further transformation through internal
        and user defined filters for saving.
 
+  <LI> Add command line argument -smimedir, which allows to specify
+       the default path for a directory that contains the public, private, 
+       and ca directories. This is useful in case a user has a backup of 
+       old certificates that cannot be installed in the ~/.alpine-smime 
+       dir.
 </UL>
 
  

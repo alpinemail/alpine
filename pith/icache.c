@@ -261,7 +261,7 @@ fetch_ice(MAILSTREAM *stream, long unsigned int rawno)
     /*
      * any private elt data yet?
      */
-    if((*(peltp = (PINELT_S **) &mc->sparep) == NULL)){
+    if(*(peltp = (PINELT_S **) &mc->sparep) == NULL){
 	*peltp = (PINELT_S *) fs_get(sizeof(PINELT_S));
 	memset(*peltp, 0, sizeof(PINELT_S));
     }
@@ -291,7 +291,7 @@ fetch_ice_ptr(MAILSTREAM *stream, long unsigned int rawno)
     /*
      * any private elt data yet?
      */
-    if((*(peltp = (PINELT_S **) &mc->sparep) == NULL)){
+    if(*(peltp = (PINELT_S **) &mc->sparep) == NULL){
 	*peltp = (PINELT_S *) fs_get(sizeof(PINELT_S));
 	memset(*peltp, 0, sizeof(PINELT_S));
     }

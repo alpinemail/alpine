@@ -626,7 +626,7 @@ expand_addrs_for_pico(struct headerentry *headents, char ***s)
 							    SIZEOF_20KBUF));
 	    }
 
-	    abe.addr.list[cnt] = '\0';
+	    abe.addr.list[cnt] = NULL;
 	}
 	else{
 	    abe.tag = Single;
@@ -3307,7 +3307,7 @@ ab_del_abook(long int cur_line, int command_line, char **err)
 	     * Init_abook(pab, TotallyClosed) via rd_close_remdata is
 	     * going to pine_mail_close it.
 	     */
-	    if(pab->type && REMOTE_VIA_IMAP
+	    if(pab->type & REMOTE_VIA_IMAP
 	       && pab->address_book
 	       && pab->address_book->type == Imap
 	       && pab->address_book->rd
@@ -4885,7 +4885,7 @@ prepare_abe_for_vcard(struct pine *ps, AdrBk_Entry *abe, int expand_nicks)
 	    fs_give((void **)&bufp);
 	}
 
-	vinfo->email[cnt] = '\0';
+	vinfo->email[cnt] = NULL;
     }
     else{ /* don't expand or qualify */
 	if(abe->tag == Single){
@@ -4893,7 +4893,7 @@ prepare_abe_for_vcard(struct pine *ps, AdrBk_Entry *abe, int expand_nicks)
 	       (abe->addr.addr && abe->addr.addr[0]) ? abe->addr.addr : "";
 	    vinfo->email = (char **)fs_get((1+1) * sizeof(char *));
 	    vinfo->email[0] = cpystr(astring);
-	    vinfo->email[1] = '\0';
+	    vinfo->email[1] = NULL;
 	}
 	else{
 	    char **ll;
@@ -4905,7 +4905,7 @@ prepare_abe_for_vcard(struct pine *ps, AdrBk_Entry *abe, int expand_nicks)
 	    for(cnt = 0, ll = abe->addr.list; ll && *ll; ll++)
 	      vinfo->email[cnt++] = cpystr(*ll);
 
-	    vinfo->email[cnt] = '\0';
+	    vinfo->email[cnt] = NULL;
 	}
     }
 
@@ -6971,12 +6971,12 @@ view_ldap_entry(struct pine *ps, LDAP_CHOOSE_S *winning_e)
 void
 compose_to_ldap_entry(struct pine *ps, LDAP_CHOOSE_S *e, int allow_role)
 {
-    char  **elecmail = NULL,
+    struct berval  **elecmail = NULL,
 	  **mail = NULL,
 	  **cn = NULL,
 	  **sn = NULL,
-	  **givenname = NULL,
-	  **ll;
+	  **givenname = NULL;
+    int num;
     size_t  len = 0;
 
     dprint((9, "- compose_to_ldap_entry -\n"));
@@ -6991,23 +6991,23 @@ compose_to_ldap_entry(struct pine *ps, LDAP_CHOOSE_S *e, int allow_role)
 
 	    if(strcmp(a, e->info_used->mailattr) == 0){
 		if(!mail)
-		  mail = ldap_get_values(e->ld, e->selected_entry, a);
+		  mail = ldap_get_values_len(e->ld, e->selected_entry, a);
 	    }
 	    else if(strcmp(a, "electronicmail") == 0){
 		if(!elecmail)
-		  elecmail = ldap_get_values(e->ld, e->selected_entry, a);
+		  elecmail = ldap_get_values_len(e->ld, e->selected_entry, a);
 	    }
 	    else if(strcmp(a, e->info_used->cnattr) == 0){
 		if(!cn)
-		  cn = ldap_get_values(e->ld, e->selected_entry, a);
+		  cn = ldap_get_values_len(e->ld, e->selected_entry, a);
 	    }
 	    else if(strcmp(a, e->info_used->gnattr) == 0){
 		if(!givenname)
-		  givenname = ldap_get_values(e->ld, e->selected_entry, a);
+		  givenname = ldap_get_values_len(e->ld, e->selected_entry, a);
 	    }
 	    else if(strcmp(a, e->info_used->snattr) == 0){
 		if(!sn)
-		  sn = ldap_get_values(e->ld, e->selected_entry, a);
+		  sn = ldap_get_values_len(e->ld, e->selected_entry, a);
 	    }
 
 	    our_ldap_memfree(a);
@@ -7015,16 +7015,16 @@ compose_to_ldap_entry(struct pine *ps, LDAP_CHOOSE_S *e, int allow_role)
     }
 
     if(elecmail){
-	if(elecmail[0] && elecmail[0][0] && !mail)
+	if(ALPINE_LDAP_can_use(elecmail) && !mail)
 	  mail = elecmail;
 	else
-	  ldap_value_free(elecmail);
+	  ldap_value_free_len(elecmail);
 
 	elecmail = NULL;
     }
 
-    for(ll = mail; ll && *ll; ll++)
-      len += strlen(*ll) + 1;
+    for(num = 0; ALPINE_LDAP_usable(mail, num); num++)
+      len += strlen(mail[num]->bv_val) + 1;
     
     if(len){
 	char        *p, *address, *fn = NULL;
@@ -7033,11 +7033,11 @@ compose_to_ldap_entry(struct pine *ps, LDAP_CHOOSE_S *e, int allow_role)
 
 	address = (char *)fs_get(len * sizeof(char));
 	p = address;
-	ll = mail;
-	while(*ll){
-	    sstrncpy(&p, *ll, len-(p-address));
-	    ll++;
-	    if(*ll)
+	num = 0;
+	while(ALPINE_LDAP_usable(mail, num)){
+	    sstrncpy(&p, mail[num]->bv_val, len-(p-address));
+	    num++;
+	    if(mail[num])
 	      sstrncpy(&p, ",", len-(p-address));
 	}
 
@@ -7047,21 +7047,20 @@ compose_to_ldap_entry(struct pine *ps, LDAP_CHOOSE_S *e, int allow_role)
 	 * If we have a fullname and there is only a single address and
 	 * the address doesn't seem to have a fullname with it, add it.
 	 */
-	if(mail && mail[0] && mail[0][0] && !mail[1]){
-	    if(cn && cn[0] && cn[0][0])
-	      fn = cpystr(cn[0]);
-	    else if(sn && sn[0] && sn[0][0] &&
-	            givenname && givenname[0] && givenname[0][0]){
+	if(ALPINE_LDAP_can_use(mail) && !mail[1]){
+	    if(ALPINE_LDAP_can_use(cn))
+	      fn = cpystr(cn[0]->bv_val);
+	    else if(ALPINE_LDAP_can_use(sn) && ALPINE_LDAP_can_use(givenname)){
 		size_t l;
 
-		l = strlen(givenname[0]) + strlen(sn[0]) + 1;
+		l = strlen(givenname[0]->bv_val) + strlen(sn[0]->bv_val) + 1;
 		fn = (char *) fs_get((l+1) * sizeof(char));
-		snprintf(fn, l+1, "%s %s", givenname[0], sn[0]);
+		snprintf(fn, l+1, "%s %s", givenname[0]->bv_val, sn[0]->bv_val);
 		fn[l] = '\0';
 	    }
 	}
 
-	if(mail && mail[0] && mail[0][0] && !mail[1] && fn){
+	if(ALPINE_LDAP_can_use(mail) && !mail[1] && fn){
 	    ADDRESS *adrlist = NULL;
 	    char    *tmp_a_string;
 
@@ -7117,13 +7116,13 @@ compose_to_ldap_entry(struct pine *ps, LDAP_CHOOSE_S *e, int allow_role)
       q_status_message(SM_ORDER, 0, 4, _("No address to compose to"));
 
     if(mail)
-      ldap_value_free(mail);
+      ldap_value_free_len(mail);
     if(cn)
-      ldap_value_free(cn);
+      ldap_value_free_len(cn);
     if(sn)
-      ldap_value_free(sn);
+      ldap_value_free_len(sn);
     if(givenname)
-      ldap_value_free(givenname);
+      ldap_value_free_len(givenname);
 }
 
 
@@ -7163,7 +7162,7 @@ prep_ldap_for_viewing(struct pine *ps, LDAP_CHOOSE_S *winning_e, SourceType srct
 #define INDENTHERE (22)
     char        obuf[W+10];
     char        hdr[6*INDENTHERE+1], hdr2[6*INDENTHERE+1];
-    char      **cn = NULL;
+    struct berval **cn = NULL;
     int         indent = INDENTHERE;
 
     if(!(store = so_get(srctype, NULL, EDIT_ACCESS)))
@@ -7202,14 +7201,14 @@ prep_ldap_for_viewing(struct pine *ps, LDAP_CHOOSE_S *winning_e, SourceType srct
 	a = ldap_next_attribute(winning_e->ld, winning_e->selected_entry, ber)){
 
 	if(a && *a){
-	    char **vals;
+	    struct berval **vals;
 	    char  *fn = NULL;
 
-	    vals = ldap_get_values(winning_e->ld, winning_e->selected_entry, a);
+	    vals = ldap_get_values_len(winning_e->ld, winning_e->selected_entry, a);
 
 	    /* save this for mailto */
 	    if(handlesp && !cn && !strcmp(a, winning_e->info_used->cnattr))
-	      cn = ldap_get_values(winning_e->ld, winning_e->selected_entry, a);
+	      cn = ldap_get_values_len(winning_e->ld, winning_e->selected_entry, a);
 
 	    if(vals){
 		int do_mailto;
@@ -7220,7 +7219,7 @@ prep_ldap_for_viewing(struct pine *ps, LDAP_CHOOSE_S *winning_e, SourceType srct
 		utf8_snprintf(hdr, sizeof(hdr), "%-*.*w: ", indent-2,indent-2,
 			ldap_translate(a, winning_e->info_used));
 		hdr[sizeof(hdr)-1] = '\0';
-		for(i = 0; vals[i] != NULL; i++){
+		for(i = 0; ALPINE_LDAP_usable(vals, i); i++){
 		    if(do_mailto){
 			ADDRESS  *ad = NULL;
 			HANDLE_S *h;
@@ -7229,9 +7228,9 @@ prep_ldap_for_viewing(struct pine *ps, LDAP_CHOOSE_S *winning_e, SourceType srct
 			char     *addr, *new_addr, *enc_addr;
 			char     *path = NULL;
 
-			addr = cpystr(vals[i]);
-			if(cn && cn[0] && cn[0][0])
-			  fn = cpystr(cn[0]);
+			addr = cpystr(vals[i]->bv_val);
+			if(ALPINE_LDAP_can_use(cn))
+			  fn = cpystr(cn[0]->bv_val);
 
 			if(fn){
 			    tmp_a_string = cpystr(addr);
@@ -7327,7 +7326,7 @@ prep_ldap_for_viewing(struct pine *ps, LDAP_CHOOSE_S *winning_e, SourceType srct
 		    }
 		}
 		
-		ldap_value_free(vals);
+		ldap_value_free_len(vals);
 	    }
 	    else{
 		utf8_snprintf(obuf, sizeof(obuf), "%-*.*w\n", indent-1,indent-1,
@@ -7341,7 +7340,7 @@ prep_ldap_for_viewing(struct pine *ps, LDAP_CHOOSE_S *winning_e, SourceType srct
     }
 
     if(cn)
-      ldap_value_free(cn);
+      ldap_value_free_len(cn);
 
     return(store);
 }

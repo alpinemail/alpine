@@ -269,7 +269,7 @@ long ssearch (unsigned char *base,long basec,unsigned char *pat,long patc)
     for (i = 0; i < patc; i++) mask[pat[i]] = T;
 				/* Boyer-Moore type search */
     for (i = --patc, c = pat[i]; i < basec; i += (mask[c] ? 1 : (j + 1)))
-      for (j = patc,c = base[k = i]; (c == pat[j]); j--,c = base[--k])
+      for (j = patc,c = base[k = i]; c == pat[j]; j--,c = base[--k])
 	if (!j) return T;	/* found a match! */
   }
   return NIL;			/* pattern not found */
@@ -311,7 +311,7 @@ void hash_reset (HASHTAB *hashtab)
   size_t i;
   HASHENT *ent,*nxt;
 				/* free each hash entry */
-  for (i = 0; i < hashtab->size; i++) if (ent = hashtab->table[i])
+  for (i = 0; i < hashtab->size; i++) if ((ent = hashtab->table[i]) != NULL)
     for (hashtab->table[i] = NIL; ent; ent = nxt) {
       nxt = ent->next;		/* get successor */
       fs_give ((void **) &ent);	/* flush this entry */
@@ -328,7 +328,7 @@ unsigned long hash_index (HASHTAB *hashtab,char *key)
 {
   unsigned long i,ret;
 				/* polynomial of letters of the word */
-  for (ret = 0; i = (unsigned int) *key++; ret += i) ret *= HASHMULT;
+  for (ret = 0; (i = (unsigned int) *key++) != 0L; ret += i) ret *= HASHMULT;
   return ret % (unsigned long) hashtab->size;
 }
 
@@ -447,7 +447,7 @@ int compare_string (unsigned char *s1,unsigned char *s2)
   int i;
   if (!s1) return s2 ? -1 : 0;	/* empty string cases */
   else if (!s2) return 1;
-  for (; *s1 && *s2; s1++,s2++) if (i = (compare_ulong (*s1,*s2))) return i;
+  for (; *s1 && *s2; s1++,s2++) if ((i = (compare_ulong (*s1,*s2))) != 0) return i;
   if (*s1) return 1;		/* first string is longer */
   return *s2 ? -1 : 0;		/* second string longer : strings identical */
 }
@@ -466,7 +466,7 @@ int compare_cstring (unsigned char *s1,unsigned char *s2)
   int i;
   if (!s1) return s2 ? -1 : 0;	/* empty string cases */
   else if (!s2) return 1;
-  for (; *s1 && *s2; s1++,s2++) if (i = (compare_uchar (*s1,*s2))) return i;
+  for (; *s1 && *s2; s1++,s2++) if ((i = (compare_uchar (*s1,*s2))) != 0) return i;
   if (*s1) return 1;		/* first string is longer */
   return *s2 ? -1 : 0;		/* second string longer : strings identical */
 }
@@ -486,7 +486,7 @@ int compare_csizedtext (unsigned char *s1,SIZEDTEXT *s2)
   if (!s1) return s2 ? -1 : 0;	/* null string cases */
   else if (!s2) return 1;
   for (s = (char *) s2->data,j = s2->size; *s1 && j; ++s1,++s,--j)
-    if (i = (compare_uchar (*s1,*s))) return i;
+    if ((i = (compare_uchar (*s1,*s))) != 0) return i;
   if (*s1) return 1;		/* first string is longer */
   return j ? -1 : 0;		/* second string longer : strings identical */
 }

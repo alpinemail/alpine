@@ -61,7 +61,7 @@ FILE *netmsg_slurp (NETSTREAM *stream,unsigned long *size,unsigned long *hsiz)
   FILE *f = tmpfile ();
   if (!f) {
     sprintf (tmp,".%lx.%lx",(unsigned long) time (0),(unsigned long)getpid ());
-    if (f = fopen (tmp,"wb+")) unlink (tmp);
+    if ((f = fopen (tmp,"wb+")) != NULL) unlink (tmp);
     else {
       sprintf (tmp,"Unable to create scratch file: %.80s",strerror (errno));
       MM_LOG (tmp,ERROR);
@@ -70,7 +70,7 @@ FILE *netmsg_slurp (NETSTREAM *stream,unsigned long *size,unsigned long *hsiz)
   }
   *size = 0;			/* initially emtpy */
   if (hsiz) *hsiz = 0;
-  while (s = net_getline (stream)) {
+  while ((s = net_getline (stream)) != NULL) {
     if (*s == '.') {		/* possible end of text? */
       if (s[1]) t = s + 1;	/* pointer to true start of line */
       else {

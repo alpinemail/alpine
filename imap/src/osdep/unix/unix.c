@@ -415,7 +415,7 @@ long unix_rename (MAILSTREAM *stream,char *old,char *newname)
     else {
       if (newname) {		/* want rename? */
 				/* found superior to destination name? */
-	if (s = strrchr (s,'/')) {
+	if ((s = strrchr (s,'/')) != NULL) {
 	  c = *++s;		/* remember first character of inferior */
 	  *s = '\0';		/* tie off to get just superior */
 				/* name doesn't exist, create it */
@@ -842,9 +842,9 @@ long unix_expunge (MAILSTREAM *stream,char *sequence,long options)
   DOTLOCK lock;
   char *msg = NIL;
 				/* parse and lock mailbox */
-  if (ret = (sequence ? ((options & EX_UID) ?
+  if ((ret = (sequence ? ((options & EX_UID) ?
 			 mail_uid_sequence (stream,sequence) :
-			 mail_sequence (stream,sequence)) : LONGT) &&
+			 mail_sequence (stream,sequence)) : LONGT) != 0L) &&
       LOCAL && (LOCAL->ld >= 0) && !stream->lock &&
       unix_parse (stream,&lock,LOCK_EX)) {
 				/* check expunged messages if not dirty */
@@ -1254,10 +1254,10 @@ int unix_append_msgs (MAILSTREAM *stream,FILE *sf,FILE *df,SEARCHSET *set)
       if (i < (j = strlen (tmp))) fatal ("unix_append_msgs overrun");
       i -= j;			/* number of bytes left */
 				/* squish out CRs (note also copies NUL) */
-      for (x = tmp; x = strchr (x,'\r'); --j) memmove (x,x+1,j-(x-tmp));
+      for (x = tmp; (x = strchr (x,'\r')) != NULL; --j) memmove (x,x+1,j-(x-tmp));
       if (!j) continue;		/* do nothing if line emptied */
 				/* start of line? */
-      if ((c == '\n')) switch (tmp[0]) {
+      if (c == '\n') switch (tmp[0]) {
       case 'F':			/* possible "From " (case counts here) */
 	if ((j > 4) && (tmp[0] == 'F') && (tmp[1] == 'r') && (tmp[2] == 'o') &&
 	    (tmp[3] == 'm') && (tmp[4] == ' ')) {
@@ -1480,7 +1480,7 @@ int unix_parse (MAILSTREAM *stream,DOTLOCK *lock,int op)
   }
 
 				/* new data? */
-  else if (i = sbuf.st_size - LOCAL->filesize) {
+  else if ((i = sbuf.st_size - LOCAL->filesize) != 0L) {
     d.fd = LOCAL->fd;		/* yes, set up file descriptor */
     d.pos = LOCAL->filesize;	/* get to that position in the file */
     d.chunk = LOCAL->buf;	/* initial buffer chunk */
@@ -1767,7 +1767,7 @@ int unix_parse (MAILSTREAM *stream,DOTLOCK *lock,int op)
 	      char err[MAILTMPLEN];
 	      sprintf (err,"Discarding bogus continuation in msg %lu: %.80s",
 		      elt->msgno,(char *) s);
-	      if (u = strpbrk (err,"\r\n")) *u = '\0';
+	      if ((u = strpbrk (err,"\r\n")) != NULL) *u = '\0';
 	      MM_LOG (err,WARN);
 	      break;		/* different case or something */
 	    }
@@ -2012,7 +2012,7 @@ unsigned long unix_xstatus (MAILSTREAM *stream,char *status,MESSAGECACHE *elt,
     while (n /= 10);
 				/* pop UID last digits from stack */
     while (t > stack) *s++ = *--t;
-    for (n = 0; n < NUSERFLAGS; ++n) if (t = stream->user_flags[n])
+    for (n = 0; n < NUSERFLAGS; ++n) if ((t = stream->user_flags[n]) != NULL)
       for (*s++ = ' '; *t; *s++ = *t++);
     *s++ = '\n';
     pad += 30;			/* increased padding if have IMAPbase */
@@ -2034,7 +2034,7 @@ unsigned long unix_xstatus (MAILSTREAM *stream,char *status,MESSAGECACHE *elt,
   if (sticky) {			/* only do this if UIDs sticky */
     *s++ = 'X'; *s++ = '-'; *s++ = 'K'; *s++ = 'e'; *s++ = 'y'; *s++ = 'w';
     *s++ = 'o'; *s++ = 'r'; *s++ = 'd'; *s++ = 's'; *s++ = ':';
-    if (n = elt->user_flags) do {
+    if ((n = elt->user_flags) != 0L) do {
       *s++ = ' ';
       for (t = stream->user_flags[find_rightmost_bit (&n)]; *t; *s++ = *t++);
     } while (n);
@@ -2098,7 +2098,7 @@ long unix_rewrite (MAILSTREAM *stream,unsigned long *nexp,DOTLOCK *lock,
     size = unix_pseudo (stream,LOCAL->buf);
   }
 				/* extend the file as necessary */
-  if (ret = unix_extend (stream,size)) {
+  if ((ret = unix_extend (stream,size)) != 0L) {
     /* Set up buffered I/O file structure
      * curpos	current position being written through buffering
      * filepos	current position being written physically to the disk
@@ -2308,7 +2308,7 @@ void unix_write (UNIXFILE *f,char *buf,unsigned long size)
   if (buf) {			/* doing buffered write? */
     i = f->bufpos - f->buf;	/* yes, get size of current buffer data */
 				/* yes, have space in current buffer chunk? */
-    if (j = i ? ((f->buflen - i) % OVERFLOWBUFLEN) : f->buflen) {
+    if ((j = i ? ((f->buflen - i) % OVERFLOWBUFLEN) : f->buflen) != 0L) {
 				/* yes, fill up buffer as much as we can */
       memcpy (f->bufpos,buf,k = min (j,size));
       f->bufpos += k;		/* new buffer position */
@@ -2324,7 +2324,7 @@ void unix_write (UNIXFILE *f,char *buf,unsigned long size)
      * chunks that will fit in unprotected space.
      */
 				/* any unprotected space we can write to? */
-    if (j = min (i,f->protect - f->filepos)) {
+    if ((j = min (i,f->protect - f->filepos)) != 0L) {
 				/* yes, filepos not at chunk boundary? */
       if ((k = f->filepos % OVERFLOWBUFLEN) && ((k = OVERFLOWBUFLEN - k) < j))
 	j -= k;			/* yes, and can write out partial chunk */

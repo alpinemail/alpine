@@ -239,7 +239,7 @@ long mx_dirfmttest (char *name)
   int c;
 				/* success if index name or all-numberic */
   if (strcmp (name,MXINDEXNAME+1))
-    while (c = *name++) if (!isdigit (c)) return NIL;
+    while ((c = *name++) != '\0') if (!isdigit (c)) return NIL;
   return LONGT;
 }
 
@@ -286,7 +286,7 @@ long mx_scan_contents (char *name,char *contents,unsigned long csiz,
       fs_give ((void **) &names[i]);
     }
 				/* free directory list */
-  if (a = (void *) names) fs_give ((void **) &a);
+  if ((a = (void *) names) != NULL) fs_give ((void **) &a);
   return ret;
 }
 
@@ -392,10 +392,10 @@ long mx_delete (MAILSTREAM *stream,char *mailbox)
 	     mailbox,strerror (errno));
   else {			/* get directory name */
     *(s = strrchr (tmp,'/')) = '\0';
-    if (dirp = opendir (tmp)) {	/* open directory */
+    if ((dirp = opendir (tmp)) != NULL) {	/* open directory */
       *s++ = '/';		/* restore delimiter */
 				/* massacre messages */
-      while (d = readdir (dirp)) if (mx_select (d)) {
+      while ((d = readdir (dirp)) != NULL) if (mx_select (d)) {
 	strcpy (s,d->d_name);	/* make path */
 	unlink (tmp);		/* sayonara */
       }
@@ -438,7 +438,7 @@ long mx_rename (MAILSTREAM *stream,char *old,char *newname)
 				/* easy if not INBOX */
     if (compare_cstring (old,"INBOX")) {
 				/* found superior to destination name? */
-      if (s = strrchr (mx_file (tmp1,newname),'/')) {
+      if ((s = strrchr (mx_file (tmp1,newname),'/')) != NULL) {
 	c = *++s;	    /* remember first character of inferior */
 	*s = '\0';		/* tie off to get just superior */
 				/* name doesn't exist, create it */
@@ -466,7 +466,7 @@ long mx_rename (MAILSTREAM *stream,char *old,char *newname)
 	fs_give ((void **) &names[i]);
       }
 				/* free directory list */
-      if (a = (void *) names) fs_give ((void **) &a);
+      if ((a = (void *) names) != NULL) fs_give ((void **) &a);
       if (lasterror || mx_rename_work (tmp,srcl,tmp1,dstl,MXINDEXNAME+1))
 	errno = lasterror;
       else return mx_create (NIL,"INBOX");
@@ -749,7 +749,7 @@ long mx_ping (MAILSTREAM *stream)
       fs_give ((void **) &names[i]);
     }
 				/* free directory */
-    if (s = (void *) names) fs_give ((void **) &s);
+    if ((s = (void *) names) != NULL) fs_give ((void **) &s);
   }
   stream->nmsgs = nmsgs;	/* don't upset mail_uid() */
 
@@ -801,7 +801,7 @@ long mx_ping (MAILSTREAM *stream)
 	    unlink (LOCAL->buf);/* flush this file */
 	  }
 	  sprintf (tmp,"Message copy to MX mailbox failed: %.80s",
-		   s,strerror (errno));
+		   strerror (errno));
 	  MM_LOG (tmp,ERROR);
 	  r = 0;		/* stop the snarf in its tracks */
 	}
@@ -844,9 +844,9 @@ long mx_expunge (MAILSTREAM *stream,char *sequence,long options)
   unsigned long i = 1;
   unsigned long n = 0;
   unsigned long recent = stream->recent;
-  if (ret = (sequence ? ((options & EX_UID) ?
+  if ((ret = (sequence ? ((options & EX_UID) ?
 			 mail_uid_sequence (stream,sequence) :
-			 mail_sequence (stream,sequence)) : LONGT) &&
+			 mail_sequence (stream,sequence)) : LONGT) != 0L) &&
       mx_lockindex (stream)) {	/* lock the index */
     MM_CRITICAL (stream);	/* go critical */
     while (i <= stream->nmsgs) {/* for each message */
@@ -936,8 +936,8 @@ long mx_copy (MAILSTREAM *stream,char *sequence,char *mailbox,long options)
       SEARCHSET *dest = cu ? mail_newsearchset () : NIL;
       for (i = 1,uid = uidv = 0; ret && (i <= stream->nmsgs); i++) 
       if ((elt = mail_elt (stream,i))->sequence) {
-	if (ret = ((fd = open (mx_fast_work (stream,elt),O_RDONLY,NIL))
-		   >= 0)) {
+	if ((ret = ((fd = open (mx_fast_work (stream,elt),O_RDONLY,NIL))
+		   >= 0)) != 0L) {
 	  fstat (fd,&sbuf);	/* get size of message */
 	  d.fd = fd;		/* set up file descriptor */
 	  d.pos = 0;		/* start of file */
@@ -946,8 +946,8 @@ long mx_copy (MAILSTREAM *stream,char *sequence,char *mailbox,long options)
 	  INIT (&st,fd_string,&d,sbuf.st_size);
 				/* init flag string */
 	  tmp[0] = tmp[1] = '\0';
-	  if (j = elt->user_flags) do
-	    if (t = stream->user_flags[find_rightmost_bit (&j)])
+	  if ((j = elt->user_flags) != 0L) do
+	    if ((t = stream->user_flags[find_rightmost_bit (&j)]) != NULL)
 	      strcat (strcat (tmp," "),t);
 	  while (j);
 	  if (elt->seen) strcat (tmp," \\Seen");
@@ -957,7 +957,7 @@ long mx_copy (MAILSTREAM *stream,char *sequence,char *mailbox,long options)
 	  if (elt->draft) strcat (tmp," \\Draft");
 	  tmp[0] = '(';		/* open list */
 	  strcat (tmp,")");	/* close list */
-	  if (ret = mx_append_msg (astream,tmp,elt,&st,dest)) {
+	  if ((ret = mx_append_msg (astream,tmp,elt,&st,dest)) != 0L) {
 				/* add to source set if needed */
 	    if (source) mail_append_set (source,mail_uid (stream,i));
 				/* delete if doing a move */
@@ -1114,7 +1114,7 @@ int mx_select (struct direct *name)
 {
   char c;
   char *s = name->d_name;
-  while (c = *s++) if (!isdigit (c)) return NIL;
+  while ((c = *s++) != '\0') if (!isdigit (c)) return NIL;
   return T;
 }
 
@@ -1186,7 +1186,7 @@ long mx_lockindex (MAILSTREAM *stream)
       break;
     case 'K':			/* keyword */
 				/* find end of keyword */
-      if (s = strchr (t = ++s,'\n')) {
+      if ((s = strchr (t = ++s,'\n')) != NULL) {
 	*s++ = '\0';		/* tie off keyword */
 				/* copy keyword */
 	if ((k < NUSERFLAGS) && !stream->user_flags[k] &&

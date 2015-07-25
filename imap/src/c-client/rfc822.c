@@ -156,7 +156,7 @@ void rfc822_parse_msg_full (ENVELOPE **en,BODY **bdy,char *s,unsigned long i,
     }
 
 				/* find header item type */
-    if (t = d = strchr (tmp,':')) {
+    if ((t = d = strchr (tmp,':')) != NULL) {
       *d++ = '\0';		/* tie off header item, point at its data */
       while (*d == ' ') d++;	/* flush whitespace */
       while ((tmp < t--) && (*t == ' ')) *t = '\0';
@@ -205,7 +205,7 @@ void rfc822_parse_msg_full (ENVELOPE **en,BODY **bdy,char *s,unsigned long i,
 	if (!strcmp (tmp+1,"ROM")) rfc822_parse_adrlist (&env->from,d,host);
 	else if (!strcmp (tmp+1,"OLLOWUP-TO")) {
 	  t = env->followup_to = (char *) fs_get (1 + strlen (d));
-	  while (c = *d++) if (c != ' ') *t++ = c;
+	  while ((c = *d++) != '\0') if (c != ' ') *t++ = c;
 	  *t++ = '\0';
 	}
 	break;
@@ -219,7 +219,7 @@ void rfc822_parse_msg_full (ENVELOPE **en,BODY **bdy,char *s,unsigned long i,
 	  env->message_id = cpystr (d);
 	else if (!strcmp (tmp+1,"IME-VERSION")) {
 				/* tie off at end of phrase */
-	  if (t = rfc822_parse_phrase (d)) *t = '\0';
+	  if ((t = rfc822_parse_phrase (d)) != NULL) *t = '\0';
 	  rfc822_skipws (&d);	/* skip whitespace */
 				/* known version? */
 	  if (strcmp (d,"1.0") && strcmp (d,"RFC-XXXX"))
@@ -230,7 +230,7 @@ void rfc822_parse_msg_full (ENVELOPE **en,BODY **bdy,char *s,unsigned long i,
       case 'N':			/* possible Newsgroups: */
 	if (!env->newsgroups && !strcmp (tmp+1,"EWSGROUPS")) {
 	  t = env->newsgroups = (char *) fs_get (1 + strlen (d));
-	  while (c = *d++) if (c != ' ') *t++ = c;
+	  while ((c = *d++) != '\0') if (c != ' ') *t++ = c;
 	  *t++ = '\0';
 	}
 	break;
@@ -443,7 +443,7 @@ void rfc822_parse_content (BODY *body,STRING *bs,char *h,unsigned long depth,
     j = strlen (s1) + 2;	/* length of cookie and header */
     c = '\012';			/* initially at beginning of line */
     while (i > j) {		/* examine data */
-      if (m = GETPOS (bs)) m--;	/* get position in front of character */
+      if ((m = GETPOS (bs)) != 0L) m--;	/* get position in front of character */
       switch (c) {		/* examine each line */
       case '\015':		/* handle CRLF form */
 	if (CHR (bs) == '\012'){/* following LF? */
@@ -453,7 +453,7 @@ void rfc822_parse_content (BODY *body,STRING *bs,char *h,unsigned long depth,
 	if (!(i && i-- && ((c = SNX (bs)) == '-') && i-- &&
 	      ((c = SNX (bs)) == '-'))) break;
 				/* see if cookie matches */
-	if (k = j - 2) for (s = s1; i-- && *s++ == (c = SNX (bs)) && --k;);
+	if ((k = j - 2) != 0L) for (s = s1; i-- && *s++ == (c = SNX (bs)) && --k;);
 	if (k) break;		/* strings didn't match if non-zero */
 				/* terminating delimiter? */
 	if ((c = ((i && i--) ? (SNX (bs)) : '\012')) == '-') {
@@ -509,7 +509,7 @@ void rfc822_parse_content (BODY *body,STRING *bs,char *h,unsigned long depth,
 				/* parse non-empty body parts */
     for (part = body->nested.part; part; part = part->next) {
 				/* part non-empty (header and/or content)? */
-      if (i = part->body.mime.text.size) {
+      if ((i = part->body.mime.text.size) != 0L) {
 				/* move to that part of the body */
 	SETPOS (bs,part->body.mime.offset);
 				/* until end of header */
@@ -610,7 +610,7 @@ void rfc822_parse_content_header (BODY *body,char *name,char *s)
   STRINGLIST *stl;
   rfc822_skipws (&s);		/* skip leading comments */
 				/* flush whitespace */
-  if (t = strchr (name,' ')) *t = '\0';
+  if ((t = strchr (name,' ')) != NULL) *t = '\0';
   switch (*name) {		/* see what kind of content */
   case 'I':			/* possible Content-ID */
     if (!(strcmp (name+1,"D") || body->id)) body->id = cpystr (s);
@@ -800,7 +800,7 @@ void rfc822_parse_adrlist (ADDRESS **lst,char *string,char *host)
     }
     if (!*string) string = NIL;	/* punt if ran out of string */
 				/* got an address? */
-    else if (adr = rfc822_parse_address (lst,last,&string,host,0)) {
+    else if ((adr = rfc822_parse_address (lst,last,&string,host,0)) != NULL) {
       last = adr;		/* new tail address */
       if (string) {		/* analyze what follows */
 	rfc822_skipws (&string);
@@ -854,9 +854,9 @@ ADDRESS *rfc822_parse_address (ADDRESS **lst,ADDRESS *last,char **string,
   if (!*string) return NIL;	/* no string */
   rfc822_skipws (string);	/* skip leading WS */
   if (!**string) return NIL;	/* empty string */
-  if (adr = rfc822_parse_group (lst,last,string,defaulthost,depth)) last = adr;
+  if ((adr = rfc822_parse_group (lst,last,string,defaulthost,depth)) != NULL) last = adr;
 				/* got an address? */
-  else if (adr = rfc822_parse_mailbox (string,defaulthost)) {
+  else if ((adr = rfc822_parse_mailbox (string,defaulthost)) != NULL) {
     if (!*lst) *lst = adr;	/* yes, first time through? */
     else last->next = adr;	/* no, append to the list */
 				/* set for subsequent linking */
@@ -902,7 +902,7 @@ ADDRESS *rfc822_parse_group (ADDRESS **lst,ADDRESS *last,char **string,
   last = adr;			/* set for subsequent linking */
   *string = p;			/* continue after this point */
   while (*string && **string && (**string != ';')) {
-    if (adr = rfc822_parse_address (lst,last,string,defaulthost,depth+1)) {
+    if ((adr = rfc822_parse_address (lst,last,string,defaulthost,depth+1)) != NULL) {
       last = adr;		/* new tail address */
       if (*string) {		/* anything more? */
 	rfc822_skipws (string);	/* skip whitespace */
@@ -961,7 +961,7 @@ ADDRESS *rfc822_parse_mailbox (char **string,char *defaulthost)
   if (*(s = *string) == '<') 	/* note start, handle case of phraseless RA */
     adr = rfc822_parse_routeaddr (s,string,defaulthost);
 				/* otherwise, expect at least one word */
-  else if (end = rfc822_parse_phrase (s)) {
+  else if ((end = rfc822_parse_phrase (s)) != NULL) {
     if ((adr = rfc822_parse_routeaddr (end,string,defaulthost))) {
 				/* phrase is a personal name */
       if (adr->personal) fs_give ((void **) &adr->personal);
@@ -1090,7 +1090,7 @@ ADDRESS *rfc822_parse_addrspec (char *string,char **ret,char *defaulthost)
     string = ++t;		/* skip past the dot and any WS */
     rfc822_skipws (&string);
 				/* get next word of mailbox */
-    if (t = rfc822_parse_word (string,wspecials)) {
+    if ((t = rfc822_parse_word (string,wspecials)) != NULL) {
       end = t;			/* remember new end of mailbox */
       c = *t;			/* remember delimiter */
       *t = '\0';		/* tie off word */
@@ -1158,7 +1158,7 @@ char *rfc822_parse_domain (char *string,char **end)
     }
   }
 				/* search for end of host */
-  else if (t = rfc822_parse_word (string,wspecials)) {
+  else if ((t = rfc822_parse_word (string,wspecials)) != NULL) {
     c = *t;			/* remember delimiter */
     *t = '\0';			/* tie off host */
     ret = rfc822_cpy (string);	/* copy host */
@@ -1168,7 +1168,7 @@ char *rfc822_parse_domain (char *string,char **end)
     while (*t == '.') {		/* some cretin taking RFC 822 too seriously? */
       string = ++t;		/* skip past the dot and any WS */
       rfc822_skipws (&string);
-      if (string = rfc822_parse_domain (string,&t)) {
+      if ((string = rfc822_parse_domain (string,&t)) != NULL) {
 	*end = t;		/* remember new end of domain */
 	c = *t;			/* remember delimiter */
 	*t = '\0';		/* tie off host */
@@ -1235,7 +1235,7 @@ char *rfc822_parse_word (char *s,const char *delimiters)
 	case I2CS_94x94_JIS_OLD:/* old JIS (1978) */
 	case I2CS_94x94_JIS_NEW:/* new JIS (1983) */
 	  str = ++st;		/* skip past the shift to JIS */
-	  while (st = strchr (st,I2C_ESC))
+	  while ((st = strchr (st,I2C_ESC)) != NULL)
 	    if ((*++st == I2C_G0_94) && ((st[1] == I2CS_94_ASCII) ||
 					 (st[1] == I2CS_94_JIS_ROMAN) ||
 					 (st[1] == I2CS_94_JIS_BUGROM))) {
@@ -1434,7 +1434,7 @@ static long rfc822_output_data (RFC822BUFFER *buf,char *string,long len)
 {
   while (len) {			/* until request satified */
     long i;
-    if (i = min (len,buf->end - buf->cur)) {
+    if ((i = min (len,buf->end - buf->cur)) != 0L) {
       memcpy (buf->cur,string,i);
       buf->cur += i;		/* blat data */
       string += i;
@@ -1682,7 +1682,7 @@ long rfc822_output_cat (RFC822BUFFER *buf,char *src,const char *specials)
 				/* yes, write as quoted string*/
     if (!rfc822_output_char (buf,'"')) return NIL;
 				/* embedded quote characters? */
-    for (; s = strpbrk (src,"\\\""); src = s + 1) {
+    for (; (s = strpbrk (src,"\\\"")) != NULL; src = s + 1) {
 				/* yes, insert quoting */
       if (!(rfc822_output_data (buf,src,s-src) &&
 	    rfc822_output_char (buf,'\\') &&
@@ -1800,7 +1800,7 @@ void rfc822_encode_body_7bit (ENVELOPE *env,BODY *body)
     }
     part = body->nested.part;	/* encode body parts */
     do rfc822_encode_body_7bit (env,&part->body);
-    while (part = part->next);	/* until done */
+    while ((part = part->next) != NULL);	/* until done */
     break;
   case TYPEMESSAGE:		/* encapsulated message */
     switch (body->encoding) {
@@ -1868,7 +1868,7 @@ void rfc822_encode_body_8bit (ENVELOPE *env,BODY *body)
     }
     part = body->nested.part;	/* encode body parts */
     do rfc822_encode_body_8bit (env,&part->body);
-    while (part = part->next);	/* until done */
+    while ((part = part->next) != NULL);	/* until done */
     break;
   case TYPEMESSAGE:		/* encapsulated message */
     switch (body->encoding) {
@@ -2024,7 +2024,7 @@ void *rfc822_base64 (unsigned char *src,unsigned long srcl,unsigned long *len)
 	   */
 	sprintf (tmp,"Possible data truncation in rfc822_base64(): %.80s",
 		 (char *) src - 1);
-	if (s = strpbrk (tmp,"\015\012")) *s = NIL;
+	if ((s = strpbrk (tmp,"\015\012")) != NULL) *s = NIL;
 	mm_log (tmp,PARSE);
 	srcl = 1;		/* don't issue any more messages */
 	break;
