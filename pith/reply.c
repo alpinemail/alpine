@@ -89,8 +89,8 @@ same_subject(char *s, char *t)
    len = i < j ? j : i;
    u  = fs_get(6*len+1);
    v  = fs_get(6*len+1);
-   s1 = (char *) rfc1522_decode_to_utf8(u, 6*len + 1, s);
-   s2 = (char *) rfc1522_decode_to_utf8(v, 6*len + 1, t);
+   s1 = (char *) rfc1522_decode_to_utf8((unsigned char *) u, 6*len + 1, s);
+   s2 = (char *) rfc1522_decode_to_utf8((unsigned char *) v, 6*len + 1, t);
    mail_strip_subject(s1, &u);
    mail_strip_subject(s2, &v);
 

@@ -4690,8 +4690,8 @@ set_news_spec_current_val(int expand, int cmdline)
 	char buf[MAXPATH];
 
 	newsvar->global_val.l = (char **)fs_get(2 * sizeof(char *));
-	snprintf(buf, sizeof(buf), "{%.*s/nntp}#news.[]", sizeof(buf)-20,
-		ps_global->VAR_NNTP_SERVER[0]);
+	snprintf(buf, sizeof(buf), "{%.*s/nntp}#news.[]", MAXPATH-20,
+		ps_global->VAR_NNTP_SERVER[0]); /* MAXPATH = sizeof(buf) */
 	newsvar->global_val.l[0] = cpystr(buf);
 	newsvar->global_val.l[1] = NULL;
 	set_current_val(newsvar, expand, cmdline);
@@ -7627,9 +7627,10 @@ copy_localfile_to_remotefldr(RemType remotetype, char *local, char *remote,
 void
 panic1(char *message, char *arg)
 {
-    char buf1[1001], buf2[1001];
+#define SIZEOFBUF 1001
+    char buf1[SIZEOFBUF], buf2[SIZEOFBUF];
 
-    snprintf(buf1, sizeof(buf1), "%.*s", MAX(sizeof(buf1) - 1 - strlen(message), 0), arg);
+    snprintf(buf1, sizeof(buf1), "%.*s", MAX(SIZEOFBUF - 1 - strlen(message), 0), arg);
     snprintf(buf2, sizeof(buf2), message, buf1);
     alpine_panic(buf2);
 }

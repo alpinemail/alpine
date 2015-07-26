@@ -15,7 +15,7 @@ dnl  */
 
 AC_PREREQ([2.69])
 
-AC_REVISION([Rev:17 by chappa@washington.edu])
+AC_REVISION([Rev:18 by chappa@washington.edu])
 
 dnl Alpine Version Number is in $srcdir/VERSION
 AC_INIT([alpine],[m4_normalize(m4_include(VERSION))],[chappa@washington.edu])
@@ -1605,6 +1605,7 @@ AC_CHECK_HEADERS([errno.h \
 		  signal.h \
 		  setjmp.h \
 		  memory.h \
+		  sys/ioctl.h \
 		  sys/param.h \
 		  sys/socket.h \
 		  sys/uio.h \

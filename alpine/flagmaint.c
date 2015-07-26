@@ -265,7 +265,7 @@ try_again:
 		(*alval)[offset+1] = NULL;
 	    }
 	    else{
-		for(offset=0; (*alval)[offset]; offset++);
+		for(offset=0; (*alval)[offset]; offset++)
 		  ;
 
 		fs_resize((void **) alval, (offset + 2) * sizeof(char *));

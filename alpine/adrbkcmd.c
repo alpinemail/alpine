@@ -7290,7 +7290,7 @@ prep_ldap_for_viewing(struct pine *ps, LDAP_CHOOSE_S *winning_e, SourceType srct
 			     */
 			    snprintf(obuf, sizeof(obuf), "%c%c%c%s%s%c%c%c%c",
 				    TAG_EMBED, TAG_HANDLE,
-				    strlen(buf), buf, vals[i],
+				    strlen(buf), buf, vals[i]->bv_val,
 				    TAG_EMBED, TAG_BOLDOFF,
 				    TAG_EMBED, TAG_INVOFF);
 			    obuf[sizeof(obuf)-1] = '\0';
@@ -7300,7 +7300,7 @@ prep_ldap_for_viewing(struct pine *ps, LDAP_CHOOSE_S *winning_e, SourceType srct
 			    so_puts(store, "\n");
 			}
 			else{
-			    snprintf(obuf, sizeof(obuf), "%s", vals[i]);
+			    snprintf(obuf, sizeof(obuf), "%s", vals[i]->bv_val);
 			    obuf[sizeof(obuf)-1] = '\0';
 
 			    if((tmp = fold(obuf, width, width,
@@ -7313,7 +7313,7 @@ prep_ldap_for_viewing(struct pine *ps, LDAP_CHOOSE_S *winning_e, SourceType srct
 			}
 		    }
 		    else{
-			snprintf(obuf, sizeof(obuf), "%s", vals[i]);
+			snprintf(obuf, sizeof(obuf), "%s", vals[i]->bv_val);
 			obuf[sizeof(obuf)-1] = '\0';
 
 			if((tmp = fold(obuf, width, width,

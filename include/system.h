@@ -197,7 +197,7 @@ void *memset(void *, int, size_t);
 # include <netdb.h>
 #endif
 
-#if	GWINSZ_IN_SYS_IOCTL
+#if	defined(GWINSZ_IN_SYS_IOCTL) || defined(HAVE_SYS_IOCTL_H)
 # include <sys/ioctl.h>
 #endif
 

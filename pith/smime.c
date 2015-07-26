@@ -2841,7 +2841,7 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
 		mail_free_envelope(&env);
 
 		mail_free_body_part(&b->nested.part);
-		tmpB = mail_body_section(body, section);
+		tmpB = mail_body_section(body, (unsigned char *) section);
 		if(MIME_MSG(tmpB->type, tmpB->subtype))
 		   b->nested.part = tmpB->nested.msg->body->nested.part;
 		else

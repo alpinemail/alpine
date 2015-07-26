@@ -271,7 +271,7 @@ msgno_exclude_deleted(MAILSTREAM *stream, MSGNO_S *msgs, char *sequence)
     (void) count_flagged(stream, F_DEL);
 
     if(sequence)
-	mail_sequence (stream,sequence);
+	mail_sequence (stream,(unsigned char *) sequence);
 
     /*
      * Start with the end of the folder and work backwards so that

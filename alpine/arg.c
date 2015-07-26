@@ -1322,7 +1322,8 @@ pinerc_cmdline_opt(char *arg)
     /*--value is non-empty--*/
     if(*value == '"' && !v->is_list){
       value++;
-      for(p1 = value; *p1 && *p1 != '"'; p1++);
+      for(p1 = value; *p1 && *p1 != '"'; p1++)
+	;
         if(*p1 == '"')
           *p1 = '\0';
         else

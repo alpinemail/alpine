@@ -1407,7 +1407,7 @@ unsigned char *folder_name_decoded(unsigned char *mailbox)
 {
   unsigned char *s;
   s = (unsigned char *) utf8_from_mutf7((unsigned char *) mailbox);
-  if (s == NULL) s = (unsigned char *) cpystr(mailbox);
+  if (s == NULL) s = (unsigned char *) cpystr((char *)mailbox);
   return s;
 }
 
@@ -1417,8 +1417,8 @@ unsigned char *folder_name_decoded(unsigned char *mailbox)
 unsigned char *folder_name_encoded(unsigned char *mailbox)
 {
   unsigned char *s;
-  s = (char *) utf8_to_mutf7(mailbox);
-  if (s == NULL) s = cpystr(mailbox);
+  if ((s = utf8_to_mutf7(mailbox)) == NULL)
+     s = (unsigned char *) cpystr((char *) mailbox);
   return s;
 }
 

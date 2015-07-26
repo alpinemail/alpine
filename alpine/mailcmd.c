@@ -5622,7 +5622,7 @@ broach_folder(int qline, int allow_list, int *notrealinbox, CONTEXT_S **context)
 	if(f2) fs_give((void **)&f2);
 
 	flags = OE_APPEND_CURRENT;
-        rc = optionally_enter(f1, qline, 0, sizeof(newfolder),
+        rc = optionally_enter((char *) f1, qline, 0, sizeof(newfolder),
 			      (char *) prompt, ekey, help, &flags);
 
 	f2 = folder_name_encoded(f1);

@@ -3276,13 +3276,13 @@ streams_died(void)
 		    folder = folder_name_decoded((unsigned char *)STREAMNAME(m));
 		    q_status_message1(SM_ORDER | SM_DING, 3, 3,
 			  _("MAIL FOLDER \"%s\" CLOSED DUE TO ACCESS ERROR"),
-			  short_str(pretty_fn(folder) ? pretty_fn(folder) : "?",
+			  short_str(pretty_fn((char *) folder) ? pretty_fn((char *) folder) : "?",
 				    tmp_20k_buf+1000, SIZEOF_20KBUF-1000, 35, FrontDots));
 		    dprint((6, "streams_died: locked: \"%s\"\n",
 			    folder));
 		    if(rv == 1){
 			snprintf(tmp_20k_buf, SIZEOF_20KBUF, _("Folder \"%s\" is Closed"), 
-			  short_str(pretty_fn(folder) ? pretty_fn(folder) : "?",
+			  short_str(pretty_fn((char *)folder) ? pretty_fn((char *)folder) : "?",
 			  tmp_20k_buf+1000, SIZEOF_20KBUF-1000, 35, FrontDots));
 			if(pith_opt_icon_text)
 			  (*pith_opt_icon_text)(tmp_20k_buf, IT_MCLOSED);
