@@ -7593,7 +7593,13 @@ url_local_ldap(char *url)
     ps_global->mangled_footer = 1;
 
 #if (LDAPAPI >= 11)
+#ifdef _WINDOWS
     if((ld = ldap_init(ldapurl->lud_host, ldapurl->lud_port)) == NULL)
+#else
+    snprintf(tmp_20k_buf, SIZEOF_20KBUF, "ldap://%s:%d", ldapurl->lud_host, ldapurl->lud_port);
+    tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+    if(ldap_initialize(&ld, tmp_20k_buf) != LDAP_SUCCESS)
+#endif
 #else
     if((ld = ldap_open(ldapurl->lud_host, ldapurl->lud_port)) == NULL)
 #endif
@@ -7618,9 +7624,16 @@ url_local_ldap(char *url)
       our_ldap_set_option(ld, LDAP_OPT_RESTART, LDAP_OPT_ON);
 
       t.tv_sec = 30; t.tv_usec = 0;
+#ifdef _WINDOWS
       ld_err = ldap_search_st(ld, ldapurl->lud_dn, ldapurl->lud_scope,
 			      ldapurl->lud_filter, ldapurl->lud_attrs,
 			      0, &t, &result);
+#else
+      ld_err = ldap_search_ext_s(ld, ldapurl->lud_dn, ldapurl->lud_scope,
+			      ldapurl->lud_filter, ldapurl->lud_attrs, 0,
+			      NULL, NULL, 
+			      &t, DEF_LDAP_SIZE, &result);
+#endif
       if(ld_err != LDAP_SUCCESS){
 	  if(we_cancel){
 	      cancel_busy_cue(-1);
@@ -7630,7 +7643,7 @@ url_local_ldap(char *url)
 	  snprintf(ebuf, sizeof(ebuf), _("LDAP search failed: %s"), ldap_err2string(ld_err));
 	  ebuf[sizeof(ebuf)-1] = '\0';
 	  q_status_message(SM_ORDER, 3, 5, ebuf);
-	  ldap_unbind(ld);
+	  ldap_unbind_ext(ld, NULL, NULL);
       }
       else if(!ps_global->intr_pending){
 	if(we_cancel){
@@ -7645,7 +7658,7 @@ url_local_ldap(char *url)
 
 	if(ldap_count_entries(ld, result) == 0){
 	  q_status_message(SM_ORDER, 3, 5, _("No matches found for url"));
-	  ldap_unbind(ld);
+	  ldap_unbind_ext(ld, NULL, NULL);
 	  if(result)
 	    ldap_msgfree(result);
 	}

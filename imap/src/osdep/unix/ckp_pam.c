@@ -104,13 +104,13 @@ struct passwd *checkpw (struct passwd *pw,char *pass,int argc,char *argv[])
   conv.appdata_ptr = &cred;
   cred.uname = name;
   cred.pass = pass;
-  if (pw = ((pam_start ((char *) mail_parameters (NIL,GET_SERVICENAME,NIL),
+  if ((pw = ((pam_start ((char *) mail_parameters (NIL,GET_SERVICENAME,NIL),
 			pw->pw_name,&conv,&hdl) == PAM_SUCCESS) &&
 	    (pam_set_item (hdl,PAM_RHOST,tcp_clientaddr ()) == PAM_SUCCESS) &&
 	    (pam_authenticate (hdl,NIL) == PAM_SUCCESS) &&
 	    (pam_acct_mgmt (hdl,NIL) == PAM_SUCCESS) &&
 	    (pam_setcred (hdl,PAM_ESTABLISH_CRED) == PAM_SUCCESS)) ?
-      getpwnam (name) : NIL) {
+      getpwnam (name) : NIL) != NULL) {
 #if 0
     /*
      * Some people have reported that this causes a SEGV in strncpy() from

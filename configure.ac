@@ -1412,7 +1412,7 @@ if test "$alpine_with_ldap" = "yes" ; then
     [
       LIBS="$LIBS -llber"
     ])
-  AC_SEARCH_LIBS(ldap_init,ldap,
+  AC_SEARCH_LIBS(ldap_initialize,ldap,
     [
       alpine_has_ldap=yes
     ],
@@ -1427,39 +1427,6 @@ if test "$alpine_with_ldap" = "yes" ; then
     AC_MSG_NOTICE([* * * Including LDAP Support])
     AC_DEFINE([ENABLE_LDAP], [], [Enable LDAP query support])
   fi
-    dnl we use deprecated functions (ldap_get_values)
-    dnl OpenLDAP 2.3.x doesn't define LDAP_DEPRECATED by default like 2.2.x
-dnl    AC_MSG_CHECKING([if we should define LDAP_DEPRECATED])
-dnl    AC_RUN_IFELSE(
-dnl	[AC_LANG_SOURCE([[
-dnl #include <stdio.h>
-dnl #include <stdlib.h>
-dnl #include <ldap.h>
-dnl int main(void) {
-dnl 
-dnl 	if (LDAP_VENDOR_VERSION >= 20300)
-dnl 		exit(0);
-dnl 
-dnl 	exit(2);
-dnl }
-dnl 	]])],
-dnl 		[
-dnl 		AC_MSG_RESULT(yes)
-dnl 		AC_DEFINE(LDAP_DEPRECATED, 1,
-dnl 		[Define if you use OpenLDAP 2.3.x deprecated functions])
-dnl 
-dnl 	],
-dnl 	[
-dnl 		AC_MSG_RESULT(no)
-dnl 	],
-dnl 	[
-dnl 		AC_MSG_WARN([cross compiling: not checking])
-dnl 	]
-dnl     )
-dnl 
-dnl   else
-dnl     AC_MSG_NOTICE([Cannot find LDAP functions!  Excluding LDAP support.])
-dnl   fi
 fi
 
 dnl PAM support is needed to build c-client in some linux, and hence Alpine.

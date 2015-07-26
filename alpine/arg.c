@@ -293,7 +293,7 @@ Loop: while(--ac > 0)
 			  }
 			  else{
 			      if(pine_state->smimedir)
-				fs_give((void **)&pine_state->pwdcertdir);
+				fs_give((void **)&pine_state->smimedir);
 
 			      pine_state->smimedir = cpystr(str);
 			  }

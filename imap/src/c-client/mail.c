@@ -1677,7 +1677,7 @@ char *mail_fetch_message (MAILSTREAM *stream,unsigned long msgno,
   unsigned long i,j;
   if (len) *len = 0;		/* default return size */
   if (flags & FT_UID) {		/* UID form of call */
-    if (msgno = mail_msgno (stream,msgno)) flags &= ~FT_UID;
+    if ((msgno = mail_msgno (stream,msgno)) != 0L) flags &= ~FT_UID;
     else return "";		/* must get UID/msgno map first */
   }
 				/* initialize message data identifier */

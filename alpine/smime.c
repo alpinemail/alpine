@@ -62,6 +62,7 @@ void     smime_manage_certs_init (struct pine *, CONF_S **, CONF_S **, WhichCert
 void	 display_certificate_information(struct pine *, X509 *, char *, WhichCerts, int num);
 int	 manage_certs_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags);
 int	 manage_certificate_info_tool(int, MSGNO_S *, SCROLL_S *);
+void	 smime_setup_size(char **, size_t, size_t);
 
 
 /*
@@ -1324,13 +1325,14 @@ manage_certs_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
 }
 
 void
-smime_setup_size(char **s, size_t n)
+smime_setup_size(char **s, size_t buflen, size_t n)
 {
    char *t = *s;
   *t++ = ' ';
   *t++ = '%';
   *t++ = '-';
-   sprintf(t+strlen(t), "%d.%d", n, n);
+   snprintf(t+strlen(t), buflen-3, "%zu.%zu", n, n);
+   t[strlen(t)-1] = '\0';
    t += strlen(t);
    *t++ = 's';
    *t++ = ' ';
@@ -1395,11 +1397,11 @@ void smime_manage_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line
 
       memset(u, '\0', sizeof(u));
       t = u;
-      smime_setup_size(&t, s);
-      smime_setup_size(&t, e);
-      smime_setup_size(&t, df);
-      smime_setup_size(&t, dt);
-      smime_setup_size(&t, md5);
+      smime_setup_size(&t, sizeof(u), s);
+      smime_setup_size(&t, sizeof(u) - strlen(t), e);
+      smime_setup_size(&t, sizeof(u) - strlen(t), df);
+      smime_setup_size(&t, sizeof(u) - strlen(t), dt);
+      smime_setup_size(&t, sizeof(u) - strlen(t), md5);
 
       for(cl = data, i = 0; cl; cl = cl->next)
 	 if(cl->name){

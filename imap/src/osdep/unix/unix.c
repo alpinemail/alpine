@@ -398,15 +398,16 @@ long unix_rename (MAILSTREAM *stream,char *old,char *newname)
   MM_CRITICAL (stream);		/* get the c-client lock */
   if (!dummy_file (file,old) ||
       (newname && (!((s = mailboxfile (tmp,newname)) && *s) ||
-		   ((s = strrchr (tmp,'/')) && !s[1]))))
-    sprintf (tmp,newname ?
-	     "Can't rename mailbox %.80s to %.80s: invalid name" :
-	     "Can't delete mailbox %.80s: invalid name",
+		   ((s = strrchr (tmp,'/')) && !s[1])))){
+    if(newname)
+	sprintf (tmp, "Can't rename mailbox %.80s to %.80s: invalid name",
 	     old,newname);
+    else
+	sprintf (tmp, "Can't delete mailbox %.80s: invalid name",old);
 				/* lock out other c-clients */
-  else if ((ld = lockname (lock,file,LOCK_EX|LOCK_NB,&i)) < 0)
+  } else if ((ld = lockname (lock,file,LOCK_EX|LOCK_NB,&i)) < 0)
     sprintf (tmp,"Mailbox %.80s is in use by another process",old);
-
+
   else {
     if ((fd = unix_lock (file,O_RDWR,
 			 (long) mail_parameters (NIL,GET_MBXPROTECTION,NIL),

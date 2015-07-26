@@ -412,12 +412,21 @@ osx_build_mime_type_cmd(mime_type, cmd, cmdlen, sp_hndlp)
     CFStringRef str_ref = NULL, ret_str_ref = NULL;
     CFURLRef url_ref = NULL;
 
+#ifdef AVAILABLE_MAC_OS_X_VERSION_10_10_AND_LATER
+    if(&LSCopyDefaultApplicationURLForContentType == NULL)
+      return 0;
+#else
     if(&LSCopyApplicationForMIMEType == NULL)
       return 0;
+#endif
     if((str_ref = CFStringCreateWithCString(NULL, mime_type, 
 					kCFStringEncodingASCII)) == NULL)
       return 0;
+#ifdef AVAILABLE_MAC_OS_X_VERSION_10_10_AND_LATER
+    if(LSCopyDefaultApplicationURLForContentType(str_ref, kLSRolesAll, &url_ref)
+#else
     if(LSCopyApplicationForMIMEType(str_ref, kLSRolesAll, &url_ref)
+#endif
        != kLSApplicationNotFoundErr){
 	if((ret_str_ref = CFURLGetString(url_ref)) == NULL)
 	  return 0;
@@ -454,8 +463,13 @@ osx_build_mime_ext_cmd(mime_ext, cmd, cmdlen, sp_hndlp)
 					    ? mime_ext+1 : mime_ext,
 					kCFStringEncodingASCII)) == NULL)
       return 0;
+#ifdef AVAILABLE_MAC_OS_X_VERSION_10_10_AND_LATER
+    if(LSCopyDefaultApplicationURLForContentType(str_ref, 
+						kLSRolesAll, &url_ref) 
+#else
     if(LSGetApplicationForInfo(kLSUnknownType, kLSUnknownCreator,
 			       str_ref, kLSRolesAll, NULL, &url_ref) 
+#endif
        != kLSApplicationNotFoundErr){
 	if((ret_str_ref = CFURLGetString(url_ref)) == NULL)
 	  return 0;

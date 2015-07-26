@@ -261,11 +261,11 @@ static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags)
 				/* set default paths to CAs... */
   SSL_CTX_set_default_verify_paths (stream->context);
 				/* ...unless a non-standard path desired */
-  if (s = (char *) mail_parameters (NIL,GET_SSLCAPATH,NIL))
+  if ((s = (char *) mail_parameters (NIL,GET_SSLCAPATH,NIL)) != NULL)
     SSL_CTX_load_verify_locations (stream->context,NIL,s);
 				/* want to send client certificate? */
   if (scc && (s = (*scc) ()) && (sl = strlen (s))) {
-    if (cert = PEM_read_bio_X509 (bio = BIO_new_mem_buf (s,sl),NIL,NIL,NIL)) {
+    if ((cert = PEM_read_bio_X509 (bio = BIO_new_mem_buf (s,sl),NIL,NIL,NIL)) != NULL) {
       SSL_CTX_use_certificate (stream->context,cert);
       X509_free (cert);
     }
@@ -274,8 +274,8 @@ static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags)
 				/* want to supply private key? */
     if ((t = (sck ? (*sck) () : s)) && (tl = strlen (t))) {
       EVP_PKEY *key;
-      if (key = PEM_read_bio_PrivateKey (bio = BIO_new_mem_buf (t,tl),
-					 NIL,NIL,"")) {
+      if ((key = PEM_read_bio_PrivateKey (bio = BIO_new_mem_buf (t,tl),
+					 NIL,NIL,"")) != NULL) {
 	SSL_CTX_use_PrivateKey (stream->context,key);
 	EVP_PKEY_free (key);
       }
@@ -354,8 +354,8 @@ static char *ssl_validate_cert (X509 *cert,char *host)
 				/* and that it has a name */
   else if (!cert->name) ret = "No name in certificate";
 				/* locate CN */
-  else if (s = strstr (cert->name,"/CN=")) {
-    if (t = strchr (s += 4,'/')) *t = '\0';
+  else if ((s = strstr (cert->name,"/CN=")) != NULL) {
+    if ((t = strchr (s += 4,'/')) != NULL) *t = '\0';
 				/* host name matches pattern? */
     ret = ssl_compare_hostnames (host,s) ? NIL :
       "Server name does not match certificate";
@@ -785,7 +785,7 @@ void ssl_server_init (char *server)
       }
     }  
   }
-  while (i = ERR_get_error ())	/* SSL failure */
+  while ((i = ERR_get_error ())	!= 0L) /* SSL failure */
     syslog (LOG_ERR,"SSL error status: %.80s",ERR_error_string (i,NIL));
   ssl_close (stream);		/* punt stream */
   exit (1);			/* punt this program too */
@@ -807,7 +807,7 @@ static RSA *ssl_genkey (SSL *con,int export,int keylength)
     if (!(key = RSA_generate_key (export ? keylength : 1024,RSA_F4,NIL,NIL))) {
       syslog (LOG_ALERT,"Unable to generate temp key, host=%.80s",
 	      tcp_clienthost ());
-      while (i = ERR_get_error ())
+      while ((i = ERR_get_error ()) != 0L)
 	syslog (LOG_ALERT,"SSL error status: %s",ERR_error_string (i,NIL));
       exit (1);
     }

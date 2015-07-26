@@ -2762,7 +2762,7 @@ preserve_prompt(void)
 #elif	APPLEKEYCHAIN
 
     int rc;
-    if(rc = macos_store_pass_prompt()){
+    if((rc = macos_store_pass_prompt()) != 0){
 	if(want_to(_("Preserve password for next login"),
 		   'y', 'x', NO_HELP, WT_NORM)
 	   == 'y'){

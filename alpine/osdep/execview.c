@@ -227,7 +227,7 @@ exec_mailcap_cmd(MCAP_CMD_S *mc_cmd, char *image_file, int needsterminal)
 	    r_file_h    = &result_file;
 	}
 
-	if(syspipe = open_system_pipe(command, r_file_h, NULL, mode, 0, pipe_callback, NULL)){
+	if((syspipe = open_system_pipe(command, r_file_h, NULL, mode, 0, pipe_callback, NULL)) != NULL){
 	    close_system_pipe(&syspipe, NULL, pipe_callback);
 	    if(needsterminal == 1)
 	      q_status_message(SM_ORDER, 0, 4, "VIEWER command completed");
@@ -349,10 +349,9 @@ url_os_specified_browser(char *url)
     if(mime_os_specific_access()){
 	return(cpystr("open"));
     }
-#else
+#endif
     /* do nothing here */
     return(NULL);
-#endif
 }
 
 /*
