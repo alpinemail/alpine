@@ -1149,7 +1149,7 @@ output_message_modal(SMQ_T *mq_entry, int ding)
 		add_review_message(m->text, -1);
 		
 		if((p = strstr(m->text, "[ALERT]")) != NULL){
-		    snprintf(t, SIZEOF_20KBUF-(t-tmp_20k_buf), "%*.*s\n", indent + p - m->text, p - m->text, m->text);
+		    snprintf(t, SIZEOF_20KBUF-(t-tmp_20k_buf), "%*.*s\n", (int)(indent + p - m->text), (int) (p - m->text), m->text);
 		    tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
 		    t += strlen(t);
 
@@ -1166,7 +1166,7 @@ output_message_modal(SMQ_T *mq_entry, int ding)
 			q > p && !isspace((unsigned char)*q); q--)
 		      ;
 
-		    snprintf(t, SIZEOF_20KBUF-(t-tmp_20k_buf), "\n%*.*s", indent + q - p, q - p, p);
+		    snprintf(t, SIZEOF_20KBUF-(t-tmp_20k_buf), "\n%*.*s", (int) (indent + q - p), (int) (q - p), p);
 		    tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
 		    t += strlen(t);
 		    p = q + 1;

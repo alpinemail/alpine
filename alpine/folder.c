@@ -1165,8 +1165,8 @@ exit_collection_add(struct headerentry *he, void (*redraw_pico)(void), int allow
 	    strncpy(tmp, server, sizeof(tmp)-1);
 	    tmp[sizeof(tmp)-1] = '\0';
 	}
-	else				/* add them */
-	  snprintf(tmp, sizeof(tmp), "{%.*s}", sizeof(tmp)-3, server);
+	else	/* add them */	/* sizeof(tmp) == MAILTMPLEN */
+	  snprintf(tmp, sizeof(tmp), "{%.*s}", MAILTMPLEN-3, server);
 
 	if(mail_valid_net_parse(tmp, &mb)){ /* news? verify namespace */
 	    if(!struncmp(mb.service, "nntp", 4) && strncmp(path, "#news.", 6))
@@ -3571,14 +3571,14 @@ folder_lister_fullname(FSTATE_S *fs, char *name)
 
 	if(fs->context->dir->ref){
 	    snprintf(tmp, sizeof(tmp), "%.*s%.*s",
-		  sizeof(tmp)/2,
+		  MAILTMPLEN,	/* MAILTMPLEN == sizeof(tmp)/2 */
 		  ((fs->relative_path || (fs->context->use & CNTXT_SAVEDFLT))
 		   && (p = strstr(fs->context->context, "%s")) && !*(p+2)
 		   && !strncmp(fs->context->dir->ref, fs->context->context,
 			       p - fs->context->context))
 		    ? fs->context->dir->ref + (p - fs->context->context)
 		    : fs->context->dir->ref,
-		  sizeof(tmp)/2, name);
+		  MAILTMPLEN, name);
 	    tmp[sizeof(tmp)-1] = '\0';
 	}
 
@@ -3591,13 +3591,13 @@ folder_lister_fullname(FSTATE_S *fs, char *name)
 	   && !fs->relative_path
 	   && !(fs->context->use & CNTXT_SAVEDFLT)){
 	    /* if it's in the primary collection, the names relative */
-	    if(fs->context->dir->ref){
+	    if(fs->context->dir->ref){		/* MAILTMPLEN = sizeof(tmp)/2 */
 		if(IS_REMOTE(fs->context->context)
 		   && (p = strrindex(fs->context->context, '}'))){
 		    snprintf(tmp2, sizeof(tmp2), "%.*s%.*s",
-			  MIN(p - fs->context->context + 1, sizeof(tmp2)/2),
+			  (int) MIN(p - fs->context->context + 1, sizeof(tmp)/2),
 			  fs->context->context,
-			  sizeof(tmp2)/2, tmp);
+			  MAILTMPLEN, tmp);
 		    tmp2[sizeof(tmp2)-1] = '\0';
 		}
 		else
@@ -5056,7 +5056,7 @@ group_subscription(char *folder, size_t len, CONTEXT_S *cntxt)
 		char tmp[MAILTMPLEN];
 
 		snprintf(tmp, sizeof(tmp), "%s%.*s*", (rc == 11) ? "" : "*",
-			sizeof(tmp)-3, folder);
+			MAILTMPLEN-3, folder);
 		tmp[sizeof(tmp)-1] = '\0';
 		build_folder_list(NULL, &subscribe_cntxt, tmp, NULL, BFL_NONE);
 		subscribe_cntxt.dir->status &= ~(CNTXT_PARTFIND|CNTXT_NOFIND);
@@ -6027,7 +6027,7 @@ scan_scan_folder(MAILSTREAM *stream, CONTEXT_S *context, FOLDER_S *f, char *patt
 
 	if((p = strstr(context->context, "%s")) != NULL){
 	    if(!*(p+2)){
-		snprintf(tmp, sizeof(tmp), "%.*s", MIN(p - context->context, sizeof(tmp)-1),
+		snprintf(tmp, sizeof(tmp), "%.*s", (int) MIN(p - context->context, sizeof(tmp)-1),
 			context->context);
 		tmp[sizeof(tmp)-1] = '\0';
 		ref = tmp;

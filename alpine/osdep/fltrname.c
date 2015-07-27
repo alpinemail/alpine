@@ -39,6 +39,7 @@ static char rcsid[] = "$Id: fltrname.c 769 2007-10-24 00:15:40Z hubert@u.washing
 char *
 filter_filename(char *file, int *fatal, int strict)
 {
+#define ERRORLEN 100
 #define ALLOW_WEIRD 1
 #ifdef ALLOW_WEIRD
     static char illegal[] = {'\177', '\0'};
@@ -53,7 +54,7 @@ filter_filename(char *file, int *fatal, int strict)
                           '\\', '^', '|', '\177', '\0'};
 #endif	/* UNIX */
 #endif
-    static char error[100];
+    static char error[ERRORLEN];
     char ill_file[MAXPATH+1], *ill_char, *ptr, e2[20];
     int i;
 
@@ -91,7 +92,7 @@ filter_filename(char *file, int *fatal, int strict)
             ill_file[MIN(ptr-file,sizeof(ill_file)-1)] = '\0';
 	    snprintf(error, sizeof(error),
 		    "Character \"%s\" after \"%.*s\" not allowed in file name",
-		    ill_char, sizeof(error)-50, ill_file);
+		    ill_char, ERRORLEN-50, ill_file);
         } else {
             snprintf(error, sizeof(error),
                     "First character, \"%s\", not allowed in file name",
@@ -102,7 +103,7 @@ filter_filename(char *file, int *fatal, int strict)
     }
 
     if((i=is_writable_dir(file)) == 0 || i == 1){
-	snprintf(error, sizeof(error), "\"%.*s\" is a directory", sizeof(error)-50, file);
+	snprintf(error, sizeof(error), "\"%.*s\" is a directory", ERRORLEN-50, file);
         return(error);
     }
 

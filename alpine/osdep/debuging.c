@@ -397,13 +397,13 @@ dump_config(struct pine *ps, gf_io_t pc, int brief)
 		       (i == 3) ? vars->post_user_val.l :
 			(i == 4) ? vars->global_val.l
 				 : vars->fixed_val.l;
-		if(t && *t){
+		if(t && *t){	/* MAILTMPLEN = sizeof(tmp) */
 		    snprintf(tmp, sizeof(tmp), " %20.20s : %.*s\n", vars->name,
-			    sizeof(tmp)-26, **t ? *t : quotes);
+			    MAILTMPLEN-26, **t ? *t : quotes);
 		    gf_puts(tmp, pc);
 		    while(++t && *t){
 			snprintf(tmp, sizeof(tmp)," %20.20s : %.*s\n","",
-				sizeof(tmp)-26, **t ? *t : quotes);
+				MAILTMPLEN-26, **t ? *t : quotes);
 			gf_puts(tmp, pc);
 		    }
 		}
@@ -416,9 +416,9 @@ dump_config(struct pine *ps, gf_io_t pc, int brief)
 		       (i == 3) ? vars->post_user_val.p :
 		        (i == 4) ? vars->global_val.p
 				 : vars->fixed_val.p;
-		if(t){
+		if(t){		/* MAILTMPLEN = sizeof(tmp) */
 		    snprintf(tmp, sizeof(tmp), " %20.20s : %.*s\n", vars->name,
-			    sizeof(tmp)-26, *t ? t : quotes);
+			    MAILTMPLEN-26, *t ? t : quotes);
 		    gf_puts(tmp, pc);
 		}
 	    }

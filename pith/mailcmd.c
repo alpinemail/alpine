@@ -1570,22 +1570,22 @@ expunge_and_close(MAILSTREAM *stream, char **final_msg, long unsigned int flags)
 		    }
 		}
 
-		if(!no_close){
+		if(!no_close){			/* MAX_SCREEN_COLS+1 = sizeof(buff2) */
 		    unsigned char *fname = folder_name_decoded((unsigned char *)folder);
 		    if(stream->nmsgs){
 			snprintf(buff2, sizeof(buff2),
 			    "Clos%s folder \"%.*s\". %s%s%s message%s.",
 			    ing,
-			    sizeof(buff2)-50, pretty_fn((char *) fname), 
+			    MAX_SCREEN_COLS+1-50, pretty_fn((char *) fname), 
 			    final_msg ? "Kept" : "Keeping",
 			    (stream->nmsgs == 1L) ? " single" : " all ",
 			    (stream->nmsgs > 1L)
 			      ? comatose(stream->nmsgs) : "",
 			    plural(stream->nmsgs));
 		    }
-		    else{
+		    else{			/* MAX_SCREEN_COLS+1 = sizeof(buff2) */
 			snprintf(buff2, sizeof(buff2), "Clos%s empty folder \"%.*s\"",
-			    ing, sizeof(buff2)-50, pretty_fn((char *) fname));
+			    ing, MAX_SCREEN_COLS+1-50, pretty_fn((char *) fname));
 		    }
 		    if(fname) fs_give((void **)&fname);
 
@@ -1616,9 +1616,9 @@ expunge_and_close(MAILSTREAM *stream, char **final_msg, long unsigned int flags)
 						  buff1, sizeof(buff1))) != NULL)
 		  q_status_message(SM_ORDER,
 		      F_ON(F_AUTO_READ_MSGS,ps_global) ? 0 : 3, 5, moved_msg);
-
+						/* MAX_SCREEN_COLS+1 = sizeof(buff2) */
 		snprintf(buff2, sizeof(buff2), "Clos%s news group \"%.*s\"",
-			ing, sizeof(buff2)-50, pretty_fn(folder));
+			ing, MAX_SCREEN_COLS+1-50, pretty_fn(folder));
 
 		if(F_ON(F_NEWS_CATCHUP, ps_global)){
 		    MESSAGECACHE *mc;
@@ -1648,11 +1648,11 @@ expunge_and_close(MAILSTREAM *stream, char **final_msg, long unsigned int flags)
 		if(F_ON(F_NEWS_CROSS_DELETE, ps_global))
 		  cross_delete_crossposts(stream);
 	    }
-            else{
+            else{				/* MAX_SCREEN_COLS+1 = sizeof(buff2) */
 	      unsigned char *fname = folder_name_decoded((unsigned char *)folder);
 	      snprintf(buff2, sizeof(buff2),
 			"Clos%s read-only folder \"%.*s\". No changes to save",
-			ing, sizeof(buff2)-60, pretty_fn((char *) fname));
+			ing, MAX_SCREEN_COLS+1-60, pretty_fn((char *) fname));
 	      if(fname) fs_give((void **)&fname);
 	    }
 

@@ -304,7 +304,7 @@ newmailfifo(int is_us, char *from, char *subject, char *folder)
 	      tmtxt = "";
 
 	    snprintf(buf, sizeof(buf), "New Mail window started at %.*s\n",
-		    MIN(100, strlen(tmtxt)-1), tmtxt);
+		   (int) MIN(100, strlen(tmtxt)-1), tmtxt);
 	    (void) write(fifofd, buf, strlen(buf));
 
 	    snprintf(buf, sizeof(buf), "  %-*s%-*s%-*s\n",

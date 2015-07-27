@@ -70,8 +70,9 @@ void
 describe_mime(struct mail_bodystruct *body, char *prefix, int num,
 	      int should_show, int multalt, int flags)
 {
+#define NUMXLEN 512
     PART      *part;
-    char       numx[512], string[800], *description;
+    char       numx[NUMXLEN], string[800], *description;
     int        n, named = 0, can_display_ext;
     ATTACH_S  *a;
 
@@ -279,8 +280,8 @@ describe_mime(struct mail_bodystruct *body, char *prefix, int num,
         (a+1)->description = NULL;
         if(body->type == TYPEMESSAGE && body->encoding <= ENCBASE64
 	   && body->subtype && strucmp(body->subtype, "rfc822") == 0){
-	    body = body->nested.msg->body;
-	    snprintf(numx, sizeof(numx), "%.*s%d.", sizeof(numx)-20, prefix, num);
+	    body = body->nested.msg->body;	/* NUMXLEN = sizeof(numx) */
+	    snprintf(numx, sizeof(numx), "%.*s%d.", NUMXLEN-20, prefix, num);
 	    numx[sizeof(numx)-1] = '\0';
 	    describe_mime(body, numx, 1, should_show, 0, flags);
         }

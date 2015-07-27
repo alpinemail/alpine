@@ -2708,7 +2708,7 @@ color_edit_screen(struct pine *ps, CONF_S **cl)
     name[0] = '\0';
     if(is_general){
 	p = srchstr(vtmp->name, "-foreground-color");
-	snprintf(name, sizeof(name), "%.*s", p ? MIN(p - vtmp->name, 30) : 30, vtmp->name);
+	snprintf(name, sizeof(name), "%.*s", p ? (int) MIN(p - vtmp->name, 30) : 30, vtmp->name);
 	name[sizeof(name)-1] = '\0';
 	if(islower((unsigned char)name[0]))
 	  name[0] = toupper((unsigned char)name[0]);
@@ -2716,7 +2716,7 @@ color_edit_screen(struct pine *ps, CONF_S **cl)
     else if(is_index){
 	p = srchstr(vtmp->name, "-foreground-color");
 	snprintf(name, sizeof(name), "%.*s Symbol",
-		p ? MIN(p - vtmp->name, 30) : 30, vtmp->name);
+		p ? (int) MIN(p - vtmp->name, 30) : 30, vtmp->name);
 	name[sizeof(name)-1] = '\0';
 	if(islower((unsigned char)name[0]))
 	  name[0] = toupper((unsigned char)name[0]);

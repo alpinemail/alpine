@@ -378,8 +378,8 @@ get_mail_list(CONTEXT_S *list_cntxt, char *folder_base)
 	folder_base_len = strlen(searchname) - 1;
     }
     else
-#endif
-    snprintf(searchname, sizeof(searchname), "%.*s*", sizeof(searchname)-2, folder_base);
+#endif					/* MAXPATH + 1 = sizeof(searchmane) */
+    snprintf(searchname, sizeof(searchname), "%.*s*", MAXPATH+1-2, folder_base);
 
     build_folder_list(NULL, list_cntxt, searchname, NULL, BFL_FLDRONLY);
 

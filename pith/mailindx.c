@@ -6142,7 +6142,7 @@ from_str(IndexColType ctype, INDEXDATA_S *idata, char *str, size_t strsize, ICE_
 		    if(ctype == iFromTo &&
 		       (newsgroups = fetch_newsgroups(idata)) &&
 		       *newsgroups){
-			snprintf(fptr, strsize, "To: %-*.*s", strsize-1-4, strsize-1-4,
+			snprintf(fptr, strsize, "To: %-*.*s", (int)(strsize-1-4), (int)(strsize-1-4),
 				newsgroups);
 			break;
 		    }
@@ -6174,9 +6174,9 @@ from_str(IndexColType ctype, INDEXDATA_S *idata, char *str, size_t strsize, ICE_
 
 		len = strlen(mb);
 		if(!at || strsize-1 <= len)
-		  snprintf(fptr, strsize, "%-*.*s", strsize-1, strsize-1, mb);
+		  snprintf(fptr, strsize, "%-*.*s", (int)(strsize-1), (int)(strsize-1), mb);
 		else
-		  snprintf(fptr, strsize, "%s@%-*.*s", mb, strsize-1-len-1, strsize-1-len-1, hst);
+		  snprintf(fptr, strsize, "%s@%-*.*s", mb, (int)(strsize-1-len-1), (int)(strsize-1-len-1), hst);
 	    }
 
 	    break;

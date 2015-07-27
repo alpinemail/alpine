@@ -7630,7 +7630,7 @@ panic1(char *message, char *arg)
 #define SIZEOFBUF 1001
     char buf1[SIZEOFBUF], buf2[SIZEOFBUF];
 
-    snprintf(buf1, sizeof(buf1), "%.*s", MAX(SIZEOFBUF - 1 - strlen(message), 0), arg);
+    snprintf(buf1, sizeof(buf1), "%.*s", (int) MAX(SIZEOFBUF - 1 - strlen(message), 0), arg);
     snprintf(buf2, sizeof(buf2), message, buf1);
     alpine_panic(buf2);
 }

@@ -7290,7 +7290,7 @@ prep_ldap_for_viewing(struct pine *ps, LDAP_CHOOSE_S *winning_e, SourceType srct
 			     */
 			    snprintf(obuf, sizeof(obuf), "%c%c%c%s%s%c%c%c%c",
 				    TAG_EMBED, TAG_HANDLE,
-				    strlen(buf), buf, vals[i]->bv_val,
+				    (int) strlen(buf), buf, vals[i]->bv_val,
 				    TAG_EMBED, TAG_BOLDOFF,
 				    TAG_EMBED, TAG_INVOFF);
 			    obuf[sizeof(obuf)-1] = '\0';

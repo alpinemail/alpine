@@ -170,7 +170,7 @@ AskAttach(char *cmnt, size_t cmntlen, LMLIST **lm)
 				? "."
 				: ((gmode & MDTREE) || opertree[0])
 				    ? opertree : gethomedir(NULL),
-			      C_FILESEP, p - fn, fn);
+			      C_FILESEP, (int) (p - fn), fn);
 		}
 		else{
 		    fname = fn;
@@ -1069,8 +1069,8 @@ process_tag:					/* enclosed in []         */
 		 * whole attachment, comment or done! 
 		 */
 		if(c == ',' || c == '\0' || c == '\"'){
-		    strncpy(sz, (lblsz) ? lblsz : prettysz(attsz), sizeof(sz));
-		    sz[sizeof(sz)-1] = '\0';
+		    strncpy(sz, (lblsz) ? lblsz : prettysz(attsz), szlen);
+		    sz[szlen-1] = '\0';
 
 		    snprintf(ctmp, sizeof(ctmp), " (%s) %s", sz, (c == '\"') ? "" : "\"\"");
 		    u = utf8_to_ucs4_cpystr(ctmp);

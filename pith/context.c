@@ -190,18 +190,18 @@ context_apply(char *b, CONTEXT_S *c, char *name, size_t len)
     else if(name[0] == '#'){
 	if(IS_REMOTE(c->context)){
 	    char *p = strchr(c->context, '}');	/* name specifies namespace */
-	    snprintf(b, len, "%.*s", MIN(p - c->context + 1, len-1), c->context);
+	    snprintf(b, len, "%.*s", (int) MIN(p - c->context + 1, len-1), c->context);
 	    b[MIN(p - c->context + 1, len-1)] = '\0';
-	    snprintf(b+strlen(b), len-strlen(b), "%.*s", len-1-strlen(b), name);
+	    snprintf(b+strlen(b), len-strlen(b), "%.*s", (int)(len-1-strlen(b)), name);
 	}
 	else{
 	    strncpy(b, name, len-1);
 	}
     }
     else if(c->dir && c->dir->ref){		/* has reference string! */
-	snprintf(b, len, "%.*s", len-1, c->dir->ref);
+	snprintf(b, len, "%.*s", (int) len-1, c->dir->ref);
 	b[len-1] = '\0';
-	snprintf(b+strlen(b), len-strlen(b), "%.*s", len-1-strlen(b), name);
+	snprintf(b+strlen(b), len-strlen(b), "%.*s", (int) (len-1-strlen(b)), name);
     }
     else{					/* no ref, apply to context */
 	char *pq = NULL;
@@ -713,7 +713,7 @@ new_context(char *cntxt_string, int *prime)
 	snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%solders%s%.100s in %.*s%s",
 		(*host) ? "F" : "Local f", (*host) ? " on " : "",
 		(*host) ? host : "",
-		p ? MIN(p - rcontext, 100) : 0,
+		p ? (int) MIN(p - rcontext, 100) : 0,
 		rcontext, (p && (p - rcontext) > 0) ? "" : "home directory");
     }
 

@@ -7682,6 +7682,7 @@ int
 PEThreadCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
 {
     char *err, errbuf[256], *cmd, *op;
+    long  uidl;
     imapuid_t  uid;
 
     dprint((2, "PEThreadCmd"));
@@ -7696,14 +7697,15 @@ PEThreadCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST 
     else if(objc < 2){
 	Tcl_WrongNumArgs(interp, 1, objv, "uid cmd ?args?");
     }
-    else if(Tcl_GetLongFromObj(interp, objv[1], &uid) != TCL_OK){
+    else if(Tcl_GetLongFromObj(interp, objv[1], &uidl) != TCL_OK){
 	return(TCL_ERROR); /* conversion problem? */
     }
-    else if(!peSequenceNumber(uid)){
+    else if(!peSequenceNumber(uidl)){
 	snprintf(err = errbuf, sizeof(errbuf), "%s: UID %ld doesn't exist",
-		Tcl_GetStringFromObj(objv[0], NULL), uid);
+		Tcl_GetStringFromObj(objv[0], NULL), uidl);
     }
     else if((cmd = Tcl_GetStringFromObj(objv[2], NULL)) != NULL){
+	uid = uidl;
 	if(objc == 3){
 	    if(!strucmp(cmd,"info")){
 #define	WP_MAX_THRD_PREFIX 256
@@ -7846,6 +7848,7 @@ PEMessageCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST
 {
     char *err, errbuf[256], *cmd;
     int   i, j;
+    long uidl;
     imapuid_t  uid;
 
     dprint((5, "PEMessageCmd"));
@@ -7860,14 +7863,15 @@ PEMessageCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST
     else if(objc < 3){
 	Tcl_WrongNumArgs(interp, 0, objv, "PEMessage <uid> cmd ?args?");
     }
-    else if(Tcl_GetLongFromObj(interp, objv[1], &uid) != TCL_OK){
+    else if(Tcl_GetLongFromObj(interp, objv[1], &uidl) != TCL_OK){
 	return(TCL_ERROR); /* conversion problem? */
     }
-    else if(!peMessageNumber(uid)){
+    else if(!peMessageNumber(uidl)){
 	snprintf(err = errbuf, sizeof(errbuf), "%s: UID %ld doesn't exist",
-		Tcl_GetStringFromObj(objv[0], NULL), uid);
+		Tcl_GetStringFromObj(objv[0], NULL), uidl);
     }
     else if((cmd = Tcl_GetStringFromObj(objv[2], NULL)) != NULL){
+	uid = uidl;
 	for(i = 0; message_cmds[i].cmd; i++)
 	  if(!strcmp(cmd, message_cmds[i].cmd)){
 	      for(j = 0; j < message_cmds[i].hcount; j++)
@@ -9632,7 +9636,7 @@ peReplyHeaders(Tcl_Interp *interp, imapuid_t uid, int objc, Tcl_Obj **objv)
 	if(!err && ps_global->mail_stream->uid_validity){
 	    char *prefix = reply_quote_str(env);
 
-	    snprintf(tmp_20k_buf, SIZEOF_20KBUF, "(%d %s)(1 %lu %lu)%s",
+	    snprintf(tmp_20k_buf, SIZEOF_20KBUF, "(%lu %s)(1 %lu %lu)%s",
 		    strlen(prefix), prefix,
 		    ps_global->mail_stream->uid_validity, uid,
 		    ps_global->mail_stream->mailbox);
@@ -11832,6 +11836,7 @@ int
 PEPostponeCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
 {
     char *err = "PEPostpone: unknown request";
+    long uidl;
     imapuid_t  uid;
 
     dprint((2, "PEPostponeCmd"));
@@ -11848,7 +11853,7 @@ PEPostponeCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONS
 
 	if(s1){
 	    if(!strcmp(s1, "extract")){
-		if(Tcl_GetLongFromObj(interp, objv[2], &uid) == TCL_OK){
+		if(Tcl_GetLongFromObj(interp, objv[2], &uidl) == TCL_OK){
 		    Tcl_Obj    *objHdr = NULL, *objBod = NULL, *objAttach = NULL, *objOpts = NULL;
 		    MAILSTREAM *stream;
 		    BODY       *b;
@@ -11862,6 +11867,7 @@ PEPostponeCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONS
 		    char       *fcc = NULL, *lcc = NULL;
 		    unsigned	flags = REDRAFT_DEL | REDRAFT_PPND;
 
+		    uid = uidl;
 		    if(objc > 3){			/* optional flags */
 			int	  i, nFlags;
 			Tcl_Obj **objFlags;
@@ -12121,10 +12127,11 @@ PEPostponeCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONS
 		    return(rv);
 		}
 		else if(!strcmp(s1, "delete")){
-		    if(Tcl_GetLongFromObj(interp, objv[2], &uid) == TCL_OK){
+		    if(Tcl_GetLongFromObj(interp, objv[2], &uidl) == TCL_OK){
 			MAILSTREAM    *stream;
 			long	       rawno;
 
+			uid = uidl;
 			if(postponed_stream(&stream, ps_global->VAR_POSTPONED_FOLDER, "Postponed", 0) && stream){
 			    if((rawno = mail_msgno(stream, uid)) > 0L){
 				mail_flag(stream, long2string(rawno), "\\DELETED", ST_SET);
@@ -13325,7 +13332,7 @@ PEAddressCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST
 					    l = strlen(newaddr) + strlen(tres->str) + 2 
 						 + (tstr2 ? strlen(tstr2) : 0);
 					    newnewaddr = (char *) fs_get(l * sizeof(char));
-					    snprintf(newnewaddr, l, "%.*s%s%s", tstr1 - newaddr, 
+					    snprintf(newnewaddr, l, "%.*s%s%s", (int) (tstr1 - newaddr), 
 						    newaddr, tres->str, tstr2 ? tstr2 : "");
 					    fs_give((void **)&newaddr);
 					    newaddr = newnewaddr;

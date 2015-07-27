@@ -408,7 +408,7 @@ file_split(char *dirbuf, size_t dirbuflen, char *orig_fname, int is_for_browse)
 		  ? opertree
 		  : ((is_for_browse && browse_dir[0])
 		     ? browse_dir : gethomedir(NULL)),
-		  C_FILESEP, p - orig_fname, orig_fname);
+		  C_FILESEP, (int) (p - orig_fname), orig_fname);
     }
     else{
 	fn = orig_fname;
@@ -645,7 +645,7 @@ filewrite(int f, int n)
 				     ? "."
 				     : ((gmode & MDTREE) || opertree[0])
 					  ? opertree : gethomedir(NULL),
-				  C_FILESEP, p - fname, fname);
+				  C_FILESEP, (int) (p - fname), fname);
 		    }
 		    else{
 			fn = fname;

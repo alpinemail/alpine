@@ -221,9 +221,9 @@ news_grouper(char *given_group, char **expanded_group, char **error,
 	     */
 	    for(server = ps_global->VAR_NNTP_SERVER;
 		server && *server && **server;
-		server++){
+		server++){			/* MAILTMPLEN = sizeof(ng_ref) */
 		snprintf(ng_ref, sizeof(ng_ref), "{%.*s/nntp}#news.",
-			sizeof(ng_ref)-30, *server);
+			MAILTMPLEN-30, *server);
 		if((stream = pine_mail_open(stream, ng_ref,
 					   OP_HALFOPEN|SP_USEPOOL|SP_TEMPUSE,
 					   NULL)) != NULL)
@@ -267,10 +267,10 @@ news_grouper(char *given_group, char **expanded_group, char **error,
 	     * interface...
 	     */
 	    for(ntmp = nglist; ntmp; ntmp = ntmp->next){
-	        if(ntmp->found == NotInCache){
+	        if(ntmp->found == NotInCache){	/* MAILTMPLEN = sizeof(ng_ref) */
 		  snprintf(ng_ref, sizeof(ng_ref), "{%.*s/nntp}#news.%.*s", 
-			  sizeof(ng_ref)/2 - 10, *server,
-			  sizeof(ng_ref)/2 - 10, ntmp->groupname);
+			  MAILTMPLEN/2 - 10, *server,
+			  MAILTMPLEN/2 - 10, ntmp->groupname);
 		  ps_global->noshow_error = 1;
 		  stream = pine_mail_open(stream, ng_ref,
 					  OP_SILENT|SP_USEPOOL|SP_TEMPUSE,

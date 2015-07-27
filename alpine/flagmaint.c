@@ -126,7 +126,7 @@ try_again:
     ctmpa->valoffset = 0;
     snprintf(tmp, sizeof(tmp), "%*.*s---  %.*s",
 	    offset, offset, "",
-	    lv+lc+strlen(spacer), repeat_char(lv+lc+strlen(spacer), '-'));
+	    (int)(lv+lc+strlen(spacer)), repeat_char(lv+lc+strlen(spacer), '-'));
     tmp[sizeof(tmp)-1] = '\0';
     ctmpa->value = cpystr(tmp);
 

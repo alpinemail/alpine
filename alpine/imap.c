@@ -168,7 +168,7 @@ mm_notify(MAILSTREAM *stream, char *string, long int errflg)
 
     snprintf(ps_global->last_error, sizeof(ps_global->last_error), "%s : %.*s",
 	    (stream && stream->mailbox) ? stream->mailbox : "-no folder-",
-	    MIN(MAX_SCREEN_COLS, sizeof(ps_global->last_error)-70),
+	    (int) MIN(MAX_SCREEN_COLS, sizeof(ps_global->last_error)-70),
 	    string);
     ps_global->last_error[ps_global->ttyo ? ps_global->ttyo->screen_cols
 		    : sizeof(ps_global->last_error)-1] = '\0';

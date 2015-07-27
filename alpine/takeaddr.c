@@ -1569,7 +1569,7 @@ whereis_taline(TA_S *current)
     buf[0] = '\0';
     snprintf(tmp, sizeof(tmp), _("Word to find %s%.*s%s: "),
 	     (last[0]) ? "[" : "",
-	     sizeof(tmp)-20, (last[0]) ? last : "",
+	     MAX_SEARCH, (last[0]) ? last : "",	/* MAX_SEARCH == sizeof(tmp) - 20 */
 	     (last[0]) ? "]" : "");
     tmp[sizeof(tmp)-1] = '\0';
     help = NO_HELP;
@@ -1892,11 +1892,11 @@ update_takeaddr_screen(struct pine *ps, TA_S *current, TA_SCREEN_S *screen, Pos 
 		}
 	    }
 	    else{
-		if(screen->mode == ListMode)
+		if(screen->mode == ListMode) /* 6*MAX_SCREEN_COLS + 24 = sizeof(buf2)-6 */
 	          snprintf(buf2, sizeof(buf2), "[%c]  %.*s", ctmp->checked ? 'X' : SPACE,
-			  sizeof(buf2)-6, buf1);
+			  6*MAX_SCREEN_COLS + 24, buf1); 
 		else
-	          snprintf(buf2, sizeof(buf2), "     %.*s", sizeof(buf2)-6, buf1);
+	          snprintf(buf2, sizeof(buf2), "     %.*s", 6*MAX_SCREEN_COLS+24, buf1);
 
 		buf2[sizeof(buf2)-1] = '\0';
 	    }
@@ -2066,6 +2066,7 @@ attached_addr_handler(TA_S *current, int added)
 int
 take_without_edit(TA_S *ta_list, int num_in_list, int command_line, TA_STATE_S **tas, char *cmd)
 {
+#define OURTMPBUFLEN 200
     PerAddrBook   *pab_dst;
     SAVE_STATE_S   state;  /* For saving state of addrbooks temporarily */
     int            rc, total_to_copy;
@@ -2074,7 +2075,7 @@ take_without_edit(TA_S *ta_list, int num_in_list, int command_line, TA_STATE_S *
     int		   err = 0, need_write = 0, we_cancel = 0;
     adrbk_cntr_t   new_entry_num;
     char           warn[2][MAX_NICKNAME+1];
-    char           tmp[200];
+    char           tmp[OURTMPBUFLEN];
     TA_S          *current;
     SWOOP_S       *swoop_list = NULL, *sw;
 
@@ -2150,13 +2151,13 @@ take_without_edit(TA_S *ta_list, int num_in_list, int command_line, TA_STATE_S *
 	    else{
 		snprintf(tmp, sizeof(tmp),
 		        "Entry with nickname \"%.*s\" already exists, replace ",
-		        sizeof(tmp)-50, warn[0]);
+		        OURTMPBUFLEN-50, warn[0]);
 	    }
 	}
 	else if(how_many_dups == 2)
 	  snprintf(tmp, sizeof(tmp),
 		  "Nicknames \"%.*s\" and \"%.*s\" already exist, replace ",
-		  (sizeof(tmp)-50)/2, warn[0], (sizeof(tmp)-50)/2, warn[1]);
+		  (OURTMPBUFLEN-50)/2, warn[0], (OURTMPBUFLEN-50)/2, warn[1]);
 	else
 	  snprintf(tmp, sizeof(tmp), "%d of the nicknames already exist, replace ",
 		  how_many_dups);
@@ -2413,14 +2414,15 @@ get_out:
     ps_global->mangled_footer = 1;
 
     if(err){
-	char capcmd[50];
+#define CAPCMDLEN 50
+	char capcmd[CAPCMDLEN];
 
 	ret = -1;
 	snprintf(capcmd, sizeof(capcmd),
 		"%c%.*s",
 		islower((unsigned char)(*cmd)) ? toupper((unsigned char)*cmd)
 					       : *cmd,
-		sizeof(capcmd)-2, cmd+1);
+		CAPCMDLEN-2, cmd+1);
 	if(need_write)
 	  q_status_message1(SM_ORDER | SM_DING, 3, 4,
 			   "%.200s only partially completed", capcmd);
@@ -2433,7 +2435,7 @@ get_out:
 	snprintf(tmp, sizeof(tmp), "Saved %d %s to \"%.*s\"",
 		total_to_copy,
 		(total_to_copy > 1) ? "entries" : "entry",
-		sizeof(tmp)-30, pab_dst->abnick);
+		OURTMPBUFLEN-30, pab_dst->abnick);
 	q_status_message(SM_ORDER, 4, 4, tmp);
     }
 

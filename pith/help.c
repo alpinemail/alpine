@@ -40,7 +40,7 @@ help_name2section(char *url, int url_len)
     HelpType		newhelp = NO_HELP;
     struct help_texts *t;
 
-    snprintf(name, sizeof(name), "%.*s", MIN(url_len,sizeof(name)), url);
+    snprintf(name, sizeof(name), "%.*s", (int) MIN(url_len,sizeof(name)), url);
 
     for(t = h_texts; t->help_text != NO_HELP; t++)
       if(!strucmp(t->tag, name)){

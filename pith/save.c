@@ -1466,15 +1466,16 @@ save_ex_output_body(MAILSTREAM *stream, long int raw, char *section,
       return(save_ex_replace_body(txtp, len, body, pc));
 
     if(body->type == TYPEMULTIPART){
-	char	  *subsect, boundary[128];
+#define BOUNDARYLEN 128
+	char	  *subsect, boundary[BOUNDARYLEN];
 	int	   n, blen;
 	PART	  *part = body->nested.part;
 	PARAMETER *param;
 
 	/* Locate supplied multipart boundary */
 	for (param = body->parameter; param; param = param->next)
-	  if (!strucmp(param->attribute, "boundary")){
-	      snprintf(boundary, sizeof(boundary), "--%.*s\015\012", sizeof(boundary)-10,
+	  if (!strucmp(param->attribute, "boundary")){	/* BOUNDARYLEN == sizeof(boundary) */
+	      snprintf(boundary, sizeof(boundary), "--%.*s\015\012", BOUNDARYLEN-10,
 		      param->value);
 	      blen = strlen(boundary);
 	      break;
@@ -1516,8 +1517,8 @@ save_ex_output_body(MAILSTREAM *stream, long int raw, char *section,
 	      return(0);
 	}
 	while ((part = part->next) != NULL);	/* until done */
-
-	snprintf(boundary, sizeof(boundary), "--%.*s--\015\012", sizeof(boundary)-10,param->value);
+						/* BOUNDARYLEN = sizeof(boundary) */
+	snprintf(boundary, sizeof(boundary), "--%.*s--\015\012", BOUNDARYLEN-10,param->value);
 	*len += blen + 2;
 	return(gf_puts(boundary, pc));
     }
@@ -1618,10 +1619,10 @@ save_ex_explain_parts(struct mail_bodystruct *body, int depth, long unsigned int
 	PART *part = body->nested.part;	/* first body part */
 
 	*len = 0;
-	if(body->description && *body->description){
+	if(body->description && *body->description){	/* MAILTMPLEN = sizeof(tmp) */
 	    snprintf(tmp, sizeof(tmp), "%*.*sA %s/%.*s%.10s%.100s%.10s segment described",
 		    depth, depth, " ", body_type_names(body->type),
-		    sizeof(tmp)-300, body->subtype ? body->subtype : "Unknown",
+		    MAILTMPLEN-300, body->subtype ? body->subtype : "Unknown",
 		    name ? " (Name=\"" : "",
 		    name ? name : "",
 		    name ? "\")" : "");
@@ -1633,11 +1634,11 @@ save_ex_explain_parts(struct mail_bodystruct *body, int depth, long unsigned int
 		    (char *) rfc1522_decode_to_utf8((unsigned char *)tmp_20k_buf,
 						    SIZEOF_20KBUF, buftmp));
 	}
-	else{
+	else{						/* MAILTMPLEN = sizeof(tmp) */
 	    snprintf(tmp, sizeof(tmp), "%*.*sA %s/%.*s%.10s%.100s%.10s segment containing:",
 		    depth, depth, " ",
 		    body_type_names(body->type),
-		    sizeof(tmp)-300, body->subtype ? body->subtype : "Unknown",
+		    MAILTMPLEN-300, body->subtype ? body->subtype : "Unknown",
 		    name ? " (Name=\"" : "",
 		    name ? name : "",
 		    name ? "\")" : "");
@@ -1656,11 +1657,11 @@ save_ex_explain_parts(struct mail_bodystruct *body, int depth, long unsigned int
 	    return(0);
 	while ((part = part->next) != NULL);	/* until done */
     }
-    else{
+    else{					/* MAILTMPLEN = sizeof(tmp) */
 	snprintf(tmp, sizeof(tmp), "%*.*sA %s/%.*s%.10s%.100s%.10s segment of about %s bytes%s",
 		depth, depth, " ",
 		body_type_names(body->type), 
-		sizeof(tmp)-300, body->subtype ? body->subtype : "Unknown",
+		MAILTMPLEN-300, body->subtype ? body->subtype : "Unknown",
 		name ? " (Name=\"" : "",
 		name ? name : "",
 		name ? "\")" : "",
@@ -1671,10 +1672,10 @@ save_ex_explain_parts(struct mail_bodystruct *body, int depth, long unsigned int
 	if(!save_ex_output_line(tmp, len, pc))
 	  return(0);
 
-	if(body->description && *body->description){
+	if(body->description && *body->description){	/* MAILTMPLEN = sizeof(tmp) */
 	    snprintf(buftmp, sizeof(buftmp), "%.75s", body->description);
 	    snprintf(tmp, sizeof(tmp), "%*.*s   described as \"%.*s\"", depth, depth, " ",
-		    sizeof(tmp)-100,
+		    MAILTMPLEN-100,
 		    (char *) rfc1522_decode_to_utf8((unsigned char *)tmp_20k_buf,
 						    SIZEOF_20KBUF, buftmp));
 	    if(save_ex_output_line(tmp, &ilen, pc))

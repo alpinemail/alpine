@@ -1909,9 +1909,9 @@ mail_list_internal(MAILSTREAM *s, char *r, char *p)
        && ((s && s->mailbox && *s->mailbox == '{')
 	   || (!s && ((r && *r == '{') || (p && *p == '{'))))){
 	char tmp[2*MAILTMPLEN];
-
-	snprintf(tmp, sizeof(tmp), "%.*s%.*s", sizeof(tmp)/2-1, r ? r : "",
-		sizeof(tmp)/2-1, p);
+				/* MAILTMPLEN = sizeof(tmp)/2 */
+	snprintf(tmp, sizeof(tmp), "%.*s%.*s", MAILTMPLEN-1, r ? r : "",
+		MAILTMPLEN-1, p);
 	mail_list(s, "", tmp);
     }
     else

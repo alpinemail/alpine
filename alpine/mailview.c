@@ -849,13 +849,13 @@ scroll_handle_prompt(HANDLE_S *handle, int force)
 	if(handle->type == URL &&
 	   !struncmp(handle->h.url.path, "mailto:", 7))
 	  snprintf(prompt, sizeof(prompt), "Compose mail to \"%.*s%s\" ? ",
-		  MIN(MAX(0,sc - 25), sizeof(prompt)-50), handle->h.url.path+7,
+		  (int) MIN(MAX(0,sc - 25), sizeof(prompt)-50), handle->h.url.path+7,
 		  (strlen(handle->h.url.path+7) > MAX(0,sc-25)) ? "..." : "");
 	else
 	  snprintf(prompt, sizeof(prompt), "View selected %s %s%.*s%s ? ",
 		  (handle->type == URL) ? "URL" : "Attachment",
 		  (handle->type == URL) ? "\"" : "",
-		  MIN(MAX(0,sc-27), sizeof(prompt)-50),
+		  (int) MIN(MAX(0,sc-27), sizeof(prompt)-50),
 		  (handle->type == URL) ? handle->h.url.path : "",
 		  (handle->type == URL)
 		    ? ((strlen(handle->h.url.path) > MAX(0,sc-27))
@@ -1964,8 +1964,8 @@ url_local_nntp(char *url)
 	      
 	    if(group_len){
 	      snprintf(folder, sizeof(folder), "{%.*s/nntp}#news.%.*s",
-		      MIN((group - 1) - (url + 7), MAILTMPLEN-20), url + 7,
-		      MIN(group_len, MAILTMPLEN-20), group);
+		      (int) MIN((group - 1) - (url + 7), MAILTMPLEN-20), url + 7,
+		      (int) MIN(group_len, MAILTMPLEN-20), group);
 	      folder[sizeof(folder)-1] = '\0';
 	    }
 	    else

@@ -76,7 +76,7 @@ WPSendCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST ob
 
     if(objc == 3
        && (fname = Tcl_GetStringFromObj(objv[1], NULL))
-       && (cmd = Tcl_GetByteArrayFromObj(objv[2], &wlen))){
+       && (cmd = (char *) Tcl_GetByteArrayFromObj(objv[2], &wlen))){
 	if((s = socket(AF_UNIX, SOCK_STREAM, 0)) == -1){
 	    snprintf(errbuf = buf, sizeof(buf), "WPC: socket: %s", strerror(errno));
 	}

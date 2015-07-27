@@ -1482,7 +1482,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		      tmp[sizeof(tmp)-1] = '\0';
 		    }
 
-		    strncat(tmp, gmp->current->fname, sizeof(tmp)-strlen(tmp));
+		    strncat(tmp, gmp->current->fname, sizeof(tmp)-strlen(tmp)-1);
 		    tmp[sizeof(tmp)-1] = '\0';
 		}
 

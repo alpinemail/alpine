@@ -1058,7 +1058,9 @@ nfolder:
 			break;
 		    }
 
-		    {char *front, type[80], cnt[80], fbuf[MAX_SCREEN_COLS/2+1];
+		    {
+#define CNTLEN 80
+		     char *front, type[80], cnt[CNTLEN], fbuf[MAX_SCREEN_COLS/2+1];
 		     int rbspace, avail, need, take_back;
 
 			/*
@@ -1074,7 +1076,7 @@ nfolder:
 				    ? "Incoming folder" : "news group",
 				sizeof(type));
 			type[sizeof(type)-1] = '\0';
-			snprintf(cnt, sizeof(cnt), " (%.*s %s)", sizeof(cnt)-20,
+			snprintf(cnt, sizeof(cnt), " (%.*s %s)", CNTLEN-20,
 				recent_cnt ? long2string(recent_cnt) : "some",
 				F_ON(F_TAB_USES_UNSEEN, ps_global)
 				    ? "unseen" : "recent");
@@ -1106,16 +1108,16 @@ nfolder:
 				cnt[0] = '\0';
 			    }
 			}
-
+						/* MAX_SCREEN_COLS+1 = sizeof(prompt) */
 			snprintf(prompt, sizeof(prompt), "%.*s %.*s \"%.*s\"%.*s? ",
-				sizeof(prompt)/8, front,
-				sizeof(prompt)/8, type,
-				sizeof(prompt)/2,
+				(MAX_SCREEN_COLS+1)/8, front,
+				(MAX_SCREEN_COLS+1)/8, type,
+				(MAX_SCREEN_COLS+1)/2,
 				short_str(nextfolder, fbuf, sizeof(fbuf),
 					  strlen(nextfolder) -
 					    ((need>avail) ? (need-avail) : 0),
 					  MidDots),
-				sizeof(prompt)/8, cnt);
+				(MAX_SCREEN_COLS+1)/8, cnt);
 			prompt[sizeof(prompt)-1] = '\0';
 		    }
 
@@ -1273,9 +1275,9 @@ get_out:
 		del_count++;
 
 	    if(del_count > 0L){
-		state->mangled_footer = 1;
+		state->mangled_footer = 1;		/* MAX_SCREEN_COLS+1 = sizeof(prompt) */
 		snprintf(prompt, sizeof(prompt), "UNexclude %ld message%s in %.*s", del_count,
-			plural(del_count), sizeof(prompt)-40,
+			plural(del_count), MAX_SCREEN_COLS+1-40,
 			pretty_fn(state->cur_folder));
 		prompt[sizeof(prompt)-1] = '\0';
 		if(F_ON(F_FULL_AUTO_EXPUNGE, state)
@@ -1773,7 +1775,7 @@ go_again:
 
 		l = strlen(kw->kw)+2;
 		fp->comment = (char *) fs_get((l+1) * sizeof(char));
-		snprintf(fp->comment, l+1, "(%.*s)", strlen(kw->kw), kw->kw);
+		snprintf(fp->comment, l+1, "(%.*s)", (int) strlen(kw->kw), kw->kw);
 		fp->comment[l] = '\0';
 	    }
 
@@ -3260,9 +3262,9 @@ cmd_expunge(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap, int agg)
 	if(!MCMD_ISAGG(agg)) 
 	  del_count = count_flagged(stream, F_DEL);
 	if(del_count > 0L){
-	    state->mangled_footer = 1;
+	    state->mangled_footer = 1;		/* MAX_SCREEN_COLS+1 = sizeof(prompt) */
 	    snprintf(prompt, sizeof(prompt), "Exclude %ld message%s from %.*s", del_count,
-		    plural(del_count), sizeof(prompt)-40,
+		    plural(del_count), MAX_SCREEN_COLS+1-40,
 		    pretty_fn(state->cur_folder));
 	    prompt[sizeof(prompt)-1] = '\0';
 	    if(F_ON(F_FULL_AUTO_EXPUNGE, state)
@@ -3316,9 +3318,9 @@ cmd_expunge(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap, int agg)
     if(del_count != 0){
 	int ret;
 	unsigned char *fname = folder_name_decoded((unsigned char *)state->cur_folder);
-
+						/* MAX_SCREEN_COLS+1 = sizeof(prompt) */
 	snprintf(prompt, sizeof(prompt), "Expunge %ld message%s from %.*s", del_count,
-		plural(del_count), sizeof(prompt)-40,
+		plural(del_count), MAX_SCREEN_COLS+1-40,
 		pretty_fn((char *) fname));
 	if(fname) fs_give((void **)&fname);
 	prompt[sizeof(prompt)-1] = '\0';
@@ -3906,8 +3908,8 @@ cmd_export(struct pine *state, MSGNO_S *msgmap, int qline, int aopt)
 		lfile[0] = '\0';
 		(void) get_filename_parameter(lfile, sizeof(lfile), a->body, NULL);
 		
-		if(lfile[0] == '\0'){
-		  snprintf(lfile, sizeof(lfile), "part_%.*s", sizeof(lfile)-6,
+		if(lfile[0] == '\0'){		/* MAXPATH + 1 = sizeof(lfile) */
+		  snprintf(lfile, sizeof(lfile), "part_%.*s", MAXPATH+1-6,
 			  a->number ? a->number : "?");
 		  lfile[sizeof(lfile)-1] = '\0';
 		}
@@ -4478,7 +4480,7 @@ get_export_filename(struct pine *ps, char *filename, char *deefault,
 		     * Just building the directory name in dir2,
 		     * full_filename is overloaded.
 		     */
-		    snprintf(full_filename, len, "%.*s", MIN(fn-tmp,len-1), tmp);
+		    snprintf(full_filename, len, "%.*s", (int) MIN(fn-tmp,len-1), tmp);
 		    full_filename[len-1] = '\0';
 		    strncpy(postcolon, full_filename, sizeof(postcolon)-1);
 		    postcolon[sizeof(postcolon)-1] = '\0';
@@ -5545,9 +5547,9 @@ broach_folder(int qline, int allow_list, int *notrealinbox, CONTEXT_S **context)
 			  ? ps_global->last_unambig_folder
 			  : ((tc->last_folder[0]) ? tc->last_folder : NULL);
 
-	if(last_folder){
+	if(last_folder){		/* MAXPATH + 1 = sizeof(expanded) */
 	  unsigned char *fname = folder_name_decoded((unsigned char *)last_folder);
-	  snprintf(expanded, sizeof(expanded), " [%.*s]", sizeof(expanded)-5, 
+	  snprintf(expanded, sizeof(expanded), " [%.*s]", MAXPATH+1-5, 
 					fname ? (char *) fname : last_folder);
 	  if(fname) fs_give((void **)&fname);
 	}
@@ -5557,35 +5559,35 @@ broach_folder(int qline, int allow_list, int *notrealinbox, CONTEXT_S **context)
 	expanded[sizeof(expanded)-1] = '\0';
 
 	/* only show collection number if more than one available */
-	if(ps_global->context_list->next)
+	if(ps_global->context_list->next)	/* MAX_SCREEN_COLS+1 == sizeof(prompt) */
 	  snprintf(prompt, sizeof(prompt), "GOTO %s in <%s> %.*s%s: ",
 		    NEWS_TEST(tc) ? "news group" : "folder",
-		    tc->nickname, sizeof(prompt)-50, expanded,
+		    tc->nickname, MAX_SCREEN_COLS+1-50, expanded,
 		    *expanded ? " " : "");
-	else
-	  snprintf(prompt, sizeof(prompt), "GOTO folder %.*s%s: ", sizeof(prompt)-20, expanded,
+	else					/* MAX_SCREEN_COLS+1 == sizeof(prompt) */
+	  snprintf(prompt, sizeof(prompt), "GOTO folder %.*s%s: ", MAX_SCREEN_COLS+1-20, expanded,
 		  *expanded ? " " : "");
 
 	prompt[sizeof(prompt)-1] = '\0';
 
 	if(utf8_width(prompt) > MAXPROMPT){
-	    if(ps_global->context_list->next)
+	    if(ps_global->context_list->next)	/* MAX_SCREEN_COLS+1 == sizeof(prompt) */
 	      snprintf(prompt, sizeof(prompt), "GOTO <%s> %.*s%s: ",
-			tc->nickname, sizeof(prompt)-50, expanded,
+			tc->nickname, MAX_SCREEN_COLS+1-50, expanded,
 			*expanded ? " " : "");
-	    else
-	      snprintf(prompt, sizeof(prompt), "GOTO %.*s%s: ", sizeof(prompt)-20, expanded,
+	    else				/* MAX_SCREEN_COLS+1 == sizeof(prompt) */
+	      snprintf(prompt, sizeof(prompt), "GOTO %.*s%s: ", MAX_SCREEN_COLS+1-20, expanded,
 		      *expanded ? " " : "");
 
 	    prompt[sizeof(prompt)-1] = '\0';
 
 	    if(utf8_width(prompt) > MAXPROMPT){
-		if(ps_global->context_list->next)
+		if(ps_global->context_list->next)	/* MAX_SCREEN_COLS+1 == sizeof(prompt) */
 		  snprintf(prompt, sizeof(prompt), "<%s> %.*s%s: ",
-			    tc->nickname, sizeof(prompt)-50, expanded,
+			    tc->nickname, MAX_SCREEN_COLS+1-50, expanded,
 			    *expanded ? " " : "");
-		else
-		  snprintf(prompt, sizeof(prompt), "%.*s%s: ", sizeof(prompt)-20, expanded,
+		else				/* MAX_SCREEN_COLS+1 == sizeof(prompt) */
+		  snprintf(prompt, sizeof(prompt), "%.*s%s: ", MAX_SCREEN_COLS+1-20, expanded,
 			  *expanded ? " " : "");
 
 		prompt[sizeof(prompt)-1] = '\0';

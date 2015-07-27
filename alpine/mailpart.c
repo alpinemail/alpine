@@ -2803,7 +2803,7 @@ display_vcard_att(long int msgno, ATTACH_S *a, int flags)
 	      begins++;
 
 	    snprintf(tmp, sizeof(tmp), "  %-*.*s : ", indent - 5,
-		    MIN(p - *ll, sizeof(tmp)-5), *ll);
+		    (int) MIN(p - *ll, sizeof(tmp)-5), *ll);
 	    tmp[sizeof(tmp)-1] = '\0';
 	    so_puts(in_store, tmp);
 	    p++;

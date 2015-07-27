@@ -769,17 +769,17 @@ reply_subject(char *subject, char *buf, size_t buflen)
        && (decoded[1] == 'E' || decoded[1] == 'e')){
 
         if(decoded[2] == ':')
-	  snprintf(buf, buflen, "%.*s", buflen-1, subject);
+	  snprintf(buf, buflen, "%.*s", (int)(buflen-1), subject);
 	else if((decoded[2] == '[') && (p = strchr(decoded, ']'))){
 	    p++;
 	    while(*p && isspace((unsigned char)*p)) p++;
 	    if(p[0] == ':')
-	      snprintf(buf, buflen, "%.*s", buflen-1, subject);
+	      snprintf(buf, buflen, "%.*s", (int)(buflen-1), subject);
 	}
     }
 
     if(!buf[0])
-      snprintf(buf, buflen, "Re: %.*s", buflen-1,
+      snprintf(buf, buflen, "Re: %.*s", (int)(buflen-1),
 	      (subject && *subject) ? subject : "your mail");
 
     buf[buflen-1] = '\0';
@@ -937,14 +937,15 @@ reply_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
 	   long int msgno, char *sect_prefix, void *msgtext, char *prefix,
 	   int plustext, ACTION_S *role, int toplevel, REDRAFT_POS_S **redraft_pos)
 {
-    char     *p, *sig = NULL, *section, sect_buf[256];
+#define SECTBUFLEN 256
+    char     *p, *sig = NULL, *section, sect_buf[SECTBUFLEN];
     BODY     *body = NULL, *tmp_body = NULL;
     PART     *part;
     gf_io_t   pc;
     int       impl, template_len = 0, leave_cursor_at_top = 0, reply_raw_body = 0;
 
-    if(sect_prefix)
-      snprintf(section = sect_buf, sizeof(sect_buf), "%.*s.1", sizeof(sect_buf)-1, sect_prefix);
+    if(sect_prefix)					/* SECTBUFLEN = sizeof(sect_buf) */
+      snprintf(section = sect_buf, sizeof(sect_buf), "%.*s.1", SECTBUFLEN-1, sect_prefix);
     else
       section = "1";
 
@@ -1152,12 +1153,12 @@ reply_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
 		    if(F_ON(F_INCLUDE_HEADER, ps_global))
 		      reply_forward_header(stream, msgno, sect_prefix,
 					   env, pc, prefix);
-
+					/* SECTBUFLEN = sizeof(sect_buf) */
 		    snprintf(sect_buf, sizeof(sect_buf), "%.*s%s%.*s",
-			    sizeof(sect_buf)/2-2,
+			    SECTBUFLEN/2-2,
 			    sect_prefix ? sect_prefix : "",
 			    sect_prefix ? "." : "",
-			    sizeof(sect_buf)/2-2,
+			    SECTBUFLEN/2-2,
 			    p = partno(orig_body, tmp_body));
 		    sect_buf[sizeof(sect_buf)-1] = '\0';
 		    fs_give((void **) &p);
@@ -1173,10 +1174,10 @@ reply_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
 		    body->nested.part->body.subtype = cpystr("Plain");
 		    body->nested.part->body.contents.text.data = msgtext;
 		    body->nested.part->next = part;
-
+					/* SECTBUFLEN = sizeof(sect_buf) */
 		    for(partnum = 2; part != NULL; part = part->next){
 			snprintf(sect_buf, sizeof(sect_buf), "%.*s%s%d",
-				sizeof(sect_buf)/2,
+				SECTBUFLEN/2,
 				sect_prefix ? sect_prefix : "",
 				sect_prefix ? "." : "", partnum++);
 			sect_buf[sizeof(sect_buf)-1] = '\0';
@@ -2919,18 +2920,19 @@ body_partno(MAILSTREAM *stream, long int msgno, struct mail_bodystruct *end_body
 char *
 partno(struct mail_bodystruct *body, struct mail_bodystruct *end_body)
 {
+#define PARTTMPLEN 64
     PART *part;
     int   num = 0;
-    char  tmp[64], *p = NULL;
+    char  tmp[PARTTMPLEN], *p = NULL;
 
     if(body && body->type == TYPEMULTIPART) {
 	part = body->nested.part;	/* first body part */
 
 	do {				/* for each part */
-	    num++;
+	    num++;			/* PARTTMPLEN = sizeof(tmp) */
 	    if(&part->body == end_body || (p = partno(&part->body, end_body))){
 		snprintf(tmp, sizeof(tmp), "%d%s%.*s", num, (p) ? "." : "",
-			sizeof(tmp)-10, (p) ? p : "");
+			PARTTMPLEN-10, (p) ? p : "");
 		tmp[sizeof(tmp)-1] = '\0';
 		if(p)
 		  fs_give((void **)&p);
@@ -3593,9 +3595,10 @@ BODY *
 forward_multi_alt(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
 		  long int msgno, char *sect_prefix, void *msgtext, gf_io_t pc, int flags)
 {
+#define FWDTMPLEN 256
     BODY *body = NULL;
     PART *part = NULL, *bestpart = NULL;
-    char  tmp_buf[256];
+    char  tmp_buf[FWDTMPLEN];
     char *new_charset = NULL;
     int   partnum, bestpartnum;
 
@@ -3650,9 +3653,9 @@ forward_multi_alt(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *ori
 	    forward_delimiter(pc);
 	    reply_forward_header(stream, msgno, sect_prefix, env, pc, "");
 	}
-
+				/* FWDTMPLEN = sizeof(tmp_buf) */
 	snprintf(tmp_buf, sizeof(tmp_buf), "%.*s%s%s%d",
-		sizeof(tmp_buf)/2, sect_prefix ? sect_prefix : "",
+		FWDTMPLEN/2, sect_prefix ? sect_prefix : "",
 		sect_prefix ? "." : "", flags & FWD_NESTED ? "1." : "",
 		partnum);
 	tmp_buf[sizeof(tmp_buf)-1] = '\0';

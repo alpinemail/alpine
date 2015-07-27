@@ -5490,10 +5490,11 @@ smtp_command(char *errbuf, size_t errbuflen)
     errbuf[errbuflen-1] = '\0';
 #else	/* UNIX */
 # if	defined(SENDMAIL) && defined(SENDMAILFLAGS)
-    char tmp[256];
-
-    snprintf(tmp, sizeof(tmp), "%.*s %.*s", (sizeof(tmp)-3)/2, SENDMAIL,
-	    (sizeof(tmp)-3)/2, SENDMAILFLAGS);
+#define SENDTMPLEN 256
+    char tmp[SENDTMPLEN];
+			/* SENDTMPLEN == sizeof(tmp) */
+    snprintf(tmp, sizeof(tmp), "%.*s %.*s", (SENDTMPLEN-3)/2, SENDMAIL,
+	    (SENDTMPLEN-3)/2, SENDMAILFLAGS);
     return(cpystr(tmp));
 # else
     strncpy(errbuf, _("No default posting command."), errbuflen);
@@ -5750,9 +5751,9 @@ piped_smtp_open (char *host, char *service, long unsigned int port)
 
     if(strucmp(host, "localhost")){
 	char tmp[MAILTMPLEN];
-
+				/* MAILTMPLEN = sizeof(tmp) */
 	snprintf(tmp, sizeof(tmp), _("Unexpected hostname for piped SMTP: %.*s"), 
-		sizeof(tmp)-50, host);
+		MAILTMPLEN-50, host);
 	tmp[sizeof(tmp)-1] = '\0';
 	mm_log(tmp, ERROR);
     }

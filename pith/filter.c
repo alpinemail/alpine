@@ -5393,7 +5393,7 @@ html_a_relative(char *base_url, char *rel_url, HANDLE_S *h)
 
 		    if(len + strlen(rel_path) < sizeof(tmp)-1){
 			if(len)
-			  snprintf(path = tmp, sizeof(tmp), "%.*s", len, base_path);
+			  snprintf(path = tmp, sizeof(tmp), "%.*s", (int) len, base_path);
 
 			strncpy(tmp + len, rel_path, sizeof(tmp)-len);
 			tmp[sizeof(tmp)-1] = '\0';
