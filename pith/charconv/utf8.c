@@ -2374,6 +2374,7 @@ line_paint(int offset,			/* current dot offset into vl */
      * is double wide. We don't want the offset to be under that > character.)
      */
     for(w = (*width_a_to_b)(displ->vl, displ->vbase, offset);
+	displ->dwid > 1 && 
 	w + 2 + (displ->vbase ? 1 : 0) > displ->dwid;
         w = (*width_a_to_b)(displ->vl, displ->vbase, offset)){
 	/*
@@ -2431,7 +2432,7 @@ line_paint(int offset,			/* current dot offset into vl */
     vlast = displ->vused-1;			/* end */
     w = (*width_a_to_b)(displ->vl, vfirst, vlast);
 
-    if(w + dfirst > displ->dwid){			/* off window right */
+    if(displ->dwid > 0 && w + dfirst > displ->dwid){			/* off window right */
 
 	/* find last ucs character to be printed */
 	while(w + dfirst > displ->dwid - 1)	/* -1 for > */

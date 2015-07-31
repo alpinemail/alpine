@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 85 2015-07-26 23:36:26
+Alpine Commit 86 2015-07-30 22:35:13
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -266,6 +266,9 @@ Bugs that have been addressed include:
        Krellner.
 
   <LI> SMIME: Cancelling entering password to unlock key will not reprompt.
+
+  <LI> Pico: Searching for a string that is too long causes Pico to crash
+       in the next search.
 
   <LI> Fix vulnerability in regex library. This only affects those who use
        this library, such as the windows version of Alpine. See 
