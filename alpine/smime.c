@@ -1331,8 +1331,7 @@ smime_setup_size(char **s, size_t buflen, size_t n)
   *t++ = ' ';
   *t++ = '%';
   *t++ = '-';
-   snprintf(t+strlen(t), buflen-3, "%zu.%zu", n, n);
-   t[strlen(t)-1] = '\0';
+   snprintf(t, buflen-3, "%zu.%zu", n, n);
    t += strlen(t);
    *t++ = 's';
    *t++ = ' ';
