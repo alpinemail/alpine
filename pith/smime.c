@@ -90,7 +90,6 @@ static X509_STORE   *s_cert_store;
 
 /* State management for randomness functions below */
 static int seeded = 0;
-static int egdsocket = 0;
 
 void *
 create_smime_sparep(SpareType stype, void *s)
@@ -815,16 +814,11 @@ int smime_path(char *rpath, char *fpath, size_t len)
 static int
 app_RAND_load_file(const char *file)
 {
-    char buffer[200];
+#define RANDBUFLEN 200
+    char buffer[RANDBUFLEN];
 
     if(file == NULL)
-      file = RAND_file_name(buffer, sizeof buffer);
-    else if(RAND_egd(file) > 0){
-	/* we try if the given filename is an EGD socket.
-	   if it is, we don't write anything back to the file. */
-	egdsocket = 1;
-	return 1;
-    }
+      file = RAND_file_name(buffer, RANDBUFLEN);
 
     if(file == NULL || !RAND_load_file(file, -1)){
 	if(RAND_status() == 0){
@@ -888,7 +882,7 @@ app_RAND_write_file(const char *file)
 {
     char buffer[200];
 
-    if(egdsocket || !seeded)
+    if(!seeded)
 	/*
 	 * If we did not manage to read the seed file,
 	 * we should not write a low-entropy seed file back --
