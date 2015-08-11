@@ -78,6 +78,7 @@
 #define BSLASH		'\\'		/* back slash		*/
 #define QUOTE		'"'		/* double quote char	*/
 #define DEL		'\177'		/* delete		*/
+#define NBSPC		'\240'		/* Non-breaking space	*/
 
 /*
  * These help with isspace when dealing with UCS-4 characters.

@@ -2236,29 +2236,25 @@ encrypt_file(char *fp, char *text, PERSONAL_CERT *pc)
   sk_X509_push(encerts, X509_dup(pc->cert));
 
   if(text){
-    if((out = BIO_new(BIO_s_mem())) == NULL)
-      goto end;
-    (void) BIO_reset(out);
-    BIO_puts(out, text);
+    if((out = BIO_new(BIO_s_mem())) != NULL){
+      (void) BIO_reset(out);
+      BIO_puts(out, text);
+    }
   }
-  else{
-    if(!(out = BIO_new_file(fp, "rb")))
-      goto end;
-
+  else if((out = BIO_new_file(fp, "rb")) != NULL){
     BIO_read_filename(out, fp);
+
+    if((p7 = PKCS7_encrypt(encerts, out, cipher, 0)) != NULL){
+	BIO_set_close(out, BIO_CLOSE);
+	BIO_free(out);
+	if((out = BIO_new_file(fp, "w")) != NULL){
+	  BIO_reset(out);
+	  rv = PEM_write_bio_PKCS7(out, p7);
+	  BIO_flush(out);
+        }
+    }
   }
 
-  if((p7 = PKCS7_encrypt(encerts, out, cipher, 0)) == NULL)
-     goto end;
-  BIO_set_close(out, BIO_CLOSE);
-  BIO_free(out);
-  if(!(out = BIO_new_file(fp, "w")))
-    goto end;
-  BIO_reset(out);
-  rv = PEM_write_bio_PKCS7(out, p7);
-  BIO_flush(out);
-
-end:
   if(out != NULL)
     BIO_free(out);
   PKCS7_free(p7);
@@ -2962,7 +2958,7 @@ decrypt_file(char *fp, int *rv, PERSONAL_CERT *pc)
   int i, j;
   long unsigned int len;
   void *ret;
-   
+
   if(pc == NULL || (text = read_file(fp, 0)) == NULL || *text == '\0')
     return NULL;
 
@@ -2971,38 +2967,31 @@ decrypt_file(char *fp, int *rv, PERSONAL_CERT *pc)
                 && text[i] != '-'; j++, i++)
      tmp[j] = text[i];
   tmp[j] = '\0';
-  
+
   ret = rfc822_base64((unsigned char *)tmp, strlen(tmp), &len);
-  
+
   if((in = BIO_new_mem_buf((char *)ret, len)) != NULL){
      p7 = d2i_PKCS7_bio(in, NULL);
      BIO_free(in);
   }
-  
+
   if (text) fs_give((void **)&text);
   if (ret)  fs_give((void **)&ret);
-  
+
   if (rv) *rv = pc->key == NULL ? -1 : 1;
 
   out = BIO_new(BIO_s_mem());
   (void) BIO_reset(out);
-  
-  i = PKCS7_decrypt(p7, pc->key, pc->cert, out, 0);
-       
-  if(i == 0){
+
+  if(PKCS7_decrypt(p7, pc->key, pc->cert, out, 0) != 0){
+    BIO_get_mem_data(out, &tmp);   
+    text = cpystr(tmp);
+    BIO_free(out);
+  } else
     q_status_message1(SM_ORDER, 1, 1, _("Error decrypting: %s"),
-                              (char*) openssl_error_string());
-    goto end;
-  } 
-   
-  BIO_get_mem_data(out, &tmp);   
-        
-  text = cpystr(tmp);
-  BIO_free(out);
-    
-end:
+                              (char *) openssl_error_string());
   PKCS7_free(p7);
-  
+
   return text;
 }
 
