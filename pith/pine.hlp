@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 89 2015-08-10 19:34:01
+Alpine Commit 90 2015-08-10 21:58:23
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -294,6 +294,10 @@ Bugs that have been addressed include:
   <LI> Alpine fails to remove temporary files used during a display or sending
        filter. Fix contributed by Phil Brooke.
 
+  <LI> When the index is in zoomed state, adding new messages to the 
+       selection would not show those messages if those messages are on 
+       top of the current message in the top of the screen. Reported by
+       Ulf-Dietrich Braumann.
 </UL>
 
 

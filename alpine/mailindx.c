@@ -422,7 +422,7 @@ index_lister(struct pine *state, CONTEXT_S *cntxt, char *folder, MAILSTREAM *str
 		  : (any_lflagged(msgmap, MN_HIDE))
 		    ? ZoomIndex
 		    : (mn_total_cur(msgmap) > 1L) ? MultiMsgIndex : MsgIndex;
-	if(style != old_style){
+	if(style != old_style || style == ZoomIndex){
             state->mangled_header = 1;
             state->mangled_footer = 1;
 	    old_style = style;
