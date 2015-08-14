@@ -35,6 +35,6 @@ gssapi_proxy.l:
 clean-local:
 	cd imap && $(MAKE) clean
 
-man_MANS = doc/alpine.1 doc/pico.1 doc/pilot.1 doc/rpdump.1 doc/rpload.1
+man_MANS = doc/man1/alpine.1 doc/man1/pico.1 doc/man1/pilot.1 doc/man1/rpdump.1 doc/man1/rpload.1
 
 ACLOCAL_AMFLAGS = --install -I m4
