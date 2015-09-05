@@ -1643,18 +1643,17 @@ copy_dir_to_container(WhichCerts which, char *contents)
                    ret = -1;  
             }
             else ret = -1;
-            
-	    if(!ret){
-	      if(rename_file(tempfile, fpath) < 0){
-		q_status_message2(SM_ORDER, 3, 3,
-		    _("Can't rename %s to %s"), tempfile, fpath);
-		ret = -1;
-	      } else q_status_message1(SM_ORDER, 3, 3,
-		    _("saved container to %s"), fpath);
-	    }
 
-	    /* if the container is remote, copy it */
-	    if(!ret && IS_REMOTE(configpath)){
+	    if(!ret){
+	      if(!IS_REMOTE(configpath)){
+		if(rename_file(tempfile, fpath) < 0){
+		   q_status_message2(SM_ORDER, 3, 3,
+		      _("Can't rename %s to %s"), tempfile, fpath);
+		   ret = -1;
+	        } else q_status_message1(SM_ORDER, 3, 3,
+		      _("saved container to %s"), fpath);
+	      }
+	      else { /* if the container is remote, copy it */
 		int   e;
 		char datebuf[200];
 
@@ -1687,8 +1686,9 @@ copy_dir_to_container(WhichCerts which, char *contents)
 		}
 
 		rd_close_remdata(&rd);
-	    }
-	}
+	      } /* else */
+	    }	/* if(!ret) */
+	}	/* if(!ret) */
     }
 
     if(tempfile)
