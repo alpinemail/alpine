@@ -1691,8 +1691,16 @@ copy_dir_to_container(WhichCerts which, char *contents)
 	}	/* if(!ret) */
     }
 
-    if(tempfile)
+    if(tempfile){
+      if(ret == 0){
+        if(our_unlink(tempfile) < 0)
+	   q_status_message1(SM_ORDER, 3, 3, 
+		_("Error removing temporary file %s"), tempfile);
+      } else
+	   q_status_message1(SM_ORDER, 3, 3, 
+		_("Data saved to temporary file %s"), tempfile);
       fs_give((void **) &tempfile);
+    }
 
     if(ret_dir) 
       fs_give((void **) &ret_dir);
