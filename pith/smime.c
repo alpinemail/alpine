@@ -1657,6 +1657,12 @@ copy_dir_to_container(WhichCerts which, char *contents)
 		int   e;
 		char datebuf[200];
 
+		if(rd != NULL && rename_file(tempfile, rd->lf) < 0){
+		   q_status_message2(SM_ORDER, 3, 3,
+		      _("Can't rename %s to %s"), tempfile, rd->lf);
+		   ret = -1;
+		}
+		
 		datebuf[0] = '\0';
 
 		if((e = rd_update_remote(rd, datebuf)) != 0){
@@ -1686,21 +1692,13 @@ copy_dir_to_container(WhichCerts which, char *contents)
 		}
 
 		rd_close_remdata(&rd);
-	      } /* else */
-	    }	/* if(!ret) */
-	}	/* if(!ret) */
+	      }
+	    }
+	}
     }
 
-    if(tempfile){
-      if(ret == 0){
-        if(our_unlink(tempfile) < 0)
-	   q_status_message1(SM_ORDER, 3, 3, 
-		_("Error removing temporary file %s"), tempfile);
-      } else
-	   q_status_message1(SM_ORDER, 3, 3, 
-		_("Data saved to temporary file %s"), tempfile);
+    if(tempfile)
       fs_give((void **) &tempfile);
-    }
 
     if(ret_dir) 
       fs_give((void **) &ret_dir);
