@@ -1363,9 +1363,9 @@ void smime_manage_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line
 
     new_confline(ctmp);
     (*ctmp)->flags |= CF_NOSELECT;
-    sprintf(tmp, _("List of %scertificates"), ctype == Public ? _("public ")
-		: (ctype == Private ? _("private ") 
-		: (ctype == CACert ? _("certificate authority ") : "unknown (?) ")));
+    sprintf(tmp, _("List of %s certificates"), ctype == Public ? _("public")
+		: (ctype == Private ? _("private") 
+		: (ctype == CACert ? _("certificate authority") : "unknown (?)")));
     (*ctmp)->value = cpystr(tmp);
 
     for(i = 0; i < sizeof(tmp) && i < (ps->ttyo ? ps->ttyo->screen_cols : sizeof(tmp)); i++)
