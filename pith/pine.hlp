@@ -196,6 +196,9 @@ Additions include:
   <LI> SMIME: If a message contains a RFC822 atachment that is
        signed/decrypted add the ability to view its SMIME information.
 
+  <LI> SMIME: Certificate information in the S/MIME screen is available 
+       for certificates stored in a cotainer.
+
   <LI> HTML: Add support for decoding entities in hexadecimal notation.
        Suggested by Tulip&aacute;nt Gergely.
 
