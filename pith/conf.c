@@ -5936,54 +5936,28 @@ write_pinerc(struct pine *ps, EditWhich which, int flags)
     }
 
     if(!(rd && rd->flags & NO_FILE)){
-	if(so_give(&so))
-	  goto io_err;
+      char *realfilename;
+      int realfilename_malloced;
+
+      if(so_give(&so)) goto io_err;
 
 #ifndef _WINDOWS
-	/* if .pinerc is a symbolic link, override symbolic link */
-	if(our_lstat(filename, &sbuf) == 0 
-		&& ((sbuf.st_mode & S_IFMT) == S_IFLNK)){
-	  if((slink = fs_get((sbuf.st_size+1)*sizeof(char))) != NULL){
-	    int r = -1;			/* assume error */
-	    if(readlink(filename, slink, sbuf.st_size + 1) >= 0){
-	      char *slpath;
-
-	      slink[sbuf.st_size] = '\0';
-	      if(*slink == '/')
-		slpath = cpystr(slink);
-	      else{
-		char * basep;
-	        int n;
-
-		basep = strrchr(filename, '/');
-	        if(basep != NULL){
-		  *basep = '\0';
-		  n = strlen(filename) + strlen(slink) + 2;
-		  slpath = (char *) fs_get(n*sizeof(char));
-		  snprintf(slpath, n, "%s/%s", filename, slink);
-		  *basep = '/';
-		} else {
-		  n = strlen(ps_global->home_dir) + strlen(slink) + 2;
-		  slpath = (char *) fs_get(n*sizeof(char));
-		  snprintf(slpath, n, "%s/%s", ps_global->home_dir, slink);
-		}
-		slpath[n-1] = '\0';
-	      }
-	      file_attrib_copy(tmp, slpath);
-	      r = rename_file(tmp, slpath);
-	      fs_give((void **)&slpath);
-	    }
-	    fs_give((void **)&slink);
-	    if (r < 0) goto io_err;
-	  }
-	}
-	else
+      if ((realfilename = realpath(filename, NULL)) != NULL)
+	realfilename_malloced = 1;
+      else
+	goto io_err;
+#else
+      realfilename = filename;
+      realfilename_malloced = 0;
 #endif /* _WINDOWS */
-	{
-	  file_attrib_copy(tmp, filename);
-	  if(rename_file(tmp, filename) < 0)
-	    goto io_err;
-	}
+      if(realfilename != NULL){
+	int r;
+	file_attrib_copy(tmp, realfilename);
+	r = rename_file(tmp, realfilename);
+	if(realfilename_malloced != 0)
+	  free((void *)realfilename);
+        if(r < 0) goto io_err;
+      }
     }
     
     if(prc->type != Loc){

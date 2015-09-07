@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 95 2015-09-06 21:11:08
+Alpine Commit 99 2015-09-07 01:55:47
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -251,6 +251,9 @@ Additions include:
        and ca directories. This is useful in case a user has a backup of 
        old certificates that cannot be installed in the ~/.alpine-smime 
        dir.
+
+  <LI> Reimplementation of the code that allows the .pinerc file to be a
+       symbolic link by Kyle George from tcpsoft.com to use realpath.
 </UL>
 
  
