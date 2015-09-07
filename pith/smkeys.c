@@ -1249,7 +1249,6 @@ void
 add_to_end_of_certlist(CertList **cl, char *name, X509 *cert)
 {
     CertList *new, *clp;
-    char buf[MAILTMPLEN];
 
     if(!cl)
       return;
@@ -1258,12 +1257,6 @@ add_to_end_of_certlist(CertList **cl, char *name, X509 *cert)
     memset((void *) new, 0, sizeof(*new));
     new->x509_cert = cert;
     new->name = name ? cpystr(name) : NULL;
-    if(cert && cert->cert_info){
-       new->data.date_from = smime_get_date(cert->cert_info->validity->notBefore);
-       new->data.date_to   = smime_get_date(cert->cert_info->validity->notAfter);
-       get_fingerprint(cert, EVP_md5(), buf, sizeof(buf), NULL);
-       new->data.md5       = cpystr(buf);
-    }
 
     if(!*cl){
 	*cl = new;
