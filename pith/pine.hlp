@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 99 2015-09-07 01:55:47
+Alpine Commit 100 2015-09-07 20:04:59
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -273,9 +273,11 @@ Bugs that have been addressed include:
 
   <LI> SMIME: Cancelling entering password to unlock key will not reprompt.
 
-  <LI> S/MIME: fix a bug that did not allow users to transfer certificates to
-       remote containers. Reported by Matthias Rieber. Also, remove any 
-       temporary files created during this transfer.
+  <LI> SMIME: fix a bug that did not allow users to transfer certificates to
+       remote containers. Reported by Matthias Rieber.
+
+  <LI> SMIME: certificates included in messages were not being transferred
+       to a remote container.
 
   <LI> Pico: Searching for a string that is too long causes Pico to crash
        in the next search.

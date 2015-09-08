@@ -755,11 +755,17 @@ save_cert_for(char *email, X509 *cert, WhichCerts ctype)
 	      err++;
 
 	    if(!err && ret_dir){
-		if(strlen(path) + strlen(tempfile) - strlen(ret_dir) + 1 < sizeof(path))
-		   snprintf(fpath, sizeof(fpath), "%s%c%s", 
+		if(IS_REMOTE(upath)){
+		   strncpy(fpath, rd->lf, sizeof(fpath));
+		   fpath[sizeof(fpath)-1] = '\0';
+		}
+		else{
+		   if(strlen(path) + strlen(tempfile) - strlen(ret_dir) + 1 < sizeof(path))
+		     snprintf(fpath, sizeof(fpath), "%s%c%s", 
 			path, tempfile[strlen(ret_dir)], tempfile + strlen(ret_dir) + 1);
-		else
-		   err++;
+		   else
+		     err++;
+		}
 	    }
 	    else err++;
 
