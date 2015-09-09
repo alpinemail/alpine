@@ -284,9 +284,9 @@ resort_certificates(CertList **data, WhichCerts ctype)
      return;
 
    for(i = 0; cl; cl = cl->next, i++)
-      if(ctype != Private){     /* ctype == Public or ctype == CACerts */
-         for(t = s = cl->name; (t = strstr(s, ".crt")) != NULL; s = t+1);
-         if (s) *(s-1) = '\0';
+      if(SMHOLDERTYPE(ctype) == Directory && ctype != Private){
+           for(t = s = cl->name; (t = strstr(s, ".crt")) != NULL; s = t+1);
+           if (s) *(s-1) = '\0';
       }
    j = i;
    cll = fs_get(i*sizeof(CertList *));
@@ -295,10 +295,10 @@ resort_certificates(CertList **data, WhichCerts ctype)
    qsort((void *)cll, j, sizeof(CertList *), compare_certs_by_name);
    for(i = 0; i < j - 1; i++){
      cll[i]->next = cll[i+1];
-     if(ctype != Private)
+     if(SMHOLDERTYPE(ctype) == Directory && ctype != Private)
         cll[i]->name[strlen(cll[i]->name)]= '.';    /* restore ".crt" part */
    }
-   if(ctype != Private)
+   if(SMHOLDERTYPE(ctype) == Directory && ctype != Private)
       cll[j-1]->name[strlen(cll[j-1]->name)]= '.';    /* restore ".crt" part */
    cll[j-1]->next = NULL;
    *data = cll[0];
@@ -408,7 +408,7 @@ smime_get_date(ASN1_GENERALIZEDTIME *tm)
    if(F_ON(F_DATES_TO_LOCAL,ps_global)){
       parse_date(convert_date_to_local(date), &smd);
       memset(&smtm, 0, sizeof(smtm));
-      smtm.tm_year = MIN(MAX(smd.year-1900, 0), 2000) % 100 - 1900;
+      smtm.tm_year = smd.year - 1900;
       smtm.tm_mon  = MIN(MAX(smd.month-1, 0), 11);
       smtm.tm_mday = MIN(MAX(smd.day, 1), 31);
       our_strftime(buf, sizeof(buf), "%x", &smtm);
@@ -1128,6 +1128,8 @@ mem_to_certlist(char *contents, WhichCerts ctype)
 	      *save_p = '\n';
 	}
     }
+    if(ret != NULL)
+       resort_certificates(&ret, ctype);
 
     return ret;
 }

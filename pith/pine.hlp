@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 100 2015-09-07 20:04:59
+Alpine Commit 101 2015-09-08 19:54:50
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -254,6 +254,12 @@ Additions include:
 
   <LI> Reimplementation of the code that allows the .pinerc file to be a
        symbolic link by Kyle George from tcpsoft.com to use realpath.
+
+  <LI> SMIME: add full year when displaying information about a certificate
+       in the certificate management screen. Suggested by Matthias Rieber.
+
+  <LI> SMIME: sort certificates by some type of alphabetical order in the
+       displayed name.
 </UL>
 
  

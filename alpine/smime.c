@@ -1334,7 +1334,6 @@ smime_setup_size(char **s, size_t buflen, size_t n)
    snprintf(t, buflen-3, "%zu.%zu", n, n);
    t += strlen(t);
    *t++ = 's';
-   *t++ = ' ';
    *s = t;
 }
 
@@ -1387,19 +1386,21 @@ void smime_manage_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line
 	 if(cl->name && strlen(cl->name) > e)
 	   e = strlen(cl->name);
 
-      if(ctype != Private)
+      if(ctype != Private && SMHOLDERTYPE(ctype) == Directory)
 	e -= 4;		/* remove extension length FIX FIX FIX */
       nf = 5;		/* there are 5 fields */
       s = 3;		/* status has fixed size */
-      df = dt = 8;	/* date from and date to have fixed size */
-      md5 = ps->ttyo->screen_cols - s - df - dt - e - 2*nf;
+      df = dt = 10;	/* date from and date to have fixed size */
+      md5 = ps->ttyo->screen_cols - s - df - dt - e - (nf - 1);
 
       memset(u, '\0', sizeof(u));
       t = u;
       smime_setup_size(&t, sizeof(u), s);
       smime_setup_size(&t, sizeof(u) - strlen(t), e);
       smime_setup_size(&t, sizeof(u) - strlen(t), df);
+      *t++ = ' ';		/* leave an extra space between dates */
       smime_setup_size(&t, sizeof(u) - strlen(t), dt);
+      *t++ = ' ';		/* and another space between date and md5 sum */
       smime_setup_size(&t, sizeof(u) - strlen(t), md5);
 
       for(cl = data, i = 0; cl; cl = cl->next)
