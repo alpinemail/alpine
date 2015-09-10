@@ -918,10 +918,11 @@ certlist_from_personal_certs(PERSONAL_CERT *pc)
    x = get_cert_for(pc->name, Public);
    if(x){
      if(x->cert_info){
-       cl->data.date_from = smime_get_date(x->cert_info->validity->notBefore);
-       cl->data.date_to   = smime_get_date(x->cert_info->validity->notAfter);
-       get_fingerprint(x, EVP_md5(), buf, sizeof(buf), NULL);
-       cl->data.md5       = cpystr(buf);
+	cl->data.date_from = smime_get_date(x->cert_info->validity->notBefore);
+	cl->data.date_to   = smime_get_date(x->cert_info->validity->notAfter);
+	get_fingerprint(x, EVP_md5(), buf, sizeof(buf), NULL);
+	cl->data.md5       = cpystr(buf);
+	cl->cn = smime_get_cn(x->cert_info->subject);
      }
      X509_free(x);
    }

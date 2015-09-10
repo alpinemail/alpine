@@ -383,7 +383,7 @@ output_cert_info(X509 *cert, gf_io_t pc)
 	gf_puts(NEWLINE, spc);
     }
     else{
-	gf_puts_uline("Subject (whose certificate it is)", spc);
+	gf_puts_uline("Certificate Owner", spc);
 	gf_puts(NEWLINE, spc);
 
 	output_X509_NAME(cert->cert_info->subject, spc);
@@ -1387,21 +1387,22 @@ void smime_manage_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line
 	   e = strlen(cl->name);
 
       if(ctype != Private && SMHOLDERTYPE(ctype) == Directory)
-	e -= 4;		/* remove extension length FIX FIX FIX */
+	e -= 4;		/* remove extension length */
+      e = MIN(e, ps->ttyo->screen_cols/3);	/* do not use too much screen */
       nf = 5;		/* there are 5 fields */
       s = 3;		/* status has fixed size */
       df = dt = 10;	/* date from and date to have fixed size */
       md5 = ps->ttyo->screen_cols - s - df - dt - e - (nf - 1);
 
-      memset(u, '\0', sizeof(u));
       t = u;
       smime_setup_size(&t, sizeof(u), s);
       smime_setup_size(&t, sizeof(u) - strlen(t), e);
       smime_setup_size(&t, sizeof(u) - strlen(t), df);
-      *t++ = ' ';		/* leave an extra space between dates */
+      *t++ = ' ';	/* leave an extra space between dates */
       smime_setup_size(&t, sizeof(u) - strlen(t), dt);
-      *t++ = ' ';		/* and another space between date and md5 sum */
+      *t++ = ' ';	/* and another space between date and md5 sum */
       smime_setup_size(&t, sizeof(u) - strlen(t), md5);
+      *t = '\0';	/* tie off */
 
       for(cl = data, i = 0; cl; cl = cl->next)
 	 if(cl->name){
@@ -1422,7 +1423,8 @@ void smime_manage_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line
 	    (*ctmp)->d.s.address[sizeof((*ctmp)->d.s.address) - 1] = '\0';
 	    snprintf(tmp, sizeof(tmp), u,
 			(*ctmp)->d.s.deleted ? "D" : " ", 
-			cl->name, DATEFROMCERT(cl), DATETOCERT(cl), MD5CERT(cl));
+			ctype == CACert ? cl->cn : cl->name, 
+			DATEFROMCERT(cl), DATETOCERT(cl), MD5CERT(cl));
 	    if(ctype != Private && SMHOLDERTYPE(ctype) == Directory)
 	       cl->name[strlen(cl->name)] = '.';
 	    (*ctmp)->value      = cpystr(tmp);

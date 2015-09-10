@@ -66,6 +66,8 @@ int	       load_cert_for_key(char *pathdir, EVP_PKEY *pkey, char **certfile, X50
 char           *smime_get_date(ASN1_GENERALIZEDTIME *tm);
 void	       resort_certificates(CertList **data, WhichCerts ctype);
 int	       setup_certs_backup_by_type(WhichCerts ctype);
+char 	       *smime_get_cn(X509_NAME *);
+
 
 #endif /* PITH_SMKEYS_INCLUDED */
 #endif /* SMIME */

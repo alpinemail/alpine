@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 101 2015-09-08 19:54:50
+Alpine Commit 102 2015-09-09 19:01:06
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -198,6 +198,11 @@ Additions include:
 
   <LI> SMIME: Certificate information in the S/MIME screen is available 
        for certificates stored in a cotainer.
+
+  <LI> SMIME: Offer the common name of the person, instead of the name of
+       file containing the certificate, as the name to be displayed in the 
+       certificate management screen for certificate authorities. 
+       Suggested by Matthias Rieber.
 
   <LI> HTML: Add support for decoding entities in hexadecimal notation.
        Suggested by Tulip&aacute;nt Gergely.

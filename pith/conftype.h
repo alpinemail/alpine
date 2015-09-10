@@ -683,7 +683,8 @@ typedef struct certdata {
 } CertData;
 
 typedef struct certlist {
-    char            *name;
+    char            *name;		/* file name		*/
+    char	    *cn;		/* CN field from certificate */
     void            *x509_cert;		/* this is type (X509 *) */
     CertData	    data;
     struct certlist *next;
