@@ -255,7 +255,7 @@ smime_get_cn(X509_NAME *subject)
 {
    char buf[256];
    X509_NAME_ENTRY *e;
-   e = X509_NAME_get_entry(subject, X509_NAME_entry_count(subject)-2);
+   e = X509_NAME_get_entry(subject, X509_NAME_entry_count(subject)-1);
    if(e)
       X509_NAME_get_text_by_OBJ(subject, e->object, buf, sizeof(buf));
    return cpystr(buf);

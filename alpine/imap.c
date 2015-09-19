@@ -2412,10 +2412,15 @@ read_passfile(pinerc, l)
     if(encrypted){
 	text = text2 = decrypt_file((char *)tmp, &i, (PERSONAL_CERT *)ps_global->pwdcert);
 	switch(i){
+	   case -2: using_passfile = 0;
+		    break;
+
 	   case 1 : save_password = 1;
+		    using_passfile = 1;
 		    break;
 
 	   case -1: save_password = 0;
+		    using_passfile = 1;
 		    break;
 
 	   default: break;
@@ -2425,7 +2430,11 @@ read_passfile(pinerc, l)
        fp = our_fopen(tmp, "rb");	/* reopen to read data */
 #endif /* SMIME */
 
-    using_passfile = 1;
+    if(using_passfile == 0){
+      if(text) fs_give((void **)&text);
+      return using_passfile;
+    }
+
 #ifdef SMIME
     for(n = 0; encrypted ? line_get(tmp, sizeof(tmp), &text2) 
 	: (fgets(tmp, sizeof(tmp), fp) != NULL); n++){

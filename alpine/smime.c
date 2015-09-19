@@ -1192,6 +1192,7 @@ void display_certificate_information(struct pine *ps, X509 *cert, char *email, W
       scrollargs.keys.menu   = &smime_certificate_info_keymenu;
       setbitmap(scrollargs.keys.bitmap);
       if(ctype != Public || error != X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT)
+/*error != X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY)*/
 	  clrbitn(TRUST_KEY, scrollargs.keys.bitmap);
       if(ctype != Private){
 	  clrbitn(PUBLIC_KEY,  scrollargs.keys.bitmap);

@@ -211,10 +211,12 @@ setup_pwdcert(void **pwdcert)
   EVP_PKEY *pkey = NULL;
   X509 *pcert = NULL;
   PERSONAL_CERT *pc, *pc2 = NULL;
+  static int was_here = 0;
 
-  if(pwdcert == NULL)
+  if(pwdcert == NULL || was_here == 1)
     return;
 
+  was_here++;
   if(ps_global->pwdcertdir){
      if(our_stat(ps_global->pwdcertdir, &sbuf) == 0
 	&& ((sbuf.st_mode & S_IFMT) == S_IFDIR)){
@@ -232,11 +234,15 @@ setup_pwdcert(void **pwdcert)
 	  setup_dir++;
   }
 
-  if(setup_dir == 0)
+  if(setup_dir == 0){
+    was_here = 0;
     return;
+  }
 
-  if(load_key_and_cert(pathdir, pathdir, &keyfile, &certfile, &pkey, &pcert) < 0)
+  if(load_key_and_cert(pathdir, pathdir, &keyfile, &certfile, &pkey, &pcert) < 0){
+    was_here = 0;
     return;
+  }
 
   if(certfile && keyfile){
      pc = (PERSONAL_CERT *) fs_get(sizeof(PERSONAL_CERT));
@@ -246,14 +252,17 @@ setup_pwdcert(void **pwdcert)
      pc->cert = pcert;
      *pwdcert = (void *) pc;
      fs_give((void **)&certfile);
+     was_here = 0;
      return;
   }
 
   /* if the user gave a pwdcertdir and there is nothing there, do not
    * continue. Let the user initialize on their own this directory.
    */
-  if(ps_global->pwdcertdir != NULL)
+  if(ps_global->pwdcertdir != NULL){
+     was_here = 0;
      return;
+  }
 
   /* look to see if there are any certificates lying around, first
    * we try to load ps_global->smime to see if that has information
@@ -363,6 +372,7 @@ setup_pwdcert(void **pwdcert)
 
       if(setup_dir){
 	*pwdcert = (void *) pc2;
+	was_here = 0;
 	return;
       }
       else if(pc2 != NULL)
@@ -415,6 +425,7 @@ setup_pwdcert(void **pwdcert)
      pc->cert = pcert;
      *pwdcert = (void *) pc;
      fs_give((void **)&certfile);
+     was_here = 0;
      return;
   }
 
@@ -422,7 +433,7 @@ setup_pwdcert(void **pwdcert)
   q_status_message(SM_ORDER, 2, 2,
 	_("No key/certificate pair found for password file encryption support"));
 */
-
+  was_here = 0;
   if(we_inited)
     smime_deinit();
 }
@@ -685,8 +696,9 @@ import_certificate(WhichCerts ctype)
 	       }
 	       fs_give((void **)email);
 	    }
-	    else
-	      save_cert_for(filename, cert, Public);
+	    if(strcmp(filename + strlen(filename) - 4, ".crt") == 0)
+	       filename[strlen(filename) - 4] = '\0';
+	    save_cert_for(filename, cert, Public);
 	  }
 	  else  /* if(SMHOLDERTYPE(ctype) == Container){ */
 	     add_file_to_container(ctype, full_filename, NULL);

@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 102 2015-09-09 19:01:06
+Alpine Commit 103 2015-09-18 22:15:37
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -204,6 +204,17 @@ Additions include:
        certificate management screen for certificate authorities. 
        Suggested by Matthias Rieber.
 
+  <LI> SMIME: Management of several alternate name (SAN) certificates is 
+       improved. When importing a SAN certificate, also import a certificate
+       for the filename, besides for the e-mail addresses in the
+       certificate. Suggested by Matthias Rieber.
+
+  <LI> SMIME: add full year when displaying information about a certificate
+       in the certificate management screen. Suggested by Matthias Rieber.
+
+  <LI> SMIME: sort certificates by some type of alphabetical order in the
+       displayed name.
+
   <LI> HTML: Add support for decoding entities in hexadecimal notation.
        Suggested by Tulip&aacute;nt Gergely.
 
@@ -260,11 +271,10 @@ Additions include:
   <LI> Reimplementation of the code that allows the .pinerc file to be a
        symbolic link by Kyle George from tcpsoft.com to use realpath.
 
-  <LI> SMIME: add full year when displaying information about a certificate
-       in the certificate management screen. Suggested by Matthias Rieber.
-
-  <LI> SMIME: sort certificates by some type of alphabetical order in the
-       displayed name.
+  <LI> When saving an attachment, the "^T" command leads to a screen where the
+       "A" command can be used to add a file. A directory can be added by
+       pressing "^X" after the "A" command. Added after a suggestion by
+       Stefan Goessling.
 </UL>
 
  
@@ -289,6 +299,9 @@ Bugs that have been addressed include:
 
   <LI> SMIME: certificates included in messages were not being transferred
        to a remote container.
+
+  <LI> SMIME: Crash if public certificates are located in an inaccessible
+       remote server and the private key is not available.
 
   <LI> Pico: Searching for a string that is too long causes Pico to crash
        in the next search.

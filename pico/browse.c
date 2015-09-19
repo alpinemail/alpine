@@ -318,6 +318,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
     int status, i, j;
     int row, col, crow, ccol;
     int flags;
+    int add_file;
     char *p, *envp, child[NLINE], tmp[NLINE];
     struct bmaster *mp;
     struct fcell *tp;
@@ -1052,6 +1053,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		break;
 	    }
 
+	    add_file = 1;
 	    i = 0;
 	    child[0] = '\0';
 	    /* pass in default filename */
@@ -1061,9 +1063,16 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 	    }
 
 	    while(!i){
+		int repaint = 0;
+		EXTRAKEYS opts[10];
 
-		switch(status=mlreply_utf8(_("Name of file to add: "), child, NLINE,
-				      QFFILE, NULL)){
+		memset((void *) &opts, 0, 10*sizeof(EXTRAKEYS));
+		opts[0].name  = "^X";
+		opts[0].label = add_file ? N_("Add Dir") : N_("Add File");
+		opts[0].key   = (CTRL|'X');
+
+		switch(status=mlreply_utf8(add_file ? _("Name of file to add: ") : _("Name of directory to add: "), child, NLINE,
+				      QFFILE, opts)){
 		  case HELPCH:
 		    emlwrite(_("\007No help yet!"), NULL);
 /* remove break and sleep after help text is installed */
@@ -1072,8 +1081,11 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		  case (CTRL|'L'):
 		    PaintBrowser(gmp, 0, &crow, &ccol);
 		    break;
+		  case (CTRL|'X'):
+		    if(add_file > 0) add_file = 0; else add_file = 1;
+		    break;
 		  case ABORT:
-		    emlwrite(_("Add File Cancelled"), NULL);
+		    emlwrite(add_file > 0 ? _("Add File Cancelled") : _("Add Directory Cancelled"), NULL);
 		    i++;
 		    break;
 		  case FALSE:
@@ -1088,7 +1100,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		    i++;
 
 		    if(child[0] == '\0'){
-			emlwrite(_("No file named.  Add Cancelled."), NULL);
+			emlwrite(add_file > 0 ? _("No file named.  Add Cancelled.") : _("No directory named. Add Cancelled"), NULL);
 			break;
 		    }
 
@@ -1105,8 +1117,8 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		    }
 
 		    if((status = fexist(child, "w", (off_t *)NULL)) == FIOSUC){
-			snprintf(tmp, sizeof(tmp), _("File \"%.*s\" already exists!"),
-				NLINE - 20, child);
+			snprintf(tmp, sizeof(tmp), _("%s \"%.*s\" already exists!"),
+				NLINE - 20, add_file > 0 ? "File" : "Directory", child);
 			emlwrite(tmp, NULL);
 			break;
 		    }
@@ -1115,7 +1127,15 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 			break;
 		    }
 
-		    if(ffwopen(child, FALSE) != FIOSUC){
+		    if(add_file == 0){
+			if(our_mkdir(child, (0700)) < 0){
+			   eml.s = child;
+			   emlwrite(_("Error adding Directory \"%s\""), &eml);
+			}
+			else	/* success! Directory added! */
+			  repaint = 1;
+		    }
+		    else if(ffwopen(child, FALSE) != FIOSUC){
 			/* ffwopen should've complained */
 			break;
 		    }
@@ -1123,7 +1143,10 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 			ffclose();
 		        eml.s = child;
 			emlwrite(_("Added File \"%s\""), &eml);
+			repaint = 1;
+		    }
 
+		    if(repaint > 0){
 			if((p = strrchr(child, C_FILESEP)) == NULL){
 			    emlwrite(_("Problems refiguring browser"), NULL);
 			    break;
