@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 103 2015-09-18 22:15:37
+Alpine Commit 104 2015-09-19 12:51:36
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -334,6 +334,8 @@ Bugs that have been addressed include:
        selection would not show those messages if those messages are on 
        top of the current message in the top of the screen. Reported by
        Ulf-Dietrich Braumann.
+
+  <LI> Crash when reviewing history of saving attachments.
 </UL>
 
 

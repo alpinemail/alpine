@@ -4681,8 +4681,7 @@ get_export_filename(struct pine *ps, char *filename, char *deefault,
 		  p = get_next_hist(*history, filename, 0, NULL);
 	    }
 
-	    if(p != NULL){
-		fn = last_cmpnt(p);
+	    if(p != NULL && (fn = last_cmpnt(p)) != NULL){
 		strncpy(dir, p, MIN(fn - p, sizeof(dir)-1));
 		dir[MIN(fn - p, sizeof(dir)-1)] = '\0';
 		if(fn - p > 1)
