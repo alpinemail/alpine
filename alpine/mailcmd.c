@@ -4168,6 +4168,7 @@ get_export_filename(struct pine *ps, char *filename, char *deefault,
     char      def[500];
     ESCKEY_S *opts = NULL;
     struct variable *vars = ps->vars;
+    static HISTORY_S *dir_hist = NULL;
 
     if(flags & GE_ALLPARTS || history){
 	/*
@@ -4177,7 +4178,7 @@ get_export_filename(struct pine *ps, char *filename, char *deefault,
 	  ;
 
 	if(history)
-	  i += 2;
+	  i += 4;
 	
 	if(flags & GE_ALLPARTS)
 	  i++;
@@ -4223,12 +4224,24 @@ get_export_filename(struct pine *ps, char *filename, char *deefault,
 	    opts[i].rval    = 31;
 	    opts[i].name    = "";
 	    opts[i++].label = "";
+
+	    opts[i].ch      = ctrl('Y');
+	    opts[i].rval    = 32;
+	    opts[i].name    = "";
+	    opts[i++].label = "";
+
+	    opts[i].ch      = ctrl('V');
+	    opts[i].rval    = 33;
+	    opts[i].name    = "";
+	    opts[i++].label = "";
 	}
 	
 	opts[i].ch = -1;
 
-	if(history)
+	if(history){
 	  init_hist(history, HISTSIZE);
+	  init_hist(&dir_hist, HISTSIZE);
+	}
     }
     else
       opts = optsarg;
@@ -4385,6 +4398,18 @@ get_export_filename(struct pine *ps, char *filename, char *deefault,
 		opts[ku].label = HISTORY_KEYLABEL;
 		opts[ku+1].name  = HISTORY_DOWN_KEYNAME;
 		opts[ku+1].label = HISTORY_KEYLABEL;
+		if(items_in_hist(dir_hist) > 0){  /* any directories */
+		   opts[ku+2].name  = "^Y";
+		   opts[ku+2].label = "Prev Dir";
+		   opts[ku+3].name  = "^V";
+		   opts[ku+3].label = "Next Dir";
+		}
+		else{
+		   opts[ku+2].name  = "";
+		   opts[ku+2].label = "";
+		   opts[ku+3].name  = "";
+		   opts[ku+3].label = "";
+		}
 	    }
 	    else{
 		opts[ku].name  = "";
@@ -4399,6 +4424,7 @@ get_export_filename(struct pine *ps, char *filename, char *deefault,
 	r = optionally_enter(filename, qline, 0, len, prompt_buf,
 			     opts, NO_HELP, &oeflags);
 
+        dprint((2, "\n - export_filename = \"%s\", r = %d -\n", filename, r));
         /*--- Help ----*/
 	if(r == 3){
 	    /*
@@ -4671,33 +4697,41 @@ get_export_filename(struct pine *ps, char *filename, char *deefault,
         else if(r == 4){
 	    continue;
 	}
-	else if(r == 30 || r == 31){
+	else if(r >= 30 && r <= 33){
 	    char *p = NULL;
 
 	    if(history){
-		if(r == 30)
-		  p = get_prev_hist(*history, filename, 0, NULL);
-		else
-		  p = get_next_hist(*history, filename, 0, NULL);
+		switch(r){
+		   case 30: p = get_prev_hist(*history, filename, 0, NULL); break;
+		   case 31: p = get_next_hist(*history, filename, 0, NULL); break;
+		   case 32: p = get_prev_hist(dir_hist, NULL, 0, NULL); break;
+		   case 33: p = get_next_hist(dir_hist, NULL, 0, NULL); break;
+		   default: alpine_panic("Impossible case in save attachment"); break;
+		}
 	    }
 
-	    if(p != NULL && (fn = last_cmpnt(p)) != NULL){
-		strncpy(dir, p, MIN(fn - p, sizeof(dir)-1));
-		dir[MIN(fn - p, sizeof(dir)-1)] = '\0';
-		if(fn - p > 1)
-		  dir[fn - p - 1] = '\0';
-		
+	    if(p != NULL && *p != '\0'){
+		if(r == 30 || r == 31){
+		  if((fn = last_cmpnt(p)) != NULL){
+		    strncpy(dir, p, MIN(fn - p, sizeof(dir)-1));
+		    dir[MIN(fn - p, sizeof(dir)-1)] = '\0';
+		    if(fn - p > 1)
+		      dir[fn - p - 1] = '\0';
+		    strncpy(filename, fn, len-1);
+		    filename[len-1] = '\0';
+		  }
+		} else {	/* r == 32 || r == 33 */
+		  strncpy(dir, p, sizeof(dir)-1);
+		  dir[sizeof(dir)-1] = '\0';
+		}
+
 		if(!strcmp(dir, ps->home_dir)){
 		    dir[0] = '~';
 		    dir[1] = '\0';
 		}
-
-		strncpy(filename, fn, len-1);
-		filename[len-1] = '\0';
 	    }
 	    else
 	      Writechar(BELL, 0);
-
 	    continue;
 	}
 	else if(r != 0){
@@ -4848,8 +4882,14 @@ get_export_filename(struct pine *ps, char *filename, char *deefault,
     }
 
 done:
-    if(history && ret == 0)
+    if(history && ret == 0){
       save_hist(*history, full_filename, 0, NULL);
+      strncpy(tmp, full_filename, MAXPATH);
+      tmp[MAXPATH] = '\0';
+      if((fn = strrchr(tmp, C_FILESEP)) != NULL)
+	*fn = '\0';
+      save_hist(dir_hist, tmp, 0, NULL);
+    }
 
     if(opts && opts != optsarg)
       fs_give((void **) &opts);

@@ -39,7 +39,6 @@ typedef struct history_s {
 #define HISTORY_DOWN_KEYNAME  "Down"
 #define HISTORY_KEYLABEL N_("History")
 
-
 void        init_hist(HISTORY_S **, int);
 void        free_hist(HISTORY_S **);
 char       *get_prev_hist(HISTORY_S *, char *, unsigned, void *);
@@ -48,6 +47,7 @@ void        save_hist(HISTORY_S *, char *, unsigned, void *);
 int         items_in_hist(HISTORY_S *);
 void        add_to_histlist(HISTORY_S **);
 void        free_histlist(void);
+int         dirs_in_hist(HISTORY_S *);
 
 
 #endif /* PITH_HIST_INCLUDED */

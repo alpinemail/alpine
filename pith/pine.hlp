@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 104 2015-09-19 12:51:36
+Alpine Commit 105 2015-09-20 19:20:48
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -275,6 +275,11 @@ Additions include:
        "A" command can be used to add a file. A directory can be added by
        pressing "^X" after the "A" command. Added after a suggestion by
        Stefan Goessling.
+
+  <LI> When saving an attachment, the ^Y and ^V commands allow a user to 
+       scroll through the history of directories used to save attachments, 
+       while preserving the given name of the file. Suggested by Peter 
+       Koellner.
 </UL>
 
  

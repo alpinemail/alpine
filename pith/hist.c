@@ -49,7 +49,6 @@ free_hist(HISTORY_S **history)
     int i;
 
     if(history && *history){
-
 	for(i = 0; i < (*history)->histsize; i++)
 	  if((*history)->hist[i] && (*history)->hist[i]->str)
 	    fs_give((void **) &(*history)->hist[i]->str);
