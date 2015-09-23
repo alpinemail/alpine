@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 105 2015-09-20 19:20:48
+Alpine Commit 106 2015-09-22 19:46:50
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -280,6 +280,9 @@ Additions include:
        scroll through the history of directories used to save attachments, 
        while preserving the given name of the file. Suggested by Peter 
        Koellner.
+
+  <LI> SMIME: Turn off automatic signing and encrypting of a message when
+       bouncing. Suggested after a discussion with Matthias Rieber.
 </UL>
 
  

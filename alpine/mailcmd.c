@@ -2419,6 +2419,16 @@ cmd_bounce(struct pine *state, MSGNO_S *msgmap, int aopt)
            }
         }
 
+#ifdef SMIME
+       /* When we bounce a message, we will leave the original message
+	* intact, which means that it will not be signed or encrypted,
+	* so we turn off signing and encrypting now. It will be turned
+	* on again in send_exit_for_pico().
+	*/
+	if(ps_global->smime)
+	   ps_global->smime->do_sign = ps_global->smime->do_encrypt = 0;
+#endif /* SMIME */
+
 	rv = bounce(state, role);
 
 	if(role)
