@@ -107,17 +107,19 @@ void
 remove_directions_mark(void)
 {
    LINE *lp;
-   int i, ll;
+   int i;
    UCS c;
 
    for(lp = lforw(curbp->b_linep); lp != curbp->b_linep; lp = lforw(lp)){
-      ll = llength(lp);
-      for(i = 0; i < ll;){
+      for(i = 0; i < llength(lp);){
 	 c = lgetc(lp, i).c;
 	 if(c == 0x200E || c == 0x200F){
 	    curwp->w_dotp = lp;
 	    curwp->w_doto = i;
-	    forwdel(FALSE, 1);
+	    if(i < llength(lp))
+	       forwdel(FALSE, 1);
+	    else
+	      llength(lp)--;
 	    direction = c == 0x200E ? 0 : 1;
 	 }
 	 else

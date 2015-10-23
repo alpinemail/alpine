@@ -344,6 +344,9 @@ Bugs that have been addressed include:
        Ulf-Dietrich Braumann.
 
   <LI> Crash when reviewing history of saving attachments.
+
+  <LI> Crash in Pico when forwarding messages that contain a direction mark
+       at the end of a line. Reported by James Mingo.
 </UL>
 
 
