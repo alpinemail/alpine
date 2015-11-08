@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 108 2015-10-24 10:47:29
+Alpine Commit 109 2015-11-07 18:56:21
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -347,6 +347,8 @@ Bugs that have been addressed include:
 
   <LI> Crash in Pico when forwarding messages that contain a direction mark
        at the end of a line. Reported by James Mingo.
+
+  <LI> Solve compilation errors when Alpine is built with Visual Studio 2015.
 </UL>
 
 

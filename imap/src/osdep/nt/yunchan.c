@@ -23,7 +23,8 @@
  *		Internet: MRC@CAC.Washington.EDU
  *
  * Date:	14 September 1996
- * Last Edited:	30 August 2006
+ * Last Edited:	November 7, 2015.
+ *		Eduardo Chappa <chappa@gmx.com>
  */
 
 
@@ -218,6 +219,77 @@ unsigned long unix_crlflen (STRING *s)
  *	hook at fclose().  Unfortunately, that doesn't work in Win2K.
  * I would be delighted to have a better alternative.
  */
+/* So Visual Studio 2015 came along and it made a change to the FILE structure
+ * so it is not possible to use _tmpfname to store the name of the temporary
+ * file name, so we will introduce an internal management system to keep track
+ * of temporary files. E.Ch.
+ */
+
+typedef struct win_file {
+   FILE *f;
+   char *name;
+} WIN_FILE_S;
+
+typedef struct wintmpfile {
+  WIN_FILE_S *wf;		/* where memory is saved		*/
+  int size;			/* size of array of allocated memory	*/
+  int total;			/* total number of allocated members	*/
+} TMP_WINFILE;
+
+#define TMPFILE_NUM 5		/* increase every 5 files, if we need to */
+TMP_WINFILE win_tmp;
+int inited = 0;
+
+void add_tmpfile(TMP_WINFILE *wtmp, FILE *f, char *name)
+{
+  if(wtmp == NULL)
+     return;
+
+   if(wtmp->total % TMPFILE_NUM == 0){
+      wtmp->size += TMPFILE_NUM;
+      fs_resize((void **)&wtmp->wf, wtmp->size*sizeof(WIN_FILE_S));
+   }
+
+   wtmp->wf[wtmp->total].f = f;
+   wtmp->wf[wtmp->total++].name = name;
+}
+
+int get_pos_tmpfile(TMP_WINFILE *wtmp, FILE *f)
+{
+  int i;
+
+  if(wtmp == NULL || wtmp->total == 0)
+    return -1;
+
+  for(i = 0; i < wtmp->total && wtmp->wf[i].f != f; i++);
+
+  return i == wtmp->total ? -1 : i;
+}
+
+/* remove the element in position pos from wtmp, all memory is freed before
+ * calling this function */
+void  remove_pos_tmpfile(TMP_WINFILE *wtmp, int pos)
+{
+   int i;
+
+   if(wtmp == NULL || pos < 0 || pos >= wtmp->total)
+      return;
+
+   wtmp->total--;
+   for(i = pos; i < wtmp->total; i++){
+	wtmp->wf[i].f = wtmp->wf[i+1].f;
+	wtmp->wf[i].name = wtmp->wf[i+1].name;
+   }
+   wtmp->wf[wtmp->total].f = NIL;
+   wtmp->wf[wtmp->total].name = NIL;
+
+   if(wtmp->total % TMPFILE_NUM == 0){
+      wtmp->size -= TMPFILE_NUM;
+      fs_resize((void **)&wtmp->wf, wtmp->size*sizeof(WIN_FILE_S));
+   }
+   if(wtmp->size == 0)
+     inited = 0;		/* restart */
+}
 
 #undef fclose			/* use the real fclose() in close_file() */
 
@@ -229,9 +301,14 @@ FILE *create_tempfile (void)
 {
   FILE *ret = NIL;
   char *s = _tempnam (getenv ("TEMP"),"msg");
+
+  if(inited == 0){		/* initialize, just in case */
+    memset((void *)&win_tmp, 0, sizeof(TMP_WINFILE));
+    inited++;
+  }
   if (s) {			/* if got temporary name... */
-				/* open file, and stash name on _tmpfname */
-    if (ret = fopen (s,"w+b")) ret->_tmpfname = s;
+				/* open file, and stash name on record of temp files */
+    if (ret = fopen (s,"w+b")) add_tmpfile(&win_tmp, ret, s);
     else fs_give ((void **) &s);/* flush temporary string */
   }
   return ret;
@@ -245,12 +322,12 @@ FILE *create_tempfile (void)
 int close_file (FILE *stream)
 {
   int ret;
-  char *s = stream->_tmpfname;
-  stream->_tmpfname = NIL;	/* just in case fclose() tries to delete it */
-  ret = fclose (stream);	/* close the file */
-  if (s) {			/* was there a _tmpfname? */
-    unlink (s);			/* yup, delete it */
-    fs_give ((void **) &s);	/* and flush the name */
+  int pos = get_pos_tmpfile(&win_tmp, stream);
+  ret = fclose (stream);		/* close the file */
+  if (pos >= 0) {			/* was this a temporary file? */
+    unlink (win_tmp.wf[pos].name);	/* if so, delete it */
+    fs_give ((void **) &win_tmp.wf[pos].name);	/* and flush the name */
+    remove_pos_tmpfile(&win_tmp, pos);
   }
   return ret;
 }
