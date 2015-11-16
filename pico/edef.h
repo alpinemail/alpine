@@ -56,6 +56,10 @@ char   *display_character_set = NULL;
 char   *keyboard_character_set = NULL;
 UCS    *glo_wordseps = NULL;            /* points to word separators if set */
 char   *glo_wordseps_orig = NULL;
+#ifdef _WINDOWS
+char  **dictionary = NULL;		/* speller dictionary */
+int     chosen_dict = -1;		/* the dictionary chosen */
+#endif  /* _WINDOWS */
 
 /* uninitialized global definitions */
 int     currow;                 /* Cursor row                   */
@@ -111,6 +115,10 @@ extern  char   *display_character_set;
 extern  char   *keyboard_character_set;
 extern  UCS    *glo_wordseps;
 extern  char   *glo_wordseps_orig;
+#ifdef _WINDOWS
+extern  char  **dictionary;
+extern  int     chosen_dict;
+#endif /* _WINDOWS */
 /* initialized global external declarations */
 extern  int     currow;                 /* Cursor row                   */
 extern  int     curcol;                 /* Cursor column                */

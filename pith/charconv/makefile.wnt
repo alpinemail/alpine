@@ -56,3 +56,5 @@ libpithcc.lib:	$(OFILES)
 clean:
 	$(RM) *.lib
 	$(RM) *.obj
+	$(RM) *.pdb
+

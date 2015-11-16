@@ -190,6 +190,10 @@ typedef struct pico_struct {
     char  *ctrlr_label;			/* Label for ^R in keymenu */
     char  *alt_spell;			/* Checker to use other than "spell" */
     char **alt_ed;			/* name of alternate editor or NULL */
+#ifdef _WINDOWS
+    char  **dict;			/* list of dictionaries to choose  */
+    int   chosen_dict;			/* chosen default dictionary       */
+#endif /* WINDOWS */
     UCS   *wordseps;			/* word separator characters other than space */
     int    fillcolumn;			/* where to wrap */
     int    menu_rows;			/* number of rows in menu (0 or 2) */

@@ -53,12 +53,21 @@ spell(int f, int n)
     LINE *w_markp_bak;
     WORD_INFO word_info;
     ASPELLINFO *aspellinfo;
+    char *lang = NULL;
 
     emlwrite(_("Checking spelling..."), NULL);  /* greetings! */
 
     memset(&word_info, 0, sizeof(WORD_INFO));
 
-    aspellinfo = speller_init(NULL);
+    lang = speller_choice(dictionary, &chosen_dict);
+
+    if (chosen_dict == -2){		/* user cancelled */
+	chosen_dict = -1;
+	emlwrite(_("Speller Cancelled"), NULL);
+	return 1;
+    }
+
+    aspellinfo = speller_init(lang);
     if(!aspellinfo ||
         (word_info.utf8_err_message = speller_get_error_message(aspellinfo)))
     {
@@ -67,6 +76,7 @@ spell(int f, int n)
         else
             emlwrite(_("Spelling: initializing Aspell failed"), NULL);
 
+	chosen_dict = -1;	/* try a different one next time */
         speller_close(aspellinfo);
         return -1;
     }
@@ -437,8 +447,8 @@ spell_dlg_proc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 static int
 get_next_word(WORD_INFO *word_info)
 {
-    UCS *ucst;
-    int i, hibit;
+    UCS *tmp = NULL;
+    int i;
 
     // Skip quoted lines
     while(lgetc(curwp->w_dotp, 0).c == '>')
@@ -482,19 +492,14 @@ get_next_word(WORD_INFO *word_info)
             break;
     }
 
-    ucst = (UCS *)&word_info->word_dotp->l_text[word_info->word_doto];
-    for(i = 0, hibit = 0; i < word_info->word_size; i++)
-	if(ucst[i] & 0xff000000)
-	   hibit++;
-
-    if(hibit > 0){
-	ucst = ucs4_cpystr(ucst);
-	for(i = 0; i < word_info->word_size; i++)
-	   ucst[i] &= 0xffffff;
+    tmp = fs_get((word_info->word_size+1)*sizeof(UCS));
+    if(tmp != NULL){
+       for(i = 0; i < word_info->word_size; i++)
+          tmp[i] = word_info->word_dotp->l_text[word_info->word_doto+i].c;
+       tmp[i] = 0;
+       word_info->word_utf8 = ucs4_to_utf8_cpystr_n(tmp, word_info->word_size);
+       fs_give((void **)&tmp);
     }
-    word_info->word_utf8 = ucs4_to_utf8_cpystr_n(ucst, word_info->word_size);
-    if(hibit > 0)
-      fs_give((void **)&ucst);
     return 1;
 }
 

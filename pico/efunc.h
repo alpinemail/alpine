@@ -124,6 +124,8 @@ extern	void modeline(struct WINDOW *);
 extern	void movecursor(int, int);
 extern	void clearcursor(void);
 extern	void mlerase(void);
+extern  char *speller_choice(char **, int *);
+extern  int mlchoose(UCS *, EXTRAKEYS *);
 extern	int mlyesno_utf8(char *, int);
 extern	int mlyesno(UCS *, int);
 extern	int mlreply_utf8(char *, char *, int, int, EXTRAKEYS *);

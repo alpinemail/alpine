@@ -165,6 +165,10 @@ pico(PICO *pm)
     gmode        |= pm->pine_flags;	/* high 4 bits rsv'd for pine */
 
     alt_speller   = pm->alt_spell;
+#ifdef _WINDOWS
+    dictionary	  = pm->dict;
+    chosen_dict   = pm->chosen_dict;
+#endif /* _WINDOWS */
     pico_all_done = 0;
     km_popped     = 0;
 

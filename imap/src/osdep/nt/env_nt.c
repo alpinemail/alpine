@@ -9,7 +9,8 @@
  * Author:	Mark Crispin
  *
  * Date:	1 August 1988
- * Last Edited:	3 April 2010
+ * Last Edited:	November 10, 2015.
+ *		Eduardo Chappa <chappa@gmx.com>
  *
  * Previous versions of this file were:
  *
@@ -164,8 +165,8 @@ static void do_date (char *date,char *prefix,char *fmt,int suffix)
 	   t->tm_hour,t->tm_min,t->tm_sec,zone/60,abs (zone) % 60);
   if (suffix) {			/* append timezone suffix if desired */
     char *tz;
-    tzset ();			/* get timezone from TZ environment stuff */
-    tz = tzname[daylight ? (((struct tm *) t)->tm_isdst > 0) : 0];
+    _tzset ();			/* get timezone from TZ environment stuff */
+    tz = _tzname[_daylight ? (((struct tm *) t)->tm_isdst > 0) : 0];
     if (tz && tz[0]) {
       char *s;
       for (s = tz; *s; s++) if (*s & 0x80) return;

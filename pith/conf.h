@@ -161,6 +161,10 @@
 #define GLO_EDITOR		     vars[V_EDITOR].global_val.l
 #define VAR_SPELLER		     vars[V_SPELLER].current_val.p
 #define GLO_SPELLER		     vars[V_SPELLER].global_val.p
+#ifdef _WINDOWS
+#define VAR_DICTIONARY		     vars[V_DICTIONARY].current_val.l
+#define GLO_DICTIONARY		     vars[V_DICTIONARY].global_val.l
+#endif /* _WINDOWS */
 #define VAR_FILLCOL		     vars[V_FILLCOL].current_val.p
 #define GLO_FILLCOL		     vars[V_FILLCOL].global_val.p
 #define VAR_DEADLETS		     vars[V_DEADLETS].current_val.p

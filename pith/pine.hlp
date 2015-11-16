@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 109 2015-11-07 18:56:21
+Alpine Commit 110 2015-11-15 17:54:38
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -179,6 +179,12 @@ addresses bugs found in previous releases and has a few additions as well.
 <P>
 Additions include:
 <UL>
+  <LI> PC-Alpine: New configuration option "Aspell Dictionaries" allows a
+       user to choose the dictionary used to spell, in case the user 
+       communicates in more than one language. Examples of values for the 
+       variable are "en_US" or "de_DE", etc. Only the first 10 
+       dictionaries are offered.
+
   <LI> Ignore message from smtp server after a successful authentication
        challenge.
 
@@ -4045,6 +4051,7 @@ There are also additional details on
 <li><a href="h_config_smtp_server">OPTION: <!--#echo var="VAR_smtp-server"--></a>
 <li><a href="h_config_sort_key">OPTION: <!--#echo var="VAR_sort-key"--></a>
 <li><a href="h_config_speller">OPTION: <!--#echo var="VAR_speller"--></a>
+<li><a href="h_config_aspell_dictionary">OPTION: <!--#echo var="VAR_aspell-dictionary-list"--></a>
 <li><a href="h_config_sshcmd">OPTION: <!--#echo var="VAR_ssh-command"--></a>
 <li><a href="h_config_ssh_open_timeo">OPTION: <!--#echo var="VAR_ssh-open-timeout"--></a>
 <li><a href="h_config_sshpath">OPTION: <!--#echo var="VAR_ssh-path"--></a>
@@ -23416,6 +23423,27 @@ tempfile back into the composer.
 <P>
 Don't set this speller option to the standard Unix spell command.
 That won't work because spell works in a different way.
+
+<P>
+<UL>   
+<LI><A HREF="h_finding_help">Finding more information and requesting help</A>
+</UL><P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+====== h_config_aspell_dictionary =====
+<HTML>
+<HEAD>
+<TITLE>OPTION: <!--#echo var="VAR_aspell-dictionary-list"--></TITLE>
+</HEAD>
+<BODY>
+<H1>OPTION: <!--#echo var="VAR_aspell-dictionary-list"--></H1>
+
+PC Alpine only.
+<P>
+This option specifies a list of dictionaries you will use with
+aspell. A sample entry is &quot;en_US&quot; for american english, or
+&quot;en_GB&quot; for brittish english.
 
 <P>
 <UL>   

@@ -224,6 +224,10 @@ CONF_TXT_T cf_text_editor[] =		"Specifies the program invoked by ^_ in the Compo
 
 CONF_TXT_T cf_text_speller[] =		"Specifies the program invoked by ^T in the Composer.";
 
+#ifdef _WINDOWS
+CONF_TXT_T cf_text_speller_dictionary[] =	"Specifies the list of dictionaries used by Aspell.";
+#endif /* _WINDOWS */
+
 CONF_TXT_T cf_text_deadlets[] =		"Specifies the number of dead letter files to keep when canceling.";
 
 CONF_TXT_T cf_text_fillcol[] =		"Specifies the column of the screen where the composer should wrap.";
@@ -560,6 +564,10 @@ static struct variable variables[] = {
 	NULL,			cf_text_editor},
 {"speller",				0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	NULL,			cf_text_speller},
+#ifdef _WINDOWS
+{"aspell-dictionary-list",	0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0,
+	"Aspell Dictionaries",	cf_text_speller_dictionary},
+#endif /* _WINDOWS */
 {"composer-wrap-column",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	NULL,			cf_text_fillcol},
 {"reply-indent-string",			0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0,
@@ -2005,6 +2013,9 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     set_current_val(&vars[V_FORM_FOLDER], TRUE, TRUE);
     set_current_val(&vars[V_EDITOR], TRUE, TRUE);
     set_current_val(&vars[V_SPELLER], TRUE, TRUE);
+#ifdef _WINDOWS
+    set_current_val(&vars[V_DICTIONARY], TRUE, TRUE);
+#endif /* _WINDOWS */
     set_current_val(&vars[V_IMAGE_VIEWER], TRUE, TRUE);
     set_current_val(&vars[V_BROWSER], TRUE, TRUE);
     set_current_val(&vars[V_SMTP_SERVER], TRUE, TRUE);
@@ -7689,6 +7700,10 @@ config_help(int var, int feature)
 	return(h_config_editor);
       case V_SPELLER :
 	return(h_config_speller);
+#ifdef _WINDOWS
+      case V_DICTIONARY :
+	return(h_config_aspell_dictionary);
+#endif /* _WINDOWS */
       case V_DISPLAY_FILTERS :
 	return(h_config_display_filters);
       case V_SEND_FILTER :

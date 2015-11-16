@@ -1307,6 +1307,201 @@ mlerase(void)
     mpresf = FALSE;
 }
 
+/* returns the chosen dictionary. If one was already chosen
+ * return that one 
+ */
+char *
+speller_choice(char **sp_list, int *choice)
+{
+    int ch_dict = -1;
+    int cnt;
+
+    if(sp_list == NULL || sp_list[0] == NULL || sp_list[0][0] == '\0')
+      return NULL;
+
+    if(choice && *choice >= 0)
+      return sp_list[*choice];
+
+    for(cnt = 0; sp_list[cnt] != NULL && sp_list[cnt][0] != '\0'; cnt++)
+	;
+
+    if(cnt > 10)		/* only the first 10 dictionaries */
+	cnt = 10;
+
+    if(cnt == 1)		/* only one dictionary? choose it! */
+        ch_dict = 0;
+
+    if(ch_dict > cnt - 1)	/* choose again in case something changed */
+	ch_dict = -1;
+
+    if(ch_dict < 0){		/* not a choice yet? do one now! */
+	UCS buf[128];
+	int i;
+	char *utf8_prompt;
+	UCS  *ucs4_prompt;
+	EXTRAKEYS    menu_dictionary[] = {
+		{"0", NULL, '0'},
+		{"1", NULL, '1'},
+		{"2", NULL, '2'},
+		{"3", NULL, '3'},
+		{"4", NULL, '4'},
+		{"5", NULL, '5'},
+		{"6", NULL, '6'},
+		{"7", NULL, '7'},
+		{"8", NULL, '8'},
+		{"9", NULL, '9'}
+	};
+
+	for(i = 0; i < cnt; i++)
+	   menu_dictionary[i].label = sp_list[i];
+
+	if(cnt < 10)
+	  menu_dictionary[cnt].name = NULL;
+
+	buf[0] = '\0';
+	/* write the prompt in utf8, and let internal functions translate it to ucs4 */
+	ucs4_prompt = utf8_to_ucs4_cpystr(_("Choose Dictionary: "));
+
+	i = mlchoose(ucs4_prompt, menu_dictionary);
+
+	if(i >= '0' && i <= '9')
+	  ch_dict = i - '0';
+	
+	if (i == -2) /* user cancelled */
+		ch_dict = -2;
+
+	if(ucs4_prompt)
+	   fs_give((void **)&ucs4_prompt);
+  }
+  else ch_dict = -1;
+
+  if(choice)
+     *choice = ch_dict;
+
+  return  ch_dict >= 0 ? sp_list[ch_dict] : NULL;
+}   
+
+/* just like mlreplyd, but user cannot fill a prompt */
+int
+mlchoose(UCS *prompt, EXTRAKEYS *extras)
+{
+    UCS      c;
+    UCS      buf[NLINE];
+    int      i;
+    int      changed = FALSE;
+    int      return_val = 0;
+    KEYMENU  menu_choose[12];
+    COLOR_PAIR *lastc = NULL;
+
+    for(i = 0; i < 12; i++){
+	menu_choose[i].name = NULL;
+	KS_OSDATASET(&menu_choose[i], KS_NONE);
+    }
+
+    menu_choose[0].name = "^G";
+    menu_choose[0].label = N_("Get Help");
+    KS_OSDATASET(&menu_choose[0], KS_SCREENHELP);
+
+    menu_choose[6].name = "^C";
+    menu_choose[6].label = N_("Cancel");
+    KS_OSDATASET(&menu_choose[6], KS_NONE);
+
+    for(i = 0; i < 10; i++){
+	if((i % 2) == 0){
+	  menu_choose[i / 2 + 1].name = extras[i].name;
+	  menu_choose[i / 2 + 1].label = extras[i].label;
+	}
+	else{
+	  menu_choose[(i + 13) / 2].name = extras[i].name;
+	  menu_choose[(i + 13) / 2].label = extras[i].label;
+	}
+    }
+    wkeyhelp(menu_choose);		/* paint generic menu */
+    sgarbk = TRUE;			/* mark menu dirty */
+    if(Pmaster && curwp)
+      curwp->w_flag |= WFMODE;
+
+    ucs4_strncpy(buf, prompt, NLINE);
+    buf[NLINE-1] = '\0';
+    mlwrite(buf, NULL);
+    if(Pmaster && Pmaster->colors && Pmaster->colors->prcp
+       && pico_is_good_colorpair(Pmaster->colors->prcp)){
+	lastc = pico_get_cur_color();
+	(void) pico_set_colorp(Pmaster->colors->prcp, PSC_NONE);
+    }
+    else
+      (*term.t_rev)(1);
+
+    return_val = -1;
+    while(1){
+	c = GetKey();
+	for(i = 0; i < 10 && extras[i].name != NULL && extras[i].key != c; i++)
+	   ;
+	if(i < 10 && extras[i].name)
+	   return_val = c;
+	else switch(c){
+	  case (CTRL|'C') :		/* Bail out! */
+	  case F2         :
+	    pputs_utf8(_("Cancel"), 1);
+	    return_val = -2;
+	  break;
+
+	  case (CTRL|'G') :
+	    if(term.t_mrow == 0 && km_popped == 0){
+		movecursor(term.t_nrow-2, 0);
+		peeol();
+		term.t_mrow = 2;
+		if(lastc){
+		    (void) pico_set_colorp(lastc, PSC_NONE);
+		    free_color_pair(&lastc);
+		}
+		else
+		  (*term.t_rev)(0);
+
+		wkeyhelp(menu_choose);		/* paint generic menu */
+		mlwrite(buf, NULL);
+		if(Pmaster && Pmaster->colors && Pmaster->colors->prcp
+		   && pico_is_good_colorpair(Pmaster->colors->prcp)){
+		    lastc = pico_get_cur_color();
+		    (void) pico_set_colorp(Pmaster->colors->prcp, PSC_NONE);
+		}
+		else
+		  (*term.t_rev)(1);
+
+		sgarbk = TRUE;			/* mark menu dirty */
+		km_popped++;
+		break;
+	    }
+	    /* else fall through */
+
+	  default:
+	    (*term.t_beep)();
+	  case NODATA :
+	    break;
+	}
+
+	(*term.t_flush)();
+	if (return_val != -1){ /* abort sets rv = -2, other return values are positive */
+	    if(lastc){
+		(void) pico_set_colorp(lastc, PSC_NONE);
+		free_color_pair(&lastc);
+	    }
+	    else
+	      (*term.t_rev)(0);
+
+	    if(km_popped){
+		term.t_mrow = 0;
+		movecursor(term.t_nrow, 0);
+		peeol();
+		sgarbf = 1;
+		km_popped = 0;
+	    }
+
+	    return(return_val);
+	}
+    }
+}
+
 
 int
 mlyesno_utf8(char *utf8prompt, int dflt)

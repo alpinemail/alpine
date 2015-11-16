@@ -1822,7 +1822,13 @@ pine_send(ENVELOPE *outgoing, struct mail_bodystruct **body,
     ps_global->newthread = 0;	/* reset this value */
     if(F_OFF(F_CANCEL_CONFIRM, ps_global))
       pbf->canceltest    = cancel_for_pico;
-
+#ifdef _WINDOWS
+    pbf->dict	       = (ps_global->VAR_DICTIONARY 
+			    && ps_global->VAR_DICTIONARY[0] 
+			    && ps_global->VAR_DICTIONARY[0][0])
+				? ps_global->VAR_DICTIONARY : NULL;
+    pbf->chosen_dict  = -1;	/* not chosen yet */
+#endif /* _WINDOWS */
     pbf->alt_ed        = (ps_global->VAR_EDITOR && ps_global->VAR_EDITOR[0] &&
 			    ps_global->VAR_EDITOR[0][0])
 				? ps_global->VAR_EDITOR : NULL;

@@ -79,6 +79,9 @@ typedef	enum {    V_PERSONAL_NAME = 0
 		, V_UNK_CHAR_SET
 		, V_EDITOR
 		, V_SPELLER
+#ifdef _WINDOWS
+		, V_DICTIONARY
+#endif /* _WINDOWS */
 		, V_FILLCOL
 		, V_REPLY_STRING
 		, V_REPLY_INTRO

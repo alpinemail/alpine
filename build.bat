@@ -28,7 +28,7 @@ echo         clean      -- to remove obj, lib, and exe files from source
 goto fini
 
 :wnt
-echo PC-Pine for Windows/Winsock (Win32) build sequence
+echo PC-Aline for Windows/Winsock (Win32) build sequence
 set cclntmake=makefile.nt
 set alpinemake=makefile.wnt
 if not defined ALPINE_LDAP set ALPINE_LDAP=%cd%\ldap
