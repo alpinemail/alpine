@@ -1205,11 +1205,8 @@ mem_add_extra_cacerts(char *contents, X509_LOOKUP *lookup)
 		    in = BIO_new_mem_buf(certtext, q-certtext);
 		    if(in){
 			tempfile = temp_nam(NULL, "az");
-			out = NULL;
-			if(tempfile)
-			  out = BIO_new_file(tempfile, "w");
-
-			if(out){
+			out = tempfile != NULL ? BIO_new_file(tempfile, "w") : NULL;
+			if(out != NULL){
 			    while((len = BIO_read(in, iobuf, sizeof(iobuf))) > 0)
 			      BIO_write(out, iobuf, len);
 
@@ -1217,7 +1214,10 @@ mem_add_extra_cacerts(char *contents, X509_LOOKUP *lookup)
 			    if(!X509_LOOKUP_load_file(lookup, tempfile, X509_FILETYPE_PEM))
 			      failed++;
 
-			    fs_give((void **) &tempfile);
+			}
+			if(tempfile != NULL){
+			   unlink(tempfile);
+			   fs_give((void **) &tempfile);
 			}
 			  
 			BIO_free(in);

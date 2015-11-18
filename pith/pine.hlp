@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 111 2015-11-15 19:07:10
+Alpine Commit 112 2015-11-18 09:02:07
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -203,7 +203,7 @@ Additions include:
        signed/decrypted add the ability to view its SMIME information.
 
   <LI> SMIME: Certificate information in the S/MIME screen is available 
-       for certificates stored in a cotainer.
+       for certificates stored in a container.
 
   <LI> SMIME: Offer the common name of the person, instead of the name of
        file containing the certificate, as the name to be displayed in the 
@@ -316,6 +316,9 @@ Bugs that have been addressed include:
 
   <LI> SMIME: Crash if public certificates are located in an inaccessible
        remote server and the private key is not available.
+
+  <LI> SMIME: Alpine does not remove remporary files created when adding a 
+       CA certificate to a container. Reported by Holger Trapp.
 
   <LI> Pico: Searching for a string that is too long causes Pico to crash
        in the next search.
