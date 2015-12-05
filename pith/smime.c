@@ -71,7 +71,7 @@ static int            copy_container_to_dir(WhichCerts which);
 static int	      do_fiddle_smime_message(BODY *b, long msgno, char *section);
 void		      setup_privatekey_storage(void);
 int		      smime_path(char *rpath, char *fpath, size_t len);
-int		      smime_extract_and_save_cert(PKCS7 *p7);
+int		      smime_extract_and_save_cert(PKCS7 *p7, int check_cert);
 int		      same_cert(X509 *, X509 *);
 CertList *	      certlist_from_personal_certs(PERSONAL_CERT *pc);
 #ifdef PASSFILE
@@ -85,6 +85,7 @@ int		      smime_validate_extra_test(char *mimetext, unsigned long mimelen, char
 int  (*pith_opt_smime_get_passphrase)(void);
 int  (*pith_smime_import_certificate)(char *, char *, size_t);
 int  (*pith_smime_enter_password)(char *prompt, char *, size_t);
+int  (*pith_smime_confirm_save)(char *email);
 
 static X509_STORE   *s_cert_store;
 
@@ -2478,12 +2479,13 @@ int same_cert(X509 *x, X509 *cert)
  *    < 0 - certificate error is not recoverable, don't even think about it.
  */
 
-int smime_extract_and_save_cert(PKCS7 *p7)
+int smime_extract_and_save_cert(PKCS7 *p7, int check_cert)
 {
     STACK_OF(X509) *signers;
     X509 *x, *cert;
     char **email;
     int i, j;
+    long error;
 
     if((signers = PKCS7_get0_signers(p7, NULL, 0)) == NULL)
       return -1;
@@ -2495,10 +2497,15 @@ int smime_extract_and_save_cert(PKCS7 *p7)
 	if((email = get_x509_subject_email(x)) != NULL){
 	  for(j = 0; email[j] != NULL; j++){
 	     if((cert = get_cert_for(email[j], Public)) == NULL 
-		  || same_cert(x, cert) == 0)
-	        save_cert_for(email[j], x, Public);
-	     X509_free(cert);
-	     fs_give((void **) &email[i]);
+		  || same_cert(x, cert) == 0){
+		if(check_cert == 0
+		   || smime_validate_cert(x, &error) == 0
+		   || (*pith_smime_confirm_save)(email[j]) == 1)
+		  save_cert_for(email[j], x, Public);
+	     }
+	     if(cert != NULL)
+		X509_free(cert);
+	     fs_give((void **) &email[j]);
 	  }
 	  fs_give((void **) email);
 	}
@@ -2521,8 +2528,7 @@ do_signature_verify(PKCS7 *p7, BIO *in, BIO *out, int silent)
 {
     STACK_OF(X509) *otherCerts = NULL;
     CertList *cl;
-    int result;
-    int flags;
+    int result, flags;
     const char *data;
     long err;
 
@@ -2532,8 +2538,6 @@ do_signature_verify(PKCS7 *p7, BIO *in, BIO *out, int silent)
 
     	return -1;
     }
-
-    smime_extract_and_save_cert(p7);
 
     flags = F_ON(F_USE_CERT_STORE_ONLY, ps_global) ? PKCS7_NOINTERN : 0;
 
@@ -2773,6 +2777,7 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
     PART    *p;
     int	     result, modified_the_body = 0;
     int      flag;	/* 1 silent, 0 not silent */
+    int      saved = 0;
     unsigned long mimelen, bodylen;
     char     newSec[100], *mimetext, *bodytext;
     char    *what_we_did;
@@ -2815,6 +2820,10 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
     if(mimetext != NULL) 
       BIO_write(in, mimetext, mimelen);
     BIO_write(in, bodytext, bodylen);
+
+    saved = smime_extract_and_save_cert(p7, F_ON(F_USE_CERT_STORE_ONLY, ps_global));
+    if(saved < 0 && F_ON(F_USE_CERT_STORE_ONLY, ps_global))
+       return modified_the_body;
 
     if((result = do_signature_verify(p7, in, NULL, 1)) == 0){
       flag = (mimelen == 0 || !IS_REMOTE(ps_global->mail_stream->mailbox))

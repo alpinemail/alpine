@@ -302,6 +302,16 @@ static ESCKEY_S flag_text_opt[] = {
     {-1, 0, NULL, NULL}
 };
 
+int
+alpine_smime_confirm_save(char *email)
+{
+  char prompt[128];
+
+  snprintf(prompt, sizeof(prompt), _("Save certificate for <%s>"), 
+		email ? email : _("missing address"));
+  return want_to(prompt, 'n', 'x', NO_HELP, WT_NORM) == 'y';
+}
+
 int 
 alpine_get_password(char *prompt, char *pass, size_t len)
 {

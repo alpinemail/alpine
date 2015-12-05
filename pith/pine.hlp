@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 112 2015-11-18 09:02:07
+Alpine Commit 113 2015-12-05 02:13:57
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -220,6 +220,11 @@ Additions include:
 
   <LI> SMIME: sort certificates by some type of alphabetical order in the
        displayed name.
+
+  <LI> SMIME: Alpine will ask users if they wish to save S/MIME 
+       certificates included in signatures, when the option "Validate 
+       Using Certificate Store Only" is enabled. If the user does not wish 
+       to save it, validation will fail.
 
   <LI> HTML: Add support for decoding entities in hexadecimal notation.
        Suggested by Tulip&aacute;nt Gergely.
@@ -34953,7 +34958,12 @@ either use the certificates that come in the message, or the ones that
 you have personally stored. If this feature is enabled (the default) then 
 Alpine will use certificates that you have already saved in your store 
 and not those that come in the message to validate the sender of the 
-message. This behavior helps you prevent against impersonation, because 
+message. In particular, the first time that you receive a signed message
+from a sender, and their certificate does not validate against your
+store, then you will be asked if you wish to save such certificate. If
+you do not wish to save the certificate, then Alpine will fail to validate
+the signature of the message. Otherwise, Alpine will proceed to validate
+the signature of the message. This behavior helps you prevent against impersonation, because 
 it is assumed that you trust the certificates that you have saved, and 
 might not trust those that came with the message that you are validating.
 <P>

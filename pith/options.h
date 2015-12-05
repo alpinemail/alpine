@@ -234,4 +234,10 @@ extern int (*pith_smime_import_certificate)(char *, char *, size_t);
  */
 extern int (*pith_smime_enter_password)(char *, char *, size_t);
 
+/*
+ * required call to ask the user to confirm to save a certificate in the
+ * store
+ */
+extern int (*pith_smime_confirm_save)(char *);
+
 #endif /* PITH_OPTIONS_INCLUDED */
