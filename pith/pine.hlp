@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 113 2015-12-05 02:13:57
+Alpine Commit 114 2015-12-05 11:57:51
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -355,7 +355,9 @@ Bugs that have been addressed include:
   <LI> When the index is in zoomed state, adding new messages to the 
        selection would not show those messages if those messages are on 
        top of the current message in the top of the screen. Reported by
-       Ulf-Dietrich Braumann.
+       Ulf-Dietrich Braumann. In addition, when the user scrolls through
+       the index, this scroll smoothly, without jumping pages. Reported
+       by Holger Trapp.
 
   <LI> Crash when reviewing history of saving attachments.
 

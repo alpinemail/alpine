@@ -322,6 +322,7 @@ index_lister(struct pine *state, CONTEXT_S *cntxt, char *folder, MAILSTREAM *str
 		 cur_row, cur_col, km_popped, paint_status;
     static int   old_day = -1;
     long	 i, j, k, old_max_msgno;
+    long	 lflagged, old_lflagged = 0L;
     char        *utf8str;
     IndexType    style, old_style = MsgIndex;
     struct index_state id;
@@ -422,10 +423,12 @@ index_lister(struct pine *state, CONTEXT_S *cntxt, char *folder, MAILSTREAM *str
 		  : (any_lflagged(msgmap, MN_HIDE))
 		    ? ZoomIndex
 		    : (mn_total_cur(msgmap) > 1L) ? MultiMsgIndex : MsgIndex;
-	if(style != old_style || style == ZoomIndex){
+        lflagged = any_lflagged(msgmap, MN_HIDE);
+	if(style != old_style || lflagged < old_lflagged){
             state->mangled_header = 1;
             state->mangled_footer = 1;
 	    old_style = style;
+	    old_lflagged = lflagged;
 	    if(!(style == ThreadIndex || old_style == ThreadIndex))
 	      id.msg_at_top = 0L;
 	}
