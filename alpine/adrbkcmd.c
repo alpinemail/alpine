@@ -7643,7 +7643,11 @@ url_local_ldap(char *url)
 	  snprintf(ebuf, sizeof(ebuf), _("LDAP search failed: %s"), ldap_err2string(ld_err));
 	  ebuf[sizeof(ebuf)-1] = '\0';
 	  q_status_message(SM_ORDER, 3, 5, ebuf);
+#ifdef _WINDOWS
+	  ldap_unbind(ld);
+#else
 	  ldap_unbind_ext(ld, NULL, NULL);
+#endif /* _WINDOWS */
       }
       else if(!ps_global->intr_pending){
 	if(we_cancel){
@@ -7658,7 +7662,11 @@ url_local_ldap(char *url)
 
 	if(ldap_count_entries(ld, result) == 0){
 	  q_status_message(SM_ORDER, 3, 5, _("No matches found for url"));
+#ifdef _WINDOWS
+	  ldap_unbind(ld);
+#else
 	  ldap_unbind_ext(ld, NULL, NULL);
+#endif /* _WINDOWS */
 	  if(result)
 	    ldap_msgfree(result);
 	}
