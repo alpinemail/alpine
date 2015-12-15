@@ -865,7 +865,7 @@ save_cert_for(char *email, X509 *cert, WhichCerts ctype)
  * The caller should free the cert.
  */
 X509 *
-get_cert_for(char *email, WhichCerts ctype)
+get_cert_for(char *email, WhichCerts ctype, int tolower)
 {
     char	certfilename[MAXPATH];
     char    	emailaddr[MAXPATH];
@@ -883,7 +883,8 @@ get_cert_for(char *email, WhichCerts ctype)
     emailaddr[sizeof(emailaddr)-1] = 0;
     
     /* clean it up (lowercase, space removal) */
-    emailstrclean(emailaddr);
+    if(tolower)
+       emailstrclean(emailaddr);
 
     if(ps_global->smime->publictype == Keychain){
 #ifdef APPLEKEYCHAIN
@@ -1052,7 +1053,7 @@ mem_to_personal_certs(char *contents)
 
 	    if(strncmp(EMAILADDRLEADER, line, strlen(EMAILADDRLEADER)) == 0){
 		name = line + strlen(EMAILADDRLEADER);
-		cert = get_cert_for(name, Public);
+		cert = get_cert_for(name, Public, 1);
 		keytext = p;
 
 		/* advance p past this record */

@@ -51,7 +51,7 @@ typedef struct personal_cert {
 int	       add_certs_in_dir(X509_LOOKUP *lookup, char *path, char *ext, CertList **cdata);
 X509_STORE    *get_ca_store(void);
 PERSONAL_CERT *get_personal_certs(char *d);
-X509          *get_cert_for(char *email, WhichCerts ctype);
+X509          *get_cert_for(char *email, WhichCerts ctype, int tolower);
 void           save_cert_for(char *email, X509 *cert, WhichCerts ctype);
 char         **get_x509_subject_email(X509 *x);
 EVP_PKEY      *load_key(PERSONAL_CERT *pc, char *pass, int flag);

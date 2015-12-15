@@ -1248,7 +1248,7 @@ manage_certs_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
 	   if(PATHCERTDIR(ctype) == NULL)
 	     return 0;
 	   
-	   if((cert = get_cert_for((*cl)->d.s.address, ctype)) == NULL){
+	   if((cert = get_cert_for((*cl)->d.s.address, ctype, 0)) == NULL){
 	      q_status_message(SM_ORDER, 1, 3, _("Problem Reading Certificate"));
 	      rv = 0;
 	   }

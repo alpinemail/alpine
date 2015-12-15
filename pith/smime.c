@@ -928,7 +928,7 @@ certlist_from_personal_certs(PERSONAL_CERT *pc)
    cl = fs_get(sizeof(CertList));
    memset((void *)cl, 0, sizeof(CertList));
    cl->name = cpystr(pc->name);
-   x = get_cert_for(pc->name, Public);
+   x = get_cert_for(pc->name, Public, 1);
    if(x){
      if(x->cert_info){
 	cl->data.date_from = smime_get_date(x->cert_info->validity->notBefore);
@@ -1087,7 +1087,7 @@ get_personal_certs(char *path)
 		/* chop off ".key" trailier */
 		buf2[strlen(buf2)-4] = 0;
 		/* Look for certificate */
-		cert = get_cert_for(buf2, Public);
+		cert = get_cert_for(buf2, Public, 1);
 
 		if(cert){
 		    PERSONAL_CERT *pc;
@@ -2317,7 +2317,7 @@ encrypt_outgoing_message(METAENV *header, BODY **bodyP)
             for(a=*pf->addr; a; a=a->next){
                 snprintf(buf, sizeof(buf), "%s@%s", a->mailbox, a->host);
 
-                if((cert = get_cert_for(buf, Public)) != NULL){
+                if((cert = get_cert_for(buf, Public, 1)) != NULL){
                   sk_X509_push(encerts,cert);
                 }else{
                     q_status_message2(SM_ORDER, 1, 1,
@@ -2332,7 +2332,7 @@ encrypt_outgoing_message(METAENV *header, BODY **bodyP)
     for(a=header->env->from; a ; a = a->next){
        snprintf(buf, sizeof(buf), "%s@%s", a->mailbox, a->host);
 
-       if((cert = get_cert_for(buf, Public)) != NULL
+       if((cert = get_cert_for(buf, Public, 1)) != NULL
 	  && sk_X509_find(encerts, cert) == -1)
          sk_X509_push(encerts,cert);
     }
@@ -2496,7 +2496,7 @@ int smime_extract_and_save_cert(PKCS7 *p7, int check_cert)
 
 	if((email = get_x509_subject_email(x)) != NULL){
 	  for(j = 0; email[j] != NULL; j++){
-	     if((cert = get_cert_for(email[j], Public)) == NULL 
+	     if((cert = get_cert_for(email[j], Public, 1)) == NULL 
 		  || same_cert(x, cert) == 0){
 		if(check_cert == 0
 		   || smime_validate_cert(x, &error) == 0
@@ -2547,7 +2547,7 @@ do_signature_verify(PKCS7 *p7, BIO *in, BIO *out, int silent)
 	  if(cl->x509_cert == NULL){
 	    char *s = strrchr(cl->name, '.');
 	    *s = '\0';
-	    cl->x509_cert = get_cert_for(cl->name, Public);
+	    cl->x509_cert = get_cert_for(cl->name, Public, 1);
 	    *s = '.';
 	  }
        }

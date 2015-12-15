@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 115 2015-12-07 00:01:48
+Alpine Commit 116 2015-12-14 19:09:59
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -195,7 +195,7 @@ Additions include:
        in lower case, as some SMTP servers, such as those of libero.it 
        reject messages if the boundary attribute is in uppercase.
 
-  <LI> SMIME: The ^E command that gives infromation on the certificate
+  <LI> SMIME: The ctrl-E command that gives information on the certificate
        is only available for messages that have a signed or encrypted 
        part.
 
@@ -324,6 +324,10 @@ Bugs that have been addressed include:
 
   <LI> SMIME: Alpine does not remove remporary files created when adding a 
        CA certificate to a container. Reported by Holger Trapp.
+
+  <LI> SMIME: When reading a local certificate, Alpine converts the name 
+       of the certificate to lowercase, which may make Alpine not be able 
+       to read such certificate. Reported by Dennis Davis.
 
   <LI> Pico: Searching for a string that is too long causes Pico to crash
        in the next search.
