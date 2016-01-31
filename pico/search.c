@@ -463,7 +463,7 @@ replace_pat(UCS *defpat, int *wrapt, int bsearch)
 {
   register         int status;
   UCS              lpat[NPAT], origpat[NPAT];	/* case sensitive pattern */
-  EXTRAKEYS        menu_pat[10];
+  EXTRAKEYS        menu_pat[12];
   int              repl_all = FALSE;
   UCS             *b;
   char             utf8tmp[NPMT];
@@ -480,14 +480,12 @@ replace_pat(UCS *defpat, int *wrapt, int bsearch)
     forscan(wrapt, defpat, flags, NULL, 0, PTBEG);    /* go to word to be replaced */
 
     lpat[0] = '\0';
-
+    memset((void *)&menu_pat, 0, sizeof(menu_pat));
     /* additional 'replace all' menu option */
     menu_pat[0].name  = "^X";
     menu_pat[0].key   = (CTRL|'X');
     menu_pat[0].label = N_("Repl All");
     KS_OSDATASET(&menu_pat[0], KS_NONE);
-    for (i = 1; i < 10; i++)
-       menu_pat[i].name  = NULL;
 
     while(1) {
 
@@ -793,7 +791,7 @@ srpat(char *utf8prompt, UCS *defpat, size_t defpatlen, int repl_mode, int flags)
 	UCS         *b;
 	UCS	     prompt[NPMT];
 	UCS         *promptp;
-	EXTRAKEYS    menu_pat[10];
+	EXTRAKEYS    menu_pat[12];
 
 	bsearch = flags & SR_BACKWRD;
 	bol	= flags & SR_BEGLINE;
@@ -801,7 +799,7 @@ srpat(char *utf8prompt, UCS *defpat, size_t defpatlen, int repl_mode, int flags)
 	exact   = flags & SR_EXACTSR;
 	toggle  = 0;	/* reserved for future use */
 
-	memset(&menu_pat, 0, 10*sizeof(EXTRAKEYS));
+	memset(&menu_pat, 0, sizeof(menu_pat));
 	/* add exceptions here based on the location of the items in the menu */
 	for(i = 0; i < 10; i++){
 	    if(flags & SR_ORIGMEN){
@@ -945,7 +943,7 @@ readnumpat(char *utf8prompt)
 {
     int		 i, n;
     char	 numpat[NPMT];
-    EXTRAKEYS    menu_pat[10];
+    EXTRAKEYS    menu_pat[12];
 
     memset(&menu_pat, 0, 10*sizeof(EXTRAKEYS));
     menu_pat[i = 0].name  = "^T";
@@ -993,7 +991,7 @@ readpattern(char *utf8prompt, int text_mode, int flags)
 	UCS         *b;
 	UCS	     tpat[NPAT+20];
 	UCS         *tpatp;
-	EXTRAKEYS    menu_pat[10];
+	EXTRAKEYS    menu_pat[12];
 
 	bsearch = flags & SR_BACKWRD;
 	bol	= flags & SR_BEGLINE;
@@ -1001,7 +999,7 @@ readpattern(char *utf8prompt, int text_mode, int flags)
 	exact   = flags & SR_EXACTSR;
 	toggle  = 0;	/* reserved for future use */
 
-	memset(&menu_pat, 0, 10*sizeof(EXTRAKEYS));
+	memset(&menu_pat, 0, sizeof(menu_pat));
 	/* add exceptions here based on the location of the items in the menu */
 	for(i = 0; i < 10; i++){
 	    if(flags & SR_ORIGMEN){
