@@ -5,7 +5,7 @@ static char rcsid[] = "$Id: folder.c 1144 2008-08-14 16:53:34Z hubert@u.washingt
 /*
  * ========================================================================
  * Copyright 2006-2008 University of Washington
- * Copyright 2013-2015 Eduardo Chappa
+ * Copyright 2013-2016 Eduardo Chappa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

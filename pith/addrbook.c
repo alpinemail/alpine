@@ -5,7 +5,7 @@ static char rcsid[] = "$Id: addrbook.c 90 2006-07-19 22:30:36Z hubert@u.washingt
 /*
  * ========================================================================
  * Copyright 2006-2007 University of Washington
- * Copyright 2013-2015 Eduardo Chappa
+ * Copyright 2013-2016 Eduardo Chappa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
