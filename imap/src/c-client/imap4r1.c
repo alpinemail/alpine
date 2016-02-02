@@ -1,8 +1,13 @@
+/* 
+ * Copyright 2016 Eduardo Chappa
+ *
+ * Last Edited: February 1, 2015 Eduardo Chappa <chappa@gmx.com>
+ *
+ */
 /* ========================================================================
  * Copyright 2008-2011 Mark Crispin   
  * ========================================================================
  */
-
 /*
  * Program:	Interactive Message Access Protocol 4rev1 (IMAP4R1) routines
  *
@@ -74,6 +79,7 @@ typedef struct imap_local {
   unsigned int byeseen : 1;	/* saw a BYE response */
 				/* got implicit capabilities */
   unsigned int gotcapability : 1;
+  unsigned int setid : 1;	/* set id of app */
   unsigned int sensitive : 1;	/* sensitive data in progress */
   unsigned int tlsflag : 1;	/* TLS session */
   unsigned int tlssslv23 : 1;	/* TLS using SSLv23 client method */
@@ -102,6 +108,7 @@ typedef struct imap_local {
   char *reform;			/* reformed sequence */
   char tmp[IMAPTMPLEN];		/* temporary buffer */
   SEARCHSET *lookahead;		/* fetch lookahead */
+  IDLIST *id;			/* id of stream */
 } IMAPLOCAL;
 
 
@@ -266,6 +273,8 @@ void imap_parse_extension (MAILSTREAM *stream,unsigned char **txtptr,
 void imap_parse_capabilities (MAILSTREAM *stream,char *t);
 IMAPPARSEDREPLY *imap_fetch (MAILSTREAM *stream,char *sequence,long flags);
 char *imap_reform_sequence (MAILSTREAM *stream,char *sequence,long flags);
+long imap_setid(MAILSTREAM *stream, IDLIST *idlist);
+IDLIST *imap_parse_idlist(char *text);
 
 /* Driver dispatch used by MAIL */
 
@@ -449,6 +458,11 @@ void *imap_parameters (long function,void *value)
     fatal ("SET_IDLETIMEOUT not permitted");
   case GET_IDLETIMEOUT:
     value = (void *) IDLETIMEOUT;
+    break;
+  case SET_IDSTREAM:			/* set IMAP server ID */
+    fatal ("SET_IDSTREAM not permitted");
+  case GET_IDSTREAM:			/* get IMAP server ID */
+    value = (void *) &((IMAPLOCAL *) ((MAILSTREAM *) value)->local)->id;
     break;
   default:
     value = NIL;		/* error case */
@@ -980,6 +994,13 @@ MAILSTREAM *imap_open (MAILSTREAM *stream)
     }
     strcat (tmp,"}");
 
+    if(LEVELID(stream)){	/* Set ID of app */
+       IDLIST *idapp = (IDLIST *) mail_parameters(NIL, GET_IDPARAMS, NIL);
+       if(idapp && !LOCAL->setid){
+	  imap_setid(stream, idapp);
+	  LOCAL->setid++;
+       }
+    }
     if (!stream->halfopen) {	/* wants to open a mailbox? */
       IMAPARG *args[2];
       IMAPARG ambx;
@@ -1334,6 +1355,7 @@ void imap_close (MAILSTREAM *stream,long options)
     if (LOCAL->user) fs_give ((void **) &LOCAL->user);
     if (LOCAL->reply.line) fs_give ((void **) &LOCAL->reply.line);
     if (LOCAL->reform) fs_give ((void **) &LOCAL->reform);
+    if (LOCAL->id) mail_free_idlist(&LOCAL->id);
 				/* nuke the local data */
     fs_give ((void **) &stream->local);
   }
@@ -2850,7 +2872,86 @@ long imap_setquota (MAILSTREAM *stream,char *qroot,STRINGLIST *limits)
   else mm_log ("Quota not available on this IMAP server",ERROR);
   return ret;
 }
-
+
+IDLIST *imap_parse_idlist (char *text)
+{
+  IDLIST *ret = NULL;
+  char *s;
+  char tmp[MAILTMPLEN];
+
+  if(text == NULL) return NULL;
+  for(s = text; *s == ' '; s++);	/* move past spaces */
+  if(*s == '(') s++;
+  if(*s++ == '"'){
+     char *t;
+     for(t = s; *t && *t != '"'; t++);
+     if(*t == '"'){
+	ret = fs_get(sizeof(IDLIST));
+	*t = '\0';
+	ret->name = cpystr(s);
+	*t = '"';
+	for(s = t+1; *s == ' '; s++);	/* move past spaces */
+	if(*s++ == '"'){
+	   for(t = s; *t && *t != '"'; t++);
+	   if(*t == '"'){
+	      *t = '\0';
+	      ret->value = cpystr(s);
+	      *t++ = '"';
+	      ret->next = imap_parse_idlist(t);
+	   }
+	   else {
+	     sprintf(tmp,"ID value not found for name %.80s, at %.80s", ret->name, s);
+	     fs_give((void **)&ret->name);
+	     fs_give((void **)&ret);
+	     mm_log (tmp, ERROR);
+	   }
+	}
+	else {	/* failed!, quit */
+	  sprintf(tmp,"ID name \"%.80s\" has no value", ret->name);
+	  fs_give((void **)&ret->name);
+	  fs_give((void **)&ret);
+	  mm_log (tmp, ERROR);
+	}
+     }
+  }
+  return ret;
+}
+
+long imap_setid (MAILSTREAM *stream, IDLIST *idlist)
+{
+  long ret = NIL;
+  if (LEVELID (stream)) {	/* send "ID (params)" */
+    IMAPPARSEDREPLY *reply;
+    IMAPARG *args[2],aqrt;
+    IDLIST *list;
+    char *qroot, *p;
+    long len = 0L;
+
+    if(idlist == NULL) return ret;
+    for (list = idlist; list != NULL; list = list->next)
+	len += strlen(list->name)  + strlen(list->value) + 6;
+    if(len > 0){
+	len += 1L;	/* in case there is only one field */
+	qroot = fs_get(len+1);
+	memset((void *)&qroot[0], 0, len+1);
+	p = qroot;
+	for (list = idlist; list != NULL; list = list->next){
+	    sprintf(p, " \"%s\" \"%s\"", list->name, list->value);
+	    p += strlen(p);
+	}
+	*p = ')';
+	qroot[0] = '(';
+	aqrt.type = ATOM; aqrt.text = (void *) qroot;
+	args[0] = &aqrt; args[1] = NIL;
+	if (imap_OK (stream,reply = imap_send (stream,"ID",args)))
+	   ret = LONGT;
+	else mm_log (reply->text,ERROR);
+    } else mm_log("Empty or malformed ID list", ERROR);
+  }
+  else mm_log ("ID capability not available on this IMAP server",ERROR);
+  return ret;
+}
+
 /* IMAP get quota
  * Accepts: mail stream
  *	    quota root name
@@ -4203,6 +4304,9 @@ void imap_parse_unsolicited (MAILSTREAM *stream,IMAPPARSEDREPLY *reply)
       stream->unhealthy = T;
     }
     fs_give ((void **) &t);	/* free root name */
+  }
+  else if (!strcmp (reply->key,"ID") && (s = reply->text)){
+	if(compare_cstring (s,"NIL")) LOCAL->id = imap_parse_idlist(s);
   }
   else if (!strcmp (reply->key,"QUOTAROOT") && (s = reply->text) &&
 	   (t = imap_parse_astring (stream,&s,reply,NIL))) {

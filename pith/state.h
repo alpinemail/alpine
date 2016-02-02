@@ -109,6 +109,7 @@ struct pine {
 
     char         cur_folder[MAXPATH+1];
     QUOTALIST	*quota;
+    IDLIST	*id;
     char         last_unambig_folder[MAXPATH+1];
     char         last_save_folder[MAXPATH+1];
     CONTEXT_S   *last_save_context;

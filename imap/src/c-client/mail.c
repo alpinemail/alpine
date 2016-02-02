@@ -34,9 +34,10 @@ char *Panda_copyright = "Copyright 2008-2010 Mark Crispin\n";
 char *UW_copyright = "Copyright 1988-2008 University of Washington\n\nLicensed under the Apache License, Version 2.0 (the \"License\");\nyou may not use this file except in compliance with the License.\nYou may obtain a copy of the License at\n\n     http://www.apache.org/licenses/LICENSE-2.0\n";
 
 /* c-client global data */
-
 				/* version of this library */
 static char *mailcclientversion = CCLIENTVERSION;
+				/* app identity */
+static IDLIST *idapp = NIL;
 				/* list of mail drivers */
 static DRIVER *maildrivers = NIL;
 				/* list of authenticators */
@@ -646,6 +647,10 @@ void *mail_parameters (MAILSTREAM *stream,long function,void *value)
   case GET_SNARFMAILBOXNAME:
     if (stream) ret = (void *) stream->snarf.name;
     break;
+  case SET_IDPARAMS:		/* program id */
+    idapp = (IDLIST *) value;
+  case GET_IDPARAMS:  
+    ret = (void *) idapp;
   default:
     if ((r = smtp_parameters (function,value)) != NULL) ret = r;
     if ((r = env_parameters (function,value)) != NULL) ret = r;
@@ -1408,6 +1413,16 @@ MAILHANDLE *mail_makehandle (MAILSTREAM *stream)
   handle->sequence = stream->sequence;
   stream->use++;		/* let stream know another handle exists */
   return handle;
+}
+
+void mail_free_idlist (IDLIST **idlist)
+{
+  if (idlist && *idlist){
+     if((*idlist)->name) fs_give((void **)&(*idlist)->name);
+     if((*idlist)->value) fs_give((void **)&(*idlist)->value);
+     if((*idlist)->next) mail_free_idlist(&(*idlist)->next);
+     fs_give((void **) idlist);
+  }
 }
 
 

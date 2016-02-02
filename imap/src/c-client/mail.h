@@ -144,6 +144,11 @@
 #define SET_BLOCKENVINIT (long) 162
 #define GET_UCS4WIDTH (long) 163
 #define SET_UCS4WIDTH (long) 164
+#define GET_IDPARAMS  (long) 165
+#define SET_IDPARAMS  (long) 166
+#define GET_IDSTREAM  (long) 167
+#define SET_IDSTREAM  (long) 168
+
 	/* 2xx: environment */
 #define GET_USERNAME (long) 201
 #define SET_USERNAME (long) 202
@@ -1081,7 +1086,17 @@ QUOTALIST {
   unsigned long limit;		/* resource limit */
   QUOTALIST *next;		/* next resource */
 };
-
+
+/* ID List */
+
+#define IDLIST struct id_list
+
+IDLIST {
+  char *name;			/* name of field */
+  char *value;			/* value of the field */
+  IDLIST *next;			/* next value in the list */
+};
+
 /* Mail Access I/O stream */
 
 
@@ -1800,6 +1815,7 @@ SORTPGM *mail_newsortpgm (void);
 THREADNODE *mail_newthreadnode (SORTCACHE *sc);
 ACLLIST *mail_newacllist (void);
 QUOTALIST *mail_newquotalist (void);
+void mail_free_idlist (IDLIST **idlist);
 void mail_free_body (BODY **body);
 void mail_free_body_data (BODY *body);
 void mail_free_body_parameter (PARAMETER **parameter);
