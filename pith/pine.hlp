@@ -201,7 +201,7 @@ Additions include:
        is only available for messages that have a signed or encrypted 
        part.
 
-  <LI> SMIME: If a message contains a RFC822 atachment that is
+  <LI> SMIME: If a message contains a RFC822 attachment that is
        signed/decrypted add the ability to view its SMIME information.
 
   <LI> SMIME: Certificate information in the S/MIME screen is available 
@@ -306,7 +306,7 @@ Bugs that have been addressed include:
        Alpine will use the function ASN1_TIME_print to determine the date 
        of validity. Reported by Ben Stienstra.
 
-  <LI> SMIME: Crash when atempting to unlock the password file and an
+  <LI> SMIME: Crash when attempting to unlock the password file and an
        incorrect password is entered.
 
   <LI> SMIME: Crash when checking the signature of a message that contains
@@ -324,7 +324,7 @@ Bugs that have been addressed include:
   <LI> SMIME: Crash if public certificates are located in an inaccessible
        remote server and the private key is not available.
 
-  <LI> SMIME: Alpine does not remove remporary files created when adding a 
+  <LI> SMIME: Alpine does not remove temporary files created when adding a 
        CA certificate to a container. Reported by Holger Trapp.
 
   <LI> SMIME: When reading a local certificate, Alpine converts the name 
@@ -345,7 +345,7 @@ Bugs that have been addressed include:
   <LI> If the .pinerc file is a symbolic link, Alpine might not write its
        contents when saving its configuration.
 
-  <LI> The _INIT_ token does not skip over non-alpha numeric characters in
+  <LI> The _INIT_ token does not skip over non-alphanumeric characters in
        the name. Reported by Andreas Fehr.
 
   <LI> Mismatch in size of UCS and CELL caused a corruption in the
