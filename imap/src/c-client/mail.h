@@ -1,3 +1,9 @@
+/*
+ * Copyright 2016 Eduardo Chappa
+ *
+ * Last Edited: February 6, 2015 Eduardo Chappa <chappa@gmx.com>
+ *
+ */
 /* ========================================================================
  * Copyright 2008-2011 Mark Crispin
  * ========================================================================
@@ -585,7 +591,20 @@
 #define LATT_HASCHILDREN (long) 0x20
 				/* has no selectable inferiors */
 #define LATT_HASNOCHILDREN (long) 0x40
-
+				/* folder contains all messages */
+#define LATT_ALL (long) 0x80
+				/* folder contains archived messages */
+#define LATT_ARCHIVE (long) 0x100
+				/* folder contains drafts */
+#define LATT_DRAFTS (long) 0x200
+				/* folder contains Flagged messages */
+#define LATT_FLAGGED (long) 0x400
+				/* folder contains junk messages */
+#define LATT_JUNK (long) 0x800
+				/* folder contains Sent mail */
+#define LATT_SENT (long) 0x1000
+				/* folder contains deleted messages */
+#define LATT_TRASH (long) 0x2000
 
 /* Sort functions */
 

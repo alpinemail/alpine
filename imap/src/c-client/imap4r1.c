@@ -4126,7 +4126,13 @@ void imap_parse_unsolicited (MAILSTREAM *stream,IMAPPARSEDREPLY *reply)
       else if (!compare_cstring (t,"\\Marked")) i |= LATT_MARKED;
       else if (!compare_cstring (t,"\\Unmarked")) i |= LATT_UNMARKED;
       else if (!compare_cstring (t,"\\HasChildren")) i |= LATT_HASCHILDREN;
-      else if (!compare_cstring (t,"\\HasNoChildren")) i |= LATT_HASNOCHILDREN;
+      else if (!compare_cstring (t,"\\All")) i |= LATT_ALL;
+      else if (!compare_cstring (t,"\\Archive")) i |= LATT_ARCHIVE;
+      else if (!compare_cstring (t,"\\Drafts")) i |= LATT_DRAFTS;
+      else if (!compare_cstring (t,"\\Flagged")) i |= LATT_FLAGGED;
+      else if (!compare_cstring (t,"\\Junk")) i |= LATT_JUNK;
+      else if (!compare_cstring (t,"\\Sent")) i |= LATT_SENT;
+      else if (!compare_cstring (t,"\\Trash")) i |= LATT_TRASH;
 				/* ignore extension flags */
     }
     while ((t = strtok_r (NIL," ",&r)) != NULL);
