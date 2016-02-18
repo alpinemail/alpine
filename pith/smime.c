@@ -2261,10 +2261,10 @@ encrypt_file(char *fp, char *text, PERSONAL_CERT *pc)
       BIO_puts(out, text);
     }
   }
-  else if((out = BIO_new_file(fp, "rb")) != NULL){
+  else if((out = BIO_new_file(fp, "rb")) != NULL)
     BIO_read_filename(out, fp);
 
-    if((p7 = PKCS7_encrypt(encerts, out, cipher, 0)) != NULL){
+  if((p7 = PKCS7_encrypt(encerts, out, cipher, 0)) != NULL){
 	BIO_set_close(out, BIO_CLOSE);
 	BIO_free(out);
 	if((out = BIO_new_file(fp, "w")) != NULL){
@@ -2272,7 +2272,6 @@ encrypt_file(char *fp, char *text, PERSONAL_CERT *pc)
 	  rv = PEM_write_bio_PKCS7(out, p7);
 	  BIO_flush(out);
         }
-    }
   }
 
   if(out != NULL)
