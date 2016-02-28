@@ -560,6 +560,8 @@ struct key_menu {
 #define TRUST_KEY		3
 #define PUBLIC_KEY		6
 #define PRIVATE_KEY		7
+#define DELETE_CERT_KEY		4	
+#define UNDELETE_CERT_KEY	5
 
 extern struct key_menu	cancel_keymenu,
 			ab_keymenu,
@@ -661,7 +663,10 @@ extern struct key_menu	cancel_keymenu,
 			smime_info_keymenu,
 			config_smime_manage_certs_menu_keymenu,
 			config_smime_manage_certs_work_keymenu,
-			smime_certificate_info_keymenu;
+			config_smime_manage_password_file_menu_keymenu,
+			smime_certificate_info_keymenu,
+			config_smime_add_new_key_keymenu,
+			config_smime_manage_view_cert_keymenu;
 
 extern struct key rev_msg_keys[];
 

@@ -85,6 +85,8 @@ void 	      *create_smime_sparep(SpareType stype, void *s);
 SpareType      get_smime_sparep_type(void *s);
 void	      *get_smime_sparep_data(void *s);
 STACK_OF(X509)       *get_chain_for_cert(X509 *cert, int *error, int *level);
+CertList      *certlist_from_personal_certs(PERSONAL_CERT *pc);
+int 	smime_path(char *rpath, char *fpath, size_t len);
 
 #endif /* PITH_SMIME_INCLUDED */
 #endif /* SMIME */

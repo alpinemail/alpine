@@ -42,6 +42,9 @@ static char rcsid[] = "$Id: smime.c 1176 2008-09-29 21:16:42Z hubert@u.washingto
 #include "../pith/tempfile.h"
 #include "../pith/readfile.h"
 #include "../pith/remote.h"
+#ifdef PASSFILE
+#include "../pith/imap.h"
+#endif /* PASSFILE */
 
 #include <openssl/buffer.h>
 #include <openssl/x509v3.h>
@@ -70,10 +73,8 @@ static void           setup_storage_locations(void);
 static int            copy_container_to_dir(WhichCerts which);
 static int	      do_fiddle_smime_message(BODY *b, long msgno, char *section);
 void		      setup_privatekey_storage(void);
-int		      smime_path(char *rpath, char *fpath, size_t len);
 int		      smime_extract_and_save_cert(PKCS7 *p7, int check_cert);
 int		      same_cert(X509 *, X509 *);
-CertList *	      certlist_from_personal_certs(PERSONAL_CERT *pc);
 #ifdef PASSFILE
 int		      load_key_and_cert(char *pathkeydir, char *pathcertdir, char **keyfile, char **certfile, EVP_PKEY **pkey, X509 **pcert);
 #endif /* PASSFILE */
@@ -245,14 +246,18 @@ setup_pwdcert(void **pwdcert)
     return;
   }
 
+
+  if(ps_global->pwdcertdir == NULL)	/* save the result of pwdcertdir */
+    ps_global->pwdcertdir = cpystr(pathdir);
+
   if(certfile && keyfile){
      pc = (PERSONAL_CERT *) fs_get(sizeof(PERSONAL_CERT));
      memset((void *)pc, 0, sizeof(PERSONAL_CERT));
      pc->name = keyfile;
      pc->key  = pkey;
      pc->cert = pcert;
+     pc->cname = certfile;
      *pwdcert = (void *) pc;
-     fs_give((void **)&certfile);
      was_here = 0;
      return;
   }
@@ -596,8 +601,10 @@ load_pkey_with_prompt(char *fpath, char *text, char *prompt, int *ret)
   return pkey;
 }
 
-
-
+/* This is a tool for conf_screen, The return value must be zero when
+ * nothing changed, so if there is a failure in the import return 0
+ * and return 1 when we succeeded
+ */
 int
 import_certificate(WhichCerts ctype)
 {
@@ -607,18 +614,221 @@ import_certificate(WhichCerts ctype)
    if(pith_smime_import_certificate == NULL){
      q_status_message(SM_ORDER, 0, 2,
                       _("import of certificates not implemented yet!"));
-     return -1;     
+     return 0;
   }
-
-   smime_init();
 
    r = (*pith_smime_import_certificate)(filename, full_filename, sizeof(filename) - 20);
 
+   if(r < 0)
+     return 0;
+
+   /* we are trying to import a new key for the password file. First we ask for the
+    * private key. Once this is loaded, we make a reasonable attempt to find the
+    * public key in the same directory as the key was loaded from. We do this by
+    * looking for a file with the correct public certificate name, then we look
+    * in the same private key, and if not, we ask the user for its location. If all
+    * of this works, we import the key and public to the password directory.
+    */
+   if(ctype == Password){
+     char PrivateKeyPath[MAXPATH+1], PublicCertPath[MAXPATH+1], s[MAXPATH+1];
+     char full_name_key[MAXPATH+1], full_name_cert[MAXPATH+1];
+     char *use_this_file;
+     char prompt[500];
+     EVP_PKEY *key = NULL;
+
+     rc = 1;	/* assume success :) */
+     if(strlen(filename) > 4){
+	strncpy(s, filename, sizeof(s));
+	s[sizeof(s)-1] = '\0';
+	if(!strcmp(s + strlen(s) - strlen(EXTCERT(Private)), EXTCERT(Private)))
+	  s[strlen(s) - strlen(EXTCERT(Private))] = '\0';
+	else
+	  rc = 0;
+     } else rc = 0;
+
+     if(rc == 0){
+	q_status_message(SM_ORDER, 1, 3, _("Error in key name. Check file extension"));
+	return 0;
+     }
+
+     snprintf(prompt, sizeof(prompt), _("Enter passphrase for <%s>: "), filename);
+     prompt[sizeof(prompt)-1] = '\0';
+     if((key = load_pkey_with_prompt(full_filename, NULL, prompt, NULL)) != NULL){
+	BIO *ins = NULL;
+	X509 *cert = NULL;
+
+	strncpy(full_name_key, full_filename, sizeof(full_filename));
+        full_name_key[sizeof(full_name_key)-1] = '\0';
+
+	build_path(buf, PATHCERTDIR(ctype), s, sizeof(buf));
+
+	strncpy(PrivateKeyPath, buf, sizeof(PrivateKeyPath));
+	PrivateKeyPath[sizeof(PrivateKeyPath)-1] = '\0';
+	if(strlen(PrivateKeyPath) + 4 < sizeof(PrivateKeyPath)){
+	   strncat(PrivateKeyPath, EXTCERT(Private), 4);
+	   PrivateKeyPath[sizeof(PrivateKeyPath)-1] = '\0';
+	}
+
+	/* remove .key extension and replace it with .crt extension */
+	strncpy(full_name_cert, full_name_key, sizeof(full_name_key));
+	full_name_cert[sizeof(full_name_cert)-1] = '\0';
+	full_name_cert[strlen(full_name_cert) - strlen(EXTCERT(Private))] = '\0';
+	strncat(full_name_cert, EXTCERT(Public), 4);
+	full_name_cert[sizeof(full_name_cert)-1] = '\0';
+
+
+	/* set up path to location where we will save public cert */
+	strncpy(PublicCertPath, buf, sizeof(PublicCertPath));
+	PublicCertPath[sizeof(PublicCertPath)-1] = '\0';
+	if(strlen(PublicCertPath) + 4 < sizeof(PublicCertPath)){
+	  strncat(PublicCertPath, EXTCERT(Public), 4);
+	  PublicCertPath[sizeof(PublicCertPath)-1] = '\0';
+	}
+
+	/* attempt #1 to guess public cert name, use .crt extension */
+	if((ins = BIO_new_file(full_name_cert, "r")) != NULL){
+	  if((cert = PEM_read_bio_X509(ins, NULL, NULL, NULL)) != NULL){
+	    use_this_file = &full_name_cert[0];
+	  }
+	}
+	else{
+	  /* attempt #2 to guess public cert name: user the original key */
+	  if((ins = BIO_new_file(full_name_key, "r")) != NULL){
+	    if((cert = PEM_read_bio_X509(ins, NULL, NULL, NULL)) != NULL){
+	       use_this_file = &full_name_key[0];
+	    }
+	  }
+	  else {
+	   int done = 0;
+	    /* attempt #3, ask the user */
+	   do {
+	      r = (*pith_smime_import_certificate)(filename, use_this_file, sizeof(filename) - 20);
+	      if(r < 0){
+		 if(ins != NULL) BIO_free(ins);
+		 if(cert != NULL) X509_free(cert);
+		 return 0;
+	      }
+	      if((ins = BIO_new_file(use_this_file, "r")) != NULL){
+		if((cert = PEM_read_bio_X509(ins, NULL, NULL, NULL)) != NULL)
+		  done++;
+		else
+		  q_status_message(SM_ORDER, 1, 3, _("Error parsing certificate"));
+	      }
+	      else 
+		  q_status_message(SM_ORDER, 1, 3, _("Error reading certificate"));
+	   } while (done == 0);
+	  }
+	}
+	if(ins != NULL){
+	   if(cert != NULL){	/* check that certificate matches key */
+	      if(!X509_check_private_key(cert, key)){
+		rc = 0;
+		q_status_message(SM_ORDER, 1, 3, _("Certificate does not match key"));
+	      }
+	      else
+		 rc = 1;	/* Success! */
+	   }
+	   else
+	     q_status_message(SM_ORDER, 1, 3, _("Error in certificate file (not a certificate?)"));
+	}
+	if(rc == 1){	/* if everything has been successful, 
+			 * copy the files to their final destination */
+	   if(our_copy(PrivateKeyPath, full_filename) == 0){	/* <-- save the private key */
+	      q_status_message(SM_ORDER, 1, 3, _("Private key saved"));
+	      if(our_copy(PublicCertPath, use_this_file) == 0){
+		char  tmp[MAILTMPLEN];
+	        FILE *fp;
+
+		if(!passfile_name(ps_global->pinerc, tmp, sizeof(tmp)) 
+			|| !(fp = our_fopen(tmp, "rb"))){
+		   q_status_message(SM_ORDER, 1, 3, _("Error reading password file!"));
+		   rc = 0;
+	        }
+		else {
+		   char tmp2[MAILTMPLEN];
+		   int encrypted = 0;
+		   char *text;
+		   PERSONAL_CERT *pwdcert, *pc;
+
+		   pwdcert = (PERSONAL_CERT *) ps_global->pwdcert;
+		   if(pwdcert == NULL)
+		      setup_pwdcert((void **)&pwdcert);
+
+		   tmp2[0] = '\0';
+		   fgets(tmp2, sizeof(tmp2), fp);
+		   fclose(fp);
+		   if(strcmp(tmp2, "-----BEGIN PKCS7-----\n")){
+	              if(encrypt_file((char *)tmp, NULL, pwdcert))
+	                 encrypted++;
+		   }
+		   else
+		     encrypted++;
+
+		   if(encrypted){
+		     text = decrypt_file((char *)tmp, NULL, pwdcert);
+		     if(text != NULL){
+			pc = fs_get(sizeof(PERSONAL_CERT));
+			memset((void *)pc, 0, sizeof(PERSONAL_CERT));
+			filename[strlen(filename)-strlen(EXTCERT(Private))] = '\0';
+		        pc->name = cpystr(filename);
+			snprintf(buf, sizeof(buf), "%s%s", filename, EXTCERT(Public));
+			buf[sizeof(buf)-1] = '\0';
+		        pc->cname = cpystr(buf);
+			pc->key  = key;
+			pc->cert = cert;
+			
+			if(encrypt_file((char *)tmp, text, pc)){ /* we did it! */
+			   build_path(buf, PATHCERTDIR(ctype), pwdcert->name, sizeof(buf));
+			   strncat(buf, EXTCERT(Private), 4);
+			   buf[sizeof(buf)-1] = '\0';
+			   if(unlink(buf) < 0)
+			      q_status_message(SM_ORDER, 1, 3, _("Failed to remove old key"));
+			   build_path(buf, PATHCERTDIR(ctype), pwdcert->cname, sizeof(buf));
+			   if(unlink(buf) < 0)
+			      q_status_message(SM_ORDER, 1, 3, _("Failed to remove old certificate"));
+			   free_personal_certs((PERSONAL_CERT **)&ps_global->pwdcert);
+			   ps_global->pwdcert = pc;
+			   rc = 1;
+			   q_status_message(SM_ORDER, 1, 3, _("Password file reencrypted"));
+			} else {
+			   q_status_message(SM_ORDER, 1, 3, _("Failed to reencrypt password file"));
+			   rc = 0;
+			}
+		     } else {
+		        q_status_message(SM_ORDER, 1, 3, _("Error decrypting Password file"));
+		     }
+		   } else {
+		     q_status_message(SM_ORDER, 1, 3, _("Password file not encrypted and coulr not encrypt"));
+		     rc = 0;
+		   }
+		}
+	      }
+	      else{
+	        q_status_message(SM_ORDER, 1, 3, _("Error saving public certificate"));
+		if(our_unlink(PrivateKeyPath) < 0)
+		   q_status_message(SM_ORDER, 1, 3, _("Error while cleaning private key"));
+	        rc = 0;
+	      }
+	   }
+	   else{
+	      rc = 0;
+	      q_status_message(SM_ORDER, 1, 3, _("Error saving private key"));
+	   }
+	   if(ins != NULL) BIO_free(ins);
+	   if(rc == 0 && cert != NULL) X509_free(cert);
+	}
+     } else {
+	rc = 0;
+	q_status_message(SM_ORDER, 1, 3, _("Error unlocking private key"));
+     }
+
+     return rc;
+   }
+
+   smime_init();
    ps_global->mangled_screen = 1;
 
-   if(r < 0)
-     return r;
-   else if (ctype == Private){
+   if (ctype == Private){
 	char prompt[500], *s, *t;
 	EVP_PKEY *key = NULL;
 
@@ -651,7 +861,7 @@ import_certificate(WhichCerts ctype)
 	     ps_global->smime->publiccertlist->data.renew = 1;
 	}
 	else
-	  q_status_message(SM_ORDER, 1, 3, _("Problem unlocking key (not a certificate and/or wrong password)"));
+	  q_status_message(SM_ORDER, 1, 3, _("Problem unlocking key (not a certificate or wrong password)"));
    } else  if (ctype == CACert){
       BIO *ins;
       X509 *cert;
@@ -713,7 +923,7 @@ import_certificate(WhichCerts ctype)
       }
    }
    if(DATACERT(ctype)) RENEWCERT(DATACERT(ctype)) = 1;
-   return 0;
+   return 1;
 }
 
 /* itype: information type to add: 0 - public, 1 - private.
@@ -920,23 +1130,12 @@ certlist_from_personal_certs(PERSONAL_CERT *pc)
 {
    CertList *cl;
    X509 *x;
-   char buf[MAXPATH]; 
 
    if(pc == NULL)
      return NULL;
-
-   cl = fs_get(sizeof(CertList));
-   memset((void *)cl, 0, sizeof(CertList));
-   cl->name = cpystr(pc->name);
-   x = get_cert_for(pc->name, Public, 1);
-   if(x){
-     if(x->cert_info){
-	cl->data.date_from = smime_get_date(x->cert_info->validity->notBefore);
-	cl->data.date_to   = smime_get_date(x->cert_info->validity->notAfter);
-	get_fingerprint(x, EVP_md5(), buf, sizeof(buf), NULL);
-	cl->data.md5       = cpystr(buf);
-	cl->cn = smime_get_cn(x->cert_info->subject);
-     }
+   
+   if((x = get_cert_for(pc->name, Public, 1)) != NULL){
+     cl = smime_X509_to_cert_info(x, pc->name);
      X509_free(x);
    }
    cl->next = certlist_from_personal_certs(pc->next);
@@ -3639,14 +3838,6 @@ free_smime_struct(SMIME_STUFF_S **smime)
 	    pc = (PERSONAL_CERT *) (*smime)->personal_certs;
 	    free_personal_certs(&pc);
 	    (*smime)->personal_certs = NULL;
-	}
-
-	if((*smime)->backuppersonal_certs){
-	    PERSONAL_CERT *pc;
-
-	    pc = (PERSONAL_CERT *) (*smime)->backuppersonal_certs;
-	    free_personal_certs(&pc);
-	    (*smime)->backuppersonal_certs = NULL;
 	}
 
 	if((*smime)->privatecontent)

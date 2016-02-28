@@ -675,7 +675,7 @@ typedef enum {Main, Post, None} EditWhich;
 
 typedef enum {Directory, Container, Keychain, Nada} SmimeHolderType;
 
-typedef enum {Public, Private, CACert} WhichCerts;
+typedef enum {Public, Private, CACert, Password} WhichCerts;
 
 typedef struct certdata {
   unsigned   deleted:1;		/* certificate is marked deleted	     */
@@ -721,7 +721,6 @@ typedef struct smime_stuff {
     char           *privatecontent;
     CertList	   *privatecertlist;
     CertList	   *backupprivatecertlist;
-    void	   *backuppersonal_certs;	/* this is type (PERSONAL_CERT *) */
     void           *personal_certs;		/* this is type (PERSONAL_CERT *) */
 
     SmimeHolderType catype;
@@ -732,25 +731,35 @@ typedef struct smime_stuff {
 
 } SMIME_STUFF_S;
 
-#define BACKUPDATACERT(X) (((X) == Public ? ps_global->smime->backuppubliccertlist	\
-			 : ((X) == Private ? ps_global->smime->backupprivatecertlist	\
-			   : ps_global->smime->backupcacertlist)))
+#define BACKUPDATACERT(X) ((X) == Public  ? ps_global->smime->backuppubliccertlist :	\
+			   (X) == Private ?  ps_global->smime->backupprivatecertlist :	\
+			   (X) == CACert  ?  ps_global->smime->backupcacertlist :	\
+			   (X) == Password ?  (CertList *) ps_global->backuppassword :	\
+			    NULL)
 
-#define DATACERT(X) (((X) == Public ? ps_global->smime->publiccertlist		\
-			 : ((X) == Private ? ps_global->smime->privatecertlist	\
-			   : ps_global->smime->cacertlist)))
+#define DATACERT(X)    ((X) == Public   ? ps_global->smime->publiccertlist  :		\
+			(X) == Private  ? ps_global->smime->privatecertlist :		\
+			(X) == CACert   ? ps_global->smime->cacertlist	    :		\
+			(X) == Password ? (CertList *) ps_global->pwdcertlist :		\
+			NULL)
 
-#define PATHCERTDIR(X) (((X) == Public ? ps_global->smime->publicpath	\
-			  : ((X) == Private ? ps_global->smime->privatepath	\
-			    : ((X) == CACert ? ps_global->smime->capath : NULL))))
+#define PATHCERTDIR(X) ((X) == Public   ? ps_global->smime->publicpath	:  \
+			(X) == Private  ? ps_global->smime->privatepath :  \
+			(X) == CACert   ? ps_global->smime->capath	:  \
+			(X) == Password ? ps_global->pwdcertdir 	:  \
+			NULL)
 
-#define CONTENTCERTLIST(X) 	(((X) == Public ? ps_global->smime->publiccontent	\
-			  : ((X) == Private ? ps_global->smime->privatecontent	\
-			    : ((X) == CACert ? ps_global->smime->cacontent : NULL))))
+#define CONTENTCERTLIST(X) ((X) == Public   ? ps_global->smime->publiccontent :		\
+			(X) == Private  ? ps_global->smime->privatecontent :		\
+			(X) == CACert   ? ps_global->smime->cacontent      :		\
+			(X) == Password ? ps_global->pwdcertcontent 	   :		\
+			NULL)
 
-#define SMHOLDERTYPE(X) (((X) == Public ? ps_global->smime->publictype	\
-			  : ((X) == Private ? ps_global->smime->privatetype	\
-			    : ((X) == CACert ? ps_global->smime->catype : Nada))))
+#define SMHOLDERTYPE(X) ((X) == Public  ? ps_global->smime->publictype	:		\
+			(X) == Private  ? ps_global->smime->privatetype :		\
+			(X) == CACert   ? ps_global->smime->catype      :		\
+			(X) == Password ? Directory 	   		:		\
+			Nada)
 
 #define EXTCERT(X)  (((X) == Public ? ".crt"		\
 			  : ((X) == Private ? ".key"	\

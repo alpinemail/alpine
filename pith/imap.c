@@ -1109,3 +1109,55 @@ ps_get(size_t size)
 
     return(block);
 }
+
+#ifdef PASSFILE
+char *
+passfile_name(char *pinerc, char *path, size_t len)
+{
+    struct stat  sbuf;
+    char	*p = NULL;
+    int		 i, j;
+
+    if(!path || !((pinerc && pinerc[0]) || ps_global->passfile))
+      return(NULL);
+
+    if(ps_global->passfile)
+      strncpy(path, ps_global->passfile, len-1);
+    else{
+	if((p = last_cmpnt(pinerc)) && *(p-1) && *(p-1) != PASSFILE[0])
+	  for(i = 0; pinerc < p && i < len; pinerc++, i++)
+	    path[i] = *pinerc;
+	else
+	  i = 0;
+
+	for(j = 0; (i < len) && (path[i] = PASSFILE[j]); i++, j++)
+	  ;
+	
+    }
+
+    path[len-1] = '\0';
+
+    dprint((9, "Looking for passfile \"%s\"\n",
+	   path ? path : "?"));
+
+#if	defined(DOS) || defined(OS2)
+    return((our_stat(path, &sbuf) == 0
+	    && ((sbuf.st_mode & S_IFMT) == S_IFREG))
+	     ? path : NULL);
+#else
+    /* First, make sure it's ours and not sym-linked */
+    if(our_lstat(path, &sbuf) == 0
+       && ((sbuf.st_mode & S_IFMT) == S_IFREG)
+       && sbuf.st_uid == getuid()){
+	/* if too liberal permissions, fix them */
+	if((sbuf.st_mode & 077) != 0)
+	  if(our_chmod(path, sbuf.st_mode & ~077) != 0)
+	    return(NULL);
+	
+	return(path);
+    }
+    else
+	return(NULL);
+#endif
+}
+#endif /* PASSFILE */

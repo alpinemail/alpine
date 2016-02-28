@@ -2665,6 +2665,21 @@ struct key config_smime_add_certs_keys[] =
 	NULL_MENU};
 INST_KEY_MENU(config_smime_add_certs_keymenu, config_smime_add_certs_keys);
 
+struct key config_smime_add_new_key[] = 
+       {HELP_MENU,
+	NULL_MENU,
+	EXIT_SETUP_MENU,
+	{"I", N_("Import Key"), {MC_IMPORT,3,{'i', ctrl('M'), ctrl('J')}}, KS_NONE},
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU};
+INST_KEY_MENU(config_smime_add_new_key_keymenu, config_smime_add_new_key);
+
 struct key config_smime_manage_certs_work_keys[] = 
        {HELP_MENU,
 	OTHER_MENU,
@@ -2693,6 +2708,21 @@ struct key config_smime_manage_certs_work_keys[] =
 	ENDKEY_MENU};
 INST_KEY_MENU(config_smime_manage_certs_work_keymenu, config_smime_manage_certs_work_keys);
 
+struct key config_smime_view_cert[] = 
+       {HELP_MENU,
+	OTHER_MENU,
+	EXIT_SETUP_MENU,
+	{"V", "[" N_("View Info") "]", {MC_CHOICE,3,{'v',ctrl('M'),ctrl('J')}}, KS_NONE},
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU};
+INST_KEY_MENU(config_smime_manage_view_cert_keymenu, config_smime_view_cert);
+
 struct key smime_certificate_info_keys[] =
        {HELP_MENU,
 	OTHER_MENU,
@@ -2720,6 +2750,23 @@ struct key smime_certificate_info_keys[] =
 	HOMEKEY_MENU,
 	ENDKEY_MENU};
 INST_KEY_MENU(smime_certificate_info_keymenu, smime_certificate_info_keys);
+
+
+struct key config_smime_manage_password_file_menu_keys[] = 
+       {HELP_MENU,
+	WHEREIS_MENU,
+	EXIT_SETUP_MENU,
+	{"S", "[" N_("Select") "]", {MC_CHOICE,3,{'s',ctrl('M'),ctrl('J')}}, KS_NONE},
+	{"I", N_("Import Cert"), {MC_IMPORT,1,{'i'}}, KS_NONE},
+	NULL_MENU,
+	PREV_MENU,
+	NEXT_MENU,
+	PREVPAGE_MENU,
+	NEXTPAGE_MENU,
+	HOMEKEY_MENU,
+	ENDKEY_MENU};
+INST_KEY_MENU(config_smime_manage_password_file_menu_keymenu, config_smime_manage_password_file_menu_keys);
+
 
 
 /*

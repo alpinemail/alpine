@@ -131,5 +131,9 @@ void    imap_flush_passwd_cache(int);
 void    set_read_predicted(int);
 void    mm_login_work (NETMBX *mb,char *user,char *pwd,long trial,char *usethisprompt, char *altuserforcache);
 
+/* this is necessary to figure out the name of the password file of the application */
+#ifdef PASSFILE
+char *passfile_name(char *, char *, size_t);
+#endif /* PASSFILE */
 
 #endif /* PITH_IMAP_INCLUDED */

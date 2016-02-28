@@ -197,6 +197,10 @@ Additions include:
        in lower case, as some SMTP servers, such as those of libero.it 
        reject messages if the boundary attribute is in uppercase.
 
+  <LI> Add the ability to change the private key and certificates used
+       to encrypt a password file in the SMIME setup configuration screen.
+       <A HREF="h_config_smime_password_file_certificates">Learn more</A>
+
   <LI> SMIME: The ctrl-E command that gives information on the certificate
        is only available for messages that have a signed or encrypted 
        part.
@@ -35412,6 +35416,56 @@ of such certificate.
 The <B>I</B> Import command available in this screen allows you to 
 import a command to this collection.
 <P>
+<UL>   
+<LI><A HREF="h_mainhelp_smime">General S/MIME help</A>
+</UL><P>
+<P>
+<UL>   
+<LI><A HREF="h_finding_help">Finding more information and requesting help</A>
+</UL><P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+====== h_config_smime_password_file_certificates =====
+<HTML>
+<HEAD>
+<TITLE>S/MIME: Manage Password File Certificates</TITLE>
+</HEAD>
+<BODY>
+<H1>S/MIME: Manage Password File Certificates</H1>
+
+UNIX Alpine only.
+<P>
+This option allows you to manage the certificates that are used to
+encrypt and decrypt your password file. This is useful in case you
+want to change the certificates used to encrypt your password file.
+<P>
+In order to avoid unauthorized use of this option, you are asked to
+enter the password of the current private key used to encrypt your
+password file.
+<P>
+Once you have entered your password for the current key, you enter a
+screen where you can import your new key, and see the information on your
+current key.
+<P>
+To import a new key press &quot;RETURN&quot; and enter the location of
+the new key. You will be asked to enter the password of the new key. If
+this part of the process is successful, Alpine will search for the 
+certificate that matches that key. If your key is named 
+&quot;your_email@address.com.key&quot;, then Alpine will look for your
+certificate in the same directory in the file named
+&quot;your_email@address.com.crt&quot;, otherwise it will look for it
+as part of your key (that is, it will look to see if your certificate
+is in the file &quot;your_email@address.com.key&quot;), if all of this
+fails, Alpine will ask you to enter the location of the certificate
+that matches the key you unlocked. If a certificate is found, it will be 
+used, and in this case, the password file will be read, decrypted with the 
+old key and encrypted with the new key. Once this is done, the new key and 
+certificates are saved, and the old keys are permanently deleted.
+<P>
+Alpine does not create a backup of your password file, or your old keys
+that will be replaced. If you need to keep old copies, you will have to do
+this operation outside Alpine.
 <UL>   
 <LI><A HREF="h_mainhelp_smime">General S/MIME help</A>
 </UL><P>

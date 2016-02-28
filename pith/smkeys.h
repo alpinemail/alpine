@@ -38,7 +38,8 @@
 typedef struct personal_cert {
     X509    	    	 *cert;
     EVP_PKEY	    	 *key;
-    char                 *name;
+    char                 *name;		/* name of key */
+    char		 *cname;	/* name of cert */
     char                 *keytext;
     struct personal_cert *next;
 } PERSONAL_CERT;
@@ -67,6 +68,7 @@ char           *smime_get_date(ASN1_GENERALIZEDTIME *tm);
 void	       resort_certificates(CertList **data, WhichCerts ctype);
 int	       setup_certs_backup_by_type(WhichCerts ctype);
 char 	       *smime_get_cn(X509_NAME *);
+CertList       *smime_X509_to_cert_info(X509 *, char *);
 
 
 #endif /* PITH_SMKEYS_INCLUDED */

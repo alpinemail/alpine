@@ -56,13 +56,16 @@ void     revert_to_saved_smime_config(struct pine *ps, SAVED_CONFIG_S *vsave);
 SAVED_CONFIG_S *save_smime_config_vars(struct pine *ps);
 void     free_saved_smime_config(struct pine *ps, SAVED_CONFIG_S **vsavep);
 int      smime_helper_tool(struct pine *, int, CONF_S **, unsigned);
-//int      smime_public_certs_tool(struct pine *, int, CONF_S **, unsigned);
 void 	 manage_certificates(struct pine *, WhichCerts);
-void     smime_manage_certs_init (struct pine *, CONF_S **, CONF_S **, WhichCerts, int);
-void	 display_certificate_information(struct pine *, X509 *, char *, WhichCerts, int num);
-int	 manage_certs_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags);
-int	 manage_certificate_info_tool(int, MSGNO_S *, SCROLL_S *);
-void	 smime_setup_size(char **, size_t, size_t);
+#ifdef PASSFILE
+void 	 manage_password_file_certificates(struct pine *);
+#endif /* PASSFILE */
+void smime_manage_certs_init (struct pine *, CONF_S **, CONF_S **, WhichCerts, int);
+void smime_manage_password_file_certs_init(struct pine *, CONF_S **, CONF_S **, int, int *);
+void display_certificate_information(struct pine *, X509 *, char *, WhichCerts, int num);
+int  manage_certs_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags);
+int  manage_certificate_info_tool(int, MSGNO_S *, SCROLL_S *);
+void smime_setup_size(char **, size_t, size_t);
 
 
 /*
@@ -1028,6 +1031,7 @@ smime_config_init_display(struct pine *ps, CONF_S **ctmp, CONF_S **first_line)
     (*ctmp)->help           = h_config_smime_public_certificates;
     (*ctmp)->value          = cpystr(_("Manage Public Certificates"));
     (*ctmp)->varmem         = 9;
+    (*ctmp)->d.s.ctype	    = Public;
 
     /* manage private keys */
     new_confline(ctmp);
@@ -1036,6 +1040,7 @@ smime_config_init_display(struct pine *ps, CONF_S **ctmp, CONF_S **first_line)
     (*ctmp)->help           = h_config_smime_private_keys;
     (*ctmp)->value          = cpystr(_("Manage Private Keys"));
     (*ctmp)->varmem         = 10;
+    (*ctmp)->d.s.ctype	    = Private;
 
     /* manage Certificate Authorities */
     new_confline(ctmp);
@@ -1044,6 +1049,36 @@ smime_config_init_display(struct pine *ps, CONF_S **ctmp, CONF_S **first_line)
     (*ctmp)->help           = h_config_smime_certificate_authorities;
     (*ctmp)->value          = cpystr(_("Manage Certificate Authorities"));
     (*ctmp)->varmem         = 11;
+    (*ctmp)->d.s.ctype	    = CACert;
+
+#ifdef PASSFILE
+    new_confline(ctmp)->var = vtmp;
+    (*ctmp)->flags |= CF_NOSELECT | CF_B_LINE;
+
+    new_confline(ctmp);
+    (*ctmp)->flags |= CF_NOSELECT;
+    (*ctmp)->value = cpystr(tmp);
+
+    new_confline(ctmp);
+    (*ctmp)->flags |= CF_NOSELECT;
+    (*ctmp)->value = cpystr(_("Manage Key and Certificate for Password File"));
+
+    new_confline(ctmp);
+    (*ctmp)->flags |= CF_NOSELECT;
+    (*ctmp)->value = cpystr(tmp);
+
+    new_confline(ctmp)->var = vtmp;
+    (*ctmp)->flags |= CF_NOSELECT | CF_B_LINE;
+
+    /* manage password file certificates */
+    new_confline(ctmp);
+    (*ctmp)->tool           = smime_helper_tool;
+    (*ctmp)->keymenu        = &config_smime_manage_password_file_menu_keymenu;
+    (*ctmp)->help           = h_config_smime_password_file_certificates;
+    (*ctmp)->value          = cpystr(_("Manage Password File Key and Certificate"));
+    (*ctmp)->varmem         = 12;
+    (*ctmp)->d.s.ctype	    = Password;
+#endif /* PASSFILE */
 
     (*ctmp)->next	    = NULL;
 }
@@ -1198,6 +1233,10 @@ void display_certificate_information(struct pine *ps, X509 *cert, char *email, W
 	  clrbitn(PUBLIC_KEY,  scrollargs.keys.bitmap);
 	  clrbitn(PRIVATE_KEY, scrollargs.keys.bitmap);
       }
+      if(ctype == Password){
+	  clrbitn(DELETE_CERT_KEY,  scrollargs.keys.bitmap);
+	  clrbitn(UNDELETE_CERT_KEY,  scrollargs.keys.bitmap);
+      }
 
       cmd = scrolltool(&scrollargs);
 
@@ -1337,6 +1376,121 @@ smime_setup_size(char **s, size_t buflen, size_t n)
    *t++ = 's';
    *s = t;
 }
+
+#ifdef PASSFILE
+ /* state: 0 = first time, 
+  *        1 = second or another time
+  */
+void 
+smime_manage_password_file_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line, int fline, int *state)
+{
+    char     tmp[200];
+    char    *ext;
+    CertList *cl;
+    int	  i;
+    void  *pwdcert = NULL;	/* this is our current password file */
+    PERSONAL_CERT *pc;
+    X509_LOOKUP *lookup = NULL;
+    X509_STORE  *store  = NULL;
+
+    if(*state == 0){		/* first time around? */
+      setup_pwdcert(&pwdcert);
+      if(pwdcert == NULL) return;
+      if(ps->pwdcert == NULL)
+         ps->pwdcert = pwdcert;
+      else
+         free_personal_certs((PERSONAL_CERT **) &pwdcert);
+      (*state)++;
+    }
+
+    pc = (PERSONAL_CERT *) ps_global->pwdcert;
+    ps->pwdcertlist = cl = smime_X509_to_cert_info(pc->cert, pc->name);
+
+    for(i = 0; i < sizeof(tmp) && i < (ps->ttyo ? ps->ttyo->screen_cols : sizeof(tmp)); i++)
+	tmp[i] = '-';
+
+    new_confline(ctmp);
+    (*ctmp)->flags |= CF_NOSELECT;
+    (*ctmp)->value = cpystr(tmp);
+
+    new_confline(ctmp);
+    (*ctmp)->flags |= CF_NOSELECT;
+    (*ctmp)->value = cpystr(_("Manage Certificates and Keys Used to Encrypt your Password File"));
+
+    new_confline(ctmp);
+    (*ctmp)->flags |= CF_NOSELECT;
+    (*ctmp)->value = cpystr(tmp);
+
+    new_confline(ctmp);
+    (*ctmp)->flags |= CF_NOSELECT | CF_B_LINE;
+
+    if(cl){
+      int s, e, df, dt, md5;	/* sizes of certain fields */
+      int nf;			/* number of fields */
+      char u[MAILTMPLEN], *t;
+
+      e = MIN(strlen(cl->name), ps->ttyo->screen_cols/3);	/* do not use too much screen */
+      nf = 5;		/* there are 5 fields */
+      s = 3;		/* status has fixed size */
+      df = dt = 10;	/* date from and date to have fixed size */
+      md5 = ps->ttyo->screen_cols - s - df - dt - e - (nf - 1);
+
+      t = u;
+      smime_setup_size(&t, sizeof(u), s);
+      smime_setup_size(&t, sizeof(u) - strlen(t), e);
+      smime_setup_size(&t, sizeof(u) - strlen(t), df);
+      *t++ = ' ';	/* leave an extra space between dates */
+      smime_setup_size(&t, sizeof(u) - strlen(t), dt);
+      *t++ = ' ';	/* and another space between date and md5 sum */
+      smime_setup_size(&t, sizeof(u) - strlen(t), md5);
+      *t = '\0';	/* tie off */
+
+      new_confline(ctmp);
+      (*ctmp)->flags |= CF_NOSELECT;
+      (*ctmp)->value = cpystr(_("New Public Certificate and Key:"));
+
+      new_confline(ctmp);
+      (*ctmp)->d.s.ctype  = Password;
+      (*ctmp)->help	  = h_config_smime_password_file_certificates;
+      (*ctmp)->tool       = manage_certs_tool;
+      (*ctmp)->keymenu    = &config_smime_add_new_key_keymenu;
+      s += 2;
+      for(i = 0; i < s; i++) tmp[i] = ' ';
+      tmp[i] = '\0';
+      strncpy(tmp+s, _("Press \"RETURN\" to add new personal key"), sizeof(tmp)-s-1);
+      for(i = strlen(tmp); i < (ps->ttyo ? ps->ttyo->screen_cols : sizeof(tmp) - 1); i++)
+         tmp[i] = ' ';
+      tmp[i] = '\0';
+      (*ctmp)->value      = cpystr(tmp);
+      *first_line = *ctmp;
+
+      new_confline(ctmp);
+      (*ctmp)->flags |= CF_NOSELECT | CF_B_LINE;
+
+      new_confline(ctmp);
+      (*ctmp)->flags |= CF_NOSELECT;
+      (*ctmp)->value = cpystr(_("Current Public Certificate and Key:"));
+
+      new_confline(ctmp);
+      (*ctmp)->d.s.ctype   = Password;
+      (*ctmp)->d.s.deleted = 0;
+      (*ctmp)->help	   = h_config_smime_password_file_certificates;
+      (*ctmp)->tool        = manage_certs_tool;
+      (*ctmp)->keymenu     = &config_smime_manage_view_cert_keymenu;
+      (*ctmp)->varmem      = 0;
+      (*ctmp)->help	   = h_config_smime_manage_public_menu;
+      strncpy((*ctmp)->d.s.address, cl->name, sizeof((*ctmp)->d.s.address));
+      (*ctmp)->d.s.address[sizeof((*ctmp)->d.s.address) - 1] = '\0';
+      snprintf(tmp, sizeof(tmp), u,
+			(*ctmp)->d.s.deleted ? "D" : " ", 
+			cl->name, 
+			DATEFROMCERT(cl), DATETOCERT(cl), MD5CERT(cl));
+      (*ctmp)->value      = cpystr(tmp);
+
+   }
+}
+#endif /* PASSFILE */
+
 
 void smime_manage_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line, WhichCerts ctype, int fline)
 {
@@ -1480,6 +1634,43 @@ void manage_certificates(struct pine *ps, WhichCerts ctype)
     smime_reinit();
 }
 
+void manage_password_file_certificates(struct pine *ps)
+{
+    OPT_SCREEN_S    screen;
+    int             readonly_warning = 0, rv = 10, fline, state = 0;
+
+    dprint((9, "manage_password_file_certificates"));
+    ps->next_screen = SCREEN_FUN_NULL;
+
+    do {
+      CONF_S *ctmp = NULL, *first_line = NULL;
+
+      fline = rv >= 10 ? rv - 10 : 0;
+
+      smime_init();
+
+      smime_manage_password_file_certs_init(ps, &ctmp, &first_line, fline, &state);
+
+      if(ctmp == NULL){
+	ps->mangled_screen = 1;
+	smime_reinit();
+        return;
+      }
+
+      memset(&screen, 0, sizeof(screen));
+      screen.deferred_ro_warning = readonly_warning;
+      rv = conf_scroll_screen(ps, &screen, first_line,
+			       _("MANAGE PASSWORD FILE CERTS"),
+			      /* TRANSLATORS: Print something1 using something2.
+				 configuration is something1 */
+			      _("configuration"), 0, NULL);
+    } while (rv != 0);
+
+    ps->mangled_screen = 1;
+    smime_reinit();
+}
+
+
 int
 smime_helper_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
 {
@@ -1582,6 +1773,10 @@ smime_helper_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
 	  case 10: manage_certificates(ps, Private); break;
 	  case 11: manage_certificates(ps, CACert) ; break;
 
+#ifdef PASSFILE
+	  case 12: manage_password_file_certificates(ps); break;
+#endif /* PASSFILE */
+
 	  default:
 	    rv = -1;
 	    break;
@@ -1594,12 +1789,7 @@ smime_helper_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
 	break;
 
       case MC_IMPORT:
-	{ WhichCerts ctype;
-	  /* keep this selection consistent with the codes above */
-	  ctype = (*cl)->varmem == 9 ? Public 
-			: ((*cl)->varmem == 10 ? Private : CACert); 
-	  rv = import_certificate(ctype);
-	}
+	rv = import_certificate((*cl)->d.s.ctype);
 	break;
 
       default:

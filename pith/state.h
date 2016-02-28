@@ -272,9 +272,6 @@ struct pine {
 #endif
 #ifdef PASSFILE
                 *passfile,
-#ifdef SMIME
-		*pwdcertdir,
-#endif /* SMIME inside PASSFILE */
 #endif /* PASSFILE */
                 *pinerc,	/* Location of user's pinerc */
                 *exceptions,	/* Location of user's exceptions */
@@ -359,7 +356,11 @@ struct pine {
     char	  *smimedir;
     SMIME_STUFF_S *smime;
 #ifdef PASSFILE
-    void *pwdcert;	/* this is of type PERSONAL_CERT */
+    char *pwdcertdir;	  /* path to location of certificates for password file */
+    char *pwdcertcontent; /* No comment yet */
+    void *pwdcert;	  /* this is of type PERSONAL_CERT */
+    void *backuppassword; /* this is of type CertList */
+    void *pwdcertlist;	  /* this is of type CertList */
 #endif /* PASSFILE inside SMIME */
 #endif /* SMIME */
 
