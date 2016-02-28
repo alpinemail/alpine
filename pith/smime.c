@@ -781,11 +781,15 @@ import_certificate(WhichCerts ctype)
 			   build_path(buf, PATHCERTDIR(ctype), pwdcert->name, sizeof(buf));
 			   strncat(buf, EXTCERT(Private), 4);
 			   buf[sizeof(buf)-1] = '\0';
-			   if(unlink(buf) < 0)
-			      q_status_message(SM_ORDER, 1, 3, _("Failed to remove old key"));
+			   if(strcmp(PrivateKeyPath, buf)){
+			      if (unlink(buf) < 0)
+				q_status_message(SM_ORDER, 1, 3, _("Failed to remove old key"));
+			   }
 			   build_path(buf, PATHCERTDIR(ctype), pwdcert->cname, sizeof(buf));
-			   if(unlink(buf) < 0)
-			      q_status_message(SM_ORDER, 1, 3, _("Failed to remove old certificate"));
+			   if(strcmp(PublicCertPath, buf)){
+			      if(unlink(buf) < 0)
+				q_status_message(SM_ORDER, 1, 3, _("Failed to remove old certificate"));
+			   }
 			   free_personal_certs((PERSONAL_CERT **)&ps_global->pwdcert);
 			   ps_global->pwdcert = pc;
 			   rc = 1;
