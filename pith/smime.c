@@ -84,7 +84,7 @@ void		      smime_remove_folding_space(char **mimetext, unsigned long *mimelen, 
 int		      smime_validate_extra_test(char *mimetext, unsigned long mimelen, char *bodytext, unsigned long bodylen, PKCS7 *p7, int nflag);
 
 int  (*pith_opt_smime_get_passphrase)(void);
-int  (*pith_smime_import_certificate)(char *, char *, size_t);
+int  (*pith_smime_import_certificate)(char *, char *, char *, size_t);
 int  (*pith_smime_enter_password)(char *prompt, char *, size_t);
 int  (*pith_smime_confirm_save)(char *email);
 
@@ -610,6 +610,7 @@ import_certificate(WhichCerts ctype)
 {
    int   r = 1, rc; 
    char  filename[MAXPATH+1], full_filename[MAXPATH+1], buf[MAXPATH+1];
+   char *what;
 
    if(pith_smime_import_certificate == NULL){
      q_status_message(SM_ORDER, 0, 2,
@@ -617,7 +618,8 @@ import_certificate(WhichCerts ctype)
      return 0;
   }
 
-   r = (*pith_smime_import_certificate)(filename, full_filename, sizeof(filename) - 20);
+   what = ctype == Public || ctype == CACert ? "certificate" : "key";
+   r = (*pith_smime_import_certificate)(filename, full_filename, what, sizeof(filename) - 20);
 
    if(r < 0)
      return 0;
@@ -702,7 +704,7 @@ import_certificate(WhichCerts ctype)
 	   int done = 0;
 	    /* attempt #3, ask the user */
 	   do {
-	      r = (*pith_smime_import_certificate)(filename, use_this_file, sizeof(filename) - 20);
+	      r = (*pith_smime_import_certificate)(filename, use_this_file, "certificate", sizeof(filename) - 20);
 	      if(r < 0){
 		 if(ins != NULL) BIO_free(ins);
 		 if(cert != NULL) X509_free(cert);
@@ -1138,10 +1140,8 @@ certlist_from_personal_certs(PERSONAL_CERT *pc)
    if(pc == NULL)
      return NULL;
    
-   if((x = get_cert_for(pc->name, Public, 1)) != NULL){
+   if((x = get_cert_for(pc->name, Public, 1)) != NULL)
      cl = smime_X509_to_cert_info(x, pc->name);
-     X509_free(x);
-   }
    cl->next = certlist_from_personal_certs(pc->next);
 
    return cl;

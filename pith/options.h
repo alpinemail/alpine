@@ -227,7 +227,7 @@ extern int (*pith_opt_smime_get_passphrase)(void);
 /*
  * Required call to interface for input of file to import.
  */
-extern int (*pith_smime_import_certificate)(char *, char *, size_t);
+extern int (*pith_smime_import_certificate)(char *, char *, char *, size_t);
 
 /*
  * Required call to ask user to enter a password, with a given char * prompt

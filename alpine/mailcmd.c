@@ -322,7 +322,7 @@ alpine_get_password(char *prompt, char *pass, size_t len)
                          0, len, prompt, NULL, NO_HELP, &flags);
 }
 
-int smime_import_certificate(char *filename, char *full_filename, size_t len)
+int smime_import_certificate(char *filename, char *full_filename, char *what, size_t len)
 {
    int   r = 1;
    static HISTORY_S *history = NULL;
@@ -344,7 +344,7 @@ int smime_import_certificate(char *filename, char *full_filename, size_t len)
    full_filename[0] = '\0';
 
    r = get_export_filename(ps_global, filename, NULL, full_filename,
-              len, "certificate", "IMPORT", eopts, NULL,
+              len, what, "IMPORT", eopts, NULL,
               -FOOTER_ROWS(ps_global), GE_IS_IMPORT, &history);
 
    return r;
