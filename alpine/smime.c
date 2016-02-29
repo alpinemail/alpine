@@ -1378,6 +1378,42 @@ smime_setup_size(char **s, size_t buflen, size_t n)
 }
 
 #ifdef PASSFILE
+void manage_password_file_certificates(struct pine *ps)
+{
+    OPT_SCREEN_S    screen;
+    int             readonly_warning = 0, rv = 10, fline, state = 0;
+
+    dprint((9, "manage_password_file_certificates"));
+    ps->next_screen = SCREEN_FUN_NULL;
+
+    do {
+      CONF_S *ctmp = NULL, *first_line = NULL;
+
+      fline = rv >= 10 ? rv - 10 : 0;
+
+//      smime_init();
+
+      smime_manage_password_file_certs_init(ps, &ctmp, &first_line, fline, &state);
+
+      if(ctmp == NULL){
+	ps->mangled_screen = 1;
+//	smime_reinit();
+        return;
+      }
+
+      memset(&screen, 0, sizeof(screen));
+      screen.deferred_ro_warning = readonly_warning;
+      rv = conf_scroll_screen(ps, &screen, first_line,
+			       _("MANAGE PASSWORD FILE CERTS"),
+			      /* TRANSLATORS: Print something1 using something2.
+				 configuration is something1 */
+			      _("configuration"), 0, NULL);
+    } while (rv != 0);
+
+    ps->mangled_screen = 1;
+    smime_reinit();
+}
+
  /* state: 0 = first time, 
   *        1 = second or another time
   */
@@ -1404,7 +1440,7 @@ smime_manage_password_file_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **f
     }
 
     pc = (PERSONAL_CERT *) ps_global->pwdcert;
-    ps->pwdcertlist = cl = smime_X509_to_cert_info(pc->cert, pc->name);
+    ps->pwdcertlist = cl = smime_X509_to_cert_info(X509_dup(pc->cert), pc->name);
 
     for(i = 0; i < sizeof(tmp) && i < (ps->ttyo ? ps->ttyo->screen_cols : sizeof(tmp)); i++)
 	tmp[i] = '-';
@@ -1633,43 +1669,6 @@ void manage_certificates(struct pine *ps, WhichCerts ctype)
     ps->mangled_screen = 1;
     smime_reinit();
 }
-
-void manage_password_file_certificates(struct pine *ps)
-{
-    OPT_SCREEN_S    screen;
-    int             readonly_warning = 0, rv = 10, fline, state = 0;
-
-    dprint((9, "manage_password_file_certificates"));
-    ps->next_screen = SCREEN_FUN_NULL;
-
-    do {
-      CONF_S *ctmp = NULL, *first_line = NULL;
-
-      fline = rv >= 10 ? rv - 10 : 0;
-
-      smime_init();
-
-      smime_manage_password_file_certs_init(ps, &ctmp, &first_line, fline, &state);
-
-      if(ctmp == NULL){
-	ps->mangled_screen = 1;
-	smime_reinit();
-        return;
-      }
-
-      memset(&screen, 0, sizeof(screen));
-      screen.deferred_ro_warning = readonly_warning;
-      rv = conf_scroll_screen(ps, &screen, first_line,
-			       _("MANAGE PASSWORD FILE CERTS"),
-			      /* TRANSLATORS: Print something1 using something2.
-				 configuration is something1 */
-			      _("configuration"), 0, NULL);
-    } while (rv != 0);
-
-    ps->mangled_screen = 1;
-    smime_reinit();
-}
-
 
 int
 smime_helper_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)

@@ -1106,6 +1106,7 @@ mem_to_personal_certs(char *contents)
 		    pc = (PERSONAL_CERT *) fs_get(sizeof(*pc));
 		    pc->cert = cert;
 		    pc->name = cpystr(name);
+		    pc->cname = NULL;
 		    pc->keytext = keytext;	/* a pointer into contents */
 
 		    pc->key = load_key(pc, "", SM_NORMALCERT);
@@ -1347,18 +1348,19 @@ void
 free_personal_certs(PERSONAL_CERT **pc)
 {
     if(pc && *pc){
-	free_personal_certs(&(*pc)->next);
 	if((*pc)->name)
 	  fs_give((void **) &(*pc)->name);
 	
-	if((*pc)->name)
-	  fs_give((void **) &(*pc)->name);
+	if((*pc)->cname)
+	  fs_give((void **) &(*pc)->cname);
 
 	if((*pc)->cert)
 	  X509_free((*pc)->cert);
 
 	if((*pc)->key)
 	  EVP_PKEY_free((*pc)->key);
+
+	free_personal_certs(&(*pc)->next);
 
 	fs_give((void **) pc);
     }

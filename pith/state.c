@@ -178,10 +178,10 @@ free_pine_struct(struct pine **pps)
     if((*pps)->posting_charmap)
       fs_give((void **)&(*pps)->posting_charmap);
 
-#ifdef PASSFILE
-    if((*pps)->passfile)
-      fs_give((void **)&(*pps)->passfile);
 #ifdef SMIME
+    if((*pps)->pwdcertdir)
+      fs_give((void **)&(*pps)->pwdcertdir);
+
     if((*pps)->pwdcert){
       PERSONAL_CERT *pc;
 
@@ -189,9 +189,28 @@ free_pine_struct(struct pine **pps)
       free_personal_certs(&pc);
       (*pps)->pwdcert = NULL;
     }
-    if((*pps)->pwdcertdir)
-      fs_give((void **)&(*pps)->pwdcertdir);
-#endif /* SMIME inside PASSFILE */
+
+    if((*pps)->pwdcertlist){
+	CertList *cert;
+
+	cert = (CertList *) (*pps)->pwdcertlist;
+	free_certlist(&cert);
+	(*pps)->pwdcertlist = NULL;
+    }
+
+    if((*pps)->backuppassword){
+	CertList *cert;
+
+	cert = (CertList *) (*pps)->backuppassword;
+	free_certlist(&cert);
+	(*pps)->backuppassword = NULL;
+    }
+#endif /* SMIME */
+
+
+#ifdef PASSFILE
+    if((*pps)->passfile)
+      fs_give((void **)&(*pps)->passfile);
 #endif /* PASSFILE */
 
     if((*pps)->hdr_colors)

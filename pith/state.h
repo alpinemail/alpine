@@ -353,15 +353,13 @@ struct pine {
     PRINT_S	*print;
 
 #ifdef SMIME
-    char	  *smimedir;
+    char  *smimedir;
     SMIME_STUFF_S *smime;
-#ifdef PASSFILE
     char *pwdcertdir;	  /* path to location of certificates for password file */
-    char *pwdcertcontent; /* No comment yet */
     void *pwdcert;	  /* this is of type PERSONAL_CERT */
+    char *pwdcertcontent; /* No comment yet */
     void *backuppassword; /* this is of type CertList */
     void *pwdcertlist;	  /* this is of type CertList */
-#endif /* PASSFILE inside SMIME */
 #endif /* SMIME */
 
     struct variable *vars;

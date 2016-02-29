@@ -631,6 +631,7 @@ import_certificate(WhichCerts ctype)
     * in the same private key, and if not, we ask the user for its location. If all
     * of this works, we import the key and public to the password directory.
     */
+#ifdef PASSFILE
    if(ctype == Password){
      char PrivateKeyPath[MAXPATH+1], PublicCertPath[MAXPATH+1], s[MAXPATH+1];
      char full_name_key[MAXPATH+1], full_name_cert[MAXPATH+1];
@@ -830,6 +831,7 @@ import_certificate(WhichCerts ctype)
 
      return rc;
    }
+#endif /* PASSFILE */
 
    smime_init();
    ps_global->mangled_screen = 1;
@@ -1288,7 +1290,7 @@ get_personal_certs(char *path)
 		strncpy(buf2, d->d_name, sizeof(buf2)-1);
 		buf2[sizeof(buf2)-1] = '\0';
 		/* chop off ".key" trailier */
-		buf2[strlen(buf2)-4] = 0;
+		buf2[strlen(buf2)-4] = '\0';
 		/* Look for certificate */
 		cert = get_cert_for(buf2, Public, 1);
 
@@ -1300,6 +1302,8 @@ get_personal_certs(char *path)
 		    pc = (PERSONAL_CERT *) fs_get(sizeof(*pc));
 		    pc->cert = cert;
 		    pc->name = cpystr(buf2);
+		    strncat(buf2, EXTCERT(Public), 4);
+		    pc->cname = cpystr(buf2);
 
 		    /* Try to load the key with an empty password */
 		    pc->key = load_key(pc, "", SM_NORMALCERT);
