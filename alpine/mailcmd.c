@@ -3494,6 +3494,9 @@ save_size_changed_prompt(long msgno, int flags)
 	{-1, 0, NULL, NULL}
     };
 
+    if(F_ON(F_IGNORE_SIZE, ps_global))
+      return 'y';
+
     if(flags & SSCP_INIT || flags & SSCP_END){
 	if(flags & SSCP_END && possible_corruption)
 	  q_status_message(SM_ORDER, 3, 3, "There is possible data corruption, check the results");

@@ -3140,6 +3140,8 @@ feature_list(int index)
 	 F_FULL_AUTO_EXPUNGE, h_config_full_auto_expunge, PREF_MISC, 0},
 	{"force-arrow-cursor", NULL,
 	 F_FORCE_ARROW, h_config_force_arrow, PREF_MISC, 0},
+	{"ignore-size-changes", NULL,
+	 F_IGNORE_SIZE, h_config_ignore_size, PREF_MISC, 0},
 	{"maildrops-preserve-state", NULL,
 	 F_MAILDROPS_PRESERVE_STATE, h_config_maildrops_preserve_state,
 	 PREF_MISC, 0},

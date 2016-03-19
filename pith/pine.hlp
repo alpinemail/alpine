@@ -335,6 +335,12 @@ Bugs that have been addressed include:
        of the certificate to lowercase, which may make Alpine not be able 
        to read such certificate. Reported by Dennis Davis.
 
+  <LI> Bug: Crash when attempting to read a message after a bounce 
+       command. In order to produce a crash one needed to use the ^T 
+       subcommand and do a search in a LDAP directory. The crash is 
+       produced by changes to the text in the title bar. Reported by 
+       Heinrich Mislik in the Alpine-info list.
+
   <LI> Pico: Searching for a string that is too long causes Pico to crash
        in the next search.
 
@@ -3771,6 +3777,7 @@ There are also additional details on
 <li><a href="h_config_full_auto_expunge">FEATURE: <!--#echo var="FEAT_expunge-without-confirm-everywhere"--></a>
 <li><a href="h_config_no_fcc_attach">FEATURE: <!--#echo var="FEAT_fcc-without-attachments"--></a>
 <li><a href="h_config_force_arrow">FEATURE: <!--#echo var="FEAT_force-arrow-cursor"--></a>
+<li><a href="h_config_ignore_size">FEATURE: <!--#echo var="FEAT_ignore-size-changes"--></a>
 <li><a href="h_config_forward_as_attachment">FEATURE: <!--#echo var="FEAT_forward-as-attachment"--></a>
 <li><a href="h_config_preserve_field">FEATURE: <!--#echo var="FEAT_preserve-original-fields"--></a>
 <li><a href="h_config_quell_empty_dirs">FEATURE: <!--#echo var="FEAT_quell-empty-directories"--></a>
@@ -31162,6 +31169,47 @@ token in the
 <P>
 It ought to be the case that this feature also affects the ATTACHMENT INDEX,
 but that is not implemented.
+
+<P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+====== h_config_ignore_size =====
+<HTML>
+<HEAD>
+<TITLE>FEATURE: <!--#echo var="FEAT_ignore-size-changes"--></TITLE>
+</HEAD>
+<BODY>
+<H1>FEATURE: <!--#echo var="FEAT_ignore-size-changes"--></H1>
+
+When you have an account residing in an IMAP server, Alpine records the 
+size of each message as reported by the server. However, when Alpine saves 
+a message in such IMAP server, Alpine will compute the size of the message 
+independently, from the data it received. If these two numbers do not 
+match for a message, Alpine asks you if you still want to take the risk of 
+saving such message, since data corruption or loss of data could result 
+from this save.
+
+<P>
+Sometimes the root of this problem is that the IMAP server does not 
+compute sizes correctly, and there will not be loss of information when 
+saving such message. Enabling this feature will make Alpine ignore such 
+error and continue saving the message without producing any warnings or 
+ever stopping the process, as if there had not been any error. This option 
+applies to all IMAP servers that you use, so if you enable this feature, 
+size discrepancy warnings will not be given for any IMAP server you 
+connect to.
+
+<P>
+Example of a server where you could reproduce this problem is the Gmail 
+IMAP server. Another example can be found in some versions of the Exchange 
+server.
+
+<P>
+It is recommended that this feature be disabled most of the time and only 
+enabled when you find a server which you can determine that has the above 
+mentioned defect, but be disabled again after making the save operation 
+succeed.
 
 <P>
 &lt;End of help on this topic&gt;

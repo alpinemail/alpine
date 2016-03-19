@@ -1157,6 +1157,7 @@ long save_fetch_append_cb(MAILSTREAM *stream, void *data, char **flags,
 		    snprintf(buf, sizeof(buf),
 	 "Message to save shrank: source msg # %ld may be saved incorrectly",
 			     mn_raw2m(pkg->msgmap, raw));
+		    if(F_OFF(F_IGNORE_SIZE, ps_global))
 		    q_status_message(SM_ORDER, 0, 3, buf);
 		}
 		else{

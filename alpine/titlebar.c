@@ -83,7 +83,8 @@ static struct titlebar_state {
 		 del_column, 
 		 percent_column,
 		 page_column,
-		 screen_cols;
+		 screen_cols,
+		 pushed;
     enum	 {Normal, OnlyRead, Closed} stream_status;
     TitleBarType style;
     TITLE_S      titlecontainer;
@@ -92,13 +93,20 @@ static struct titlebar_state {
 
 static int titlebar_is_dirty = 1;
 
+char *as_fname;		/* folder name */
+char *as_cname;		/* context name */
 
 void
 push_titlebar_state(void)
 {
+    as.pushed = 1;
     titlebar_stack     = as;
-    as.folder_name     = NULL;	/* erase knowledge of malloc'd data */
-    as.context_name    = NULL;
+    if(as_fname) fs_give((void **)&as_fname);
+    as_fname = cpystr(as.folder_name);
+    if(as_cname) fs_give((void **)&as_cname);
+    as_cname = cpystr(as.context_name);
+    if(as.folder_name) fs_give((void **)&as.folder_name);
+    if(as.context_name) fs_give((void **)&as.context_name);
 }
 
 
@@ -110,6 +118,11 @@ pop_titlebar_state(void)
 	fs_give((void **)&(as.folder_name)); /* free malloc'd values */
 	fs_give((void **)&(as.context_name));
 	as = titlebar_stack;
+	if(as.pushed){
+	  as.folder_name = as_fname ? cpystr(as_fname) : NULL;
+	  as.context_name = as_cname ? cpystr(as_cname): NULL;
+	}
+	as.pushed = 0;
     }
 }
 
