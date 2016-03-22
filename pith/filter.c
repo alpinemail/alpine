@@ -3255,9 +3255,9 @@ void	  html_newline(FILTER_S *);
 void	  html_output(FILTER_S *, int);
 void	  html_output_string(FILTER_S *, char *);
 void	  html_output_raw_tag(FILTER_S *, char *);
-void	  html_output_normal(FILTER_S *, int, int);
+void	  html_output_normal(FILTER_S *, int, int, int);
 void	  html_output_flush(FILTER_S *);
-void	  html_output_centered(FILTER_S *, int, int);
+void	  html_output_centered(FILTER_S *, int, int, int);
 void	  html_centered_handle(int *, char *, int);
 void	  html_centered_putc(WRAPLINE_S *, int);
 void	  html_centered_flush(FILTER_S *);
@@ -8064,7 +8064,7 @@ html_output(FILTER_S *f, int ch)
 {
     UCS uc;
     int width;
-    void (*o_f)(FILTER_S *, int, int) = CENTER_BIT(f) ? html_output_centered : html_output_normal;
+    void (*o_f)(FILTER_S *, int, int, int) = CENTER_BIT(f) ? html_output_centered : html_output_normal;
 
     /*
      * if ch is a control token, just pass it on, else, collect
@@ -8072,13 +8072,13 @@ html_output(FILTER_S *f, int ch)
      * output routines
      */
     if(ch == TAG_EMBED || HD(f)->embedded.state || (ch > 0xff && IS_LITERAL(ch) == 0)){
-	(*o_f)(f, ch, 1);
+	(*o_f)(f, ch, 1, 0);
     }
     else if(utf8_to_ucs4_oneatatime(ch & 0xff, &(HD(f)->cb), &uc, &width)){
 	unsigned char *cp;
 
 	for(cp = HD(f)->cb.cbuf; cp <= HD(f)->cb.cbufend; cp++){
-	    (*o_f)(f, *cp, width);
+	    (*o_f)(f, *cp, width, HD(f)->cb.cbufend - cp);
 	    width = 0;		/* only count it once */
 	}
 
@@ -8190,8 +8190,11 @@ html_event_attribute(char *attr)
 
 
 void
-html_output_normal(FILTER_S *f, int ch, int width)
+html_output_normal(FILTER_S *f, int ch, int width, int remaining)
 {
+    static int written = 0;
+    static int cwidth;
+
     if(HD(f)->centered){
 	html_centered_flush(f);
 	fs_give((void **) &HD(f)->centered->line.buf);
@@ -8264,15 +8267,28 @@ html_output_normal(FILTER_S *f, int ch, int width)
 	    if(HD(f)->prefix)
 	      html_a_prefix(f);
 
-	    if((f->f2 += width) + 1 >= WRAP_COLS(f)){
+	    if(written == 0)
+	      cwidth = width;
+
+	    if(f->f2 + cwidth + 1 >= WRAP_COLS(f)){
 		HTML_LINEP_PUTC(f, ch & 0xff);
-		HTML_FLUSH(f);
-		html_newline(f);
+		written++;
+		if(remaining == 0){
+		  HTML_FLUSH(f);
+		  html_newline(f);
+		}
 		if(HD(f)->in_anchor)
 		  html_write_anchor(f, HD(f)->in_anchor);
 	    }
-	    else
+	    else{
 	      HTML_LINEP_PUTC(f, ch & 0xff);
+	      written++;
+	    }
+
+	    if(remaining == 0){
+	      written = 0;
+	      f->f2 += cwidth;
+	    }
 	}
     }
     else{
@@ -8423,8 +8439,11 @@ html_output_flush(FILTER_S *f)
  * html_output_centered - managed writing centered text
  */
 void
-html_output_centered(FILTER_S *f, int ch, int width)
+html_output_centered(FILTER_S *f, int ch, int width, int remaining)
 {
+    static int written;
+    static int cwidth;
+
     if(!HD(f)->centered){		/* new text? */
 	html_output_flush(f);
 	if(f->n)			/* start on blank line */
@@ -8529,7 +8548,16 @@ html_output_centered(FILTER_S *f, int ch, int width)
 	  html_centered_flush(f);
 
 	html_centered_putc(&HD(f)->centered->word, ch);
-	HD(f)->centered->word.width++;
+
+	if(written == 0)
+	  cwidth = width;
+
+	written++;
+
+	if(remaining == 0){
+	   written = 0;
+	   HD(f)->centered->word.width += cwidth;
+	}
     }
 }
 

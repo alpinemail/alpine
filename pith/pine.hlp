@@ -187,6 +187,10 @@ Additions include:
 
   <LI> Added support for RFC 2971 - IMAP ID extension.
 
+  <LI> Add configuration <A href="h_config_ignore_size"><!--#echo var="FEAT_ignore-size-changes"--></A>
+       that allows users to ignore errors in the computation of the size
+       of a message from defective servers.
+
   <LI> Ignore message from smtp server after a successful authentication
        challenge.
 
@@ -335,11 +339,15 @@ Bugs that have been addressed include:
        of the certificate to lowercase, which may make Alpine not be able 
        to read such certificate. Reported by Dennis Davis.
 
-  <LI> Bug: Crash when attempting to read a message after a bounce 
-       command. In order to produce a crash one needed to use the ^T 
-       subcommand and do a search in a LDAP directory. The crash is 
-       produced by changes to the text in the title bar. Reported by 
-       Heinrich Mislik in the Alpine-info list.
+  <LI> Crash when attempting to read a message after a bounce command. 
+       In order to produce a crash one needed to use the ^T subcommand and 
+       do a search in a LDAP directory. The crash is produced by changes 
+       to the text in the title bar. Reported by Heinrich Mislik in the 
+       Alpine-info list.
+
+  <LI> HTML messages that contain UTF-8 may wrap at the wrong position,
+       making Alpine not display the correct character at the position 
+       that wrapping is done.
 
   <LI> Pico: Searching for a string that is too long causes Pico to crash
        in the next search.
