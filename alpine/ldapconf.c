@@ -622,6 +622,7 @@ dir_init_display(struct pine *ps, CONF_S **ctmp, char **servers,
     int   i;
     char *serv;
     char *subtitle;
+    size_t sizeofsub;
     LDAP_SERV_S *info;
 
     if(first_line)
@@ -633,22 +634,21 @@ dir_init_display(struct pine *ps, CONF_S **ctmp, char **servers,
 	    serv = (info && info->nick && *info->nick) ? cpystr(info->nick) :
 		     (info && info->serv && *info->serv) ? cpystr(info->serv) :
 		       cpystr(_("Bad Server Config, Delete this"));
-	    subtitle = (char *)fs_get((((info && info->serv && *info->serv)
-					    ? strlen(info->serv)
-					    : 3) +
-					       strlen(_(dserv)) + 15) *
-					 sizeof(char));
+	    sizeofsub = (((info && info->serv && *info->serv)
+			   ? strlen(info->serv)
+			   : 3) + strlen(_(dserv)) + 15) * sizeof(char);
+	    subtitle = (char *)fs_get(sizeofsub);
 	    if(info && info->port >= 0)
-	      snprintf(subtitle, sizeof(subtitle), "%s%s:%d",
+	      snprintf(subtitle, sizeofsub, "%s%s:%d",
 		      _(dserv),
 		      (info && info->serv && *info->serv) ? info->serv : "<?>",
 		      info->port);
 	    else
-	      snprintf(subtitle, sizeof(subtitle), "%s%s",
+	      snprintf(subtitle, sizeofsub, "%s%s",
 		      _(dserv),
 		      (info && info->serv && *info->serv) ? info->serv : "<?>");
 
-	    subtitle[sizeof(subtitle)-1] = '\0';
+	    subtitle[sizeofsub-1] = '\0';
 
 	    add_ldap_server_to_display(ps, ctmp, serv, subtitle, var,
 				       i, &dir_conf_km, h_direct_config,
@@ -803,6 +803,7 @@ dir_config_add(struct pine *ps, CONF_S **cl)
 
 	if(info && info->serv && *info->serv){
 	    char  *subtitle;
+	    size_t sizeofsub;
 	    int    i, cnt = 0;
 	    char **new_list;
 	    CONF_S *cp;
@@ -837,22 +838,21 @@ dir_config_add(struct pine *ps, CONF_S **cl)
 	    set_variable_list(V_LDAP_SERVERS, new_list, FALSE, ew);
 	    free_list_array(&new_list);
 	    set_current_val((*cl)->var, TRUE, FALSE);
-	    subtitle = (char *)fs_get((((info && info->serv && *info->serv)
-					    ? strlen(info->serv)
-					    : 3) +
-					       strlen(_(dserv)) + 15) *
-					 sizeof(char));
+	    sizeofsub = (((info && info->serv && *info->serv)
+			    ? strlen(info->serv)
+			    : 3) + strlen(_(dserv)) + 15) * sizeof(char);
+	    subtitle = (char *)fs_get(sizeofsub);
 	    if(info && info->port >= 0)
-	      snprintf(subtitle, sizeof(subtitle), "%s%s:%d",
+	      snprintf(subtitle, sizeofsub, "%s%s:%d",
 		      _(dserv),
 		      (info && info->serv && *info->serv) ? info->serv : "<?>",
 		      info->port);
 	    else
-	      snprintf(subtitle, sizeof(subtitle), "%s%s",
+	      snprintf(subtitle, sizeofsub, "%s%s",
 		      _(dserv),
 		      (info && info->serv && *info->serv) ? info->serv : "<?>");
 
-	    subtitle[sizeof(subtitle)-1] = '\0';
+	    subtitle[sizeofsub-1] = '\0';
 
 	    if(cnt < 2){			/* first one */
 		struct variable *var;

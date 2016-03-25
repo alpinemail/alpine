@@ -347,7 +347,7 @@ Bugs that have been addressed include:
 
   <LI> HTML messages that contain UTF-8 may wrap at the wrong position,
        making Alpine not display the correct character at the position 
-       that wrapping is done.
+       that wrapping is done. Reported by Wang Kang.
 
   <LI> Pico: Searching for a string that is too long causes Pico to crash
        in the next search.
