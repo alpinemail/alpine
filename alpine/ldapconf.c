@@ -1080,6 +1080,7 @@ dir_config_edit(struct pine *ps, CONF_S **cl)
 	    char  *subtitle;
 	    int    i, cnt;
 	    char **new_list;
+	    size_t sizeofsub;
 
 	    for(cnt = 0; lval && lval[cnt]; cnt++)
 	      ;
@@ -1109,22 +1110,22 @@ dir_config_edit(struct pine *ps, CONF_S **cl)
 	    if((*cl)->next->value)
 	      fs_give((void **)&(*cl)->next->value);
 
-	    subtitle = (char *)fs_get((((info && info->serv && *info->serv)
-					    ? strlen(info->serv)
-					    : 3) +
-					       strlen(_(dserv)) + 15) *
-					 sizeof(char));
+	    sizeofsub = (((info && info->serv && *info->serv)
+			    ? strlen(info->serv)
+			    : 3) + strlen(_(dserv)) + 15) * sizeof(char);
+
+	    subtitle = (char *)fs_get(sizeofsub);
 	    if(info && info->port >= 0)
-	      snprintf(subtitle, sizeof(subtitle), "%s%s:%d",
+	      snprintf(subtitle, sizeofsub, "%s%s:%d",
 		      _(dserv),
 		      (info && info->serv && *info->serv) ? info->serv : "<?>",
 		      info->port);
 	    else
-	      snprintf(subtitle, sizeof(subtitle), "%s%s",
+	      snprintf(subtitle, sizeofsub, "%s%s",
 		      _(dserv),
 		      (info && info->serv && *info->serv) ? info->serv : "<?>");
 
-	    subtitle[sizeof(subtitle)-1] = '\0';
+	    subtitle[sizeofsub] = '\0';
 
 	    (*cl)->next->value = subtitle;
 
