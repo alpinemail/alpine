@@ -276,6 +276,11 @@ Additions include:
   <LI> Change in logic in imap_set_password function to make Alpine ask if
        a user wants to save a password before reading the password file.
 
+  <LI> When exporting all parts of a message, if two attachments have the same
+       name, do not overwrite a file more than once, but instead add a counter
+       number to the filename to make a new file that does not exist in the file
+       system.
+
   <LI> Add the Control-R subcommand to the save command for attachments. 
        This subcommand toggles if the saving will be done in binary mode 
        for text attachments. When a user saves an attachment using binary

@@ -3835,7 +3835,7 @@ cmd_export(struct pine *state, MSGNO_S *msgmap, int qline, int aopt)
 	if(rflags & GER_ALLPARTS && full_filename[0]){
 	    char dir[MAXPATH+1];
 	    char  lfile[MAXPATH+1];
-	    int  ok = 0, tries = 0, saved = 0, errs = 0;
+	    int  ok = 0, tries = 0, saved = 0, errs = 0, counter = 2;
 	    ATTACH_S *a;
 
 	    /*
@@ -3946,8 +3946,33 @@ cmd_export(struct pine *state, MSGNO_S *msgmap, int qline, int aopt)
 		    continue;
 		}
 
+		/* although files are being saved in a unique directory, there is
+		 * no guarantee that attachment names have unique names, so we have
+		 * to make sure that we are not constantly rewriting the same file name
+		 * over and over. In order to avoid this we test if the file already exists,
+		 * and if so, we write a counter name in the file name, just before the
+		 * extension of the file, and separate it with an underscore.
+		 */
 		snprintf(filename, sizeof(filename), "%s%s%s", dir, S_FILESEP, lfile);
 		filename[sizeof(filename)-1] = '\0';
+		while((ok = can_access(filename, ACCESS_EXISTS)) == 0 && errs == 0){
+		   char *ext;
+		   snprintf(filename, sizeof(filename), "%d", counter);
+		   if(strlen(dir) + strlen(S_FILESEP) + strlen(lfile) + strlen(filename) + 2
+							    > sizeof(filename)){
+		      dprint((2,
+			   "FAILED Att Export: name too long: %s\n",
+			   dir, S_FILESEP, lfile));
+		      errs++;
+		      continue;
+		   }
+		   if((ext = strrchr(lfile, '.')) != NULL)
+		      *ext = '\0';
+		   snprintf(filename, sizeof(filename), "%s%s%s%s%d%s%s", 
+			dir, S_FILESEP, lfile, 
+			ext ? "_" : "", counter++, ext ? "." : "", ext ? ext+1 : "");
+		   filename[sizeof(filename)-1] = '\0';
+		}
 
 		if(write_attachment_to_file(state->mail_stream, rawno,
 					    a, GER_NONE, filename) == 1)
