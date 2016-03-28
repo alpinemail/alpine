@@ -1146,6 +1146,7 @@ dir_config_edit(struct pine *ps, CONF_S **cl)
 #define   LDAP_F_NOSUB 3
 #define   LDAP_F_TLS   4
 #define   LDAP_F_TLSMUST 5
+#define   LDAP_F_LDAPS 6
 bitmap_t  ldap_option_list;
 struct variable *ldap_srch_rule_ptr;
 
@@ -1352,6 +1353,8 @@ dir_edit_screen(struct pine *ps, LDAP_SERV_S *def, char *title, char **raw_serve
       setbitn(LDAP_F_TLS, ldap_option_list);
     if(def && def->tlsmust)
       setbitn(LDAP_F_TLSMUST, ldap_option_list);
+    if(def && def->ldaps)
+      setbitn(LDAP_F_LDAPS, ldap_option_list);
 
     /* save the old opt_screen before calling scroll screen again */
     saved_screen = opt_screen;
@@ -1475,6 +1478,38 @@ dir_edit_screen(struct pine *ps, LDAP_SERV_S *def, char *title, char **raw_serve
     
     lv = MIN(lv, 100);
 
+    /* enabling ldaps disables tls */
+    if((f = ldap_feature_list(LDAP_F_LDAPS)) != NULL
+	&& bitnset(f->value, ldap_option_list)){
+	int clear = 0;
+	if((f = ldap_feature_list(LDAP_F_TLS)) != NULL
+	   && bitnset(f->value, ldap_option_list)){
+	      clear++;
+	      clrbitn(f->value, ldap_option_list);
+	   }
+	if((f = ldap_feature_list(LDAP_F_TLSMUST)) != NULL
+	   && bitnset(f->value, ldap_option_list)){
+	      clear++;
+	      clrbitn(f->value, ldap_option_list);
+	}
+	if(clear > 0)
+	   q_status_message(SM_ORDER, 3, 3,
+			   _("Can not use TLS when connecting using LDAPS"));
+    }
+
+    /* enabling tls disables ldaps */
+    if(((f = ldap_feature_list(LDAP_F_TLS)) != NULL
+	&& bitnset(f->value, ldap_option_list))
+	|| ((f = ldap_feature_list(LDAP_F_TLSMUST)) != NULL
+	   && bitnset(f->value, ldap_option_list))){
+	if((f = ldap_feature_list(LDAP_F_LDAPS)) != NULL
+	   && bitnset(f->value, ldap_option_list)){
+	   clrbitn(f->value, ldap_option_list);
+	   q_status_message(SM_ORDER, 3, 3,
+			   _("Can not use LDAPS when connecting using TLS"));
+	}
+    }
+
     for(i = 0; (f = ldap_feature_list(i)); i++){
 	new_confline(&ctmp);
 	ctmp->var       = &opt_var;
@@ -1499,6 +1534,9 @@ dir_edit_screen(struct pine *ps, LDAP_SERV_S *def, char *title, char **raw_serve
 	    break;
 	  case LDAP_F_TLSMUST:
 	    ctmp->help      = h_config_ldap_opts_tlsmust;
+	    break;
+	  case LDAP_F_LDAPS:
+	    ctmp->help      = h_config_ldap_opts_ldaps; //TODO: SSL and TLS as radiobutton
 	    break;
 	}
 
@@ -1920,7 +1958,7 @@ dir_edit_screen(struct pine *ps, LDAP_SERV_S *def, char *title, char **raw_serve
 	    }
 	}
 
-	snprintf(dir_tmp, sizeof(dir_tmp), "%s%s%s \"/base=%s/binddn=%s/impl=%d/rhs=%d/ref=%d/nosub=%d/tls=%d/tlsm=%d/type=%s/srch=%s%s/time=%s/size=%s/cust=%s/nick=%s/matr=%s/catr=%s/satr=%s/gatr=%s\"",
+	snprintf(dir_tmp, sizeof(dir_tmp), "%s%s%s \"/base=%s/binddn=%s/impl=%d/rhs=%d/ref=%d/nosub=%d/tls=%d/tlsm=%d/ldaps=%d/type=%s/srch=%s%s/time=%s/size=%s/cust=%s/nick=%s/matr=%s/catr=%s/satr=%s/gatr=%s\"",
 		server ? server : "",
 		(portval >= 0 && port && *port) ? ":" : "",
 		(portval >= 0 && port && *port) ? port : "",
@@ -1932,6 +1970,7 @@ dir_edit_screen(struct pine *ps, LDAP_SERV_S *def, char *title, char **raw_serve
 		bitnset(LDAP_F_NOSUB, ldap_option_list) ? 1 : 0,
 		bitnset(LDAP_F_TLS, ldap_option_list) ? 1 : 0,
 		bitnset(LDAP_F_TLSMUST, ldap_option_list) ? 1 : 0,
+		bitnset(LDAP_F_LDAPS, ldap_option_list) ? 1 : 0,
 		srch_type ? srch_type : "",
 		srch_rule ? srch_rule : "",
 		custom_scope,
@@ -2342,6 +2381,21 @@ void
 toggle_ldap_option_bit(struct pine *ps, int index, struct variable *var, char *value)
 {
     NAMEVAL_S  *f;
+    int tls_is_on_now;
+    int tlsmust_is_on_now;
+    int ldaps_is_on_now;
+    int tls_is_on_after;
+    int tlsmust_is_on_after;
+    int ldaps_is_on_after;
+
+    tls_is_on_now = (f = ldap_feature_list(LDAP_F_TLS)) != NULL
+	   && bitnset(f->value, ldap_option_list) ? 1 : 0;
+
+    tlsmust_is_on_now = (f = ldap_feature_list(LDAP_F_TLSMUST)) != NULL
+	   && bitnset(f->value, ldap_option_list) ? 1 : 0;
+
+    ldaps_is_on_now = (f = ldap_feature_list(LDAP_F_LDAPS)) != NULL
+	&& bitnset(f->value, ldap_option_list) ? 1 : 0;
 
     f  = ldap_feature_list(index);
 
@@ -2350,6 +2404,46 @@ toggle_ldap_option_bit(struct pine *ps, int index, struct variable *var, char *v
       clrbitn(f->value, ldap_option_list);
     else
       setbitn(f->value, ldap_option_list);
+
+    tls_is_on_after = (f = ldap_feature_list(LDAP_F_TLS)) != NULL
+	   && bitnset(f->value, ldap_option_list) ? 1 : 0;
+
+    tlsmust_is_on_after = (f = ldap_feature_list(LDAP_F_TLSMUST)) != NULL
+	   && bitnset(f->value, ldap_option_list) ? 1 : 0;
+
+    ldaps_is_on_after = (f = ldap_feature_list(LDAP_F_LDAPS)) != NULL
+	&& bitnset(f->value, ldap_option_list) ? 1 : 0;
+
+    f  = ldap_feature_list(index);
+
+    if(!ldaps_is_on_now && ldaps_is_on_after){
+	if(tlsmust_is_on_after || tls_is_on_after){
+	   char *name;
+	   if(tlsmust_is_on_after)
+	      name = ldap_feature_list(LDAP_F_TLSMUST)->name;
+	   else
+	      name = ldap_feature_list(LDAP_F_TLS)->name;
+ 	   clrbitn(f->value, ldap_option_list);
+	   q_status_message1(SM_ORDER, 3, 3, 
+		_("Can not use LDAPS when using TLS. Disable \"%s\" first."), name);
+	}
+    }
+    else if(!tls_is_on_now && tls_is_on_after){
+	if(ldaps_is_on_after){
+	   char *name = ldap_feature_list(LDAP_F_LDAPS)->name;
+ 	   clrbitn(f->value, ldap_option_list);	   
+	   q_status_message1(SM_ORDER, 3, 3, 
+		_("Can not use TLS when using LDAPS. Disable \"%s\" first."), name);
+	}
+    }
+    else if(!tlsmust_is_on_now && tlsmust_is_on_after){
+	if(ldaps_is_on_after){
+	   char *name = ldap_feature_list(LDAP_F_LDAPS)->name;
+ 	   clrbitn(f->value, ldap_option_list);
+	   q_status_message1(SM_ORDER, 3, 3, 
+		_("Can not use TLS when using LDAPS. Disable \"%s\" first."), name);
+	}
+    }
 
     if(value)
       value[1] = bitnset(f->value, ldap_option_list) ? 'X' : ' ';
@@ -2365,7 +2459,8 @@ ldap_feature_list(int index)
 	{"save-search-criteria-not-result",   NULL, LDAP_F_REF},
 	{"disable-ad-hoc-space-substitution", NULL, LDAP_F_NOSUB},
 	{"attempt-tls-on-connection",         NULL, LDAP_F_TLS},
-	{"require-tls-on-connection",         NULL, LDAP_F_TLSMUST}
+	{"require-tls-on-connection",         NULL, LDAP_F_TLSMUST}, // TODO rename tls to starttls
+	{"require-ldaps-on-connection",     NULL, LDAP_F_LDAPS}
     };
 
     return((index >= 0 &&

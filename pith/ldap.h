@@ -48,6 +48,7 @@ typedef struct ldap_serv {
 		 nosub,		/* Disable space sub feature	*/
 		 tls,		/* Attempt TLS			*/
 		 tlsmust,	/* Require TLS			*/
+		 ldaps,		/* Require LDAPS		*/
 		 type,		/* Search type (surname...)	*/
 		 srch,		/* Search rule (contains...)	*/
 		 scope;		/* Scope of search (base...)	*/

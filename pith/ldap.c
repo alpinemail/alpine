@@ -26,7 +26,7 @@ static char rcsid[] = "$Id: ldap.c 1204 2009-02-02 19:54:23Z hubert@u.washington
 #include "../pith/busy.h"
 #include "../pith/signal.h"
 #include "../pith/ablookup.h"
-
+#include "../pith/readfile.h"
 
 /*
  * Until we can think of a better way to do this. If user exits from an
@@ -475,7 +475,59 @@ ldap_lookup(LDAP_SERV_S *info, char *string, CUSTOM_FILT_S *cust,
 #ifdef _WINDOWS
     if((ld = ldap_init(serv, info->port)) == NULL)
 #else
-    snprintf(tmp_20k_buf, SIZEOF_20KBUF, "ldap://%s:%d", serv, info->port);
+#ifdef SMIME_SSLCERTS
+    /* If we are attempting a ldaps secure connection, we need to tell 
+     * ldap that we have certificates. There are many ways to do so. 
+     * OpenLDAP has many ways to configure this through configuration
+     * files. For example the global (to the system) ldap.conf file, or the
+     * personal ldaprc or .ldaprc files. Setting the location of the 
+     * certificates must happen at the time we call ldap_initialize, we 
+     * cannot set it up before that call, nor after, so what we are going 
+     * to do is to test for a .ldaprc file in the home directory. If such 
+     * file exists we read it, if not we create it and if it does not have
+     * a line for the location of the certificates in the system, we add one.
+     * (so we ignore all other configuration files)
+     */
+    if(info->ldaps && ps_global->home_dir){
+	int done = 0;
+	char *text, *tls_conf;
+	char filename[MAXPATH+1];
+
+        build_path(filename, ps_global->home_dir, ".ldaprc", sizeof(filename));
+
+	if((text = read_file(filename, 0)) != NULL)
+	   while(done == 0 
+		&& (tls_conf = strstr(text, "TLS_CACERTDIR")) != NULL
+		&& (tls_conf == text || *(tls_conf - 1) == '\n')){
+		   tls_conf += 13;	/* 13 = strlen("TLS_CACERTDIR") */
+		   while (isspace(*tls_conf))
+		     tls_conf++;
+		   if(!strncmp(tls_conf, SMIME_SSLCERTS, strlen(SMIME_SSLCERTS)))
+		      done++;
+	    }
+
+	if(!done){
+	   STORE_S *so;
+
+	   if((so = so_get(FileStar, filename, WRITE_ACCESS)) != NULL){
+	      if(text != NULL){
+	        so_puts(so, text);
+	        so_puts(so, NEWLINE);
+	      }
+	      so_puts(so, "TLS_CACERTDIR");
+	      so_puts(so, " ");
+	      so_puts(so, SMIME_SSLCERTS); 
+	      so_puts(so, NEWLINE);
+	      so_give(&so);
+	   }
+	}
+	if(text != NULL)
+	  fs_give((void **)&text);
+    }
+#endif /* SMIME_SSLCERTS */
+
+    snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s://%s:%d", 
+		info->ldaps ? "ldaps" : "ldap ", serv, info->port);
     tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
 
     if(ldap_initialize(&ld, tmp_20k_buf) != LDAP_SUCCESS) 
@@ -535,8 +587,7 @@ ldap_lookup(LDAP_SERV_S *info, char *string, CUSTOM_FILT_S *cust,
       our_ldap_set_option(ld, LDAP_OPT_RESTART, LDAP_OPT_ON);
 
       /*
-       * If we need to authenticate, get the password. We are not
-       * supporting SASL authentication, just LDAP simple.
+       * If we need to authenticate, get the password
        */
       if(info->binddn && info->binddn[0]){
 	  char pmt[500];
@@ -552,9 +603,10 @@ ldap_lookup(LDAP_SERV_S *info, char *string, CUSTOM_FILT_S *cust,
 	  if((space=strindex(hostbuf, ' ')) != NULL)
 	    *space = '\0';
 
-	  mail_valid_net_parse_work(hostbuf, &mb, "ldap");
+	  mail_valid_net_parse_work(hostbuf, &mb, info->ldaps ? "ldaps" : "ldap");
 	  mb.port = info->port;
 	  mb.tlsflag = (info->tls || info->tlsmust) ? 1 : 0;
+	  mb.sslflag = info->ldaps ? 1 : 0;
 
 try_password_again:
 
@@ -1415,6 +1467,10 @@ break_up_ldap_server(char *serv_str)
 	/* get the tlsmust parameter */
 	if((q = srchstr(tail, "/tlsm=1")) != NULL)
 	  info->tlsmust = 1;
+
+	/* get the ldaps parameter */
+	if((q = srchstr(tail, "/ldaps=1")) != NULL)
+	  info->ldaps = 1;
 
 	/* get the search type value */
 	if((q = srchstr(tail, "/type=")) != NULL){

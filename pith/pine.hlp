@@ -185,6 +185,9 @@ Additions include:
        variable are "en_US" or "de_DE", etc. Only the first 10 
        dictionaries are offered.
 
+  <LI> Unix-Alpine: Connect securely to a LDAP server on a secure port. 
+       Based on a contribution by Wang Kang.
+
   <LI> Added support for RFC 2971 - IMAP ID extension.
 
   <LI> Add configuration <A href="h_config_ignore_size"><!--#echo var="FEAT_ignore-size-changes"--></A>
@@ -3934,6 +3937,7 @@ There are also additional details on
 <li><a href="h_config_ldap_opts_nosub">LDAP FEATURE: Disable-Ad-Hoc-Space-Substitution</a>
 <li><a href="h_config_ldap_opts_rhs">LDAP FEATURE: Lookup-Addrbook-Contents</a>
 <li><a href="h_config_ldap_opts_tlsmust">LDAP FEATURE: Require-TLS-On-Connection</a>
+<li><a href="h_config_ldap_opts_ldaps">LDAP FEATURE: Require-LDAPS-On-Connection</a>
 <li><a href="h_config_ldap_opts_ref">LDAP FEATURE: Save-Search-Criteria-Not-Result</a>
 <li><a href="h_config_ldap_opts_impl">LDAP FEATURE: Use-Implicitly-From-Composer</a>
 <li><a href="h_config_ldap_binddn">LDAP OPTION: Bind-DN</a>
@@ -14882,6 +14886,14 @@ on the connection.
 Also see the closely related feature
 <A HREF="h_config_ldap_opts_tlsmust">&quot;Require-TLS-On-Connection&quot;</A>
 <P>
+Note that if this option is set, then 
+<A HREF="h_config_ldap_opts_ldaps">
+&quot;Require-LDAPS-On-Connection&quot;</A>
+can not be enabled for this server. You must disable this feature in
+order to use 
+<A HREF="h_config_ldap_opts_ldaps">
+&quot;Require-LDAPS-On-Connection&quot;</A>
+<P>
 &lt;End of help on this topic&gt;
 </BODY>
 </HTML>
@@ -14896,6 +14908,35 @@ Also see the closely related feature
 When connecting to this server Alpine will attempt to use TLS encryption
 on the connection.
 If the StartTLS operation fails then the connection will not be used.
+<P>
+Note that if this option is set, then 
+<A HREF="h_config_ldap_opts_ldaps">
+&quot;Require-LDAPS-On-Connection&quot;</A>
+can not be enabled for this server. You must disable this feature in
+order to use 
+<A HREF="h_config_ldap_opts_ldaps">
+&quot;Require-LDAPS-On-Connection&quot;</A>
+<P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+======= h_config_ldap_opts_ldaps =======
+<HTML>
+<HEAD>
+<TITLE>LDAP FEATURE: Require-LDAPS-On-Connection</TITLE>
+</HEAD>
+<BODY>
+<H1>LDAP FEATURE: Require-LDAPS-On-Connection</H1>
+
+When connecting to this server Alpine will use LDAPS (LDAP over SSL/TLS) 
+on the connection.
+<P>
+This feature can not be used along with 
+<A HREF="h_config_ldap_opts_tlsmust">&quot;Require-TLS-On-Connection&quot;</A>
+ or
+<A HREF="h_config_ldap_opts_tls">&quot;Attempt-TLS-On-Connection&quot;</A>.
+If you want to connect using StartTLS to this server, you must disable
+this feature first.
 <P>
 &lt;End of help on this topic&gt;
 </BODY>
