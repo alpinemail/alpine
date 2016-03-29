@@ -1536,7 +1536,7 @@ dir_edit_screen(struct pine *ps, LDAP_SERV_S *def, char *title, char **raw_serve
 	    ctmp->help      = h_config_ldap_opts_tlsmust;
 	    break;
 	  case LDAP_F_LDAPS:
-	    ctmp->help      = h_config_ldap_opts_ldaps; //TODO: SSL and TLS as radiobutton
+	    ctmp->help      = h_config_ldap_opts_ldaps;
 	    break;
 	}
 
@@ -2459,7 +2459,7 @@ ldap_feature_list(int index)
 	{"save-search-criteria-not-result",   NULL, LDAP_F_REF},
 	{"disable-ad-hoc-space-substitution", NULL, LDAP_F_NOSUB},
 	{"attempt-tls-on-connection",         NULL, LDAP_F_TLS},
-	{"require-tls-on-connection",         NULL, LDAP_F_TLSMUST}, // TODO rename tls to starttls
+	{"require-tls-on-connection",         NULL, LDAP_F_TLSMUST},
 	{"require-ldaps-on-connection",     NULL, LDAP_F_LDAPS}
     };
 

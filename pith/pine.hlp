@@ -197,6 +197,11 @@ Additions include:
   <LI> Ignore message from smtp server after a successful authentication
        challenge.
 
+  <LI> When a message is saved in the Form Letter folder, add the ability
+       to save the role being used to compose such message so that settings
+       such as the SMTP server set in the role can be used when sending
+       such form message. Suggested and patched by Frank Doepper.
+
   <LI> If SSLDIR is defined somehow, do not disable S/MIME if the
        SSLCERTSDIR is not found.
 

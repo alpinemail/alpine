@@ -568,7 +568,7 @@ compose_mail(char *given_to, char *fcc_arg, ACTION_S *role_arg,
 	    if(F_ON(F_ALT_COMPOSE_MENU, ps_global) ||
 	       (ret = want_to(FORM_PMT,'y','x',NO_HELP,WT_NORM))=='y'){
 		if(!redraft(&stream, &outgoing, &body, &fcc, &lcc, &reply,
-			    &redraft_pos, &custom, NULL, REDRAFT_NONE))
+			    &redraft_pos, &custom, &role, REDRAFT_NONE))
 		    done++;
 
 		/* stream may or may not be closed in redraft() */
