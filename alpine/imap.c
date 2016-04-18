@@ -2379,7 +2379,9 @@ read_passfile(pinerc, l)
 #endif /* SMIME */
 
     if(using_passfile == 0){
+#ifdef SMIME
       if(text) fs_give((void **)&text);
+#endif /* SMIME */
       return using_passfile;
     }
 
