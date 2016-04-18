@@ -25,6 +25,8 @@ command-specific switches.
 .PP
 .B mailutil create MAILBOX
 .PP
+.B mailutil dedup MAILBOX
+.PP
 .B mailutil delete MAILBOX
 .PP
 .B mailutil rename SOURCE DESTINATION
@@ -68,6 +70,11 @@ character.  For example, the command
    mailutil create #driver.mbx/junkmail
 .br
 will create a new mailbox named "junkmail" in mbx format.
+.PP
+.B mailutil dedup 
+removes messages that have the same message-id header in a
+.I mailbox. 
+Messages that do not have a message-id header are not removed.
 .PP
 .B mailutil delete
 deletes an existing

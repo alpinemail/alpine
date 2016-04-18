@@ -1,3 +1,7 @@
+/* 
+ * Copyright 2016 Eduardo Chappa
+ */
+
 /* ========================================================================
  * Copyright 2009 Mark Crispin
  * ========================================================================
@@ -34,7 +38,7 @@ extern int errno;		/* just in case */
 
 /* Globals */
 
-char *version = "16";		/* edit number */
+char *version = "17";		/* edit number */
 int debugp = NIL;		/* flag saying debug */
 int verbosep = NIL;		/* flag saying verbose */
 int rwcopyp = NIL;		/* flag saying readwrite copy (for POP) */
@@ -54,6 +58,7 @@ char *usgchk = "check [MAILBOX]";
 char *usgcre = "create MAILBOX";
 char *usgdel = "delete MAILBOX";
 char *usgren = "rename SOURCE DESTINATION";
+char *usgdup = "dedup [MAILBOX]";
 char *usgcpymov = "[-rw[copy]] [-kw[copy]] [-ig[nore]] SOURCE DESTINATION";
 char *usgappdel = "[-rw[copy]] [-kw[copy]] [-ig[nore]] SOURCE DESTINATION";
 char *usgprn = "prune mailbox SEARCH_CRITERIA";
@@ -72,7 +77,10 @@ char *stdsw = "Standard switches valid with any command:\n\t[-d[ebug]] [-v[erbos
 
 
 /* Function prototypes */
-
+void mailutil_add_sequence(char **sequence, size_t *len, unsigned long i, unsigned long j, unsigned long nmsgs);
+char *mailutil_string_sequence(MAILSTREAM *m);
+int mailutil_compare_message_id (const void *mcp1, const void *mcp2);
+int mailutil_dedup (char *mailbox, long options);
 void ms_init (STRING *s,void *data,unsigned long size);
 char ms_next (STRING *s);
 void ms_setpos (STRING *s,unsigned long i);
@@ -247,7 +255,14 @@ int main (int argc,char *argv[])
   }
   if (!cmd) cmd = "";		/* prevent SEGV */
 
-  if (!strcmp (cmd,"check")) {	/* check for new messages */
+  if(!strcmp(cmd, "dedup")){
+    if (!src) src = "INBOX";
+    if (dst || merge || rwcopyp || kwcopyp || ignorep)
+      printf (usgdup);
+    else if(mailutil_dedup(src, debugp ? OP_DEBUG : NIL))
+      retcode = 0;
+  }
+  else if (!strcmp (cmd,"check")) {	/* check for new messages */
     if (!src) src = "INBOX";
     if (dst || merge || rwcopyp || kwcopyp || ignorep)
       printf (usage2,pgm,usgchk,stdsw);
@@ -411,6 +426,8 @@ int main (int argc,char *argv[])
     printf (usage2,pgm,"command [switches] arguments",stdsw);
     printf ("\nCommands:\n %s\n",usgchk);
     puts   ("   ;; report number of messages and new messages");
+    printf (" %s\n",usgdup);
+    puts   ("   ;; removes duplicate messages from a mailbox");
     printf (" %s\n",usgcre);
     puts   ("   ;; create new mailbox");
     printf (" %s\n",usgdel);
@@ -435,7 +452,142 @@ int main (int argc,char *argv[])
   exit (retcode);
   return retcode;		/* stupid compilers */
 }
-
+
+char *mailutil_string_sequence(MAILSTREAM *m)
+{
+  char *rv = NULL;
+  unsigned long i, j, count;
+  size_t len = 0;
+  MESSAGECACHE elt;
+  
+
+  if(m == NULL || m->nmsgs == 0L) return NULL;
+  for(i = 1L; i <= m->nmsgs;){
+     if(mail_elt(m, i)->sequence){
+	for(j = i+1; j <= m->nmsgs && mail_elt(m, j)->sequence; j++)
+	   ;
+	mailutil_add_sequence(&rv, &len, i, j-1, m->nmsgs);
+	i = j;
+     }
+     else i++;
+  }
+  return rv;
+}
+
+void mailutil_add_sequence(char **sequence, size_t *len, unsigned long i, unsigned long j, unsigned long nmsgs)
+{
+#define SEQ_BUF_LEN 256
+  char tmp[MAILTMPLEN];
+  size_t needed;
+
+  if(sequence == NULL)
+    return;
+
+  if(i == j)
+    snprintf(tmp, sizeof(tmp), "%s%lu", *len == 0L ? "" : ",", i);
+  else if(j == nmsgs)
+    snprintf(tmp, sizeof(tmp), "%s%lu:*", *len == 0L ? "" : ",", i);
+  else
+    snprintf(tmp, sizeof(tmp), "%s%lu:%lu", *len == 0L ? "" : ",", i, j);
+
+  needed = strlen(*sequence ? *sequence : "") + strlen(tmp) + 1;
+  if(needed > *len){
+     fs_resize((void **) sequence, (needed + SEQ_BUF_LEN)*sizeof(char));
+     if(*len == 0L)
+        (*sequence)[0] = '\0';
+     *len = needed + SEQ_BUF_LEN;
+  }
+  strcat(*sequence + strlen(*sequence), tmp);
+}
+
+
+int mailutil_dedup (char *mailbox, long options)
+{
+  int rv = 0;
+  MAILSTREAM *m;
+
+  if((m = mail_open(NIL, mailbox, options)) == NULL)
+    rv = -1;
+  else if(m->nmsgs > 1L){
+    unsigned long i, count = 0L;
+    char *sequence;
+    MESSAGECACHE **mc;
+    ENVELOPE *env1, *env2;
+
+    if(verbosep)
+      fprintf(stdout, "Opened folder \"%s\" with %lu messages\n", mailbox, m->nmsgs);
+    mail_fetch_overview_sequence(m, "1:*", NIL);
+    for(i = 1L; i <= m->nmsgs; i++)
+       mail_elt(m, i)->sequence = 0;
+    mc = fs_get(m->nmsgs*sizeof(MESSAGECACHE *));
+    for(i = 1L; i <= m->nmsgs; i++)
+      mc[i-1] = mail_elt(m, i);
+    qsort((void *)mc, (size_t) m->nmsgs, sizeof(MESSAGECACHE *), mailutil_compare_message_id);
+    for(i = 1L; i < m->nmsgs;){
+ 	unsigned long j, k;
+	int done;
+
+	done = 0;
+	env1 = mail_fetch_structure(m, mc[i-1]->msgno, NIL, NIL);
+	if(env1->message_id == NULL){
+	  i++;
+	  continue;
+	}
+	for(j = i+1; j <= m->nmsgs; j++){
+	   env2 = mail_fetch_structure(m, mc[j-1]->msgno, NIL, NIL);
+	   if(env2->message_id == NULL){
+	      j--; break;
+	   }
+	   if(strcmp(env1->message_id, env2->message_id))
+	      break;
+	   else if(verbosep)
+	     fprintf(stdout, "Message %lu and %lu are duplicates\n",
+				mc[i-1]->msgno, mc[j-1]->msgno);
+	}
+	
+	for(k = i+1; k <= j - 1; k++){
+	   mc[k-1]->sequence = T;
+	   count++;
+	}
+	i = j;
+    }
+    if(verbosep)
+      fprintf(stdout, "Found %lu extra duplicate messages\n", count);
+    if((sequence = mailutil_string_sequence(m)) != NULL){
+      mail_flag(m, sequence, "\\DELETED", ST_SET);
+      if(count && mail_expunge_full(m, "1:*", NIL))
+        fprintf (stdout, "Expunged %lu duplicate messages\n", count);
+      else
+        rv = -1;
+      fs_give((void *)&sequence);
+    }
+    else rv = -1;
+  }
+  return rv;
+}
+
+int mailutil_compare_message_id (const void *mcp1, const void *mcp2)
+{
+  MESSAGECACHE *mc1, *mc2;
+  ENVELOPE *env1, *env2;
+
+  mc1 = *(MESSAGECACHE **) mcp1;
+  mc2 = *(MESSAGECACHE **) mcp2;
+
+  env1 = mc1->private.msg.env;	/* aarrggh direct access inside message cache */
+  env2 = mc2->private.msg.env;
+
+  if(env1 == NULL)
+    return env2 == NULL ? 0 : -1;
+  else if (env2 == NULL)
+    return 1;
+  else if(env1->message_id == NULL)
+    return env2->message_id == NULL ? 0 : -1;
+  else if(env2->message_id == NULL)
+    return 1;
+  return strcmp(env1->message_id, env2->message_id);
+}
+
 /* Pruning criteria, somewhat extended from mail_criteria()
  * Accepts: criteria
  * Returns: search program if parse successful, else NIL
