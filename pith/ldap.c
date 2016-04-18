@@ -527,7 +527,7 @@ ldap_lookup(LDAP_SERV_S *info, char *string, CUSTOM_FILT_S *cust,
 #endif /* SMIME_SSLCERTS */
 
     snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s://%s:%d", 
-		info->ldaps ? "ldaps" : "ldap ", serv, info->port);
+		info->ldaps ? "ldaps" : "ldap", serv, info->port);
     tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
 
     if(ldap_initialize(&ld, tmp_20k_buf) != LDAP_SUCCESS) 
