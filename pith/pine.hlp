@@ -201,6 +201,12 @@ Additions include:
        attachments in directories that are hard to navigate to, or that 
        are accessed frequently.
 
+  <LI> When a filename is attached and its name is encoded, the save 
+       attachment command will offer to save the file in the encoded form. 
+       This might work for some users, but the save command will have a 
+       subcommand ^N to decode the file name and save the file with the 
+       decoded name.
+
   <LI> Ignore message from smtp server after a successful authentication
        challenge.
 

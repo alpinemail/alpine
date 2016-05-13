@@ -4233,9 +4233,6 @@ get_export_filename(struct pine *ps, char *filename, char *deefault,
 
     pos = hist_len + items_in_hist(dir_hist);
 
-    if(dir_hist == NULL)
-      init_hist(&dir_hist, HISTSIZE);
-
     if(flags & GE_ALLPARTS || history || dir_hist){
 	/*
 	 * Copy the opts and add one to the end of the list.
@@ -4280,6 +4277,15 @@ get_export_filename(struct pine *ps, char *filename, char *deefault,
 	    opts[i].rval    = 15;
 	    opts[i].name    = "^R";
 	    opts[i++].label = N_("Binary");
+	}
+
+	rfc1522_decode_to_utf8((unsigned char *)tmp_20k_buf,
+                                                  SIZEOF_20KBUF, filename);
+	if(strcmp(tmp_20k_buf, filename)){
+	    opts[i].ch      = ctrl('N');
+	    opts[i].rval    = 40;
+	    opts[i].name    = "^N";
+	    opts[i++].label = "Name UTF8";
 	}
 
 	if(dir_hist || hist_len > 0){
@@ -4825,6 +4831,13 @@ get_export_filename(struct pine *ps, char *filename, char *deefault,
 	    }
 	    else
 	      Writechar(BELL, 0);
+	    continue;
+	}
+	else if(r == 40){
+	    rfc1522_decode_to_utf8((unsigned char *)tmp_20k_buf,
+                                                  SIZEOF_20KBUF, filename);
+	    strncpy(filename, tmp_20k_buf, len);
+	    filename[len-1] = '\0';
 	    continue;
 	}
 	else if(r != 0){
