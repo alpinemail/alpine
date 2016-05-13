@@ -194,6 +194,13 @@ Additions include:
        that allows users to ignore errors in the computation of the size
        of a message from defective servers.
 
+  <LI> Add the configuration variable "default-directories", which is called
+       <A href="h_config_history"><!--#echo var="VAR_default-directories"--></A>
+       variable saves a list of directories that are readily accessible 
+       for save or export of attachments. This makes it easier to save 
+       attachments in directories that are hard to navigate to, or that 
+       are accessed frequently.
+
   <LI> Ignore message from smtp server after a successful authentication
        challenge.
 
@@ -4123,6 +4130,7 @@ There are also additional details on
 <li><a href="h_config_upload_cmd">OPTION: <!--#echo var="VAR_upload-command"--></a>
 <li><a href="h_config_upload_prefix">OPTION: <!--#echo var="VAR_upload-command-prefix"--></a>
 <li><a href="h_config_browser">OPTION: <!--#echo var="VAR_url-viewers"--></a>
+<li><a href="h_config_history">OPTION: <!--#echo var="VAR_default-directories"--></a>
 <li><a href="h_config_domain_name">OPTION: <!--#echo var="VAR_use-only-domain-name"--></a>
 <li><a href="h_config_user_dom">OPTION: <!--#echo var="VAR_user-domain"--></a>
 <li><a href="h_config_user_id">OPTION: <!--#echo var="VAR_user-id"--></a>
@@ -20483,9 +20491,9 @@ example.
 <DD>This option makes sense only for IMAP servers that do not perform
 a SEARCH command correctly. If your filtering rules
 fail to filter some messages, that should have been filtered, then this
-option will make Alpine download all data necessary to perform that search.
-There is a performance penalty when using this option. Downloading the
-data to perfom the search will take longer than requesting the IMAP
+option will make Alpine download all data necessary data to perform that 
+search. There is a performance penalty when using this option. Downloading 
+the data to perfom the search will take longer than requesting the IMAP
 server to perform the filtering, but the filtering will be done correctly.
 <P>
 </DD>
@@ -27220,6 +27228,30 @@ environment: for advanced users and  systems administrators</A>
 <P>If you are unsure what browsers are available on your system or how to 
 specify them in Alpine's <!--#echo var="VAR_url-viewers"--> option for best usability, contact your 
 local computing support staff.
+<P><UL>
+<LI><A HREF="h_finding_help">Finding more information and requesting help</A>
+</UL>
+<P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+====== h_config_history =====
+<HTML>
+<HEAD>
+<TITLE>OPTION: <!--#echo var="VAR_default-directories"--></TITLE>
+</HEAD>
+<BODY>
+<H1>OPTION: <!--#echo var="VAR_default-directories"--></H1>
+<P>
+This option allows you to input a list of directories that Alpine will offer 
+for you to use when you are saving or exporting attachments. This is useful
+when navigating to specific directories becomes too tedious, or when you 
+need to do this on a daily basis, and want Alpine to remember this on a 
+permanent basis.
+<P>
+The list of directories saved here can be accessed using the ^Y and ^V commands
+in the save prompt for attachments, or the export command.
+
 <P><UL>
 <LI><A HREF="h_finding_help">Finding more information and requesting help</A>
 </UL>

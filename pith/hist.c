@@ -57,6 +57,57 @@ free_hist(HISTORY_S **history)
     }
 }
 
+char *
+hist_in_pos(int pos, char **list, int llen, HISTORY_S *hist, int n)
+{
+  char *p;
+  int i;
+
+  if(pos < 0 || pos > llen + n)
+    return NULL;
+
+  if(pos < llen)
+     return list[pos];
+
+  hist->curindex = hist->origindex;	 /* reset history */
+  for(i = 0; i < n-1; i++)
+     p = get_prev_hist_dir(hist);
+  p = get_prev_hist_dir(hist);
+  for(i = 0; i < pos - llen; i++)
+    p = get_next_hist_dir(hist);
+  return p;
+}
+
+
+char *
+get_next_hist_dir(HISTORY_S *history)
+{
+  return get_next_hist(history, NULL, 0, NULL);
+}
+
+
+char *
+get_prev_hist_dir(HISTORY_S *history)
+{
+    int nextcurindex;
+
+    if(!(history && history->histsize > 0))
+      return NULL;
+
+    nextcurindex = (history->curindex + 1) % history->histsize;
+
+    /* already at start of history */
+    if(nextcurindex == history->origindex
+       || !(history->hist[nextcurindex] && history->hist[nextcurindex]->str
+            && history->hist[nextcurindex]->str[0]))
+      return NULL;
+
+    history->curindex = nextcurindex;
+
+    return((history->hist[history->curindex] && history->hist[history->curindex]->str)
+           ? history->hist[history->curindex]->str : NULL);
+}
+
 
 char *
 get_prev_hist(HISTORY_S *history, char *savethis, unsigned saveflags, void *cntxt)

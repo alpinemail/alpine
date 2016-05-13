@@ -244,6 +244,8 @@ CONF_TXT_T cf_text_image_viewer[] =	"Program to view images (e.g. GIF or TIFF at
 
 CONF_TXT_T cf_text_browser[] =		"List of programs to open Internet URLs (e.g. http or ftp references).";
 
+CONF_TXT_T cf_text_history[] =		"List of directories that are preferred locations to save or export attachments.";
+
 CONF_TXT_T cf_text_inc_startup[] =	"Sets message which cursor begins on. Choices: first-unseen, first-recent,\n# first-important, first-important-or-unseen, first-important-or-recent,\n# first, last. Default: \"first-unseen\".";
 
 CONF_TXT_T cf_pruning_rule[] =		"Allows a default answer for the prune folder questions. Choices: yes-ask,\n# yes-no, no-ask, no-no, ask-ask, ask-no. Default: \"ask-ask\".";
@@ -656,6 +658,8 @@ static struct variable variables[] = {
 	NULL,			cf_text_mimetype_path},
 {"url-viewers",				0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0,
 	"URL-Viewers",		cf_text_browser},
+{"default-directories",			0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0,
+	"Extra Directories for Save", 	cf_text_history},
 {"max-remote-connections",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	"Maximum Remote Connections",	cf_text_maxremstreams},
 {"stay-open-folders",			0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0,
@@ -2018,6 +2022,7 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
 #endif /* _WINDOWS */
     set_current_val(&vars[V_IMAGE_VIEWER], TRUE, TRUE);
     set_current_val(&vars[V_BROWSER], TRUE, TRUE);
+    set_current_val(&vars[V_HISTORY], TRUE, TRUE);
     set_current_val(&vars[V_SMTP_SERVER], TRUE, TRUE);
     set_current_val(&vars[V_COMP_HDRS], TRUE, TRUE);
     set_current_val(&vars[V_CUSTOM_HDRS], TRUE, TRUE);
@@ -7868,6 +7873,8 @@ config_help(int var, int feature)
 	return(h_config_newsrc_path);
       case V_BROWSER :
 	return(h_config_browser);
+      case V_HISTORY :
+	return(h_config_history);
 #if defined(DOS) || defined(OS2)
       case V_FILE_DIR :
 	return(h_config_file_dir);

@@ -343,6 +343,7 @@
 #define GLO_THREAD_EXP_CHAR	     vars[V_THREAD_EXP_CHAR].global_val.p
 #define VAR_THREAD_LASTREPLY_CHAR    vars[V_THREAD_LASTREPLY_CHAR].current_val.p
 #define GLO_THREAD_LASTREPLY_CHAR    vars[V_THREAD_LASTREPLY_CHAR].global_val.p
+#define VAR_HISTORY		     vars[V_HISTORY].current_val.l
 
 #if defined(DOS) || defined(OS2)
 #define	VAR_FILE_DIR		     vars[V_FILE_DIR].current_val.p
