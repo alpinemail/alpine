@@ -43,8 +43,6 @@ void        init_hist(HISTORY_S **, int);
 void        free_hist(HISTORY_S **);
 char       *get_prev_hist(HISTORY_S *, char *, unsigned, void *);
 char       *get_next_hist(HISTORY_S *, char *, unsigned, void *);
-char       *get_prev_hist_dir(HISTORY_S *);
-char       *get_next_hist_dir(HISTORY_S *);
 char 	   *hist_in_pos(int, char **, int, HISTORY_S *, int);
 void        save_hist(HISTORY_S *, char *, unsigned, void *);
 int         items_in_hist(HISTORY_S *);
