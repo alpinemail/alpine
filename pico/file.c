@@ -1016,7 +1016,7 @@ int
 pico_fncomplete(char *dirarg, char *fn, size_t fnlen)
 {
     char *p, *dlist, tmp[NLINE], dir[NLINE];
-    int   n, i, match = -1;
+    int   n, i, match = -1, orign;
 #ifdef	DOS
 #define	FILECMP(x, y)	(toupper((unsigned char)(x))\
 				== toupper((unsigned char)(y)))
@@ -1027,9 +1027,16 @@ pico_fncomplete(char *dirarg, char *fn, size_t fnlen)
     strncpy(dir, dirarg, sizeof(dir));
     dir[sizeof(dir)-1] = '\0';
     pfnexpand(dir, sizeof(dir));
-    if(*fn && (dlist = p = getfnames(dir, fn, &n, NULL, 0))){
+    if((dlist = p = getfnames(dir, fn, &n, NULL, 0))){
+	orign = n;
 	memset(tmp, 0, sizeof(tmp));
 	while(n--){			/* any names in it */
+	    if(strcmp(p, ".") == 0 || strcmp(p, "..") == 0){
+	      p += strlen(p) + 1;
+	      orign--;
+	      continue;
+	    }
+
 	    for(i = 0; i < sizeof(tmp)-1 && fn[i] && FILECMP(p[i], fn[i]); i++)
 	      ;
 
@@ -1053,6 +1060,9 @@ pico_fncomplete(char *dirarg, char *fn, size_t fnlen)
 
 	free(dlist);
     }
+
+    if(fn[0] == '\0' && orign != 1)
+	match = -1;
 
     if(match >= 0){
 	strncpy(fn, tmp, fnlen);

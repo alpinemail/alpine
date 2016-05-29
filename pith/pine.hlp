@@ -207,6 +207,10 @@ Additions include:
        subcommand ^N to decode the file name and save the file with the 
        decoded name.
 
+  <LI> The TAB key allows autocomplete in the Fcc field in the composer headers,
+       as well as autocompletes automatically when only one possibility exists 
+       for the ^J attach command.
+
   <LI> Ignore message from smtp server after a successful authentication
        challenge.
 

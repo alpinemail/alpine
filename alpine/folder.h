@@ -34,6 +34,6 @@ char	   *context_edit_screen(struct pine *, char *, char *, char *, char *, char
 int	    add_new_folder(CONTEXT_S *, EditWhich, int, char *, size_t, MAILSTREAM *, char *);
 char	   *next_folder(MAILSTREAM **, char *, size_t, char *, CONTEXT_S *, long *, int *);
 char	   *news_group_selector(char **);
-
+int	    fcc_tab_complete(char *, char **, int, unsigned);
 
 #endif /* PINE_FOLDER_INCLUDED */

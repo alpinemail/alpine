@@ -929,7 +929,7 @@ static struct headerentry he_template[]={
    news_build,    NULL, NULL, news_group_selector,  "To NwsGrps", NULL, NULL,
    0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, KS_NONE},
   {"Fcc     : ",  "Fcc",         h_composer_fcc,        10, 0, NULL,
-   NULL,          NULL, NULL, folders_for_fcc,      "To Fldrs", NULL, NULL,
+   NULL,          NULL, NULL, folders_for_fcc,      "To Fldrs", NULL, fcc_tab_complete,
    0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, KS_NONE},
   {"Lcc     : ",  "Lcc",         h_composer_lcc,        10, 0, NULL,
    build_addr_lcc, NULL, NULL, addr_book_compose_lcc,"To AddrBk", NULL, abook_nickname_complete,

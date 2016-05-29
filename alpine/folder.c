@@ -6889,6 +6889,40 @@ get_post_list(char **post_host)
 }
 
 
+int
+fcc_tab_complete (char *prefix, char **answer, int tabtab, unsigned flags)
+{
+  char tmp[MAILTMPLEN+1];
+  int n;
+  CONTEXT_S *mc;
+
+  if(prefix == NULL ||  *prefix == '\0')
+     return 0;
+
+  for(mc = ps_global->context_list; mc != NULL; mc = mc->next)
+    if(mc->use & CNTXT_SAVEDFLT)
+      break;
+
+  if(mc == NULL) return 0;
+
+  strncpy(tmp, prefix, sizeof(tmp));
+  tmp[sizeof(tmp)-1] = '\0';
+
+  if(!folder_complete(mc, tmp, sizeof(tmp), &n)){
+    if(n){
+       if(tabtab)
+	 display_folder_list(&mc, tmp, 1,folders_for_goto);
+    }
+    else
+       Writechar(BELL, 0);
+  }
+  if(n)
+     *answer = cpystr(tmp);
+  return n == 0 ? 0 : n == 1 ? 2 : 1;
+}
+
+
+
 #ifdef	_WINDOWS
 int
 folder_list_popup(sparms, in_handle)
