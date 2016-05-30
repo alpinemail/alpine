@@ -104,7 +104,7 @@ int   answer_cert_failure(int, MSGNO_S *, SCROLL_S *);
 #ifdef	LOCAL_PASSWD_CACHE
 int   read_passfile(char *, MMLOGIN_S **);
 void  write_passfile(char *, MMLOGIN_S *);
-int   preserve_prompt(void);
+int   preserve_prompt(char *);
 void  update_passfile_hostlist(char *, char *, STRLIST_S *, int);
 
 static	MMLOGIN_S	*passfile_cache = NULL;
@@ -2696,7 +2696,7 @@ get_passfile_user(pinerc, hostlist)
 
 
 int
-preserve_prompt(void)
+preserve_prompt(char *pinerc)
 {
 #ifdef	WINCRED
 # if	(WINCRED > 0)
@@ -2741,6 +2741,12 @@ preserve_prompt(void)
     }
     return(0);
 #else /* PASSFILE */
+    char tmp[MAILTMPLEN];
+    struct stat sbuf;
+
+    if(!passfile_name(pinerc, tmp, sizeof(tmp)) || our_stat(tmp, &sbuf) < 0)
+        return 0;
+
     if(F_OFF(F_DISABLE_PASSWORD_FILE_SAVING,ps_global))
 	return(want_to(_("Preserve password on DISK for next login"), 
 		   'y', 'x', NO_HELP, WT_NORM)
@@ -2885,7 +2891,7 @@ set_passfile_passwd(pinerc, passwd, user, hostlist, altflag, already_prompted)
     int	       altflag, already_prompted;
 {
     dprint((10, "set_passfile_passwd\n"));
-    if(((already_prompted == 0 && preserve_prompt())
+    if(((already_prompted == 0 && preserve_prompt(pinerc))
 	   || already_prompted == 1)
        && !ps_global->nowrite_password_cache
        && (passfile_cache || read_passfile(pinerc, &passfile_cache))){
