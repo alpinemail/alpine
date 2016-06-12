@@ -484,11 +484,12 @@ void mailutil_add_sequence(char **sequence, size_t *len, unsigned long i, unsign
     return;
 
   if(i == j)
-    snprintf(tmp, sizeof(tmp), "%s%lu", *len == 0L ? "" : ",", i);
+    sprintf(tmp, "%s%lu", *len == 0L ? "" : ",", i);
   else if(j == nmsgs)
-    snprintf(tmp, sizeof(tmp), "%s%lu:*", *len == 0L ? "" : ",", i);
+    sprintf(tmp, "%s%lu:*", *len == 0L ? "" : ",", i);
   else
-    snprintf(tmp, sizeof(tmp), "%s%lu:%lu", *len == 0L ? "" : ",", i, j);
+    sprintf(tmp, "%s%lu:%lu", *len == 0L ? "" : ",", i, j);
+  tmp[sizeof(tmp)-1]='\0';
 
   needed = strlen(*sequence ? *sequence : "") + strlen(tmp) + 1;
   if(needed > *len){
