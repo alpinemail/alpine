@@ -1,3 +1,7 @@
+/* 
+ * Copyright 2016 - Eduardo Chappa
+ * Last Modified: June 15, 2016
+ */
 /* ========================================================================
  * Copyright 1988-2006 University of Washington
  *
@@ -358,6 +362,7 @@ long newsrc_write (char *group,MAILSTREAM *stream)
 				/* write to backup file */
       if ((d = putc (c,bf)) == EOF) {
 	fclose (f);		/* punt input file */
+	fclose (bf);		/* and backup too  */
 	return newsrc_error ("Error writing backup news state %.80s",
 			     newsrc,ERROR);
       }
