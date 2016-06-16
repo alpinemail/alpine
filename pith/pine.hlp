@@ -334,6 +334,10 @@ Additions include:
 
   <LI> SMIME: Turn off automatic signing and encrypting of a message when
        bouncing. Suggested after a discussion with Matthias Rieber.
+
+  <LI> When messages are selected, warn the user if a message that is not
+       selected will be bounced, or if not all selected messages will be 
+       bounced. Suggested by Ulf-Dietrich Braumann.
 </UL>
 
  

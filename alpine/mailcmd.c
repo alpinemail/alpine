@@ -2381,8 +2381,21 @@ cmd_bounce(struct pine *state, MSGNO_S *msgmap, int aopt)
     ACTION_S *role = NULL;
 
     if(any_messages(msgmap, NULL, "to Bounce")){
-	if(MCMD_ISAGG(aopt) && !pseudo_selected(state->mail_stream, msgmap))
-	  return rv;
+	long i;
+	if(MCMD_ISAGG(aopt)){
+	   if(!pseudo_selected(state->mail_stream, msgmap))
+	      return rv;
+	}
+	else if((i = any_lflagged(msgmap, MN_SLCT)) > 0
+	        && get_lflag(state->mail_stream, msgmap, 
+			mn_m2raw(msgmap, mn_get_cur(msgmap)), MN_SLCT) == 0)
+	       q_status_message(SM_ORDER | SM_DING, 3, 4,
+			 _("WARNING: non-selected message is being bounced!"));
+	else if (i > 1L
+		&& get_lflag(state->mail_stream, msgmap, 
+			mn_m2raw(msgmap, mn_get_cur(msgmap)), MN_SLCT))
+	       q_status_message(SM_ORDER | SM_DING, 3, 4,
+			 _("WARNING: not bouncing all selected messages!"));
 
 	if(MCMD_ISAGG(aopt)){	/* check for possible role */
 	   PAT_STATE  pstate;
