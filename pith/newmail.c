@@ -240,7 +240,7 @@ new_mail(int force_arg, CheckPointTime time_for_check_point, int flags)
 						    ? " [expunged reaper]"
 						    : " [keepalive]",
 		   m == ps_global->mail_stream ? " [current]" : "",
-		   debug_time(0,1)));
+		   debug_time(0,1,ps_global->signal_in_progress)));
 
 	    /*
 	     * We're about to ping the stream.
@@ -262,7 +262,7 @@ new_mail(int force_arg, CheckPointTime time_for_check_point, int flags)
 		sp_set_dead_stream(m, 1);
 	    }
 
-	    dprint((7, "Ping complete: %s\n", debug_time(0,1)));
+	    dprint((7, "Ping complete: %s\n", debug_time(0,1,ps_global->signal_in_progress)));
 
 	    if((flags & NM_STATUS_MSG) && pith_opt_newmail_check_cue)
 	      (*pith_opt_newmail_check_cue)(FALSE);
@@ -300,7 +300,7 @@ new_mail(int force_arg, CheckPointTime time_for_check_point, int flags)
 	 */
 	if((time(0) - now >= 5) && have_pinged_non_special){
 	    dprint((7, "skipping pings due to delay: %s\n",
-			debug_time(0,1)));
+			debug_time(0,1,ps_global->signal_in_progress)));
 	    break;
 	}
 
@@ -415,7 +415,7 @@ new_mail(int force_arg, CheckPointTime time_for_check_point, int flags)
 		    && (now-sp_last_ping(m) >= expunged_reaper_to))
 				     ? " [slow ping]" : " [keepalive]",
 		   since_last_input,
-		   debug_time(0,1)));
+		   debug_time(0,1,ps_global->signal_in_progress)));
 
 	    /*
 	     * We're about to ping the stream.
@@ -437,7 +437,7 @@ new_mail(int force_arg, CheckPointTime time_for_check_point, int flags)
 		sp_set_dead_stream(m, 1);
 	    }
 
-	    dprint((7, "Ping complete: %s\n", debug_time(0,1)));
+	    dprint((7, "Ping complete: %s\n", debug_time(0,1,ps_global->signal_in_progress)));
 
 	    if((flags & NM_STATUS_MSG) && pith_opt_newmail_check_cue)
 	      (*pith_opt_newmail_check_cue)(FALSE);
@@ -840,7 +840,7 @@ check_point(MAILSTREAM *stream, CheckPointTime timing, int flags)
 	   || time(0) - sp_last_chkpnt_done(stream) >= AT_LEAST){
 	    then = time(0);
 	    dprint((2, "Checkpoint: %s  Since 1st change: %ld secs  idle: %ld secs\n",
-		   debug_time(0,1),
+		   debug_time(0,1,ps_global->signal_in_progress),
 		   (long) (then - sp_first_status_change(stream)),
 		   since_last_input))
 ;
@@ -852,7 +852,7 @@ check_point(MAILSTREAM *stream, CheckPointTime timing, int flags)
 	    now = time(0);
 	    dprint((2,
 		    "Checkpoint complete: %s%s%s%s\n",
-		    debug_time(0,1),
+		    debug_time(0,1,ps_global->signal_in_progress),
 		    (now-then > 0) ? " (elapsed: " : "",
 		    (now-then > 0) ? comatose((long)(now-then)) : "",
 		    (now-then > 0) ? " secs)" : ""));

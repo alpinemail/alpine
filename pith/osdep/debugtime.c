@@ -29,7 +29,7 @@ static char rcsid[] = "$Id: debugtime.c 770 2007-10-24 00:23:09Z hubert@u.washin
  * If include_date is set the date is appended.
  */
 char *
-debug_time(int include_date, int include_subseconds)
+debug_time(int include_date, int include_subseconds, int signal_in_progress)
 {
     time_t          t;
     struct tm      *tm_now;
@@ -42,6 +42,9 @@ debug_time(int include_date, int include_subseconds)
     static char     timestring[23];
     char            subsecond[8];
     char            datestr[7];
+
+    if(signal_in_progress)
+      return _("Time Unavailable");
 
     timestring[0] = '\0';
 

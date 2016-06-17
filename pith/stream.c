@@ -114,7 +114,7 @@ pine_mail_open(MAILSTREAM *stream, char *mailbox, long int openflags, long int *
 	   openflags & SP_USERFLDR   ? " SP_USERFLDR"   : "",
 	   openflags & SP_USEPOOL    ? " SP_USEPOOL"    : "",
 	   openflags & SP_TEMPUSE    ? " SP_TEMPUSE"    : "",
-	   debug_time(1, ps_global->debug_timestamp)));
+	   debug_time(1, ps_global->debug_timestamp, ps_global->signal_in_progress)));
     
     if(retflags)
       *retflags = 0L;
@@ -569,7 +569,7 @@ pine_mail_open(MAILSTREAM *stream, char *mailbox, long int openflags, long int *
 	       && !strcmp(stream->dtb->name, "imap")){
 		dprint((7,
 		   "pine_mail_open: cancel idle timer: TAG %08lx (%s)\n",
-		   stream->gensym, debug_time(1, ps_global->debug_timestamp)));
+		   stream->gensym, debug_time(1, ps_global->debug_timestamp, ps_global->signal_in_progress)));
 	    }
 
 	    /*
@@ -1247,7 +1247,7 @@ pine_mail_close(MAILSTREAM *stream)
 
     dprint((7, "pine_mail_close: %s (%s)\n", 
 	       stream && stream->mailbox ? stream->mailbox : "(NULL)",
-	       debug_time(1, ps_global->debug_timestamp)));
+	       debug_time(1, ps_global->debug_timestamp, ps_global->signal_in_progress)));
 
     if(sp_flagged(stream, SP_USEPOOL) && !sp_dead_stream(stream)){
 
@@ -1296,7 +1296,7 @@ pine_mail_close(MAILSTREAM *stream)
 	if(refcnt <= 0){
 	    dprint((7,
 	       "pine_mail_close: unlocking: start idle timer: TAG %08lx (%s)\n",
-	       stream->gensym, debug_time(1, ps_global->debug_timestamp)));
+	       stream->gensym, debug_time(1, ps_global->debug_timestamp, ps_global->signal_in_progress)));
 	    sp_set_last_use_time(stream, time(0));
 
 	    /*
@@ -1350,7 +1350,7 @@ pine_mail_actually_close(MAILSTREAM *stream)
     if(!sp_closing(stream)){
 	dprint((7, "pine_mail_actually_close: %s (%s)\n", 
 		   stream && stream->mailbox ? stream->mailbox : "(NULL)",
-		   debug_time(1, ps_global->debug_timestamp)));
+		   debug_time(1, ps_global->debug_timestamp, ps_global->signal_in_progress)));
 
 	sp_set_closing(stream, 1);
 	
@@ -1386,7 +1386,7 @@ maybe_kill_old_stream(MAILSTREAM *stream)
 	dprint((7,
 		"killing idle stream: %s (%s): idle timer = %ld secs\n", 
 		stream && stream->mailbox ? stream->mailbox : "(NULL)",
-		debug_time(1, ps_global->debug_timestamp),
+		debug_time(1, ps_global->debug_timestamp, ps_global->signal_in_progress),
 		(long) (time(0)-sp_last_use_time(stream))));
 
 	/*
@@ -2580,7 +2580,7 @@ sp_stream_get(char *mailbox, long unsigned int flags)
 			dprint((7,
 			       "reset idle timer1: next TAG %08lx (%s)\n",
 			       m->gensym,
-			       debug_time(1, ps_global->debug_timestamp)));
+			       debug_time(1, ps_global->debug_timestamp, ps_global->signal_in_progress)));
 			sp_set_last_use_time(m, time(0));
 		    }
 
@@ -2635,7 +2635,7 @@ sp_stream_get(char *mailbox, long unsigned int flags)
 			dprint((7,
 			   "reset idle timer4: next TAG %08lx (%s)\n",
 			   m->gensym,
-			   debug_time(1, ps_global->debug_timestamp)));
+			   debug_time(1, ps_global->debug_timestamp, ps_global->signal_in_progress)));
 			sp_set_last_use_time(m, time(0));
 
 			return(m);
@@ -2663,7 +2663,7 @@ sp_stream_get(char *mailbox, long unsigned int flags)
 		    dprint((7,
 			   "reset idle timer2: next TAG %08lx (%s)\n",
 			   m->gensym,
-			   debug_time(1, ps_global->debug_timestamp)));
+			   debug_time(1, ps_global->debug_timestamp, ps_global->signal_in_progress)));
 		    sp_set_last_use_time(m, time(0));
 		    return(m);
 		}
@@ -2696,7 +2696,7 @@ sp_stream_get(char *mailbox, long unsigned int flags)
 			dprint((7,
 			   "reset idle timer3: next TAG %08lx (%s)\n",
 			   m->gensym,
-			   debug_time(1, ps_global->debug_timestamp)));
+			   debug_time(1, ps_global->debug_timestamp, ps_global->signal_in_progress)));
 			sp_set_last_use_time(m, time(0));
 			return(m);
 		    }

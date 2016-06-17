@@ -567,7 +567,7 @@ mm_dlog(char *string)
 	dprint(((ps_global->debug_imap >= 4 && debug < 4) ? debug : 4,
 		"IMAP DEBUG %s%s: %s\n",
 		continued ? continued : "",
-		debug_time(1, ps_global->debug_timestamp), p ? p : "?"));
+		debug_time(1, ps_global->debug_timestamp, ps_global->signal_in_progress), p ? p : "?"));
 #ifdef DEBUGJOURNAL
     }
 #endif

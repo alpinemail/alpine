@@ -276,7 +276,7 @@ do_debug(FILE *debug_fp)
     }
 
     if(ok && ps_global->debug_timestamp)
-      fprintf(debug_fp, "\n%s\n", debug_time(0, ps_global->debug_timestamp));
+      fprintf(debug_fp, "\n%s\n", debug_time(0, ps_global->debug_timestamp, ps_global->signal_in_progress));
 
     return(ok);
 }

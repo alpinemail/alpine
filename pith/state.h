@@ -121,6 +121,7 @@ struct pine {
 
     char        *folders_dir;
 
+    unsigned	 signal_in_progress:1;	/* we are handling a signal */
     unsigned     mangled_footer:1; 	/* footer needs repainting */
     unsigned     mangled_header:1;	/* header needs repainting */
     unsigned     mangled_body:1;	/* body of screen needs repainting */

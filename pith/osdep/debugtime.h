@@ -22,7 +22,7 @@
  * Exported Prototypes
  */
 #ifdef DEBUG
-char	*debug_time(int, int);
+char	*debug_time(int, int, int);
 #endif
 int	 get_time(TIMEVAL_S *);
 long	 time_diff(TIMEVAL_S *, TIMEVAL_S *);

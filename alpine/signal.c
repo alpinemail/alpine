@@ -238,6 +238,8 @@ Not much to do. Rely on periodic mail file check pointing.
 RETSIGTYPE
 hup_signal(void)
 {
+    if(ps_global)
+      ps_global->signal_in_progress = 1;
     end_signals(1);			/* don't catch any more signals */
     dprint((1, "\n\n** Received SIGHUP **\n\n\n\n"));
     cleanup_called_from_sig_handler = 1;

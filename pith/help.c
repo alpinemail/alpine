@@ -318,7 +318,7 @@ add_review_message(char *message, int level)
 	    strncpy(rmjoarray[rmjolast].message, p, MIN(q-p,RMMSGLEN));
 #ifdef DEBUG
 	    memset(rmjoarray[rmjolast].timestamp, 0, (RMTIMLEN+1)*sizeof(char));
-	    strncpy(rmjoarray[rmjolast].timestamp, debug_time(0,1), RMTIMLEN);
+	    strncpy(rmjoarray[rmjolast].timestamp, debug_time(0,1,ps_global->signal_in_progress), RMTIMLEN);
 #endif
 	}
 	else if(level <= 4){
@@ -339,7 +339,7 @@ add_review_message(char *message, int level)
 	    strncpy(rmloarray[rmlolast].message, p, MIN(q-p,RMMSGLEN));
 #ifdef DEBUG
 	    memset(rmloarray[rmlolast].timestamp, 0, (RMTIMLEN+1)*sizeof(char));
-	    strncpy(rmloarray[rmlolast].timestamp, debug_time(0,1), RMTIMLEN);
+	    strncpy(rmloarray[rmlolast].timestamp, debug_time(0,1,ps_global->signal_in_progress), RMTIMLEN);
 #endif
 	}
 	else{
@@ -360,7 +360,7 @@ add_review_message(char *message, int level)
 	    strncpy(rmhiarray[rmhilast].message, p, MIN(q-p,RMMSGLEN));
 #ifdef DEBUG
 	    memset(rmhiarray[rmhilast].timestamp, 0, (RMTIMLEN+1)*sizeof(char));
-	    strncpy(rmhiarray[rmhilast].timestamp, debug_time(0,1), RMTIMLEN);
+	    strncpy(rmhiarray[rmhilast].timestamp, debug_time(0,1,ps_global->signal_in_progress), RMTIMLEN);
 #endif
 	}
     }

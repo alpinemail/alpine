@@ -5602,7 +5602,7 @@ adrbk_check_and_fix(PerAddrBook *pab, int safe, int low_freq, int check_now)
 		int        save_rem_abook_valid = 0;
 
 		dprint((2, "adrbk_check_and_fix %s: fixing %s\n",
-		       debug_time(0,0),
+		       debug_time(0,0,ps_global->signal_in_progress),
 		       pab->filename ? pab->filename : "?"));
 		if(ab_nesting_level > 0){
 		    q_status_message3(SM_ORDER, 0, 2,
@@ -5761,7 +5761,7 @@ adrbk_maintenance(void)
 	    if(now > pab->address_book->rd->last_use + IMAP_IDLE_TIMEOUT){
 		dprint((2,
 		    "adrbk_maint %s: closing idle (%ld secs) connection: %s\n",
-		    debug_time(0,0),
+		    debug_time(0,0,ps_global->signal_in_progress),
 		    (long)(now - pab->address_book->rd->last_use),
 		    pab->address_book->orig_filename
 		      ? pab->address_book->orig_filename : "?"));
@@ -5792,7 +5792,7 @@ adrbk_maintenance(void)
 		else if(!rd_ping_stream(pab->address_book->rd)){
 		    dprint((2,
 		      "adrbk_maint: %s: abook stream closed unexpectedly: %s\n",
-		      debug_time(0,0),
+		      debug_time(0,0,ps_global->signal_in_progress),
 		      pab->address_book->orig_filename
 		        ? pab->address_book->orig_filename : "?"));
 		}
