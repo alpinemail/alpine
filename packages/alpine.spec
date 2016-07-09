@@ -1,10 +1,10 @@
-Summary: University of Washington Alpine mail user agent
+Summary: Alpine mail user agent
 Name: alpine
-Version: 2.11
+Version: 2.20
 Release: 1
 License: Apache License
 Group: Applications/Mail
-Source: http://patches.freeiz.com/alpine/patches/%{name}-%{version}/%{name}-%{version}.clean.tar.lzma
+Source: http://patches.freeiz.com/alpine/release/src/%{name}-%{version}.tar.xz
 URL: http://patches.freeiz.com/alpine/
 Vendor: Patches for Pine and Alpine
 Packager: Eduardo Chappa <chappa@gmx.com>
@@ -54,7 +54,7 @@ install -D -m644 imap/src/mailutil/mailutil.1 $RPM_BUILD_ROOT%{_mandir}/man1/mai
 
 %files
 %defattr(-,root,root)
-%doc README LICENSE doc/tech-notes.txt
+%doc README LICENSE doc/tech-notes/tech-notes.txt
 %{_bindir}/alpine
 %{_bindir}/pico
 %{_bindir}/pilot
