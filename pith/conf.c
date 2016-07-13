@@ -5962,6 +5962,10 @@ write_pinerc(struct pine *ps, EditWhich which, int flags)
 #ifndef _WINDOWS
       if ((realfilename = realpath(filename, NULL)) != NULL)
 	realfilename_malloced = 1;
+      else if(our_stat(filename, &sbuf) < 0 && errno == ENOENT){
+	realfilename = filename;
+	realfilename_malloced = 0;
+      }
       else
 	goto io_err;
 #else

@@ -373,6 +373,9 @@ Bugs that have been addressed include:
        of the certificate to lowercase, which may make Alpine not be able 
        to read such certificate. Reported by Dennis Davis.
 
+  <LI> Unix Alpine: First time users would not get their .pinerc file 
+       created when starting Alpine.
+
   <LI> Work in progress: Avoid calling non-safe functions when Alpine
        receives a signal. See bug report 
        <A HREF="https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=825772">here.</A>
