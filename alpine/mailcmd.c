@@ -7534,7 +7534,7 @@ apply_command(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap,
 int
 select_by_number(MAILSTREAM *stream, MSGNO_S *msgmap, SEARCHSET **limitsrch)
 {
-    int r, end;
+    int r, end, cur;
     long n1, n2, raw;
     char number1[16], number2[16], numbers[80], *p, *t;
     HelpType help;
@@ -7581,7 +7581,7 @@ select_by_number(MAILSTREAM *stream, MSGNO_S *msgmap, SEARCHSET **limitsrch)
 
 	*t = '\0';
 
-	end = 0;
+	end = cur = 0;
 	if(number1[0] == '\0'){
 	    if(*p == '-'){
 		q_status_message1(SM_ORDER | SM_DING, 0, 2,
@@ -7593,6 +7593,14 @@ select_by_number(MAILSTREAM *stream, MSGNO_S *msgmap, SEARCHSET **limitsrch)
 		end = 1;
 		p += strlen("end");
 	    }
+	    else if(!strucmp("$", p)){
+		end = 1;
+		p++;
+	    }
+	    else if(*p == '.'){
+		cur = 1;
+		p++;
+	    }
 	    else{
 		q_status_message1(SM_ORDER | SM_DING, 0, 2,
 			        _("Invalid message number: %s"), numbers);
@@ -7602,6 +7610,8 @@ select_by_number(MAILSTREAM *stream, MSGNO_S *msgmap, SEARCHSET **limitsrch)
 
 	if(end)
 	  n1 = mn_get_total(msgmap);
+	else if(cur)
+	  n1 = mn_get_cur(msgmap);
 	else if((n1 = atol(number1)) < 1L || n1 > mn_get_total(msgmap)){
 	    q_status_message1(SM_ORDER | SM_DING, 0, 2,
 			      _("\"%s\" out of message number range"),
@@ -7616,11 +7626,19 @@ select_by_number(MAILSTREAM *stream, MSGNO_S *msgmap, SEARCHSET **limitsrch)
 
 	    *t = '\0';
 
-	    end = 0;
+	    end = cur = 0;
 	    if(number2[0] == '\0'){
 		if(!strucmp("end", p)){
 		    end = 1;
 		    p += strlen("end");
+		}
+		else if(!strucmp(p, "$")){
+		    end = 1;
+		    p++;
+		}
+		else if(*p == '.'){
+		    cur = 1;
+		    p++;
 		}
 		else{
 		    q_status_message1(SM_ORDER | SM_DING, 0, 2,
@@ -7632,6 +7650,8 @@ select_by_number(MAILSTREAM *stream, MSGNO_S *msgmap, SEARCHSET **limitsrch)
 
 	    if(end)
 	      n2 = mn_get_total(msgmap);
+	    else if(cur)
+	      n2 = mn_get_cur(msgmap);
 	    else if((n2 = atol(number2)) < 1L || n2 > mn_get_total(msgmap)){
 		q_status_message1(SM_ORDER | SM_DING, 0, 2,
 				  _("\"%s\" out of message number range"),
@@ -7685,11 +7705,11 @@ select_by_number(MAILSTREAM *stream, MSGNO_S *msgmap, SEARCHSET **limitsrch)
 int
 select_by_thrd_number(MAILSTREAM *stream, MSGNO_S *msgmap, SEARCHSET **msgset)
 {
-    int r, end;
+    int r, end, cur;
     long n1, n2;
     char number1[16], number2[16], numbers[80], *p, *t;
     HelpType help;
-    PINETHRD_S   *thrd = NULL;
+    PINETHRD_S   *thrd = NULL, *th;
     MESSAGECACHE *mc;
 
     numbers[0] = '\0';
@@ -7733,7 +7753,7 @@ select_by_thrd_number(MAILSTREAM *stream, MSGNO_S *msgmap, SEARCHSET **msgset)
 
 	*t = '\0';
 
-	end = 0;
+	end = cur = 0;
 	if(number1[0] == '\0'){
 	    if(*p == '-'){
 		q_status_message1(SM_ORDER | SM_DING, 0, 2,
@@ -7745,6 +7765,14 @@ select_by_thrd_number(MAILSTREAM *stream, MSGNO_S *msgmap, SEARCHSET **msgset)
 		end = 1;
 		p += strlen("end");
 	    }
+	    else if(!strucmp(p, "$")){
+		end = 1;
+		p++;
+	    }
+	    else if(*p == '.'){
+		cur = 1;
+		p++;
+	    }
 	    else{
 		q_status_message1(SM_ORDER | SM_DING, 0, 2,
 			        _("Invalid thread number: %s"), numbers);
@@ -7754,6 +7782,10 @@ select_by_thrd_number(MAILSTREAM *stream, MSGNO_S *msgmap, SEARCHSET **msgset)
 
 	if(end)
 	  n1 = msgmap->max_thrdno;
+	else if(cur){
+	  th = fetch_thread(stream, mn_m2raw(msgmap, mn_get_cur(msgmap)));
+	  n1 = th->thrdno;
+	}
 	else if((n1 = atol(number1)) < 1L || n1 > msgmap->max_thrdno){
 	    q_status_message1(SM_ORDER | SM_DING, 0, 2,
 			      _("\"%s\" out of thread number range"),
@@ -7775,6 +7807,14 @@ select_by_thrd_number(MAILSTREAM *stream, MSGNO_S *msgmap, SEARCHSET **msgset)
 		    end = 1;
 		    p += strlen("end");
 		}
+		else if(!strucmp("$", p)){
+		    end = 1;
+		    p++;
+		}
+		else if(*p == '.'){
+		    cur = 1;
+		    p++;
+		}
 		else{
 		    q_status_message1(SM_ORDER | SM_DING, 0, 2,
 		 _("Invalid number range, missing number after \"-\": %s"),
@@ -7785,6 +7825,10 @@ select_by_thrd_number(MAILSTREAM *stream, MSGNO_S *msgmap, SEARCHSET **msgset)
 
 	    if(end)
 	      n2 = msgmap->max_thrdno;
+	    else if(cur){
+	      th = fetch_thread(stream, mn_m2raw(msgmap, mn_get_cur(msgmap)));
+	      n2 = th->thrdno;
+	    }
 	    else if((n2 = atol(number2)) < 1L || n2 > msgmap->max_thrdno){
 		q_status_message1(SM_ORDER | SM_DING, 0, 2,
 				  _("\"%s\" out of thread number range"),

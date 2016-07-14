@@ -338,6 +338,9 @@ Additions include:
   <LI> When messages are selected, warn the user if a message that is not
        selected will be bounced, or if not all selected messages will be 
        bounced. Suggested by Ulf-Dietrich Braumann.
+
+  <LI> When selecting messages by number, the &quot;.&quot; character can 
+       be used to specify the message on which the cursor is on.
 </UL>
 
  
@@ -372,9 +375,6 @@ Bugs that have been addressed include:
   <LI> SMIME: When reading a local certificate, Alpine converts the name 
        of the certificate to lowercase, which may make Alpine not be able 
        to read such certificate. Reported by Dennis Davis.
-
-  <LI> Unix Alpine: First time users would not get their .pinerc file 
-       created when starting Alpine.
 
   <LI> Work in progress: Avoid calling non-safe functions when Alpine
        receives a signal. See bug report 
@@ -36523,11 +36523,11 @@ message, or ^C to cancel.
 Enter the name of the Unix command to which you wish to send this
 attachment, or ^C to cancel.
 ========== h_select_by_num ==========
-Enter a list of message numbers (or number ranges), or ^C to cancel.  The word
-"end" represents the last message. Example: 2-5,7-9,11,19,35-end
+Enter a list of message numbers (or number ranges), or ^C to cancel. "end" 
+is the last message. "." is the current message. Example: 1-.,7-9,11,19,35-end
 ========== h_select_by_thrdnum ==========
-Enter a list of thread numbers (or number ranges), or ^C to cancel.  The word
-"end" represents the last thread. Example: 2-5,7-9,11,19,35-end
+Enter a list of message numbers (or number ranges), or ^C to cancel. "end" 
+is the last message. "." is the current message. Example: 1-.,7-9,11,19,35-end
 ========== h_select_txt_from ==========
 Messages with From: headers containing the entered string will be selected.
 ^C to cancel. ^G again to see original options.
