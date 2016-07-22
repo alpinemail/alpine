@@ -5371,8 +5371,10 @@ Each element in the list may be either a single message number or a range
 of numbers with a dash between the lowest and highest member of the range.
 Some examples are 7 to select only message number 7; 2-5 to select messages
 2 through 5; and 2-5,7-9,11 to select messages 2, 3, 4, 5, 7, 8, 9, and 11.
-The word &quot;end&quot; may be used as a substitute for the highest numbered
-message in the folder.
+The word &quot;end&quot; or the character &quot;$&quot; may be used as a 
+substitute for the highest numbered message in the folder, while the
+character &quot;.&quot; represents the message number holding the position
+of the cursor in the folder.
 If in a separate thread index where the numbers refer to threads instead of
 to messages, then you will be selecting all of the messages in the
 referenced threads instead of selecting by message number.

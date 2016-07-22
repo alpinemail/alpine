@@ -34,6 +34,9 @@
 #ifndef _DEFAULT_SOURCE
 #define _DEFAULT_SOURCE 1
 #endif /* _DEFAULT_SOURCE */
+#ifndef _BSD_SOURCE		/* gcc 6 deprecates this, so will we */
+#define _BSD_SOURCE 1
+#endif /* _BSD_SOURCE */
 
 /* end Debian Linux on Alpha strangeness */
 
