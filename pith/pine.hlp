@@ -180,7 +180,7 @@ addresses bugs found in previous releases and has a few additions as well.
 Additions include:
 <UL>
   <LI> PC-Alpine: New configuration option "Aspell Dictionaries" allows a
-       user to choose the dictionary used to spell, in case the user 
+       user to choose the dictionary used to spell check, in case the user 
        communicates in more than one language. Examples of values for the 
        variable are "en_US" or "de_DE", etc. Only the first 10 
        dictionaries are offered.
@@ -375,6 +375,10 @@ Bugs that have been addressed include:
   <LI> SMIME: When reading a local certificate, Alpine converts the name 
        of the certificate to lowercase, which may make Alpine not be able 
        to read such certificate. Reported by Dennis Davis.
+
+  <LI> When selecting messages while in Threaded Index Screen, some 
+       messages other than top of threads could appear in the index, making
+       Alpine display messages &quot;out of the screen.&quot;
 
   <LI> Work in progress: Avoid calling non-safe functions when Alpine
        receives a signal. See bug report 
