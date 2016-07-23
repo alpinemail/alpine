@@ -798,6 +798,21 @@ view_a_thread:
 
 
 	  case MC_THRDINDX :
+	    if(any_lflagged(msgmap, MN_SLCT)){
+		PINETHRD_S *thrd, *topthrd;
+		for(i = 1L; i > 0L && i <= mn_get_total(msgmap);){
+		    thrd = fetch_thread(stream, i);
+		    if(thrd && thrd->top)
+		      topthrd = fetch_thread(stream, thrd->top);
+		    if(topthrd){
+		       set_thread_lflags(stream, topthrd, msgmap, MN_CHID, 1);
+		       set_thread_lflags(stream, topthrd, msgmap, MN_CHID2, 0);
+		       set_lflag(stream, msgmap, mn_raw2m(msgmap, topthrd->rawno), MN_CHID, 0);
+		       set_lflag(stream, msgmap, mn_raw2m(msgmap, topthrd->rawno), MN_COLL, 1);
+		    }
+		    i = thrd->nextthd;
+		}
+	    }
 	    msgmap->top = msgmap->top_after_thrd;
 	    if(unview_thread(state, stream, msgmap)){
 		state->next_screen = mail_index_screen;
