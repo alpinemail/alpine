@@ -379,12 +379,10 @@ titlebar_stream_closing(MAILSTREAM *stream)
 COLOR_PAIR *
 current_titlebar_color(void)
 {
-    TITLE_S       *tc;
     COLOR_PAIR    *col;
     COLOR_PAIR    *the_color = NULL;
 
-    tc = format_titlebar();
-    col = tc ? &tc->color : NULL;
+    col = as.title ? &as.titlecontainer.color : NULL;
 
     if(col && col->fg && col->fg[0] && col->bg && col->bg[0])
       the_color = new_color_pair(col->fg, col->bg);

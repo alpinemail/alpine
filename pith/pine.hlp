@@ -376,6 +376,10 @@ Bugs that have been addressed include:
        of the certificate to lowercase, which may make Alpine not be able 
        to read such certificate. Reported by Dennis Davis.
 
+  <LI> Alpine would use freed memory while trying to compute the color
+       of the titlebar. This happened when trying to continue a postponed 
+       message.
+
   <LI> When selecting messages while in Threaded Index Screen, some 
        messages other than top of threads could appear in the index, making
        Alpine display messages &quot;out of the screen.&quot;
