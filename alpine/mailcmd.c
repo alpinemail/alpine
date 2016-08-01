@@ -83,9 +83,9 @@ static char rcsid[] = "$Id: mailcmd.c 1266 2009-07-14 18:39:12Z hubert@u.washing
 int       cmd_flag(struct pine *, MSGNO_S *, int);
 int	  cmd_flag_prompt(struct pine *, struct flag_screen *, int);
 void      free_flag_table(struct flag_table **);
-int       cmd_reply(struct pine *, MSGNO_S *, int);
-int       cmd_forward(struct pine *, MSGNO_S *, int);
-int       cmd_bounce(struct pine *, MSGNO_S *, int);
+int       cmd_reply(struct pine *, MSGNO_S *, int, ACTION_S *);
+int       cmd_forward(struct pine *, MSGNO_S *, int, ACTION_S *);
+int       cmd_bounce(struct pine *, MSGNO_S *, int, ACTION_S *);
 int       cmd_save(struct pine *, MAILSTREAM *, MSGNO_S *, int, CmdWhere);
 void      role_compose(struct pine *);
 int	  cmd_expunge(struct pine *, MAILSTREAM *, MSGNO_S *, int);
@@ -689,13 +689,13 @@ nfolder:
 
           /*---------- Reply to message ----------*/
       case MC_REPLY :
-	(void) cmd_reply(state, msgmap, MCMD_NONE);
+	(void) cmd_reply(state, msgmap, MCMD_NONE, NULL);
 	break;
 
 
           /*---------- Forward message ----------*/
       case MC_FORWARD :
-	(void) cmd_forward(state, msgmap, MCMD_NONE);
+	(void) cmd_forward(state, msgmap, MCMD_NONE, NULL);
 	break;
 
 
@@ -1495,7 +1495,7 @@ get_out:
 
           /*------- Bounce -----------*/
       case MC_BOUNCE :
-	(void) cmd_bounce(state, msgmap, MCMD_NONE);
+	(void) cmd_bounce(state, msgmap, MCMD_NONE, NULL);
 	break;
 
 
@@ -2314,7 +2314,7 @@ free_flag_table(struct flag_table **ft)
 
  ----*/
 int
-cmd_reply(struct pine *state, MSGNO_S *msgmap, int aopt)
+cmd_reply(struct pine *state, MSGNO_S *msgmap, int aopt, ACTION_S *role)
 {
     int rv = 0;
 
@@ -2322,7 +2322,7 @@ cmd_reply(struct pine *state, MSGNO_S *msgmap, int aopt)
 	if(MCMD_ISAGG(aopt) && !pseudo_selected(state->mail_stream, msgmap))
 	  return rv;
 
-	rv = reply(state, NULL);
+	rv = reply(state, role);
 
 	if(MCMD_ISAGG(aopt))
 	  restore_selected(msgmap);
@@ -2344,7 +2344,7 @@ cmd_reply(struct pine *state, MSGNO_S *msgmap, int aopt)
 
  ----*/
 int
-cmd_forward(struct pine *state, MSGNO_S *msgmap, int aopt)
+cmd_forward(struct pine *state, MSGNO_S *msgmap, int aopt, ACTION_S *role)
 {
     int rv = 0;
 
@@ -2352,7 +2352,7 @@ cmd_forward(struct pine *state, MSGNO_S *msgmap, int aopt)
 	if(MCMD_ISAGG(aopt) && !pseudo_selected(state->mail_stream, msgmap))
 	  return rv;
 
-	rv = forward(state, NULL);
+	rv = forward(state, role);
 
 	if(MCMD_ISAGG(aopt))
 	  restore_selected(msgmap);
@@ -2375,10 +2375,9 @@ cmd_forward(struct pine *state, MSGNO_S *msgmap, int aopt)
 
  ----*/
 int
-cmd_bounce(struct pine *state, MSGNO_S *msgmap, int aopt)
+cmd_bounce(struct pine *state, MSGNO_S *msgmap, int aopt, ACTION_S *role)
 {
     int rv = 0;
-    ACTION_S *role = NULL;
 
     if(any_messages(msgmap, NULL, "to Bounce")){
 	long i;
@@ -2397,51 +2396,6 @@ cmd_bounce(struct pine *state, MSGNO_S *msgmap, int aopt)
 	       q_status_message(SM_ORDER | SM_DING, 3, 4,
 			 _("WARNING: not bouncing all selected messages!"));
 
-	if(MCMD_ISAGG(aopt)){	/* check for possible role */
-	   PAT_STATE  pstate;
-	   int action;
-
-	   if(nonempty_patterns(ROLE_DO_ROLES, &pstate) && first_pattern(&pstate)){
-	     static ESCKEY_S yesno_opts[] = {
-	        {'y', 'y', "Y", N_("Yes")},
-	        {'n', 'n', "N", N_("No")},
-	        {-1, 0, NULL, NULL}
-	     };
-
-             action = radio_buttons(_("Bounce messages using a role? "),
-                                   -FOOTER_ROWS(state), yesno_opts,
-                                   'y', 'x', h_role_compose, RB_NORM);
-	     if(action == 'y'){
-	        void    (*prev_screen)(struct pine *) = NULL, (*redraw)(void) = NULL;
-
-	        redraw = state->redrawer;
-	        state->redrawer = NULL;
-	        prev_screen = state->prev_screen;
-	        role = NULL;
-	        state->next_screen = SCREEN_FUN_NULL;
-            
-	        if(role_select_screen(state, &role, MC_BOUNCE) < 0)
-	            cmd_cancelled(_("Bounce"));
-		else{
-		   if(role)
-		      role = combine_inherited_role(role);
-	           else{
-	               role = (ACTION_S *) fs_get(sizeof(*role));
-		       memset((void *) role, 0, sizeof(*role));
-		       role->nick = cpystr("Default Role");
-		   }
-		}
-
-		if(redraw)
-		   (*redraw)();
-
-		state->next_screen = prev_screen;
-		state->redrawer = redraw;
-		state->mangled_screen = 1;
-	     }
-           }
-        }
-
 #ifdef SMIME
        /* When we bounce a message, we will leave the original message
 	* intact, which means that it will not be signed or encrypted,
@@ -2453,9 +2407,6 @@ cmd_bounce(struct pine *state, MSGNO_S *msgmap, int aopt)
 #endif /* SMIME */
 
 	rv = bounce(state, role);
-
-	if(role)
-	  free_action(&role);
 
 	if(MCMD_ISAGG(aopt))
 	  restore_selected(msgmap);
@@ -7343,6 +7294,7 @@ apply_command(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap,
         we_cancel = 0,
 	agg = (flags & AC_FROM_THREAD) ? MCMD_AGG_2 : MCMD_AGG;
     char prompt[80];
+    PAT_STATE  pstate;
 
     /*
      * To do this "right", we really ought to have access to the keymenu
@@ -7410,6 +7362,13 @@ apply_command(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap,
 	    sel_opts3[i++].label = N_("Expunge");
 	}
 
+	if(nonempty_patterns(ROLE_DO_ROLES, &pstate) && first_pattern(&pstate)){
+	   sel_opts3[i].ch      = '#';
+	   sel_opts3[i].rval    = '#';
+	   sel_opts3[i].name    = "#";
+	   sel_opts3[i++].label = N_("Set Role");
+	}
+
 	sel_opts3[i].ch      = KEY_DEL;		/* also invisible */
 	sel_opts3[i].rval    = 'd';
 	sel_opts3[i].name    = "";
@@ -7452,11 +7411,11 @@ apply_command(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap,
 	break;
 
       case 'r' :			/* reply */
-	rv = cmd_reply(state, msgmap, agg);
+	rv = cmd_reply(state, msgmap, agg, NULL);
 	break;
 
       case 'f' :			/* Forward */
-	rv = cmd_forward(state, msgmap, agg);
+	rv = cmd_forward(state, msgmap, agg, NULL);
 	break;
 
       case '%' :			/* print */
@@ -7487,7 +7446,7 @@ apply_command(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap,
 	break;
 
       case 'b' :			/* bounce */
-	rv = cmd_bounce(state, msgmap, agg);
+	rv = cmd_bounce(state, msgmap, agg, NULL);
 	break;
 
       case '/' :
@@ -7508,6 +7467,77 @@ apply_command(struct pine *state, MAILSTREAM *stream, MSGNO_S *msgmap,
       case 'c' :			/* cancel */
 	cmd_cancelled((flags & AC_FROM_THREAD) ? "Thread command"
 					       : "Apply command");
+	break;
+
+      case '#' :
+	if(nonempty_patterns(ROLE_DO_ROLES, &pstate) && first_pattern(&pstate)){
+	   static ESCKEY_S choose_role[] = {
+	    {'r', 'r', "R", N_("Reply")},
+	    {'f', 'f', "F", N_("Forward")},
+	    {'b', 'b', "B", N_("Bounce")},
+	    {-1, 0, NULL, NULL}
+	   };
+	   int action;
+	   ACTION_S *role = NULL;
+
+           action = radio_buttons(_("Reply, Forward or Bounce using a role? "),
+                                   -FOOTER_ROWS(state), choose_role,
+                                   'r', 'x', h_role_aggregate, RB_NORM);
+	   if(action == 'r' || action == 'f' || action == 'b'){
+	     void (*prev_screen)(struct pine *) = NULL, (*redraw)(void) = NULL;
+
+	     redraw = state->redrawer;
+	     state->redrawer = NULL;
+	     prev_screen = state->prev_screen;
+	     role = NULL;
+	     state->next_screen = SCREEN_FUN_NULL;
+            
+	     if(role_select_screen(state, &role,
+			      action == 'f' ? MC_FORWARD :
+			       action == 'r' ? MC_REPLY :
+			        action == 'b' ? MC_BOUNCE : 0) < 0){
+		cmd_cancelled(action == 'f' ? _("Forward") :
+				action == 'r' ? _("Reply") : _("Bounce"));
+		state->next_screen = prev_screen;
+		state->redrawer = redraw;
+		state->mangled_screen = 1;
+	     }
+	     else{
+		if(role)
+		   role = combine_inherited_role(role);
+	        else{
+	           role = (ACTION_S *) fs_get(sizeof(*role));
+		   memset((void *) role, 0, sizeof(*role));
+		   role->nick = cpystr("Default Role");
+	 	}
+
+		state->redrawer = NULL;
+		switch(action){
+		   case 'r':
+			(void) cmd_reply(state, msgmap, agg, role);
+			break;
+
+		   case 'f':
+			(void) cmd_forward(state, msgmap, agg, role);
+			break;
+
+		   case 'b':
+			(void) cmd_bounce(state, msgmap, agg, role);
+			break;
+		}
+
+		if(role)
+		  free_action(&role);
+
+		if(redraw)
+		  (*redraw)();
+
+		state->next_screen = prev_screen;
+		state->redrawer = redraw;
+		state->mangled_screen = 1;
+	     }
+	   }
+        }
 	break;
 
       case 'z' :			/* default */

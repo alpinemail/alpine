@@ -264,6 +264,11 @@ Additions include:
   <LI> HTML: Add support for decoding entities in hexadecimal notation.
        Suggested by Tulip&aacute;nt Gergely.
 
+  <LI> The &quot;#&quot; command, when used as part of an aggregate
+       operation will allow users to select the role used in either 
+       replying, forwarding or replying to the group of selected messages, 
+       Suggested by Hisashi T Fujinaka.
+
   <LI> If the charset of a message can not be determined, use the value set
        in the <A HREF="h_config_unk_char_set"><!--#echo var="VAR_unknown-character-set"--></A> for its value.
 
@@ -36752,6 +36757,9 @@ contain only configuration data. It shouldn't contain other mail messages.
 ========== h_role_compose ==========
 Compose a New message, Reply to current message, Forward current message, or
 Bounce message. Then you will be asked to choose one of your Roles to be used.
+========== h_role_aggregate ==========
+Compose a reply, or forward, or bounce the selected messages. Then you 
+will be asked to choose one of your Roles to be used for this operation.
 ========== h_save_size_changed ==========
 The reported size of a message is not the same as the actual size. Answer Yes
 to continue and hope for the best or No to Cancel the entire Save.
