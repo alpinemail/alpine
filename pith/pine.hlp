@@ -341,6 +341,12 @@ Additions include:
 
   <LI> When selecting messages by number, the &quot;.&quot; character can 
        be used to specify the message on which the cursor is on.
+
+  <LI> When Alpine opens an attachment, it sometimes changes the extension 
+       of the file that is being opened and replaces it by another for the 
+       same mime type. If Alpine finds that the extension of the file 
+       corresponds with the mime type, according to the mime-types file, 
+       then it will keep it, and no substitution will be made.
 </UL>
 
  

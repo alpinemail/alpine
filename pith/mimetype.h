@@ -42,6 +42,7 @@ typedef int (* MT_OPERATORPROC)(MT_MAP_T *, FILE *);
 /* exported protoypes */
 int	    set_mime_type_by_extension(BODY *, char *);
 int	    set_mime_extension_by_type(char *, char *);
+int	    check_mime_type_by_extension(char *, char *);
 int         mt_srch_by_ext(MT_MAP_T *, FILE *);
 int         mt_get_file_ext(char *, char **);
 int         mt_srch_mime_type(MT_OPERATORPROC, MT_MAP_T *);

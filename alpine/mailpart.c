@@ -2115,11 +2115,11 @@ display_attachment(long int msgno, ATTACH_S *a, int flags)
       (void) get_filename_parameter(sender_filename, sizeof(sender_filename),
 				    a->body, &extp);
 
-    if(!set_mime_extension_by_type(ext, mtype)){	/* extension from type */
-	if(extp && extp[0]){				/* extension from filename */
-	    strncpy(ext, extp, sizeof(ext));
-	    ext[sizeof(ext)-1] = '\0';
-	}
+    if(check_mime_type_by_extension(extp, mtype)
+	|| (!set_mime_extension_by_type(ext, mtype) /* extension from type */
+	    && extp && extp[0])){		/* extension from filename */
+	strncpy(ext, extp, sizeof(ext));
+	ext[sizeof(ext)-1] = '\0';
     }
 
     /* create a temp file */

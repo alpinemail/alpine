@@ -18,6 +18,7 @@ static char rcsid[] = "$Id: mimetype.c 955 2008-03-06 23:52:36Z hubert@u.washing
 
 #include "../pith/headers.h"
 #include "../pith/mimetype.h"
+#include "../pith/mimedesc.h"
 #include "../pith/state.h"
 #include "../pith/conf.h"
 #include "../pith/mailcap.h"
@@ -92,6 +93,23 @@ set_mime_extension_by_type (char *ext, char *mtype)
 }
     
 
+int
+check_mime_type_by_extension (char *ext, char *mtype)
+{
+    MT_MAP_T  e2t;
+    char mimet[128];
+
+    if((e2t.from.ext = ext) != NULL && *e2t.from.ext
+       && mt_srch_mime_type(mt_srch_by_ext, &e2t)){
+	snprintf(mimet, sizeof(mimet), "%s/%s", 
+		body_type_names(e2t.to.mime.type), e2t.to.mime.subtype);
+	mimet[sizeof(mimet) - 1] = '\0';
+	fs_give((void **)& e2t.to.mime.subtype);
+	return strucmp(mimet, mtype) ? 0 : 1;
+    }
+
+    return(0);
+}
 
 
 /* 
