@@ -258,7 +258,7 @@ int main (int argc,char *argv[])
   if(!strcmp(cmd, "dedup")){
     if (!src) src = "INBOX";
     if (dst || merge || rwcopyp || kwcopyp || ignorep)
-      printf (usgdup);
+      fprintf (stdout, "%s", usgdup);
     else if(mailutil_dedup(src, debugp ? OP_DEBUG : NIL))
       retcode = 0;
   }
