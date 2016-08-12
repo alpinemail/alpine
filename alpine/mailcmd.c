@@ -4583,8 +4583,10 @@ get_export_filename(struct pine *ps, char *filename, char *deefault,
 		else{
 		    strncpy(filename2, tmp, sizeof(filename2)-1);
 		    filename2[sizeof(filename2)-1] = '\0';
-		    if(!dir[0])
-		      (void)getcwd(dir2, sizeof(dir2));
+		    if(!dir[0]){
+		       if(getcwd(dir2, sizeof(dir2)) == NULL)
+			  alpine_panic(_("getcwd() call failed at get_export_filename"));
+		    }
 		    else if(dir[0] == '~' && !dir[1]){
 			strncpy(dir2, ps->home_dir, sizeof(dir2)-1);
 			dir2[sizeof(dir2)-1] = '\0';

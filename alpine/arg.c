@@ -690,8 +690,10 @@ Loop: while(--ac > 0)
 				  path[sizeof(path)-1] = '\0';
 			      }
 			      else{
-				  getcwd(dir, sizeof(path));
-				  build_path(path, dir, str, sizeof(path));
+				  if(getcwd(dir, sizeof(path)) != NULL)
+				     build_path(path, dir, str, sizeof(path));
+				  else
+				    alpine_panic(_("getcwd() call failed while parsing argument (1)"));
 			      }
 
 			      /*
@@ -734,8 +736,10 @@ Loop: while(--ac > 0)
 				  path[sizeof(path)-1] = '\0';
 			      }
 			      else{
-				  getcwd(dir, sizeof(path));
-				  build_path(path, dir, str, sizeof(path));
+				  if(getcwd(dir, sizeof(path)) != NULL)
+				    build_path(path, dir, str, sizeof(path));
+				  else
+				    alpine_panic(_("getcwd() call failed while parsing argument (2)"));
 			      }
 
 			      if(pine_state->pconf)

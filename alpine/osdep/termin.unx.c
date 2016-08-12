@@ -732,8 +732,10 @@ pre_screen_config_opt_enter(char *string, int string_size, char *prompt,
 		    return_v = 0;
 		}
 		else{
-		    fputs("Password too long\n", stderr);
-		    return_v = -1;
+		    if(fputs("Password too long\n", stderr) != EOF)
+		       return_v = -1;
+		    else
+		       alpine_panic(_("error on fputs() call!"));
 		}
 	    }
 	    else
@@ -742,13 +744,15 @@ pre_screen_config_opt_enter(char *string, int string_size, char *prompt,
 	else{
 	    char *p;
 
-	    fputs(prompt, stdout);
-	    fgets(string, string_size, stdin);
-	    string[string_size-1] = '\0';
-	    if((p = strpbrk(string, "\r\n")) != NULL)
-	      *p = '\0';
-
-	    return_v = 0;
+	    if(fputs(prompt, stdout) != EOF
+		&& fgets(string, string_size, stdin) != NULL){
+		string[string_size-1] = '\0';
+		if((p = strpbrk(string, "\r\n")) != NULL)
+		  *p = '\0';
+		return_v = 0;
+	    }
+	    else
+		alpine_panic(_("error on fputs() or fgets() call!"));
 	}
     }
 

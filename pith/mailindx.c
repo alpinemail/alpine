@@ -2066,7 +2066,8 @@ format_index_index_line(INDEXDATA_S *idata)
 						      cdesc->ctype);
 		}
 		else{
-		    if((mc=mail_elt(idata->stream,idata->rawno)) && mc->flagged)
+		    if(idata->rawno > 0L && idata->rawno <= idata->stream->nmsgs
+			&& (mc=mail_elt(idata->stream,idata->rawno)) && mc->flagged)
 		      to_us = '*';		/* simple */
 		    else if(!IS_NEWS(idata->stream)){
 			for(addr = fetch_to(idata); addr; addr = addr->next)

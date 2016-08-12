@@ -1,3 +1,7 @@
+/*
+ * Copyright 2016 - Eduardo Chappa
+ * Last Modified: August 11, 2016
+ */
 /* ========================================================================
  * Copyright 2008-2011 Mark Crispin
  * ========================================================================
@@ -191,7 +195,8 @@ char *auth_md5_pwd (char *user)
   char *ret = NIL;
   if (fd >= 0) {		/* found the file? */
     fstat (fd,&sbuf);		/* yes, slurp it into memory */
-    read (fd,buf = (char *) fs_get (sbuf.st_size + 1),sbuf.st_size);
+    if(read (fd,buf = (char *) fs_get (sbuf.st_size + 1),sbuf.st_size) < 0)
+	fatal("error on read() call in auth_md5_pwd");
 				/* see if any uppercase characters in user */
     for (s = user; *s && ((*s < 'A') || (*s > 'Z')); s++);
 				/* yes, make lowercase copy */

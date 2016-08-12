@@ -1,6 +1,6 @@
 /* 
  * Copyright 2016 - Eduardo Chappa
- * Last Modified: June 15, 2016
+ * Last Modified: August 11, 2016
  */
 /* ========================================================================
  * Copyright 1988-2006 University of Washington
@@ -471,8 +471,9 @@ char *newsrc_state (MAILSTREAM *stream,char *group)
 	  c = getc (f);
 				/* now copy it */
 	s = (char *) fs_get (size + 1);
-	fseek (f,pos,SEEK_SET);
-	fread (s,(size_t) 1,size,f);
+	if(fseek (f,pos,SEEK_SET) < 0
+	   || fread (s,(size_t) 1,size,f) != size)
+	  fatal("error on fseek() or fread() in newsrc module.");
 	s[size] = '\0';		/* tie off string */
 	fclose (f);		/* all done - close the file */
 	return s;

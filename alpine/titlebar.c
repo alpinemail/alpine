@@ -287,7 +287,12 @@ set_titlebar(char *title, MAILSTREAM *stream, CONTEXT_S *cntxt, char *folder,
 	   && rawno <= as.stream->nmsgs
 	   && !((mc = mail_elt(as.stream, rawno)) && mc->valid)){
 	    pine_mail_fetch_flags(as.stream, long2string(rawno), NIL);
-	    mc = mail_elt(as.stream, rawno);
+	    if(rawno <= as.stream->nmsgs && as.stream && rawno > 0L)
+	      mc = mail_elt(as.stream, rawno);
+	    else
+	      mc = NULL;
+	    if(mc && !mc->valid)
+	      mc = NULL;
 	}
     }
     

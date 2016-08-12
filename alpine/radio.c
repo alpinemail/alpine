@@ -73,8 +73,9 @@ pre_screen_config_want_to(char *question, int dflt, int on_ctrl_C)
     }
 #endif
     while(!ret){
-      fprintf(stdout, "%s? [%c]:", question, dflt);
-      fgets(rep, WANT_TO_BUF, stdin);
+      if(fprintf(stdout, "%s? [%c]:", question, dflt) < 0
+	  || fgets(rep, WANT_TO_BUF, stdin) == NULL)
+	alpine_panic(_("error on fprintf() or fgets()"));
       if((p = strpbrk(rep, "\r\n")) != NULL)
 	*p = '\0';
       switch(*rep){

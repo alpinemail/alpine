@@ -2595,15 +2595,18 @@ search_for_our_regex_addresses(MAILSTREAM *stream, char type, int not,
 	}
 
 	if(addr1 && address_is_us(addr1, ps_global)){
-	  if((mc=mail_elt(stream, rawno)) != NULL)
+	  if(rawno > 0L && rawno <= stream->nmsgs
+	     && (mc=mail_elt(stream, rawno)) != NULL)
 	    mm_searched(stream, rawno);
 	}
 	else if(addr2 && address_is_us(addr2, ps_global)){
-	  if((mc=mail_elt(stream, rawno)) != NULL)
+	  if(rawno > 0L && rawno <= stream->nmsgs
+	     && (mc=mail_elt(stream, rawno)) != NULL)
 	    mm_searched(stream, rawno);
 	}
 	else if(addr3 && address_is_us(addr3, ps_global)){
-	  if((mc=mail_elt(stream, rawno)) != NULL)
+	  if(rawno > 0L && rawno <= stream->nmsgs
+	     && (mc=mail_elt(stream, rawno)) != NULL)
 	    mm_searched(stream, rawno);
 	}
       }

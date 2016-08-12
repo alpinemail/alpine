@@ -45,7 +45,7 @@ clear_index_cache_ent(MAILSTREAM *stream, long int msgno, unsigned int flags)
     MESSAGECACHE *mc;
 
     if(stream){
-	if(flags && IC_USE_RAW_MSGNO)
+	if(flags & IC_USE_RAW_MSGNO)
 	  rawno = msgno;
 	else
 	  rawno = mn_m2raw(sp_msgmap(stream), msgno);
