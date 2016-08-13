@@ -149,7 +149,7 @@ trans_euc_to_2022_jp(unsigned char *src)
 #define	RFC1522_TERM_L	2
 #define	RFC1522_DLIM	"?"
 #define	RFC1522_DLIM_L	1
-#define	RFC1522_MAXW	256	/* RFC's say 75, but no senders seem to care*/
+#define	RFC1522_MAXW	75	/* RFC's say 75, but no senders seem to care*/
 #define	ESPECIALS	"()<>@,;:\"/[]?.="
 #define	RFC1522_OVERHEAD(S)	(RFC1522_INIT_L + RFC1522_TERM_L +	\
 				 (2 * RFC1522_DLIM_L) + strlen(S) + 1);
@@ -379,8 +379,7 @@ rfc1522_valid(char *s, char **charset, char **enc, char **txt, char **endp)
 
     rv = rfc1522_token(c = s+RFC1522_INIT_L, rfc1522_valtok, RFC1522_DLIM, &e)
 	   && rfc1522_token(++e, rfc1522_valtok, RFC1522_DLIM, &t)
-	   && rfc1522_token(++t, rfc1522_valenc, RFC1522_TERM, &p)
-	   && p - s <= RFC1522_MAXW;
+	   && rfc1522_token(++t, rfc1522_valenc, RFC1522_TERM, &p);
 
     if(charset)
       *charset = c;

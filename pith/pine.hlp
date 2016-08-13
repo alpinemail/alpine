@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 160 2016-08-11 21:14:39
+Alpine Commit 161 2016-08-12 21:18:00
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -352,6 +352,9 @@ Additions include:
        same mime type. If Alpine finds that the extension of the file 
        corresponds with the mime type, according to the mime-types file, 
        then it will keep it, and no substitution will be made.
+
+  <LI> Set no restrictions on the length of encoded subjects, but encode
+       words in length of no more than 75 characters.
 </UL>
 
  
