@@ -854,7 +854,9 @@ dnl find it anywhere else.
 	alpine_SSLDIR="/usr/local/ssl"
       ;;
     *-*-solaris*)
-      if test -d /usr/sfw/include/openssl ; then
+      if test -d /usr/include/openssl ; then
+	alpine_SSLINCLUDE="/usr/include/openssl" 
+      elif test -d /usr/sfw/include/openssl ; then
         alpine_SSLDIR="/usr/sfw"
       elif test -d /opt/csw/include/openssl ; then
         alpine_SSLDIR="/opt/csw"
@@ -1154,6 +1156,7 @@ case "$host" in
     if test x$GCC = "xyes" ; then
       systype="GSO"
       alpine_c_client_target="gso"
+      CFLAGS="$CFLAGS -D__USE_LEGACY_PROTOTYPES__"
     else
       systype="SOC"
       alpine_c_client_target="soc"
