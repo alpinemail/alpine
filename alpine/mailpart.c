@@ -3363,7 +3363,7 @@ reply_msg_att(MAILSTREAM *stream, long int msgno, ATTACH_S *a)
     /*
      * For consistency, the first question is always "include text?"
      */
-    if((include_text = reply_text_query(ps_global, 1, &prefix)) >= 0
+    if((include_text = reply_text_query(ps_global, 1, NULL, &prefix)) >= 0
        && reply_news_test(a->body->nested.msg->env, outgoing) > 0
        && reply_harvest(ps_global, msgno, a->number,
 			a->body->nested.msg->env, &saved_from,

@@ -251,6 +251,16 @@ struct pine {
 
     short	 init_context;
 
+    struct { 
+	unsigned keep_attach:1;
+ 	unsigned strip_signature:1;
+	unsigned use_flowed:1;
+	unsigned include_header:1;
+	unsigned preserve_fields:1;
+	unsigned signature_bottom:1;
+	ACTION_S *role_chosen;
+    } reply;
+
     int         *initial_cmds;         /* cmds to execute on startup */
     int         *free_initial_cmds;    /* used to free when done */
 
@@ -291,8 +301,6 @@ struct pine {
 
     SortOrder    def_sort,	/* Default sort type */
 		 sort_types[22];
-
-    int		 preserve;
 
     int          last_expire_year, last_expire_month;
 

@@ -2838,6 +2838,8 @@ feature_list(int index)
 	 F_ALWAYS_SPELL_CHECK, h_config_always_spell_check, PREF_COMP, 0},
 
 /* Reply Prefs */
+	{"alternate-reply-menu", NULL,
+	 F_ALT_REPLY_MENU, h_config_alt_reply_menu, PREF_RPLY, 0},
 	{"copy-to-address-to-from-if-it-is-us", "Copy To Address to From if it is Us",
 	 F_COPY_TO_TO_FROM, h_config_copy_to_to_from, PREF_RPLY, 0},
 	{"enable-reply-indent-string-editing", NULL,

@@ -135,7 +135,7 @@ reply_harvest(struct pine *ps, long int msgno, char *section, ENVELOPE *env,
        * nobody else.
        */
     if(env->reply_to && !addr_lists_same(env->reply_to, env->from)
-       && (F_ON(F_AUTO_REPLY_TO, ps_global)
+       && (F_ON(F_AUTO_REPLY_TO, ps)
 	   || ((*flags) & RSF_FORCE_REPLY_TO)
 	   || (pith_opt_replyto_prompt && (*pith_opt_replyto_prompt)() == 'y'))){
 	rep_field   = "reply-to";
@@ -408,7 +408,7 @@ reply_seed(struct pine *ps, ENVELOPE *outgoing, ENVELOPE *env,
 	*to_tail = reply_cp_addr(ps, 0, NULL, NULL, outgoing->to,
 				 (ADDRESS *) NULL, saved_from, RCA_ALL);
 	if(replytoall){
-	    if(ps->preserve){
+	    if(ps->reply.preserve_fields){
 		while(*to_tail)
 		   to_tail = &(*to_tail)->next;
 
@@ -962,7 +962,7 @@ reply_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
 
 	impl = 0;
 	filtered = detoken(role, env, 0,
-			   F_ON(F_SIG_AT_BOTTOM, ps_global) ? 1 : 0,
+			   ps_global->reply.signature_bottom,
 			   0, redraft_pos, &impl);
 	if(filtered){
 	    if(*filtered){
@@ -983,7 +983,7 @@ reply_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
 
     if(toplevel &&
        (sig = reply_signature(role, env, redraft_pos, &impl)) &&
-       F_OFF(F_SIG_AT_BOTTOM, ps_global)){
+	!ps_global->reply.signature_bottom){
 
 	/*
 	 * If CURSORPOS was set explicitly in sig_file, and there was a
@@ -1023,7 +1023,7 @@ reply_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
 	if(!orig_body
 	   || orig_body->type == TYPETEXT
 	   || reply_raw_body
-	   || F_OFF(F_ATTACHMENTS_IN_REPLY, ps_global)){
+	   || !ps_global->reply.keep_attach){
 	    char *charset = NULL;
 
 	    /*------ Simple text-only message ----*/
@@ -1031,7 +1031,7 @@ reply_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
 	    body->type		     = TYPETEXT;
 	    body->contents.text.data = msgtext;
 	    reply_delimiter(env, role, pc);
-	    if(F_ON(F_INCLUDE_HEADER, ps_global))
+	    if(ps_global->reply.include_header)
 	      reply_forward_header(stream, msgno, sect_prefix,
 				   env, pc, prefix);
 
@@ -1089,7 +1089,7 @@ reply_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
 
 		if(reply_body_text(orig_body, &tmp_body)){
 		    reply_delimiter(env, role, pc);
-		    if(F_ON(F_INCLUDE_HEADER, ps_global))
+		    if(ps_global->reply.include_header)
 		      reply_forward_header(stream, msgno, sect_prefix,
 					   env, pc, prefix);
 
@@ -1127,7 +1127,7 @@ reply_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
 		        body->nested.part->body.subtype = cpystr("Plain");
 		    }
 		    reply_delimiter(env, role, pc);
-		    if(F_ON(F_INCLUDE_HEADER, ps_global))
+		    if(ps_global->reply.include_header)
 		      reply_forward_header(stream, msgno, sect_prefix,
 					   env, pc, prefix);
 
@@ -1150,7 +1150,7 @@ reply_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
 		    int partnum;
 
 		    reply_delimiter(env, role, pc);
-		    if(F_ON(F_INCLUDE_HEADER, ps_global))
+		    if(ps_global->reply.include_header)
 		      reply_forward_header(stream, msgno, sect_prefix,
 					   env, pc, prefix);
 					/* SECTBUFLEN = sizeof(sect_buf) */
@@ -1348,10 +1348,10 @@ reply_signature(ACTION_S *role, ENVELOPE *env, REDRAFT_POS_S **redraft_pos, int 
     size_t l;
 
     sig = detoken(role, env,
-		  2, F_ON(F_SIG_AT_BOTTOM, ps_global) ? 0 : 1, 1,
+		  2, ps_global->reply.signature_bottom ? 0 : 1, 1,
 		  redraft_pos, impl);
 
-    if(F_OFF(F_SIG_AT_BOTTOM, ps_global) && (!sig || !*sig)){
+    if(!ps_global->reply.signature_bottom && (!sig || !*sig)){
 	if(sig)
 	  fs_give((void **)&sig);
 
@@ -2701,7 +2701,7 @@ get_body_part_text(MAILSTREAM *stream, struct mail_bodystruct *body,
  		 * tied our hands, alter the prefix to continue flowed
  		 * formatting...
  		 */
- 		if(flow_res)
+ 		if(flow_res && ps_global->reply.use_flowed)
 		  wrapflags |= GFW_FLOW_RESULT;
 
 		filters[filtcnt].filter = gf_wrap;
@@ -2737,9 +2737,9 @@ get_body_part_text(MAILSTREAM *stream, struct mail_bodystruct *body,
 	 * We also want to fold "> " quotes so we get the
 	 * attributions correct.
  	 */
-	if(flow_res && prefix && !strucmp(prefix, "> "))
+	if(flow_res && ps_global->reply.use_flowed && prefix && !strucmp(prefix, "> "))
 	  *(prefix_p = prefix + 1) = '\0';
-
+	ps_global->reply.use_flowed = 1; /* reset for next call */
 	if(!(wrapflags & GFW_FLOWED)
 	   && flow_res){
 	    filters[filtcnt].filter = gf_line_test;
@@ -2772,9 +2772,7 @@ get_body_part_text(MAILSTREAM *stream, struct mail_bodystruct *body,
     }
 
     if(prefix){
-	if(ps_global->full_header != 2
-	   && (F_ON(F_ENABLE_SIGDASHES, ps_global)
-	       || F_ON(F_ENABLE_STRIP_SIGDASHES, ps_global))){
+	if(ps_global->reply.strip_signature){
 	    dashdata = 0;
 	    filters[filtcnt].filter = gf_line_test;
 	    filters[filtcnt++].data = gf_line_test_opt(sigdash_strip, &dashdata);
