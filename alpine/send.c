@@ -1042,13 +1042,13 @@ Returns 0 on success, -1 on failure.
 int
 pine_simple_send(ENVELOPE *outgoing,	/* envelope for outgoing message */
 		 struct mail_bodystruct **body,
-		 ACTION_S *role,
+		 ACTION_S **rolep,
 		 char *prmpt_who,
 		 char *prmpt_cnf,
 		 char **used_tobufval,
 		 int flagsarg)
 {
-    char     **tobufp, *p;
+    char     **tobufp, *p, tmp[MAILTMPLEN];
     void      *messagebuf;
     int        done = 0, retval = 0, x;
     int	       lastrc, rc = 0, ku, i, resize_len, result, fcc_result;
@@ -1058,6 +1058,8 @@ pine_simple_send(ENVELOPE *outgoing,	/* envelope for outgoing message */
     ESCKEY_S   ekey[5];
     BUILDER_ARG ba_fcc;
     METAENV   *header;
+    ACTION_S  *role = rolep ? *rolep : NULL;
+    PAT_STATE  pstate;
 
     dprint((1,"\n === simple send called === \n"));
 
@@ -1105,6 +1107,13 @@ pine_simple_send(ENVELOPE *outgoing,	/* envelope for outgoing message */
 	ekey[i++].label = N_("Complete");
     }
 
+    if(nonempty_patterns(ROLE_DO_ROLES, &pstate) && first_pattern(&pstate)){
+	ekey[i].ch      = ctrl('R');
+	ekey[i].rval    = 15;
+	ekey[i].name    = "^R";
+	ekey[i++].label = "Set Role";
+    }
+
     ekey[i].ch      = KEY_UP;
     ekey[i].rval    = 30;
     ekey[i].name    = "";
@@ -1118,6 +1127,9 @@ pine_simple_send(ENVELOPE *outgoing,	/* envelope for outgoing message */
 
     ekey[i].ch    = -1;
 
+    if(outgoing->remail == NULL)
+	strcpy(tmp, _("FORWARD (as e-mail) to : "));
+
     /*----------------------------------------------------------------------
        Loop editing the "To: " field until everything goes well
      ----*/
@@ -1125,6 +1137,14 @@ pine_simple_send(ENVELOPE *outgoing,	/* envelope for outgoing message */
 
     while(!done){
 	int flags;
+
+	if(outgoing->remail){
+	   if(role)
+	     snprintf(tmp, sizeof(tmp),  _("BOUNCE (redirect) message using role \"%s\" to : "), role->nick);
+	   else
+	     strncpy(tmp, _("BOUNCE (redirect) message to : "), sizeof(tmp));
+	   tmp[sizeof(tmp)-1] = '\0';
+	}
 
 	if(!og2s_done){
 	    og2s_done++;
@@ -1158,9 +1178,7 @@ pine_simple_send(ENVELOPE *outgoing,	/* envelope for outgoing message */
 				 0, resize_len,
 				 prmpt_who
 				   ? prmpt_who
-				   : outgoing->remail == NULL 
-				     ? _("FORWARD (as e-mail) to : ")
-				     : _("BOUNCE (redirect) message to : "),
+				   : tmp,
 				 ekey, help, &flags);
 	}
 	else
@@ -1173,6 +1191,43 @@ pine_simple_send(ENVELOPE *outgoing,	/* envelope for outgoing message */
 	    retval = -1;
 	    done++;
 	    break;
+
+	  case 15 : /* set a role */
+	   {void    (*prev_screen)(struct pine *) = NULL, (*redraw)(void) = NULL;
+
+	    redraw = ps_global->redrawer;
+	    ps_global->redrawer = NULL;
+	    prev_screen = ps_global->prev_screen;
+	    role = NULL;
+	    ps_global->next_screen = SCREEN_FUN_NULL;
+
+	    if(role_select_screen(ps_global, &role, 
+		outgoing->remail ? MC_BOUNCE : MC_FORWARD) < 0)
+	        cmd_cancelled(_("Set Role"));
+	    else{
+	       if(role)
+		  role = combine_inherited_role(role);
+	       else{
+		  role = (ACTION_S *) fs_get(sizeof(*role));
+		  memset((void *) role, 0, sizeof(*role));
+		  role->nick = cpystr("Default Role");
+	       }
+	    }
+
+	    if(redraw)
+	       (*redraw)();
+             
+	    ps_global->next_screen = prev_screen;
+	    ps_global->redrawer = redraw;
+	    ps_global->mangled_screen = 1;
+
+	    if(role && role->from && !ps_global->never_allow_changing_from){
+		mail_free_address (&outgoing->from);
+	        outgoing->from = copyaddrlist(role->from);
+	    }
+	    if(rolep) *rolep = role;
+	   }
+	   break;
 
 	  case 30 :
 	    if((p = get_prev_hist(history, *tobufp, 0, NULL)) != NULL){

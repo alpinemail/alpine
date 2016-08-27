@@ -38,7 +38,7 @@
 void	    compose_screen(struct pine *); 
 void	    alt_compose_screen(struct pine *);
 void	    compose_mail(char *, char *, ACTION_S *, PATMT *, gf_io_t);
-int	    pine_simple_send(ENVELOPE *, BODY **, ACTION_S *, char *, char *, char **, int);
+int	    pine_simple_send(ENVELOPE *, BODY **, ACTION_S **, char *, char *, char **, int);
 void	    pine_send(ENVELOPE *, BODY **, char *, ACTION_S *, char *, REPLY_S *,
 		      REDRAFT_POS_S *, char *, PINEFIELD *, int);
 int	    upload_msg_to_pico(char *, size_t, long *);

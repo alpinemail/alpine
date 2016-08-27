@@ -2051,7 +2051,7 @@ bounce_msg(MAILSTREAM *stream,
     MESSAGECACHE *mc;
 
     if((errstr = bounce_msg_body(stream, rawno, part, to, subject, &outgoing, &body, &was_seen)) == NULL){
-	if(pine_simple_send(outgoing, &body, role, pmt_who, pmt_cnf, to,
+	if(pine_simple_send(outgoing, &body, &role, pmt_who, pmt_cnf, to,
 			    !(to && *to) ? SS_PROMPTFORTO : 0) < 0){
 	    errstr = "";		/* p_s_s() better have explained! */
 	    /* clear seen flag */
