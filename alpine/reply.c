@@ -1016,26 +1016,24 @@ reply_text_query(struct pine *ps, long int many, ENVELOPE *env, char **prefix)
     int	ekey_num;
     int orig_sf;
 
+    orig_sf = ps->reply.use_flowed = *prefix && **prefix ? (F_OFF(F_QUELL_FLOWED_TEXT, ps)
+		&& F_OFF(F_STRIP_WS_BEFORE_SEND, ps)
+		&& (strcmp(*prefix, "> ") == 0
+			|| strcmp(*prefix, ">") == 0)) : 0;
+    ps->reply.strip_signature = ps->full_header == 0
+		&& (F_ON(F_ENABLE_STRIP_SIGDASHES, ps)
+			|| F_ON(F_ENABLE_SIGDASHES, ps));
+    ps->reply.keep_attach = F_ON(F_ATTACHMENTS_IN_REPLY, ps);
+    ps->reply.include_header = F_ON(F_INCLUDE_HEADER, ps);
+    ps->reply.preserve_fields = F_ON(F_PRESERVE_ORIGINAL_FIELD, ps);
+    ps->reply.signature_bottom = F_ON(F_SIG_AT_BOTTOM, ps);
+    ps->reply.role_chosen = NULL;
+
     if(F_OFF(F_ALT_REPLY_MENU, ps)
 	&& F_ON(F_AUTO_INCLUDE_IN_REPLY, ps)
 	&& F_OFF(F_ENABLE_EDIT_REPLY_INDENT, ps)
 	&& F_OFF(F_ALT_REPLY_MENU,ps))
 	return(1);
-
-    if(F_ON(F_ALT_REPLY_MENU, ps)){
-       orig_sf = ps->reply.use_flowed = *prefix && **prefix ? (F_OFF(F_QUELL_FLOWED_TEXT, ps)
-		&& F_OFF(F_STRIP_WS_BEFORE_SEND, ps)
-		&& (strcmp(*prefix, "> ") == 0
-			|| strcmp(*prefix, ">") == 0)) : 0;
-       ps->reply.strip_signature = ps->full_header == 0
-		&& (F_ON(F_ENABLE_STRIP_SIGDASHES, ps)
-			|| F_ON(F_ENABLE_SIGDASHES, ps));
-       ps->reply.keep_attach = F_ON(F_ATTACHMENTS_IN_REPLY, ps);
-       ps->reply.include_header = F_ON(F_INCLUDE_HEADER, ps);
-    }
-    ps->reply.preserve_fields = F_ON(F_PRESERVE_ORIGINAL_FIELD, ps);
-    ps->reply.signature_bottom = F_ON(F_SIG_AT_BOTTOM, ps);
-    ps->reply.role_chosen = NULL;
 
     while(1){ 
 	compose_style[ekey_num = 0].ch    = 'y';
