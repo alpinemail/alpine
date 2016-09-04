@@ -33,6 +33,10 @@
 #include <bio.h>
 #include <crypto.h>
 #include <rand.h>
+#ifdef OPENSSL_1_1_0
+#include <rsa.h>
+#include <bn.h>
+#endif /* OPENSSL_1_1_0 */
 #undef STRING
 #undef crypt
 
@@ -78,7 +82,14 @@ static long ssl_compare_hostnames (unsigned char *s,unsigned char *pat);
 static char *ssl_getline_work (SSLSTREAM *stream,unsigned long *size,
 			       long *contd);
 static long ssl_abort (SSLSTREAM *stream);
-static RSA *ssl_genkey (SSL *con,int export,int keylength);
+
+#ifdef OPENSSL_1_1_0
+#define SSL_CTX_TYPE SSL_CTX
+#else
+#define SSL_CTX_TYPE SSL
+#endif /* OPENSSL_1_1_0 */
+
+static RSA *ssl_genkey (SSL_CTX_TYPE *con,int export,int keylength);
 
 
 /* Secure Sockets Layer network driver dispatch */
@@ -128,7 +139,11 @@ void ssl_onceonlyinit (void)
 				/* apply runtime linkage */
     mail_parameters (NIL,SET_SSLDRIVER,(void *) &ssldriver);
     mail_parameters (NIL,SET_SSLSTART,(void *) ssl_start);
+#ifdef OPENSSL_1_1_0
+    OPENSSL_init_ssl(0, NULL);
+#else
     SSL_library_init ();	/* add all algorithms */
+#endif /* OPENSSL_1_1_0 */
   }
 }
 
@@ -163,16 +178,26 @@ SSLSTREAM *ssl_aopen (NETMBX *mb,char *service,char *usrbuf)
  */
 const SSL_METHOD *ssl_connect_mthd(int flag)
 {
+#ifdef OPENSSL_1_1_0
   if(flag & NET_TRYTLS1)
-   return TLSv1_client_method(); 
+    return TLS_client_method(); 
+#else
+  if(flag & NET_TRYTLS1)
+    return TLSv1_client_method(); 
+#endif /* OPENSSL_1_1_0 */
 #ifdef TLSV1_2
   else if(flag & NET_TRYTLS1_1) 
 	return TLSv1_1_client_method();
   else if(flag & NET_TRYTLS1_2) 
 	return TLSv1_2_client_method();
-#endif
+#endif /* TLSV1_2 */
+#ifdef OPENSSL_1_1_0
+  else if(flag & NET_TRYDTLS1)
+	return DTLS_client_method();
+#else
   else if(flag & NET_TRYDTLS1)
 	return DTLSv1_client_method();
+#endif /* OPENSSL_1_1_0 */
   else return SSLv23_client_method();
 }
 
@@ -242,7 +267,7 @@ static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags)
   BIO *bio;
   X509 *cert;
   unsigned long sl,tl;
-  char *s,*t,*err,tmp[MAILTMPLEN];
+  char *s,*t,*err,tmp[MAILTMPLEN], buf[256];
   sslcertificatequery_t scq =
     (sslcertificatequery_t) mail_parameters (NIL,GET_SSLCERTIFICATEQUERY,NIL);
   sslclientcert_t scc =
@@ -300,9 +325,10 @@ static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags)
       (err = ssl_validate_cert (cert = SSL_get_peer_certificate (stream->con),
 				host))) {
 				/* application callback */
-    if (scq) return (*scq) (err,host,cert ? cert->name : "???") ? NIL : "";
+    X509_NAME_oneline (X509_get_subject_name(cert), buf, sizeof(buf));
+    if (scq) return (*scq) (err,host,cert ? buf : "???") ? NIL : "";
 				/* error message to return via mm_log() */
-    sprintf (tmp,"*%.128s: %.255s",err,cert ? cert->name : "???");
+    sprintf (tmp,"*%.128s: %.255s",err,cert ? buf : "???");
     return ssl_last_error = cpystr (tmp);
   }
   return NIL;
@@ -346,20 +372,28 @@ static int ssl_open_verify (int ok,X509_STORE_CTX *ctx)
 static char *ssl_validate_cert (X509 *cert,char *host)
 {
   int i,n;
-  char *s,*t,*ret;
+  char *s=NULL,*t,*ret;
   void *ext;
   GENERAL_NAME *name;
+  X509_NAME *cname;
+  X509_NAME_ENTRY *e;
+  char    buf[256];
 				/* make sure have a certificate */
   if (!cert) ret = "No certificate from server";
 				/* and that it has a name */
-  else if (!cert->name) ret = "No name in certificate";
+  else if (!(cname = X509_get_subject_name(cert))) ret = "No name in certificate";
 				/* locate CN */
-  else if ((s = strstr (cert->name,"/CN=")) != NULL) {
-    if ((t = strchr (s += 4,'/')) != NULL) *t = '\0';
+  else{
+     if((e = X509_NAME_get_entry(cname, X509_NAME_entry_count(cname)-1)) != NULL){
+       X509_NAME_get_text_by_OBJ(cname, X509_NAME_ENTRY_get_object(e), buf, sizeof(buf));
+       s = (char *) buf;
+     }
+     else s = NULL;
+  }
+  if (s != NULL) {
 				/* host name matches pattern? */
     ret = ssl_compare_hostnames (host,s) ? NIL :
       "Server name does not match certificate";
-    if (t) *t = '/';		/* restore smashed delimiter */
 				/* if mismatch, see if in extensions */
     if (ret && (ext = X509_get_ext_d2i (cert,NID_subject_alt_name,NIL,NIL)) &&
 	(n = sk_GENERAL_NAME_num (ext)))
@@ -719,8 +753,13 @@ void ssl_server_init (char *server)
   SSLSTREAM *stream = (SSLSTREAM *) memset (fs_get (sizeof (SSLSTREAM)),0,
 					    sizeof (SSLSTREAM));
   ssl_onceonlyinit ();		/* make sure algorithms added */
+#ifdef OPENSSL_1_1_0
+  OPENSSL_init_crypto(OPENSSL_INIT_LOAD_CRYPTO_STRINGS, NULL);
+  OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS|OPENSSL_INIT_LOAD_CRYPTO_STRINGS, NULL);
+#else
   ERR_load_crypto_strings ();
   SSL_load_error_strings ();
+#endif /* OPENSSL_1_1_0 */
 				/* build specific certificate/key file names */
   sprintf (cert,"%s/%s-%s.pem",SSL_CERT_DIRECTORY,server,tcp_serveraddr ());
   sprintf (key,"%s/%s-%s.pem",SSL_KEY_DIRECTORY,server,tcp_serveraddr ());
@@ -732,9 +771,15 @@ void ssl_server_init (char *server)
     if (stat (key,&sbuf)) strcpy (key,cert);
   }
 				/* create context */
+#ifdef OPENSSL_1_1_0
+  if (!(stream->context = SSL_CTX_new (start_tls ?
+				       TLS_server_method () :
+				       SSLv23_server_method ())))
+#else
   if (!(stream->context = SSL_CTX_new (start_tls ?
 				       TLSv1_server_method () :
 				       SSLv23_server_method ())))
+#endif /* OPENSSL_1_1_0 */
     syslog (LOG_ALERT,"Unable to create SSL context, host=%.80s",
 	    tcp_clienthost ());
   else {			/* set context options */
@@ -754,8 +799,13 @@ void ssl_server_init (char *server)
 	      key,tcp_clienthost ());
 
     else {			/* generate key if needed */
+#ifdef OPENSSL_1_1_0
+      if (0)
+	ssl_genkey(stream->context, 0, 0);
+#else
       if (SSL_CTX_need_tmp_RSA (stream->context))
 	SSL_CTX_set_tmp_rsa_callback (stream->context,ssl_genkey);
+#endif /* OPENSSL_1_1_0 */
 				/* create new SSL connection */
       if (!(stream->con = SSL_new (stream->context)))
 	syslog (LOG_ALERT,"Unable to create SSL connection, host=%.80s",
@@ -798,19 +848,28 @@ void ssl_server_init (char *server)
  * Returns: generated key, always
  */
 
-static RSA *ssl_genkey (SSL *con,int export,int keylength)
+static RSA *ssl_genkey (SSL_CTX_TYPE *con,int export,int keylength)
 {
   unsigned long i;
   static RSA *key = NIL;
   if (!key) {			/* if don't have a key already */
 				/* generate key */
+#ifdef OPENSSL_1_1_0
+    BIGNUM *e = BN_new();
+    if (!RSA_generate_key_ex (key, export ? keylength : 1024, e,NIL)) {
+#else
     if (!(key = RSA_generate_key (export ? keylength : 1024,RSA_F4,NIL,NIL))) {
+#endif /* OPENSSL_1_1_0 */
       syslog (LOG_ALERT,"Unable to generate temp key, host=%.80s",
 	      tcp_clienthost ());
       while ((i = ERR_get_error ()) != 0L)
 	syslog (LOG_ALERT,"SSL error status: %s",ERR_error_string (i,NIL));
       exit (1);
     }
+#ifdef OPENSSL_1_1_0
+    BN_free(e);
+    e = NULL;
+#endif /* OPENSSL_1_1_0 */
   }
   return key;
 }

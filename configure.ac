@@ -1355,8 +1355,35 @@ if test "x$alpine_DL" = "xnone" ; then
     exit 1	
 fi
 
-dnl Check Openssl/LibreSSL version first
+dnl Check if openssl = LibreSSL
 if test "x$alpine_SSLTYPE" != "xnone" ; then
+  AC_MSG_CHECKING([if OpenSSL is LibreSSL])
+  AC_RUN_IFELSE(
+	[AC_LANG_SOURCE([[
+#include <stdio.h>
+#include <stdlib.h>
+#if HAVE_STDINT_H
+#include <stdint.h>
+#endif /* HAVE_STDINT_H */
+#include <openssl/ssl.h>
+int main(void) {
+
+	if (LIBRESSL_VERSION_NUMBER >= 0x20000000L)
+		exit(0);
+
+	exit(2);
+}
+	]])],
+	[ AC_MSG_RESULT(yes)
+	  alpine_SSLPROVIDER="libressl"
+	],
+	[ AC_MSG_RESULT(no)
+	],
+	[ AC_MSG_WARN([cross compiling: not checking])])
+fi
+
+dnl Check Openssl/LibreSSL version first
+if test "x$alpine_SSLTYPE" != "xnone" -a "x$alpine_SSLPROVIDER" != "xlibressl" ; then
   AC_MSG_CHECKING([Openssl library version >= 1.0.0c])
   AC_RUN_IFELSE(
 	[AC_LANG_SOURCE([[
@@ -1368,13 +1395,15 @@ if test "x$alpine_SSLTYPE" != "xnone" ; then
 #include <openssl/ssl.h>
 int main(void) {
 
-	if (OPENSSL_VERSION_NUMBER >= 0x1000003f)
+	if (OPENSSL_VERSION_NUMBER >= 0x1000003fL)
 		exit(0);
 
 	exit(2);
 }
 	]])],
-	[ AC_MSG_RESULT(yes) ],
+	[ AC_MSG_RESULT(yes) 
+	  alpine_SSLPROVIDER="openssl"
+	],
 	[ alpine_SSLTYPE="none" ],
 	[ AC_MSG_WARN([cross compiling: not checking])])
 
@@ -1382,30 +1411,79 @@ int main(void) {
 	AC_MSG_ERROR(Install openssl version >= 1.0.0c)
 	exit 1
     fi
-    AC_SEARCH_LIBS(TLSv1_2_client_method,ssl,
-	[ alpine_c_client_cflags="$alpine_c_client_cflags -DTLSV1_2"
-	  AC_DEFINE([SSL_SUPPORTS_TLSV1_2], [1], [SSL Supports TLSV1.2])
-	])
+fi
+
+dnl Now check if we are working with version 1.1.0 of openssl
+if test "x$alpine_SSLTYPE" != "xnone" -a "x$alpine_SSLPROVIDER" != "xlibressl" ; then
+  AC_MSG_CHECKING([Openssl library version >= 1.1.0])
+  AC_RUN_IFELSE(
+	[AC_LANG_SOURCE([[
+#include <stdio.h>
+#include <stdlib.h>
+#if HAVE_STDINT_H
+#include <stdint.h>
+#endif /* HAVE_STDINT_H */
+#include <openssl/ssl.h>
+int main(void) {
+
+	if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
+		exit(0);
+
+	exit(2);
+}
+	]])],
+	[ AC_MSG_RESULT(yes)
+	  alpine_SSLVERSION="new"
+	  CFLAGS="$CFLAGS -DOPENSSL_1_1_0 -DOPENSSL_API_COMPAT=0x10100000L"
+	],
+	[ AC_MSG_RESULT(no)
+	  alpine_SSLVERSION="old" ],
+	[ AC_MSG_WARN([cross compiling: not checking])])
 fi
 
 dnl Crypto support is needed 
 if test "x$alpine_SSLTYPE" != "xnone" ; then
-  AC_SEARCH_LIBS(SSLeay,crypto,, [ alpine_CRYPTO="none" ])
+  if test "x$alpine_SSLVERSION" = "xold" -o "x$alpine_SSLPROVIDER" = "xlibressl" ; then
+     AC_SEARCH_LIBS(SSLeay,crypto,, [ alpine_CRYPTO="none" ])
+  else
+     AC_SEARCH_LIBS(OpenSSL_version_num,crypto,, [ alpine_CRYPTO="none" ])
+  fi
   if test "x$alpine_CRYPTO" = "xnone" ; then
      AC_MSG_ERROR(crypto library NOT found)
      exit 1
   fi
 fi
 
+if test "x$alpine_SSLTYPE" != "xnone" ; then
+    if test "x$alpine_SSLVERSION" = "xold" -o "x$alpine_SSLPROVIDER" = "xlibressl" ; then
+        AC_SEARCH_LIBS(TLSv1_2_client_method,ssl,
+	[ alpine_c_client_cflags="$alpine_c_client_cflags -DTLSV1_2"
+	  AC_DEFINE([SSL_SUPPORTS_TLSV1_2], [1], [SSL Supports TLSV1.2])
+	])
+    else
+        AC_SEARCH_LIBS(TLS_client_method,ssl,, [ alpine_SSLTYPE="none"])
+        AC_SEARCH_LIBS(DTLS_client_method,ssl,,[ alpine_SSLTYPE="none"])
+	if test "x$alpine_SSLTYPE" != "xnone" ; then
+	  AC_DEFINE([SSL_SUPPORTS_TLSV1_2], [1], [SSL Supports TLSV1.2])
+	fi
+    fi
+fi
+
 dnl provide SSL support?
 if test "x$alpine_SSLTYPE" != "xnone" ; then
-   AC_SEARCH_LIBS(SSL_library_init,ssl,,[ alpine_SSLTYPE="none" ])
-
-  if test "x$alpine_SSLTYPE" = "xnone" ; then
-     AC_MSG_ERROR(No library containing SSL_library_init found in your path)
-     exit 1
+  if test "x$alpine_SSLVERSION" = "xold" -o "x$alpine_SSLPROVIDER" = "xlibressl" ; then
+     AC_SEARCH_LIBS(SSL_library_init,ssl,,[ alpine_SSLTYPE="none" ])
+     if test "x$alpine_SSLTYPE" = "xnone" ; then
+        AC_MSG_ERROR(No library containing SSL_library_init found in your path)
+        exit 1
+     fi
+  else
+     AC_SEARCH_LIBS(OPENSSL_init_ssl,ssl,, [ alpine_SSLTYPE="none" ])
+     if test "x$alpine_SSLTYPE" = "xnone" ; then
+        AC_MSG_ERROR(No library containing OPENSSL_init_ssl found in your path)
+        exit 1
+     fi
   fi
-
 fi
 
 dnl provide LDAP support?

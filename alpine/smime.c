@@ -381,93 +381,79 @@ output_cert_info(X509 *cert, gf_io_t pc)
 
     gf_set_so_writec(&spc, left);
 
-    if(!cert->cert_info){
-    	gf_puts("Couldn't find certificate info.", spc);
-	gf_puts(NEWLINE, spc);
+    gf_puts_uline("Certificate Owner", spc);
+    gf_puts(NEWLINE, spc);
+
+    output_X509_NAME(X509_get_subject_name(cert), spc);
+    gf_puts(NEWLINE, spc);
+
+    gf_puts_uline("Serial Number", spc);
+    gf_puts(NEWLINE, spc);
+
+    {   ASN1_INTEGER *bs;
+	long l;
+	const char *neg;
+	int i;
+
+	bs = X509_get_serialNumber(cert);
+	if (bs->length <= (int)sizeof(long)){
+	   l = ASN1_INTEGER_get(bs);
+           if (bs->type == V_ASN1_NEG_INTEGER){
+	      l = -l;
+	      neg="-";
+	   }
+           else
+              neg="";
+	   snprintf(buf, sizeof(buf), " %s%lu (%s0x%lx)", neg, l, neg, l);
+	} else {
+	    snprintf(buf, sizeof(buf), "%s", bs->type == V_ASN1_NEG_INTEGER ? "(Negative)" : "");
+	    for (i = 0; i < bs->length; i++)
+		 snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "%02x%s", bs->data[i],
+			i+1 == bs->length ? "" : ":");
+	}
     }
-    else{
-	gf_puts_uline("Certificate Owner", spc);
-	gf_puts(NEWLINE, spc);
+    gf_puts(buf, spc);
+    gf_puts(NEWLINE, spc);
+    gf_puts(NEWLINE, spc);
 
-	output_X509_NAME(cert->cert_info->subject, spc);
-	gf_puts(NEWLINE, spc);
-
-	gf_puts_uline("Serial Number", spc);
-	gf_puts(NEWLINE, spc);
-
-	{ 
-	  ASN1_INTEGER *bs;
-	  long l;
-	  const char *neg;
-	  int i;
-
-	  bs = X509_get_serialNumber(cert);
-	  if (bs->length <= (int)sizeof(long)){
-	     l = ASN1_INTEGER_get(bs);
-             if (bs->type == V_ASN1_NEG_INTEGER){
-	        l = -l;
-	        neg="-";
-	     }
-             else
-                neg="";
-	     snprintf(buf, sizeof(buf), " %s%lu (%s0x%lx)", neg, l, neg, l);
-	  } else {
-	      snprintf(buf, sizeof(buf), "%s", bs->type == V_ASN1_NEG_INTEGER ? "(Negative)" : "");
-	      for (i = 0; i < bs->length; i++)
-		  snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "%02x%s", bs->data[i],
-				i+1 == bs->length ? "" : ":");
-	  }
-	}
-	gf_puts(buf, spc);
-	gf_puts(NEWLINE, spc);
-	gf_puts(NEWLINE, spc);
-
-	gf_puts_uline("Validity", spc);
-	gf_puts(NEWLINE, spc);
-    	{
-    	    BIO *mb = BIO_new(BIO_s_mem());
-	    char iobuf[4096];
+    gf_puts_uline("Validity", spc);
+    gf_puts(NEWLINE, spc);
+    { BIO *mb = BIO_new(BIO_s_mem());
+      char iobuf[4096];
 	    
-	    gf_puts("Not Before: ", spc);
+      gf_puts("Not Before: ", spc);
 
-	    (void) BIO_reset(mb);
-	    ASN1_UTCTIME_print(mb, cert->cert_info->validity->notBefore);
-	    (void) BIO_flush(mb);
-	    while((len = BIO_read(mb, iobuf, sizeof(iobuf))) > 0)
-	      gf_nputs(iobuf, len, spc);
+      (void) BIO_reset(mb);
+      ASN1_UTCTIME_print(mb, X509_get0_notBefore(cert));
+      (void) BIO_flush(mb);
+      while((len = BIO_read(mb, iobuf, sizeof(iobuf))) > 0)
+       gf_nputs(iobuf, len, spc);
 
-	    gf_puts(NEWLINE, spc);
+      gf_puts(NEWLINE, spc);
 
-	    gf_puts("Not After:  ", spc);
+      gf_puts("Not After:  ", spc);
 
-	    (void) BIO_reset(mb);
-	    ASN1_UTCTIME_print(mb, cert->cert_info->validity->notAfter);
-	    (void) BIO_flush(mb);
-	    while((len = BIO_read(mb, iobuf, sizeof(iobuf))) > 0)
-	      gf_nputs(iobuf, len, spc);
+      (void) BIO_reset(mb);
+      ASN1_UTCTIME_print(mb, X509_get0_notAfter(cert));
+      (void) BIO_flush(mb);
+      while((len = BIO_read(mb, iobuf, sizeof(iobuf))) > 0)
+        gf_nputs(iobuf, len, spc);
     	    
-	    gf_puts(NEWLINE, spc);
-	    gf_puts(NEWLINE, spc);
+      gf_puts(NEWLINE, spc);
+      gf_puts(NEWLINE, spc);
 	    	    
-	    BIO_free(mb);
-	}
+      BIO_free(mb);
     }
 
     gf_clear_so_writec(left);
 
     gf_set_so_writec(&spc, right);
 
-    if(!cert->cert_info){
-    	gf_puts(_("Couldn't find certificate info."), spc);
-	gf_puts(NEWLINE, spc);
-    }
-    else{
-	gf_puts_uline("Issuer", spc);
-	gf_puts(NEWLINE, spc);
+    gf_puts_uline("Issuer", spc);
+    gf_puts(NEWLINE, spc);
 
-	output_X509_NAME(cert->cert_info->issuer, spc);
-	gf_puts(NEWLINE, spc);
-    }
+    output_X509_NAME(X509_get_issuer_name(cert), spc);
+    gf_puts(NEWLINE, spc);
     
     gf_clear_so_writec(right);
     
@@ -494,6 +480,7 @@ output_cert_info(X509 *cert, gf_io_t pc)
        X509_NAME_ENTRY *e;
        int i, offset = 2;
        char space[256];
+       X509_NAME *subject;
 
        for(i = 0; i < offset; i++) space[i] = ' ';
 
@@ -502,7 +489,7 @@ output_cert_info(X509 *cert, gf_io_t pc)
 
 	  x = i == -1 ? cert : sk_X509_value(chain, i);
 
-	  if(x && x->cert_info){
+	  if(x){
 	    if(i>=0){ 
 	      space[offset + i + 0] = ' ';
 	      space[offset + i + 1] = '\\';
@@ -520,11 +507,10 @@ output_cert_info(X509 *cert, gf_io_t pc)
 	    else
 	      gf_puts_uline("Issued to: ", pc);
 
-	    e = X509_NAME_get_entry(x->cert_info->subject,
-			X509_NAME_entry_count(x->cert_info->subject)-1);
+	    subject = X509_get_subject_name(x);
 
-	    if(e){
-	      X509_NAME_get_text_by_OBJ(x->cert_info->subject, e->object, buf, sizeof(buf));
+	    if((e = X509_NAME_get_entry(subject, X509_NAME_entry_count(subject)-1)) != NULL){
+	      X509_NAME_get_text_by_OBJ(subject, X509_NAME_ENTRY_get_object(e), buf, sizeof(buf));
 	      gf_puts(buf, pc);
 	      gf_puts(NEWLINE, pc);    
 	    }
@@ -535,10 +521,10 @@ output_cert_info(X509 *cert, gf_io_t pc)
 	    break;
 	  }
        }
-       e = X509_NAME_get_entry(x->cert_info->issuer,
-			X509_NAME_entry_count(x->cert_info->issuer)-1);
+       e = X509_NAME_get_entry(X509_get_issuer_name(x),
+			X509_NAME_entry_count(X509_get_issuer_name(x))-1);
        if(e){
-	  X509_NAME_get_text_by_OBJ(x->cert_info->issuer, e->object, buf, sizeof(buf));
+	  X509_NAME_get_text_by_OBJ(X509_get_issuer_name(x), X509_NAME_ENTRY_get_object(e), buf, sizeof(buf));
 	  space[offset + i + 0] = ' ';
 	  space[offset + i + 1] = '\\';
 	  space[offset + i + 2] = '-';
@@ -573,7 +559,7 @@ output_X509_NAME(X509_NAME *name, gf_io_t pc)
 	if(!e)
 	  continue;
 	
-    	X509_NAME_get_text_by_OBJ(name, e->object, buf, sizeof(buf));
+    	X509_NAME_get_text_by_OBJ(name, X509_NAME_ENTRY_get_object(e), buf, sizeof(buf));
 	
     	gf_puts(buf, pc);
 	gf_puts(NEWLINE, pc);    

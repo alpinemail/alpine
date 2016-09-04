@@ -62,11 +62,9 @@ smime_X509_to_cert_info(X509 *x, char *name)
   memset((void *)cert, 0, sizeof(CertList));
   cert->x509_cert = x;
   cert->name = name ? cpystr(name) : NULL;
-  if(x && x->cert_info){
-    cert->data.date_from = smime_get_date(x->cert_info->validity->notBefore);
-    cert->data.date_to = smime_get_date(x->cert_info->validity->notAfter);
-    cert->cn = smime_get_cn(x->cert_info->subject);
-  }
+  cert->data.date_from = smime_get_date(X509_get0_notBefore(x));
+  cert->data.date_to = smime_get_date(X509_get0_notAfter(x));
+  cert->cn = smime_get_cn(x);
   get_fingerprint(x, EVP_md5(), buf, sizeof(buf), NULL);
   cert->data.md5 = cpystr(buf);
 
@@ -222,7 +220,7 @@ setup_certs_backup_by_type(WhichCerts ctype)
 		case CACert:
 			if((in = BIO_new_file(buf2, "r"))!=0){
 			  x = PEM_read_bio_X509(in, NULL, NULL, NULL);
-			  if(x && x->cert_info){ /* for now copy this information */
+			  if(x){ /* for now copy this information */
 			    cert = smime_X509_to_cert_info(x, df->d_name);
 			    /* we will use the cert->data.md5 variable to find a backup 
 			       certificate, not the name */
@@ -261,14 +259,20 @@ setup_certs_backup_by_type(WhichCerts ctype)
 }
 
 char *
-smime_get_cn(X509_NAME *subject)
+smime_get_cn(X509 *x)
 {
-   char buf[256];
    X509_NAME_ENTRY *e;
-   e = X509_NAME_get_entry(subject, X509_NAME_entry_count(subject)-1);
-   if(e)
-      X509_NAME_get_text_by_OBJ(subject, e->object, buf, sizeof(buf));
-   return cpystr(buf);
+   X509_NAME *subject;
+   char    buf[256];
+   char *rv = NULL;
+
+   subject = X509_get_subject_name(x);
+   if((e = X509_NAME_get_entry(subject, X509_NAME_entry_count(subject)-1)) != NULL){
+      X509_NAME_get_text_by_OBJ(subject, X509_NAME_ENTRY_get_object(e), buf, sizeof(buf));
+      rv = cpystr(buf);
+   }
+
+   return rv;
 }
 
 int
@@ -395,7 +399,7 @@ emailstrclean(char *string)
 
 
 char *
-smime_get_date(ASN1_GENERALIZEDTIME *tm)
+smime_get_date(const ASN1_TIME *tm)
 {
    BIO *mb = BIO_new(BIO_s_mem());
    char iobuf[4096];
@@ -476,13 +480,12 @@ add_certs_in_dir(X509_LOOKUP *lookup, char *path, char *ext, CertList **cdata)
 		     cert->name = cpystr(d->d_name);
 		     /* read buf into a bio and fill the CertData structure */
 		     if((in = BIO_new_file(buf, "r"))!=0){
-			x = PEM_read_bio_X509(in, NULL, NULL, NULL);
-			if(x && x->cert_info){
-			   cert->data.date_from	= smime_get_date(x->cert_info->validity->notBefore);
-			   cert->data.date_to	= smime_get_date(x->cert_info->validity->notAfter);
+			if((x = PEM_read_bio_X509(in, NULL, NULL, NULL)) != NULL){
+			   cert->data.date_from	= smime_get_date(X509_get0_notBefore(x));
+			   cert->data.date_to	= smime_get_date(X509_get0_notAfter(x));
 			   get_fingerprint(x, EVP_md5(), buf, sizeof(buf), NULL);
 			   cert->data.md5	= cpystr(buf);
-			   cert->cn = smime_get_cn(x->cert_info->subject);
+			   cert->cn = smime_get_cn(x);
 			   X509_free(x);
 			}
 			BIO_free(in);

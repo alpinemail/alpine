@@ -18235,6 +18235,47 @@ if test "x$alpine_DL" = "xnone" ; then
 fi
 
 if test "x$alpine_SSLTYPE" != "xnone" ; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if OpenSSL is LibreSSL" >&5
+$as_echo_n "checking if OpenSSL is LibreSSL... " >&6; }
+  if test "$cross_compiling" = yes; then :
+   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: cross compiling: not checking" >&5
+$as_echo "$as_me: WARNING: cross compiling: not checking" >&2;}
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <stdio.h>
+#include <stdlib.h>
+#if HAVE_STDINT_H
+#include <stdint.h>
+#endif /* HAVE_STDINT_H */
+#include <openssl/ssl.h>
+int main(void) {
+
+	if (LIBRESSL_VERSION_NUMBER >= 0x20000000L)
+		exit(0);
+
+	exit(2);
+}
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	  alpine_SSLPROVIDER="libressl"
+
+else
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+fi
+
+if test "x$alpine_SSLTYPE" != "xnone" -a "x$alpine_SSLPROVIDER" != "xlibressl" ; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking Openssl library version >= 1.0.0c" >&5
 $as_echo_n "checking Openssl library version >= 1.0.0c... " >&6; }
   if test "$cross_compiling" = yes; then :
@@ -18252,7 +18293,7 @@ else
 #include <openssl/ssl.h>
 int main(void) {
 
-	if (OPENSSL_VERSION_NUMBER >= 0x1000003f)
+	if (OPENSSL_VERSION_NUMBER >= 0x1000003fL)
 		exit(0);
 
 	exit(2);
@@ -18262,6 +18303,8 @@ _ACEOF
 if ac_fn_c_try_run "$LINENO"; then :
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
+	  alpine_SSLPROVIDER="openssl"
+
 else
    alpine_SSLTYPE="none"
 fi
@@ -18274,7 +18317,179 @@ fi
 	as_fn_error $? "Install openssl version >= 1.0.0c" "$LINENO" 5
 	exit 1
     fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing TLSv1_2_client_method" >&5
+fi
+
+if test "x$alpine_SSLTYPE" != "xnone" -a "x$alpine_SSLPROVIDER" != "xlibressl" ; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking Openssl library version >= 1.1.0" >&5
+$as_echo_n "checking Openssl library version >= 1.1.0... " >&6; }
+  if test "$cross_compiling" = yes; then :
+   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: cross compiling: not checking" >&5
+$as_echo "$as_me: WARNING: cross compiling: not checking" >&2;}
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <stdio.h>
+#include <stdlib.h>
+#if HAVE_STDINT_H
+#include <stdint.h>
+#endif /* HAVE_STDINT_H */
+#include <openssl/ssl.h>
+int main(void) {
+
+	if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
+		exit(0);
+
+	exit(2);
+}
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	  alpine_SSLVERSION="new"
+	  CFLAGS="$CFLAGS -DOPENSSL_1_1_0 -DOPENSSL_API_COMPAT=0x10100000L"
+
+else
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	  alpine_SSLVERSION="old"
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+fi
+
+if test "x$alpine_SSLTYPE" != "xnone" ; then
+  if test "x$alpine_SSLVERSION" = "xold" -o "x$alpine_SSLPROVIDER" = "xlibressl" ; then
+     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing SSLeay" >&5
+$as_echo_n "checking for library containing SSLeay... " >&6; }
+if ${ac_cv_search_SSLeay+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char SSLeay ();
+int
+main ()
+{
+return SSLeay ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' crypto; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_search_SSLeay=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_SSLeay+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_SSLeay+:} false; then :
+
+else
+  ac_cv_search_SSLeay=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_SSLeay" >&5
+$as_echo "$ac_cv_search_SSLeay" >&6; }
+ac_res=$ac_cv_search_SSLeay
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+else
+   alpine_CRYPTO="none"
+fi
+
+  else
+     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing OpenSSL_version_num" >&5
+$as_echo_n "checking for library containing OpenSSL_version_num... " >&6; }
+if ${ac_cv_search_OpenSSL_version_num+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char OpenSSL_version_num ();
+int
+main ()
+{
+return OpenSSL_version_num ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' crypto; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_search_OpenSSL_version_num=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_OpenSSL_version_num+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_OpenSSL_version_num+:} false; then :
+
+else
+  ac_cv_search_OpenSSL_version_num=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_OpenSSL_version_num" >&5
+$as_echo "$ac_cv_search_OpenSSL_version_num" >&6; }
+ac_res=$ac_cv_search_OpenSSL_version_num
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+else
+   alpine_CRYPTO="none"
+fi
+
+  fi
+  if test "x$alpine_CRYPTO" = "xnone" ; then
+     as_fn_error $? "crypto library NOT found" "$LINENO" 5
+     exit 1
+  fi
+fi
+
+if test "x$alpine_SSLTYPE" != "xnone" ; then
+    if test "x$alpine_SSLVERSION" = "xold" -o "x$alpine_SSLPROVIDER" = "xlibressl" ; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing TLSv1_2_client_method" >&5
 $as_echo_n "checking for library containing TLSv1_2_client_method... " >&6; }
 if ${ac_cv_search_TLSv1_2_client_method+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -18334,12 +18549,10 @@ $as_echo "#define SSL_SUPPORTS_TLSV1_2 1" >>confdefs.h
 
 fi
 
-fi
-
-if test "x$alpine_SSLTYPE" != "xnone" ; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing SSLeay" >&5
-$as_echo_n "checking for library containing SSLeay... " >&6; }
-if ${ac_cv_search_SSLeay+:} false; then :
+    else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing TLS_client_method" >&5
+$as_echo_n "checking for library containing TLS_client_method... " >&6; }
+if ${ac_cv_search_TLS_client_method+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_func_search_save_LIBS=$LIBS
@@ -18352,16 +18565,16 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char SSLeay ();
+char TLS_client_method ();
 int
 main ()
 {
-return SSLeay ();
+return TLS_client_method ();
   ;
   return 0;
 }
 _ACEOF
-for ac_lib in '' crypto; do
+for ac_lib in '' ssl; do
   if test -z "$ac_lib"; then
     ac_res="none required"
   else
@@ -18369,40 +18582,101 @@ for ac_lib in '' crypto; do
     LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
   fi
   if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_search_SSLeay=$ac_res
+  ac_cv_search_TLS_client_method=$ac_res
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext
-  if ${ac_cv_search_SSLeay+:} false; then :
+  if ${ac_cv_search_TLS_client_method+:} false; then :
   break
 fi
 done
-if ${ac_cv_search_SSLeay+:} false; then :
+if ${ac_cv_search_TLS_client_method+:} false; then :
 
 else
-  ac_cv_search_SSLeay=no
+  ac_cv_search_TLS_client_method=no
 fi
 rm conftest.$ac_ext
 LIBS=$ac_func_search_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_SSLeay" >&5
-$as_echo "$ac_cv_search_SSLeay" >&6; }
-ac_res=$ac_cv_search_SSLeay
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_TLS_client_method" >&5
+$as_echo "$ac_cv_search_TLS_client_method" >&6; }
+ac_res=$ac_cv_search_TLS_client_method
 if test "$ac_res" != no; then :
   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
 
 else
-   alpine_CRYPTO="none"
+   alpine_SSLTYPE="none"
 fi
 
-  if test "x$alpine_CRYPTO" = "xnone" ; then
-     as_fn_error $? "crypto library NOT found" "$LINENO" 5
-     exit 1
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing DTLS_client_method" >&5
+$as_echo_n "checking for library containing DTLS_client_method... " >&6; }
+if ${ac_cv_search_DTLS_client_method+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char DTLS_client_method ();
+int
+main ()
+{
+return DTLS_client_method ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' ssl; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
   fi
+  if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_search_DTLS_client_method=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_DTLS_client_method+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_DTLS_client_method+:} false; then :
+
+else
+  ac_cv_search_DTLS_client_method=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_DTLS_client_method" >&5
+$as_echo "$ac_cv_search_DTLS_client_method" >&6; }
+ac_res=$ac_cv_search_DTLS_client_method
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+else
+   alpine_SSLTYPE="none"
+fi
+
+	if test "x$alpine_SSLTYPE" != "xnone" ; then
+
+$as_echo "#define SSL_SUPPORTS_TLSV1_2 1" >>confdefs.h
+
+	fi
+    fi
 fi
 
 if test "x$alpine_SSLTYPE" != "xnone" ; then
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing SSL_library_init" >&5
+  if test "x$alpine_SSLVERSION" = "xold" -o "x$alpine_SSLPROVIDER" = "xlibressl" ; then
+     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing SSL_library_init" >&5
 $as_echo_n "checking for library containing SSL_library_init... " >&6; }
 if ${ac_cv_search_SSL_library_init+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -18460,12 +18734,74 @@ else
    alpine_SSLTYPE="none"
 fi
 
+     if test "x$alpine_SSLTYPE" = "xnone" ; then
+        as_fn_error $? "No library containing SSL_library_init found in your path" "$LINENO" 5
+        exit 1
+     fi
+  else
+     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing OPENSSL_init_ssl" >&5
+$as_echo_n "checking for library containing OPENSSL_init_ssl... " >&6; }
+if ${ac_cv_search_OPENSSL_init_ssl+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
 
-  if test "x$alpine_SSLTYPE" = "xnone" ; then
-     as_fn_error $? "No library containing SSL_library_init found in your path" "$LINENO" 5
-     exit 1
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char OPENSSL_init_ssl ();
+int
+main ()
+{
+return OPENSSL_init_ssl ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' ssl; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
   fi
+  if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_search_OPENSSL_init_ssl=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_OPENSSL_init_ssl+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_OPENSSL_init_ssl+:} false; then :
 
+else
+  ac_cv_search_OPENSSL_init_ssl=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_OPENSSL_init_ssl" >&5
+$as_echo "$ac_cv_search_OPENSSL_init_ssl" >&6; }
+ac_res=$ac_cv_search_OPENSSL_init_ssl
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+else
+   alpine_SSLTYPE="none"
+fi
+
+     if test "x$alpine_SSLTYPE" = "xnone" ; then
+        as_fn_error $? "No library containing OPENSSL_init_ssl found in your path" "$LINENO" 5
+        exit 1
+     fi
+  fi
 fi
 
 if test "$alpine_with_ldap" = "yes" ; then

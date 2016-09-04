@@ -1238,8 +1238,12 @@ smime_init(void)
 	s_cert_store = get_ca_store();
 	setup_certs_backup_by_type(CACert);
 
+#ifdef OPENSSL_1_1_0
+	OPENSSL_init_crypto(OPENSSL_INIT_ADD_ALL_CIPHERS|OPENSSL_INIT_ADD_ALL_DIGESTS|OPENSSL_INIT_LOAD_CRYPTO_STRINGS, NULL);
+#else
         OpenSSL_add_all_algorithms();
         ERR_load_crypto_strings();
+#endif /* OPENSSL_1_1_0 */
 
 	app_RAND_load_file(NULL);
     	openssl_extra_randomness();
@@ -3142,8 +3146,8 @@ find_certificate_matching_recip_info(PKCS7_RECIP_INFO *ri)
 
 	    mine = x->cert;
 
-	    if(!X509_NAME_cmp(ri->issuer_and_serial->issuer,mine->cert_info->issuer) &&
-		    !ASN1_INTEGER_cmp(ri->issuer_and_serial->serial,mine->cert_info->serialNumber)){
+	    if(!X509_NAME_cmp(ri->issuer_and_serial->issuer,X509_get_issuer_name(mine)) &&
+		    !ASN1_INTEGER_cmp(ri->issuer_and_serial->serial,X509_get_serialNumber(mine))){
 		break;
 	    }
 	}

@@ -29,7 +29,16 @@
 #include <openssl/pem.h>
 #include <openssl/err.h>
 #include <openssl/bio.h>
+#include <openssl/safestack.h>
 
+#ifndef OPENSSL_1_1_0
+#define X509_get0_notBefore(x) ((x) && (x)->cert_info                   \
+                                ? (x)->cert_info->validity->notBefore   \
+                                : NULL)
+#define X509_get0_notAfter(x) ((x) && (x)->cert_info                    \
+                                ? (x)->cert_info->validity->notAfter    \
+                                : NULL)
+#endif /* OPENSSL_1_1_0 */
 
 #define EMAILADDRLEADER "emailAddress="
 #define CACERTSTORELEADER "cacert="
@@ -64,10 +73,10 @@ void           free_personal_certs(PERSONAL_CERT **pc);
 void	       get_fingerprint(X509 *cert, const EVP_MD *type, char *buf, size_t maxLen, char *s);
 int	       certlist_to_file(char *filename, CertList *certlist);
 int	       load_cert_for_key(char *pathdir, EVP_PKEY *pkey, char **certfile, X509 **pcert);
-char           *smime_get_date(ASN1_GENERALIZEDTIME *tm);
+char           *smime_get_date(const ASN1_TIME *tm);
 void	       resort_certificates(CertList **data, WhichCerts ctype);
 int	       setup_certs_backup_by_type(WhichCerts ctype);
-char 	       *smime_get_cn(X509_NAME *);
+char 	       *smime_get_cn(X509 *);
 CertList       *smime_X509_to_cert_info(X509 *, char *);
 
 
