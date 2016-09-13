@@ -2048,6 +2048,16 @@ bounce_msg(MAILSTREAM *stream,
     BODY     *body = NULL;
     MESSAGECACHE *mc;
 
+#ifdef SMIME
+	/* When we bounce a message, we will leave the original message
+	 * intact, which means that it will not be signed or encrypted,
+	 * so we turn off signing and encrypting now. It will be turned
+	 * on again in send_exit_for_pico().
+	 */
+	if(ps_global->smime)
+	   ps_global->smime->do_sign = ps_global->smime->do_encrypt = 0;
+#endif /* SMIME */
+
     if((errstr = bounce_msg_body(stream, rawno, part, to, subject, &outgoing, &body, &was_seen)) == NULL){
 	if(pine_simple_send(outgoing, &body, &role, pmt_who, pmt_cnf, to,
 			    !(to && *to) ? SS_PROMPTFORTO : 0) < 0){
