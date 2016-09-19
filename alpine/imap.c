@@ -2001,8 +2001,9 @@ line_get(char *tmp, size_t len, char **textp)
   char *s;
 
   tmp[0] = '\0';
-  if (*textp == NULL || strlen(*textp) >= len - 1
-	|| (s = strchr(*textp, '\n')) == NULL)
+  if (*textp == NULL 
+	|| (s = strchr(*textp, '\n')) == NULL
+	|| (s - *textp) > len - 1)
     return 0;
 
   *s = '\0';

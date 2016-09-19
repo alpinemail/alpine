@@ -1,4 +1,184 @@
 
+                             Alpine Technical Notes
+
+   Version 2.20.16, September 2016
+
+Table of Contents
+
+  Introduction
+
+     * Design Goals
+     * Alpine Components
+
+  Background Details
+
+     * Domain Names
+     * RFC 2822 Compliance
+     * SMTP and Sendmail
+     * Internet Message Access Protocol (IMAP)
+     * Multipurpose Internet Mail Extensions (MIME)
+     * Folder Collections
+
+  Building and Installation
+
+     * Compile-time Options
+     * Including LDAP Functionality
+     * Including Kerberos 5 Functionality
+     * Other Alpine Compile-time Options
+     * IMAPd Compile-time Options
+     * Building the Alpine Programs
+     * Installing Alpine and Pico on UNIX Platforms
+     * Installing PC-Alpine
+     * Installing IMAPd
+     * Support Files and Environment Variables: UNIX Alpine
+     * Support Files, Environment Variables, and Registry Values:
+       PC-Alpine
+
+  Command Line Arguments
+
+     * Alpine
+     * Pico
+     * Pilot
+
+  Configuration and Preferences
+
+     * Alpine Configuration
+     * General Configuration Variables
+     * Configuration Features
+     * Hidden Config Variables and Features
+     * Retired Variables
+     * Tokens for Index and Replying
+     * Conditional Inclusion of Text for Reply-Leadin, Signatures, and
+       Templates
+     * Per Server Directory Configuration
+     * Color Configuration
+     * Index Line Color Configuration
+     * Role Configuration
+     * Filtering Configuration
+     * Scoring Configuration
+     * Other Rules Configuration
+     * Search Rules Configuration
+     * Patterns
+     * Configuring News
+       Configuration Notes
+          + Alpine in Function Key Mode
+          + Domain Settings
+          + Syntax for Collections
+          + Syntax for Folder Names
+          + Server Name Syntax
+          + Folder Namespaces
+          + What is a Mail Drop?
+          + Sorting a Folder
+          + Alternate Editor
+          + Signatures and Signature Placement
+          + Feature List Variable
+          + Configuration Inheritance
+          + Using Environment Variables
+          + SMTP Servers
+          + MIME.Types file
+          + Color Details
+          + S/MIME Overview
+          + Additional Notes on PC-Alpine
+
+  Behind the Scenes
+
+     * Address Books
+     * Remote Configuration
+     * Checkpointing
+     * Debug Files
+     * INBOX and Special Folders
+     * Internal Help Files
+     * International Character Sets
+     * Interrupted and Postponed Messages
+     * Message Status
+     * MIME: Reading a Message
+     * MIME: Sending a Message
+     * New Mail Notification
+     * NFS
+     * Printers and Printing
+     * Save and Export
+     * Sent Mail
+     * Spell Checker
+     * Terminal Emulation and Key Mapping
+
+                                  Introduction
+
+Design Goals
+
+   Throughout _Alpine_ development, we have had to strike a balance
+   between the need to include features which advanced users require and
+   the need to keep things simple for beginning users. To strike this
+   balance, we have tried to adhere to these design principles:
+
+          - The model presented to the user has to be simple and clear.
+          Underlying system operation is hidden as much as possible.
+          - It's better to have a few easily understood commands that can
+          be repeated than to have some more sophisticated command that
+          will do the job all at once.
+          - Whenever the user has to select a command, file name, address,
+          etc., the user should be given (or can get) a menu from which to
+          make the selection. Menus need to be complete, small, organized
+          and well thought out.
+          - _Alpine_ must provide immediate feedback for the user with
+          each operation.
+          - _Alpine_ must be very tolerant of user errors. Any time a user
+          is about to perform an irreversible act (send a message, expunge
+          messages from a folder), _Alpine_ should ask for confirmation.
+          - Users should be able to learn by exploration without fear of
+          doing anything wrong. This is an important feature so the user
+          can get started quickly without reading any manuals and so fewer
+          manuals are required.
+          - The core set of _Alpine_ functions should be kept to a minimum
+          so new users don't feel "lost" in seemingly extraneous commands
+          and concepts.
+
+   Just as there were goals relating to the look and feel of _Alpine_,
+   there were equally important goals having to do with _Alpine_'s
+   structure-the things that users never see but still rely on every time
+   they use _Alpine_. While _Alpine_ can be used as a stand-alone mail
+   user agent, one of its strongest assets is its use of the Internet
+   Message Access Protocol (IMAP) for accessing remote email folders. In
+   addition, _Pine_ (the predecessor of _Alpine_) was one of the first
+   programs to support the Multipurpose Internet Mail Extensions (MIME)
+   specification. With MIME, _Alpine_ users can reliably send any binary
+   file to any other person on the Internet who uses a MIME compliant
+   email program.
+
+   The decision to use IMAP and MIME reflects the importance of
+   interoperability, standardization and robustness in _Alpine_. As you
+   work with _Alpine_ more, you will see other features which reflect the
+   same values. For example, _Alpine_ enforces strict compliance with RFC
+   2822, implements a strong mail folder locking mechanism and verifies a
+   process before overwriting any files (e.g. addressbook, expunging
+   messages).
+
+Alpine Components
+
+   If you have picked up the _Alpine_ distribution, then you already know
+   that _Alpine_ comes in a few different pieces. They are:
+
+   _Alpine_
+          The main code from which the _Alpine_ program is compiled.
+   _Pico_
+          _Pico_ is the name for the _Alpine_ composer. The _Pico_ code is
+          used in two ways: (1) it is compiled on its own to be a
+          stand-alone editor and, (2) it is compiled as a library for
+          _Alpine_ to support composition of messages within _Alpine_.
+          _Pico_ is _Alpine_'s internal editor invoked when users need to
+          fill in header lines or type the text of an email message.
+   _Imap_
+          An API for IMAP. Includes the C-Client library, which is
+          compiled into _Alpine_, and the IMAP server _IMAPd_. C-Client
+          implements the IMAP protocol and also negotiates all access
+          between _Alpine_ and the mail folders it operates on, even if
+          the folders are local. The C-Client routines are used for email
+          folder parsing and interpreting MIME messages. _IMAPd_ is a
+          separate server that handles IMAP connections from any
+          IMAP-compliant email program. When _Alpine_ accesses a remote
+          mailbox, the _Alpine_ program is the IMAP client and the _IMAPd_
+          program is the IMAP server. Of course, _Alpine_ can use any
+          IMAP-compliant IMAP server, not just _IMAPd_.
+
                                Background Details
 
 Domain Names

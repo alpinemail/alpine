@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 169 2016-09-13 13:19:16
+Alpine Commit 170 2016-09-19 02:42:27
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -403,6 +403,9 @@ Bugs that have been addressed include:
   <LI> Alpine would use freed memory while trying to compute the color
        of the titlebar. This happened when trying to continue a postponed 
        message.
+
+  <LI> Alpine failed to read an encrypted password file if too many
+       passwords were saved in the password file.
 
   <LI> When selecting messages while in Threaded Index Screen, some 
        messages other than top of threads could appear in the index, making
