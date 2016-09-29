@@ -986,6 +986,7 @@ forget_private_keys(void)
     
     dprint((9, "forget_private_keys()"));
     if(ps_global->smime){
+	ps_global->smime->already_auto_asked = 0;
 	for(pcert=(PERSONAL_CERT *) ps_global->smime->personal_certs;
 	    pcert;
 	    pcert=pcert->next){
