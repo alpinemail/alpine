@@ -3580,6 +3580,94 @@ bail_out:
     return(file);
 }
 
+/* special handling for messages that contain a mixed part in the 
+ * multipart alternative section.
+ */
+BODY *
+forward_multi_alt_mixed(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
+		long int msgno, char *sect_prefix, void *msgtext, gf_io_t pc, int flags)
+{
+#define FWDTMPLEN 256
+    BODY *body = NULL, *text_body = NULL;
+    PART *part = NULL;
+    char  prefix_buf[FWDTMPLEN];
+    char *new_charset = NULL;
+    int   partnum;
+    char  *section, sect_buf[256];
+    int   forward_raw_body = 0;
+
+    if(orig_body
+	&& orig_body->type == TYPEMULTIPART
+	&& orig_body->subtype 
+	&& !strucmp(orig_body->subtype, "alternative"))
+        for(part = orig_body->nested.part, partnum = 1;
+	    part;
+	    part = part->next, partnum++)
+	    if(part->body.type == TYPEMULTIPART
+	       && part->body.subtype 
+	       && !strucmp(part->body.subtype, "MIXED"))
+	       break;
+
+    if(part == NULL) return NULL;
+
+    snprintf(prefix_buf, sizeof(prefix_buf), "%.*s%s%s%d",
+		FWDTMPLEN/2, sect_prefix ? sect_prefix : "",
+		sect_prefix ? "." : "", flags & FWD_NESTED ? "1." : "",
+		partnum);
+    prefix_buf[sizeof(prefix_buf)-1] = '\0';
+
+    if(ps_global->full_header == 2
+       && F_ON(F_ENABLE_FULL_HDR_AND_TEXT, ps_global))
+      forward_raw_body = 1;
+    if(sp_expunge_count(stream))
+      return(NULL);
+
+    if(sect_prefix && forward_raw_body == 0)
+      snprintf(section = sect_buf, sizeof(sect_buf), "%s.1", sect_prefix);
+    else if(sect_prefix && forward_raw_body)
+      section = sect_prefix;
+    else if(!sect_prefix && forward_raw_body)
+      section = NULL;
+    else
+      section = "1";
+    sect_buf[sizeof(sect_buf)-1] = '\0';
+
+    body = copy_body(NULL, &part->body);
+
+    /*--- The text part of the message ---*/
+    if(!body->nested.part){
+	q_status_message(SM_ORDER | SM_DING, 3, 6,
+			 "Error referencing body part 1");
+	mail_free_body(&body);
+    }
+    else if(body->nested.part->body.type == TYPETEXT) {
+	char *new_charset = NULL;
+
+	/*--- The first part is text ----*/
+	text_body		      = &body->nested.part->body;
+	text_body->contents.text.data = msgtext;
+	if(text_body->subtype && strucmp(text_body->subtype, "Plain")){
+	    /* this text is going to the composer, it should be Plain */
+	    fs_give((void **)&text_body->subtype);
+	    text_body->subtype = cpystr("PLAIN");
+	}
+	if(!(flags & FWD_ANON)){
+	    forward_delimiter(pc);
+	    reply_forward_header(stream, msgno,
+				 sect_prefix, env, pc, "");
+	}
+
+	if(!(get_body_part_text(stream, &part->body,
+				msgno, section, 0L, pc,
+				NULL, &new_charset, GBPT_NONE)
+	     && fetch_contents(stream, msgno, prefix_buf, body)))
+	  mail_free_body(&body);
+	else if(new_charset)
+	  set_parameter(&text_body->parameter, "charset", new_charset);
+    }
+    return(body);
+}
+
 
 /*----------------------------------------------------------------------
   Build the body for the multipart/alternative part
@@ -3599,6 +3687,11 @@ forward_multi_alt(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *ori
     char  tmp_buf[FWDTMPLEN];
     char *new_charset = NULL;
     int   partnum, bestpartnum;
+
+    /* try multipart mixed first */
+    if((body = forward_multi_alt_mixed(stream, env, orig_body, 
+		msgno, sect_prefix, msgtext, pc, flags)) != NULL)
+      return body;
 
     if(ps_global->force_prefer_plain
        || (!ps_global->force_no_prefer_plain

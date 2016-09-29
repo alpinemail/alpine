@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 171 2016-09-28 20:29:17
+Alpine Commit 172 2016-09-29 09:24:36
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -190,6 +190,10 @@ Additions include:
 
   <LI> Alpine builds with any version bigger or equal to 1.0.0c, including
        version 1.1.0, as well as LibreSSL.
+
+  <LI> Alpine will include attachments when forwarding some 
+       multipart/alternative messages for which it did not use to include 
+       attachments.
 
   <LI> New configuration option 
        <a href="h_config_alt_reply_menu"><!--#echo var="FEAT_alternate-reply-menu"--></a>

@@ -102,6 +102,7 @@ int         sigdashes_are_present(char *);
 char	   *signature_path(char *, char *, size_t);
 char       *simple_read_remote_file(char *, char *);
 BODY	   *forward_multi_alt(MAILSTREAM *, ENVELOPE *, BODY *, long, char *, void *, gf_io_t, int);
+BODY	   *forward_multi_alt_mixed(MAILSTREAM *, ENVELOPE *, BODY *, long, char *, void *, gf_io_t, int);
 int	    same_subject(char *, char *s);
 
 
