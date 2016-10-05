@@ -24,12 +24,14 @@
 #include "../pith/filttype.h"
 #include "../pith/smkeys.h"
 
+#include <openssl/x509.h>
 #include <openssl/rand.h>
 #include <openssl/err.h>
 
 #ifdef PASSFILE
 #define DF_PASSWORD_DIR ".alpine-smime/.pwd"
 #endif
+#define DF_SMIMETMPDIR  ".alpine-smime/smtmp"
 
 #define OUR_PKCS7_ENCLOSURE_SUBTYPE "x-pkcs7-enclosure"
 
@@ -68,14 +70,14 @@ int            copy_privatecert_dir_to_container(void);
 int            copy_privatecert_container_to_dir(void);
 int            copy_cacert_dir_to_container(void);
 int            copy_cacert_container_to_dir(void);
-int	       import_certificate(WhichCerts);
+int	       import_certificate(WhichCerts, PERSONAL_CERT *, char *);
 int	       copy_dir_to_container(WhichCerts which, char *contents);
 #ifdef APPLEKEYCHAIN
 int            copy_publiccert_container_to_keychain(void);
 int            copy_publiccert_keychain_to_container(void);
 #endif /* APPLEKEYCHAIN */
 #ifdef PASSFILE                                       
-void           setup_pwdcert(void **pwdcert);
+int           setup_pwdcert(void **pwdcert);
 #endif /* PASSFILE */
 void	       mark_cert_deleted(WhichCerts ctype, int num, unsigned state);
 unsigned       get_cert_deleted(WhichCerts ctype, int num);

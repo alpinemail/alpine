@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 172 2016-09-29 09:24:36
+Alpine Commit 173 2016-10-05 01:10:48
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -187,6 +187,11 @@ Additions include:
 
   <LI> Unix-Alpine: Connect securely to a LDAP server on a secure port. 
        Based on a contribution by Wang Kang.
+
+  <LI> When Alpine is compiled with password file and SMIME support 
+       the password file is encrypted using a private key/public 
+       certificate pair. If one such pair cannot be found, one will be 
+       created. <A HREF="h_password_file_support">Learn more</A>.
 
   <LI> Alpine builds with any version bigger or equal to 1.0.0c, including
        version 1.1.0, as well as LibreSSL.
@@ -1100,7 +1105,8 @@ or instead you can find the Apache License, version 2.0 at the web URL:
 Index<BR>
 <OL>
 <LI><A HREF="#content">Explanation</A>
-<LI><A HREF="#example">Example</A>
+<LI><A HREF="#example_existing_key">Example of Use of Existing Key and Certificate</A>
+<LI><A HREF="#example_self_signed">Example of Creating Master Password</A>
 </OL>
 
 <P><A NAME="content">Unix Alpine Only.</A>
@@ -1109,28 +1115,38 @@ Index<BR>
 then you can use a special file to save your passwords, and avoid typing
 them every time you open a connection to a remote server.
 
-<P> If your version of Alpine was built with SMIME support, and you have a
-public certificate/private key pair, then Alpine will use such pair to
-encrypt your password file. If you have more than one key/certificate
-pair, Alpine will pick the first pair that it finds that works. You can also
-select a pair, and the way to do this is explained below.
+<P> If, in addition, your version of Alpine was built with SMIME support, then your 
+password file will be encrypted with a strong key. There are two ways in 
+which this can happen: Alpine will either use a matching private key and 
+public certificate pair that you already own, or it will create one for 
+you, just for purposes of encrypting this file. We describe both processes 
+below.
+
+<P> Initially, Alpine will scan your public and private directories for a 
+certificate/private key pair that works. Alpine will pick the first pair 
+that it finds that matches. 
 
 <P> Once a pair has been chosen, it will be copied to the directory 
 ~/.alpine-smime/.pwd, and from then on, Alpine will use the pair found in 
 that directory. The first time this process is done, this directory will 
-be created, a key/certificate pair will be copied to it, and this pair 
-will be used in the future to encrypt and decrypt your password file. You 
-can create this directory and copy any key/certificate pair there. You
-can add a self-signed certificate there, if you like, and you can let
-this certificate expire. This will not affect the encryption and decryption
+be created, a key/certificate pair will be copied to it, from then on 
+this pair will be used to encrypt and decrypt your password file. 
+
+<P> If you want to use a specific key and certificate pair to encrypt
+your password file, you can create the directory ~/.alpine-smime/.pwd 
+manually, and then create your preferred key/certificate pair there.
+Alpine will use this key regardless of if it has expired, or if it is
+self-signed. These issues do not affect the encryption or decryption
 of the password file.
 
 <P> If you prefer not to use the directory ~/.alpine-smime/.pwd to save 
 your key/certificate pair, you can specify a different one with the 
 -pwdcertdir command line option in Alpine. If the directory specified by 
-this option is not found or there is no valid key/certificate pair there, 
-Alpine will fail to encrypt and decrypt your password file. In other words,
-Alpine will not initialize this directory for you.
+this option is not found Alpine will fail to encrypt and decrypt your 
+password file. However if it exists, Alpine will search for a 
+key/certificate pair in that
+directory, and if it does not find one, it will create one and save it
+in that directory.
 
 <P> Alpine does not care about the names of the key and certificates in 
 this directory, but the private key must have &quot;.key&quot; extension 
@@ -1138,7 +1154,15 @@ and your public certificate must have the &quot;.crt&quot; extension. The
 name of the private key will be used in the prompt when you are asked
 to unlock your key to decrypt your password.
 
-<P><A NAME="example">An example follows</A>
+<P> If Alpine cannot find a suitable private key and public certificate 
+pair to encrypt your password, it will create one. You will be asked to 
+create a &quot;Master Password&quot; to protect such key. At this moment 
+there are no restrictions on passwords, other than they have to be at 
+least 8 characters long, but future versions of Alpine will include 
+functionality to restrict master passwords, as set up by the administrator 
+of the system in the pine.conf.fixed file.
+
+<P><A NAME="example_existing_key"><B>Example of Use of Existing Key and Certificate</B></A>
 
 <P>Assume you have a private key called peter@address.com.key in your, 
 ~/.alpine-smime/private directory, and a public certificate called 
@@ -1178,10 +1202,43 @@ Enter password of key &lt;private_key&gt; to unlock password file:
 
 <P>Observe that you do not need to use an existing key/certificate pair, 
 and that you can create a new private key/public certificate pair to 
-encrypt and decrypt your password. However, once one is used, Alpine does 
-not provide a mechanism to switch the encryption and decryption files to 
-another key/certificate pair. This will be implemented in a future 
-release of Alpine.
+encrypt and decrypt your password file. Alpine provides a mechanism to
+change the encryption key for this file in the S/MIME configuration
+screen.
+
+<P><A NAME="example_self_signed"><B>Example of Creating Master Password</B></A>
+
+<P> If Alpine cannot find a suitable private key and public certificate pair
+to encrypt your password file, it will create one. When doing so, it will
+start the process with the following warning:
+
+<PRE>
+Creating a Master Password for your Password file.
+</PRE>
+
+<P> Then Alpine will ask you to enter your Master Password:
+
+<PRE>
+Create master password (attempt 1 of 3):
+</PRE>
+
+<P> Once you enter this password, and it validates according to system policy,
+you will be asked to confirm this password. 
+
+<PRE>
+Confirm master password (attempt 1 of 3):
+</PRE>
+
+<P> If you input the same password, then Alpine will set that as your 
+Master Password, and you will use this password to unlock your key in the 
+future.
+
+<P> If you would like to switch your Master Password in the future, you can 
+do so by creating a new public key and public certificate pair. You can do 
+so in the S/MIME configuration screen, in the &quot;Manage Key and 
+Certificate for Password File&quot; section, simply enter your current 
+password to unlock your current key and then press &quot;C&quot; to create 
+a new key.
 
 <P>
 &lt;End of help&gt;

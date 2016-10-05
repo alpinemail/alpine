@@ -48,7 +48,218 @@ static char rcsid[] = "$Id: smkeys.c 1266 2009-07-14 18:39:12Z hubert@u.washingt
 static char     *emailstrclean(char *string);
 static int       mem_add_extra_cacerts(char *contents, X509_LOOKUP *lookup);
 int		 compare_certs_by_name(const void *data1, const void *data2);
+int		 password_policy_check(char *);
 
+int  (*pith_smime_enter_password)(char *, char *, size_t);
+
+/* test if password passes a predetermined policy.
+ * return value: 0 - does not pass; 1 - it passes 
+ */
+int
+password_policy_check(char *password)
+{
+  int rv = 1;
+  char *error;
+  char tmp[1024];
+
+  if(password == NULL || password[0] == '\0'){
+    error = _("Password cannot be blank");
+    rv = 0;     
+  } else if(strlen(password) < 8){
+    error = _("Password is too short");
+    rv = 0;
+  }
+  if(rv == 0){
+    snprintf(tmp, sizeof(tmp), "%s%s", error, _(". Enter password again"));
+    tmp[sizeof(tmp) - 1] = '\0';
+    q_status_message(SM_ORDER, 3, 3, tmp);
+  }
+  return rv;
+}
+
+
+int
+create_master_password(char *pass, size_t passlen, int first_time)
+{
+#define MAXTRIAL 3
+  int rv, trial;
+  char prompt[MAILTMPLEN];
+  char passbackup[MAILTMPLEN];
+
+  if(first_time)
+     q_status_message(SM_ORDER, 3, 3, 
+		_(" Creating a Master Password for your Password file "));
+  else
+     q_status_message(SM_ORDER, 3, 3, 
+		_(" Retrying to create a Master Password for your Password file "));
+
+  for(trial = 0; trial < MAXTRIAL; trial++){
+    snprintf(prompt, sizeof(prompt), 
+		_("Create master password \(attempt %d of %d): "), trial+1, MAXTRIAL);
+    prompt[sizeof(prompt)- 1] = '\0';
+    pass[0] = '\0';
+    do { 
+      rv = (pith_smime_enter_password)(prompt, pass, passlen);
+      if(password_policy_check(pass) == 0)
+	 pass[0] = '\0';
+    } while ((rv !=0 && rv !=1 && rv > 0) || pass[0] == '\0');
+
+    snprintf(prompt, sizeof(prompt), 
+		_("Confirm master password \(attempt %d of %d): "), trial+1, MAXTRIAL);
+    prompt[sizeof(prompt)- 1] = '\0';
+    passbackup[0] = '\0';
+    do { 
+      rv = (pith_smime_enter_password)(prompt, passbackup, sizeof(passbackup));
+    } while ((rv !=0 && rv !=1 && rv > 0) || passbackup[0] == '\0');
+    if(!strcmp(pass, passbackup))
+       break;
+    if(trial + 1 < MAXTRIAL)
+      q_status_message(SM_ORDER, 2, 2, _("Passwords do not match, try again."));
+    else{
+      q_status_message(SM_ORDER, 2, 2, _("Passwords do not match, too many failures."));
+      pass[0] = '\0';
+    }
+  }
+  return (trial < MAXTRIAL) ? 1 : 0;
+}
+
+/* 
+ * Create a self signed certificate with root name _fname_, in directory
+ * _pathdir_. If _version_ is 3, we use the _template_ file as configuration
+ * file for openssl. At this moment, we only call this function with template = NULL
+ * and version = 0, but a sensible call is 
+ * ALPINE_self_signed_certificate("/etc/ssl/openssl.cnf", 2, pathdir, fname, first_time);
+ * or so.
+ * _pathdir_ is the directory to save the file,
+ * _fname_ is the root of the name to use. Append ".key" and ".crt" to this name
+ * _first_time_ is an indicator to tell us if this is the first time we call this function
+ */
+PERSONAL_CERT *
+ALPINE_self_signed_certificate(char *template, int version, char *pathdir, char *fname)
+{
+    BIGNUM *b = NULL;
+    X509_NAME *name = NULL;
+    X509_REQ *req = NULL;
+    EVP_PKEY_CTX *pkctx;
+    BIO *out = NULL;
+    char tmp[MAXPATH+1], password[1024];
+    char *keyfile = NULL, *certfile = NULL;
+    char *extensions = NULL;
+    FILE *fp;
+    long errline = -1L;
+    PERSONAL_CERT *pc = NULL;
+    EVP_PKEY *pkey = NULL;
+    X509 *pcert = NULL;
+    CONF *req_conf = NULL;
+    static int first_time = 1;
+
+    if(pathdir == NULL)
+      return NULL;
+
+    if(template){
+       if((out = BIO_new_file(template, "r")) == NULL){
+	 q_status_message(SM_ORDER, 2, 2, _("Problem reading configuration file"));
+	 return pc;
+       }
+
+       if((req_conf = NCONF_new(NULL)) != NULL
+	&& NCONF_load_bio(req_conf, out, &errline) > 0){
+	  if((extensions = NCONF_get_string(req_conf, "req", "x509_extensions")) != NULL){
+	   X509V3_CTX ctx;
+	   X509V3_set_ctx_test(&ctx);
+	   X509V3_set_nconf(&ctx, req_conf);
+	     if (!X509V3_EXT_add_nconf(req_conf, &ctx, extensions, NULL)) {
+		q_status_message(SM_ORDER, 2, 2, _("Problem loading openssl configuration"));
+		NCONF_free(req_conf);
+		return pc;
+	     }
+          }
+       }
+       BIO_free(out);
+       out = NULL;
+    }
+
+    if(create_master_password(password, sizeof(password), first_time)
+	&& (pkctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL)) != NULL
+	&& EVP_PKEY_keygen_init(pkctx) > 0
+	&& EVP_PKEY_CTX_set_rsa_keygen_bits(pkctx, 2048) > 0	/* RSA:2048 */
+	&& EVP_PKEY_keygen(pkctx, &pkey) > 0){
+	snprintf(tmp, sizeof(tmp), "%s.key", fname);
+	tmp[sizeof(tmp)-1] = '\0';
+	keyfile = cpystr(tmp);		
+	build_path(tmp, pathdir, keyfile, sizeof(tmp));
+	keyfile[strlen(keyfile)-4] = '\0'; /* keyfile does not have .key extension */
+	if((fp = fopen(tmp, "w")) != NULL
+	    && (out = BIO_new_fp(fp, BIO_CLOSE | BIO_FP_TEXT)) != NULL
+	    && PEM_write_bio_PrivateKey(out, pkey, EVP_des_ede3_cbc(),
+                                      NULL, 0, NULL, password)){
+	    BIO_free(out);
+	    out = NULL;
+	}
+	memset((void *)password, 0, sizeof(password));
+	if((req = X509_REQ_new()) != NULL
+	    && X509_REQ_set_version(req, 0L)){
+	    name = X509_REQ_get_subject_name(req);
+	    X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, "Password File Certificate and Key Pair", -1, -1, 0);
+	    if(X509_REQ_set_pubkey(req, pkey)
+		&& (pcert = X509_new()) != NULL){
+		if(X509_set_version(pcert, version)
+		   && (b = BN_new()) != NULL	
+		   && BN_set_word(b, 65537)
+		   && BN_pseudo_rand(b, 64, 0, 0)
+		   && X509_get_serialNumber(pcert) 
+		   && BN_to_ASN1_INTEGER(b, X509_get_serialNumber(pcert)) /* set serial */
+		   && X509_set_issuer_name(pcert, X509_REQ_get_subject_name(req))
+		   && X509_set_subject_name(pcert, X509_REQ_get_subject_name(req))){
+		      X509V3_CTX ext_ctx;
+		      EVP_PKEY *tmppkey;
+
+		      X509_gmtime_adj(X509_getm_notBefore(pcert), 0);
+		      X509_time_adj_ex(X509_getm_notAfter(pcert), 1095, 0, NULL);
+
+		      if((tmppkey = X509_REQ_get0_pubkey(req)) != NULL
+		         && X509_set_pubkey(pcert, tmppkey)){
+			 if(extensions != NULL && version == 2){
+			     X509V3_set_ctx(&ext_ctx, pcert, pcert, NULL, NULL, 0);
+			     if(req_conf){	/* only if template is not null */
+			       X509V3_set_nconf(&ext_ctx, req_conf);
+			       X509V3_EXT_add_nconf(req_conf, &ext_ctx, extensions, pcert);
+			     }
+			 }
+			 EVP_PKEY_free(tmppkey);
+			 X509_sign(pcert, pkey, NULL);
+		      }
+		      BN_free(b);
+		   }
+		}
+	    }
+
+	    snprintf(tmp, sizeof(tmp), "%s.crt", fname);
+	    tmp[sizeof(tmp)-1] = '\0';
+	    certfile = cpystr(tmp);
+	    build_path(tmp, pathdir, certfile, sizeof(tmp));
+	    if((fp = fopen(tmp, "w")) != NULL
+		&&(out = BIO_new_fp(fp, BIO_FP_TEXT)) != NULL){
+	      EVP_PKEY *tpubkey = X509_REQ_get0_pubkey(req);
+	      PEM_write_bio_X509(out, pcert);
+	      BIO_flush(out);
+	      BIO_free(out);
+	      out = NULL;
+	    }
+	    if(req_conf)
+	       NCONF_free(req_conf);
+    }
+    if(keyfile && certfile && pkey && pcert){
+        pc = (PERSONAL_CERT *) fs_get(sizeof(PERSONAL_CERT));
+        memset((void *)pc, 0, sizeof(PERSONAL_CERT));
+        pc->name = keyfile;
+        pc->key  = pkey;
+        pc->cert = pcert;
+        pc->cname = certfile;
+    }
+    first_time = 0;
+    return pc;
+}
 
 CertList *
 smime_X509_to_cert_info(X509 *x, char *name)

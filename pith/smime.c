@@ -48,6 +48,7 @@ static char rcsid[] = "$Id: smime.c 1176 2008-09-29 21:16:42Z hubert@u.washingto
 
 #include <openssl/buffer.h>
 #include <openssl/x509v3.h>
+#include <openssl/evp.h>
 
 /* internal prototypes */
 static void            forget_private_keys(void);
@@ -85,8 +86,8 @@ int		      smime_validate_extra_test(char *mimetext, unsigned long mimelen, char
 
 int  (*pith_opt_smime_get_passphrase)(void);
 int  (*pith_smime_import_certificate)(char *, char *, char *, size_t);
-int  (*pith_smime_enter_password)(char *prompt, char *, size_t);
-int  (*pith_smime_confirm_save)(char *email);
+int  (*pith_smime_enter_password)(char *, char *, size_t);
+int  (*pith_smime_confirm_save)(char *);
 
 static X509_STORE   *s_cert_store;
 
@@ -200,10 +201,16 @@ load_key_and_cert(char *pathkeydir, char *pathcertdir, char **keyfile,
  *  If setup is successful, setup ps_global->pwdcert.
  *  If any of this fails, ps_global->pwdcert will be null.
  *  Ok, that should do it.
+ *
+ * return values: 0 - everything is normal
+ *		  1 - User could not unlock key
+ *		  2 - User cancelled to create self signed certificate
+ *		 -1 - a not normal value.
  */
-void
+int
 setup_pwdcert(void **pwdcert)
 {
+  int rv;
   int we_inited = 0;
   int setup_dir = 0;	/* make it non zero if we know which dir to use */
   struct stat sbuf;
@@ -213,10 +220,10 @@ setup_pwdcert(void **pwdcert)
   EVP_PKEY *pkey = NULL;
   X509 *pcert = NULL;
   PERSONAL_CERT *pc, *pc2 = NULL;
-  static int was_here = 0;
+  static int was_here = 0, setup_certdir = 0;
 
   if(pwdcert == NULL || was_here == 1)
-    return;
+    return -1;
 
   was_here++;
   if(ps_global->pwdcertdir){
@@ -238,17 +245,18 @@ setup_pwdcert(void **pwdcert)
 
   if(setup_dir == 0){
     was_here = 0;
-    return;
+    return -1;
   }
 
   if(load_key_and_cert(pathdir, pathdir, &keyfile, &certfile, &pkey, &pcert) < 0){
     was_here = 0;
-    return;
+    return 1;
   }
 
-
-  if(ps_global->pwdcertdir == NULL)	/* save the result of pwdcertdir */
+  if(ps_global->pwdcertdir == NULL){	/* save the result of pwdcertdir */
+    setup_certdir = 1;
     ps_global->pwdcertdir = cpystr(pathdir);
+  }
 
   if(certfile && keyfile){
      pc = (PERSONAL_CERT *) fs_get(sizeof(PERSONAL_CERT));
@@ -259,16 +267,16 @@ setup_pwdcert(void **pwdcert)
      pc->cname = certfile;
      *pwdcert = (void *) pc;
      was_here = 0;
-     return;
+     return 0;
   }
 
   /* if the user gave a pwdcertdir and there is nothing there, do not
    * continue. Let the user initialize on their own this directory.
    */
-  if(ps_global->pwdcertdir != NULL){
+  if(setup_certdir){	/* if we are here, pwdcertdir failed */
      was_here = 0;
-     return;
-  }
+     return -1;
+  } 
 
   /* look to see if there are any certificates lying around, first
    * we try to load ps_global->smime to see if that has information
@@ -379,7 +387,7 @@ setup_pwdcert(void **pwdcert)
       if(setup_dir){
 	*pwdcert = (void *) pc2;
 	was_here = 0;
-	return;
+	return 0;
       }
       else if(pc2 != NULL)
 	free_personal_certs(&pc2);
@@ -432,16 +440,13 @@ setup_pwdcert(void **pwdcert)
      *pwdcert = (void *) pc;
      fs_give((void **)&certfile);
      was_here = 0;
-     return;
+     return 0;
   }
 
-/* TODO: create self signed certificate 
-  q_status_message(SM_ORDER, 2, 2,
-	_("No key/certificate pair found for password file encryption support"));
-*/
   was_here = 0;
   if(we_inited)
     smime_deinit();
+  return 0;
 }
 #endif /* PASSFILE */
 
@@ -603,26 +608,38 @@ load_pkey_with_prompt(char *fpath, char *text, char *prompt, int *ret)
 
 /* This is a tool for conf_screen, The return value must be zero when
  * nothing changed, so if there is a failure in the import return 0
- * and return 1 when we succeeded
+ * and return 1 when we succeeded.\
+ * We call this function in two ways:
+ * either fname is null or not. If they fname is null, so is p_cert.
+ * if p_cert is not null, it is the PERSONAL_CERT structure of fname if this
+ * is available, otherwise we will fill it up here.
  */
 int
-import_certificate(WhichCerts ctype)
+import_certificate(WhichCerts ctype, PERSONAL_CERT *p_cert, char *fname)
 {
    int   r = 1, rc; 
    char  filename[MAXPATH+1], full_filename[MAXPATH+1], buf[MAXPATH+1];
    char *what;
 
-   if(pith_smime_import_certificate == NULL){
+   if(pith_smime_import_certificate == NULL
+	|| pith_smime_enter_password == NULL){
      q_status_message(SM_ORDER, 0, 2,
                       _("import of certificates not implemented yet!"));
      return 0;
   }
 
-   what = ctype == Public || ctype == CACert ? "certificate" : "key";
-   r = (*pith_smime_import_certificate)(filename, full_filename, what, sizeof(filename) - 20);
+   if(fname == NULL){
+      what = ctype == Public || ctype == CACert ? "certificate" : "key";
+      r = (*pith_smime_import_certificate)(filename, full_filename, what, sizeof(filename) - 20);
 
-   if(r < 0)
-     return 0;
+     if(r < 0)
+       return 0;
+   } else {
+     char *s;
+     strncpy(full_filename, fname, sizeof(full_filename));
+     if((s = strrchr(full_filename, '/')) != '\0')
+       strncpy(filename, s+1, sizeof(filename));
+   }
 
    /* we are trying to import a new key for the password file. First we ask for the
     * private key. Once this is loaded, we make a reasonable attempt to find the
@@ -637,7 +654,7 @@ import_certificate(WhichCerts ctype)
      char full_name_key[MAXPATH+1], full_name_cert[MAXPATH+1];
      char *use_this_file;
      char prompt[500];
-     EVP_PKEY *key = NULL;
+     EVP_PKEY *key = p_cert ? p_cert->key : NULL;
 
      rc = 1;	/* assume success :) */
      if(strlen(filename) > 4){
@@ -654,11 +671,12 @@ import_certificate(WhichCerts ctype)
 	return 0;
      }
 
-     snprintf(prompt, sizeof(prompt), _("Enter passphrase for <%s>: "), filename);
+     snprintf(prompt, sizeof(prompt), _("Enter passphrase to unlock new key <%s>: "), filename);
      prompt[sizeof(prompt)-1] = '\0';
-     if((key = load_pkey_with_prompt(full_filename, NULL, prompt, NULL)) != NULL){
+     if(key != NULL 
+	|| (key = load_pkey_with_prompt(full_filename, NULL, prompt, NULL)) != NULL){
 	BIO *ins = NULL;
-	X509 *cert = NULL;
+	X509 *cert = p_cert ? p_cert->cert : NULL, *cert2;
 
 	strncpy(full_name_key, full_filename, sizeof(full_filename));
         full_name_key[sizeof(full_name_key)-1] = '\0';
@@ -687,15 +705,20 @@ import_certificate(WhichCerts ctype)
 	  strncat(PublicCertPath, EXTCERT(Public), 4);
 	  PublicCertPath[sizeof(PublicCertPath)-1] = '\0';
 	}
-
-	/* attempt #1 to guess public cert name, use .crt extension */
-	if((ins = BIO_new_file(full_name_cert, "r")) != NULL){
-	  if((cert = PEM_read_bio_X509(ins, NULL, NULL, NULL)) != NULL){
+	/* attempt #1, use provided certificate, 
+	 * assumption is that full_name_cert is the file that this
+	 * certificate derives from (which is obtained by substitution
+	 * of .key extension in key by .crt extension)
+	 */
+	if(cert != NULL)  /* attempt #1 */
 	    use_this_file = &full_name_cert[0];
-	  }
+	else if((ins = BIO_new_file(full_name_cert, "r")) != NULL){
+	/* attempt #2 to guess public cert name, use .crt extension */
+	    if((cert = PEM_read_bio_X509(ins, NULL, NULL, NULL)) != NULL){
+	    use_this_file = &full_name_cert[0];
+	    }
 	}
-	else{
-	  /* attempt #2 to guess public cert name: user the original key */
+	else{ /* attempt #3 to guess public cert name: use the original key */
 	  if((ins = BIO_new_file(full_name_key, "r")) != NULL){
 	    if((cert = PEM_read_bio_X509(ins, NULL, NULL, NULL)) != NULL){
 	       use_this_file = &full_name_key[0];
@@ -703,7 +726,7 @@ import_certificate(WhichCerts ctype)
 	  }
 	  else {
 	   int done = 0;
-	    /* attempt #3, ask the user */
+	    /* attempt #4, ask the user */
 	   do {
 	      r = (*pith_smime_import_certificate)(filename, use_this_file, "certificate", sizeof(filename) - 20);
 	      if(r < 0){
@@ -751,7 +774,7 @@ import_certificate(WhichCerts ctype)
 		   char tmp2[MAILTMPLEN];
 		   int encrypted = 0;
 		   char *text;
-		   PERSONAL_CERT *pwdcert, *pc;
+		   PERSONAL_CERT *pwdcert, *pc = p_cert;
 
 		   pwdcert = (PERSONAL_CERT *) ps_global->pwdcert;
 		   if(pwdcert == NULL)
@@ -770,15 +793,17 @@ import_certificate(WhichCerts ctype)
 		   if(encrypted){
 		     text = decrypt_file((char *)tmp, NULL, pwdcert);
 		     if(text != NULL){
-			pc = fs_get(sizeof(PERSONAL_CERT));
-			memset((void *)pc, 0, sizeof(PERSONAL_CERT));
-			filename[strlen(filename)-strlen(EXTCERT(Private))] = '\0';
-		        pc->name = cpystr(filename);
-			snprintf(buf, sizeof(buf), "%s%s", filename, EXTCERT(Public));
-			buf[sizeof(buf)-1] = '\0';
-		        pc->cname = cpystr(buf);
-			pc->key  = key;
-			pc->cert = cert;
+			if(pc == NULL){
+			   pc = fs_get(sizeof(PERSONAL_CERT));
+			   memset((void *)pc, 0, sizeof(PERSONAL_CERT));
+			   filename[strlen(filename)-strlen(EXTCERT(Private))] = '\0';
+			   pc->name = cpystr(filename);
+			   snprintf(buf, sizeof(buf), "%s%s", filename, EXTCERT(Public));
+			   buf[sizeof(buf)-1] = '\0';
+			   pc->cname = cpystr(buf);
+			   pc->key  = key; 
+			   pc->cert = cert;
+			}
 			
 			if(encrypt_file((char *)tmp, text, pc)){ /* we did it! */
 			   build_path(buf, PATHCERTDIR(ctype), pwdcert->name, sizeof(buf));
@@ -2449,6 +2474,7 @@ bio_from_store(STORE_S *store)
  * replace the text of (char *) fp by the encrypted version of (char *) text.
  * certpath is the FULL path to the file containing the certificate used for 
  * encryption.
+ * return value: 0 - failed to encrypt; 1 - success! 
  */
 int
 encrypt_file(char *fp, char *text, PERSONAL_CERT *pc)

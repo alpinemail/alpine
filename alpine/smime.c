@@ -1269,6 +1269,41 @@ manage_certs_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
     WhichCerts ctype = (*cl)->d.s.ctype;
 
     switch(cmd){
+      case MC_ADD:	/* create a self signed certificate and import it */
+	   if(ctype == Password){
+	      PERSONAL_CERT *pc;
+	      char pathdir[MAXPATH+1], filename[MAXPATH+1];
+	      struct stat sbuf;
+	      int st;
+	      smime_path(DF_SMIMETMPDIR, pathdir, sizeof(pathdir));   
+	      if(((st = our_stat(pathdir, &sbuf)) == 0
+		   && (sbuf.st_mode & S_IFMT) == S_IFDIR)
+		 || (st != 0
+		     && can_access(pathdir, ACCESS_EXISTS) != 0
+	             && our_mkpath(pathdir, 0700) == 0)){
+	        pc = ALPINE_self_signed_certificate(NULL, 0, pathdir, MASTERNAME);
+		snprintf(filename, sizeof(filename), "%s/%s.key", 
+					pathdir, MASTERNAME);
+		filename[sizeof(filename)-1] = '\0';
+		rv = import_certificate(ctype, pc, filename);
+		if(our_stat(pathdir, &sbuf) == 0){
+		  if(unlink(filename) < 0)
+		   q_status_message1(SM_ORDER, 0, 2, 
+			_("Could not remove private key %s.key"), MASTERNAME);
+		  filename[strlen(filename)-4] = '\0';
+		  strcat(filename, ".crt");
+		  if(unlink(filename) < 0)
+		   q_status_message1(SM_ORDER, 0, 2, 
+			_("Could not remove public certifica %s.crt"), MASTERNAME);
+		  if(rmdir(pathdir) < 0)
+		    q_status_message1(SM_ORDER, 0, 2, 
+		      _("Could not remove temporary directory %s"), pathdir);
+		}
+	      }
+	      rv = 10;		/* forces redraw */
+	   }
+	   break;
+
       case MC_CHOICE:
 	   if(PATHCERTDIR(ctype) == NULL)
 	     return 0;
@@ -1320,7 +1355,7 @@ manage_certs_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
 	  break;
 	}
       case MC_IMPORT: 
-	rv = import_certificate(ctype);
+	rv = import_certificate(ctype, NULL, NULL);
 	if(rv < 0){
 	  switch(rv){
 	    default:
@@ -1384,6 +1419,7 @@ void manage_password_file_certificates(struct pine *ps)
       if(ctmp == NULL){
 	ps->mangled_screen = 1;
 //	smime_reinit();
+	q_status_message(SM_ORDER, 1, 3, _("Failed to initialize password management screen (no key)"));
         return;
       }
 
@@ -1774,7 +1810,7 @@ smime_helper_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
 	break;
 
       case MC_IMPORT:
-	rv = import_certificate((*cl)->d.s.ctype);
+	rv = import_certificate((*cl)->d.s.ctype, NULL, NULL);
 	break;
 
       default:

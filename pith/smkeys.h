@@ -30,6 +30,8 @@
 #include <openssl/err.h>
 #include <openssl/bio.h>
 #include <openssl/safestack.h>
+#include <openssl/conf.h>
+#include <openssl/x509v3.h>
 
 #ifndef OPENSSL_1_1_0
 #define X509_get0_notBefore(x) ((x) && (x)->cert_info                   \
@@ -38,11 +40,21 @@
 #define X509_get0_notAfter(x) ((x) && (x)->cert_info                    \
                                 ? (x)->cert_info->validity->notAfter    \
                                 : NULL)
+#define X509_getm_notBefore(x) ((x) && (x)->cert_info                   \
+                                ? (x)->cert_info->validity->notBefore	\
+                                : NULL)
+#define X509_getm_notAfter(x) ((x) && (x)->cert_info                    \
+                                ? (x)->cert_info->validity->notAfter	\
+                                : NULL)
+#define X509_REQ_get0_pubkey(x) (X509_REQ_get_pubkey((x)))
+#else
+#include <openssl/rsa.h>
+#include <openssl/bn.h>
 #endif /* OPENSSL_1_1_0 */
 
 #define EMAILADDRLEADER "emailAddress="
 #define CACERTSTORELEADER "cacert="
-
+#define MASTERNAME "MasterPassword"
 
 typedef struct personal_cert {
     X509    	    	 *cert;
@@ -78,7 +90,7 @@ void	       resort_certificates(CertList **data, WhichCerts ctype);
 int	       setup_certs_backup_by_type(WhichCerts ctype);
 char 	       *smime_get_cn(X509 *);
 CertList       *smime_X509_to_cert_info(X509 *, char *);
-
+PERSONAL_CERT  *ALPINE_self_signed_certificate(char *, int, char *, char *);
 
 #endif /* PITH_SMKEYS_INCLUDED */
 #endif /* SMIME */

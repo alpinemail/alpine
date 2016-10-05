@@ -2670,7 +2670,7 @@ struct key config_smime_add_new_key[] =
 	NULL_MENU,
 	EXIT_SETUP_MENU,
 	{"I", N_("Import Key"), {MC_IMPORT,3,{'i', ctrl('M'), ctrl('J')}}, KS_NONE},
-	NULL_MENU,
+	{"C", N_("Create Key"), {MC_ADD,1,{'c'}}, KS_NONE},
 	NULL_MENU,
 	NULL_MENU,
 	NULL_MENU,

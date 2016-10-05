@@ -2302,7 +2302,7 @@ read_passfile(pinerc, l)
 #else /* PASSFILE */
 
     char  tmp[MAILTMPLEN], *ui[5];
-    int   i, j, n;
+    int   i, j, n, rv = 0;
 #ifdef SMIME
     char tmp2[MAILTMPLEN];
     char *text = NULL, *text2 = NULL;
@@ -2333,18 +2333,48 @@ read_passfile(pinerc, l)
      * do not init smime here, because the .pinerc might not have been
      * read and we do not really know where the keys and certificates really
      * are.
+     * Remark: setupwdcert will produce a null ps_global->pwdcert only when
+     * it is called for the first time and there are certificates at all,
+     * or when it is called after the first time and the user refuses to 
+     * create a self-signed certificate. In this situation we will just
+     * let the user live in an insecure world, but no more passwords will
+     * be saved in the password file, and only those found there will be used.
      */
-    if(ps_global->pwdcert == NULL)
-       setup_pwdcert(&ps_global->pwdcert);
     tmp2[0] = '\0';
     fgets(tmp2, sizeof(tmp2), fp);
     fclose(fp);
     if(strcmp(tmp2, "-----BEGIN PKCS7-----\n")){
-       if(encrypt_file((char *)tmp, NULL, (PERSONAL_CERT *)ps_global->pwdcert))
-	  encrypted++;
+       /* there is an already existing password file, that is not encrypted
+        * and there is no key to encrypt it yet, go again through setup_pwdcert
+	* and encrypt it now.
+	*/
+       if(tmp2[0]){	/* not empty, UNencrypted password file */
+	 if(ps_global->pwdcert == NULL)
+            rv = setup_pwdcert(&ps_global->pwdcert);
+	 if(rv == 0 && ps_global->pwdcert == NULL)
+	    ps_global->pwdcert = (void *) ALPINE_self_signed_certificate(NULL, 0, ps_global->pwdcertdir, MASTERNAME);
+	 if(ps_global->pwdcert == NULL){
+	    q_status_message(SM_ORDER, 3, 3, 
+		" Failed to create private key. Using UNencrypted Password file. ");
+	    save_password = 0;
+	 }
+	 else{
+	    if(rv == 1){
+	       q_status_message(SM_ORDER, 3, 3, 
+		" Failed to unlock private key. Using UNencrypted Password file. ");
+	       save_password = 0;	/* do not save more passwords */
+	    }
+	 }
+	if(ps_global->pwdcert != NULL
+	    && encrypt_file((char *)tmp, NULL, (PERSONAL_CERT *)ps_global->pwdcert))
+	       encrypted++;
+       }
     }
-    else
+    else {
+       if(ps_global->pwdcert == NULL)
+         rv = setup_pwdcert(&ps_global->pwdcert);
        encrypted++;
+    }
 
     /* 
      * if password file is encrypted we attemtp to decrypt. We ask the 
@@ -2568,7 +2598,7 @@ write_passfile(pinerc, l)
     }
 
 #ifdef SMIME
-   strncpy(tmp2, tmp, sizeof(tmp2)-1);
+   strncpy(tmp2, tmp, sizeof(tmp2));
    tmp2[sizeof(tmp2)-1] = '\0';
 #endif /* SMIME */
 
@@ -2603,13 +2633,21 @@ write_passfile(pinerc, l)
     fclose(fp);
 #ifdef SMIME
     if(text != NULL){
-       if(encrypt_file((char *)tmp2, text, ps_global->pwdcert) == 0){
-	 if((fp = our_fopen(tmp2, "wb")) != NULL){
-	   fputs(text, fp);
-	   fclose(fp);
-	 }
+       if(ps_global->pwdcert == NULL){
+	  q_status_message(SM_ORDER, 3, 3, "Attempting to encrypt password file");
+	  i = setup_pwdcert(&ps_global->pwdcert);
+	  if(i == 0 && ps_global->pwdcert == NULL)
+	    ps_global->pwdcert = (void *) ALPINE_self_signed_certificate(NULL, 0, ps_global->pwdcertdir, MASTERNAME);
        }
-       fs_give((void **)&text);
+       if(ps_global->pwdcert == NULL){	/* we tried but failed	*/
+	if(i == -1)
+	  q_status_message1(SM_ORDER, 3, 3, "Error: no directory %s to save certificates", ps_global->pwdcertdir);
+	else
+	  q_status_message(SM_ORDER, 3, 3, "Refusing to write non-encrypted password file");
+       }
+       else if(encrypt_file((char *)tmp2, text, ps_global->pwdcert) == 0)
+	  q_status_message(SM_ORDER, 3, 3, "Failed to encrypt password file");
+       fs_give((void **)&text);	/* do not save this text */
     }
 #endif /* SMIME */
 #endif /* PASSFILE */
