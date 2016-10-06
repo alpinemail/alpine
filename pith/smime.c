@@ -203,9 +203,14 @@ load_key_and_cert(char *pathkeydir, char *pathcertdir, char **keyfile,
  *  Ok, that should do it.
  *
  * return values: 0 - everything is normal
- *		  1 - User could not unlock key
+ *		  1 - User could not unlock key or no key in directory.
  *		  2 - User cancelled to create self signed certificate
- *		 -1 - a not normal value.
+ *		 -1 - we do not know which directory to use
+ *		 -2 - "-pwdcertdir" was given by user, but directory does not exist
+ *		 -3 - "DF_PASSWORD_DIR" exists but it is not a directory!!??
+ * 		 -4 - we tried to create DF_PASSWORD_DIR but failed.
+ *		 -5 - password directory exists, but it is empty
+ *
  */
 int
 setup_pwdcert(void **pwdcert)
@@ -233,19 +238,22 @@ setup_pwdcert(void **pwdcert)
 	strncpy(pathdir, ps_global->pwdcertdir, sizeof(pathdir));
 	pathdir[sizeof(pathdir)-1] = '\0';
      }
+     else rv = -2;
   } else {
       smime_path(DF_PASSWORD_DIR, pathdir, sizeof(pathdir));
       if(our_stat(pathdir, &sbuf) == 0){
 	if((sbuf.st_mode & S_IFMT) == S_IFDIR)
 	  setup_dir++;
+	else rv = -3;
       } else if(can_access(pathdir, ACCESS_EXISTS) != 0
 	    && our_mkpath(pathdir, 0700) == 0)
 	  setup_dir++;
+	else rv = -4;
   }
 
   if(setup_dir == 0){
     was_here = 0;
-    return -1;
+    return rv;
   }
 
   if(load_key_and_cert(pathdir, pathdir, &keyfile, &certfile, &pkey, &pcert) < 0){
@@ -275,7 +283,7 @@ setup_pwdcert(void **pwdcert)
    */
   if(setup_certdir){	/* if we are here, pwdcertdir failed */
      was_here = 0;
-     return -1;
+     return -5;
   } 
 
   /* look to see if there are any certificates lying around, first

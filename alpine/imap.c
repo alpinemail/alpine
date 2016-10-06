@@ -2351,7 +2351,7 @@ read_passfile(pinerc, l)
        if(tmp2[0]){	/* not empty, UNencrypted password file */
 	 if(ps_global->pwdcert == NULL)
             rv = setup_pwdcert(&ps_global->pwdcert);
-	 if(rv == 0 && ps_global->pwdcert == NULL)
+	 if((rv == 0 || rv == -5) && ps_global->pwdcert == NULL)
 	    ps_global->pwdcert = (void *) ALPINE_self_signed_certificate(NULL, 0, ps_global->pwdcertdir, MASTERNAME);
 	 if(ps_global->pwdcert == NULL){
 	    q_status_message(SM_ORDER, 3, 3, 
