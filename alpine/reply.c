@@ -1090,16 +1090,6 @@ reply_text_query(struct pine *ps, long int many, ENVELOPE *env, char **prefix)
 	   compose_style[ekey_num++].label = ps->reply.strip_signature
 						? N_("No Strip"): N_("Strip Sig");
 
-#if 0
-	   if(orig_sf){
-	      compose_style[ekey_num].ch      = 'f';
-	      compose_style[ekey_num].rval    = 'F';
-	      compose_style[ekey_num].name    = "F";
-	      compose_style[ekey_num++].label = ps->reply.use_flowed 
-						? N_("Use Flowed") : N_("Not Flowed");
-	   }
-#endif /* 0 */
-
 	   compose_style[ekey_num].ch      = 'a';
 	   compose_style[ekey_num].rval    = 'A';
 	   compose_style[ekey_num].name    = "A";

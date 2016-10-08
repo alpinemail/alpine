@@ -1412,13 +1412,10 @@ void manage_password_file_certificates(struct pine *ps)
 
       fline = rv >= 10 ? rv - 10 : 0;
 
-//      smime_init();
-
       smime_manage_password_file_certs_init(ps, &ctmp, &first_line, fline, &state);
 
       if(ctmp == NULL){
 	ps->mangled_screen = 1;
-//	smime_reinit();
 	q_status_message(SM_ORDER, 1, 3, _("Failed to initialize password management screen (no key)"));
         return;
       }

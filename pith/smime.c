@@ -225,7 +225,7 @@ setup_pwdcert(void **pwdcert)
   EVP_PKEY *pkey = NULL;
   X509 *pcert = NULL;
   PERSONAL_CERT *pc, *pc2 = NULL;
-  static int was_here = 0, setup_certdir = 0;
+  static int was_here = 0;
 
   if(pwdcert == NULL || was_here == 1)
     return -1;
@@ -262,8 +262,14 @@ setup_pwdcert(void **pwdcert)
   }
 
   if(ps_global->pwdcertdir == NULL){	/* save the result of pwdcertdir */
-    setup_certdir = 1;
     ps_global->pwdcertdir = cpystr(pathdir);
+    /* if the user gave a pwdcertdir and there is nothing there, do not
+     * continue. Let the user initialize on their own this directory.
+     */
+    if(certfile == NULL || keyfile == NULL){
+      was_here = 0;
+      return -5;
+    }
   }
 
   if(certfile && keyfile){
@@ -277,14 +283,6 @@ setup_pwdcert(void **pwdcert)
      was_here = 0;
      return 0;
   }
-
-  /* if the user gave a pwdcertdir and there is nothing there, do not
-   * continue. Let the user initialize on their own this directory.
-   */
-  if(setup_certdir){	/* if we are here, pwdcertdir failed */
-     was_here = 0;
-     return -5;
-  } 
 
   /* look to see if there are any certificates lying around, first
    * we try to load ps_global->smime to see if that has information

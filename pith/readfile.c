@@ -78,7 +78,6 @@ our_copy(char *to_file, char *from_file)
 {
    STORE_S *in_cert, *out_cert;
    unsigned char c;
-   long int size = 0;
 
    in_cert  = so_get(FileStar, from_file, READ_ACCESS | READ_FROM_LOCALE);
    if (in_cert == NULL)
@@ -93,11 +92,9 @@ our_copy(char *to_file, char *from_file)
    so_seek(out_cert, 0L, 0);
    so_truncate(out_cert, 0);
 
-   while(so_readc(&c, in_cert) > 0){
+   while(so_readc(&c, in_cert) > 0)
      so_writec(c, out_cert);
-//     size++;
-   }
-//   so_truncate(out_cert, size);
+
    so_give(&in_cert);
    so_give(&out_cert);
 
