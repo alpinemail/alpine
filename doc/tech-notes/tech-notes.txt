@@ -1,7 +1,7 @@
 
                              Alpine Technical Notes
 
-   Version 2.20.16, September 2016
+   Version 2.20.17, October 2016
 
 Table of Contents
 
