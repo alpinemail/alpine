@@ -90,6 +90,7 @@ lalloc(int used)
 
     lp->l_size = size;
     lp->l_used = used;
+    lp->l_sig  = 0;	/* assume it is not a signature line */
     return (lp);
 }
 

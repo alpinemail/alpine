@@ -54,6 +54,7 @@ int      dumbroot(int, int);
 int      dumblroot(long, int);
 unsigned cellwidth_ptr_to_ptr(CELL *pstart, CELL *pend);
 unsigned vcellwidth_a_to_b(int row, int a, int b);
+int	window_signature_block(WINDOW *wp);
 #ifdef _WINDOWS
 void    pico_config_menu_items (KEYMENU *);
 int     update_scroll (void);
@@ -111,6 +112,9 @@ static KEYMENU menu_compose[] = {
 #define	VFEXT	0x0002			/* extended (beyond column 80)	*/
 #define	VFREV	0x0004			/* reverse video status		*/
 #define	VFREQ	0x0008			/* reverse video request	*/
+#define VFSIG	0x0010			/* in signature block		*/
+#define VFNOR	0x0020			/* in not signature block	*/
+#define VFQUO	0x0040			/* in quoted text		*/
 
 int     vtrow   = 0;                    /* Row location of SW cursor */
 int     vtcol   = 0;                    /* Column location of SW cursor */
@@ -137,8 +141,9 @@ vtinit(void)
     int i, j;
     VIDEO *vp;
     CELL   ac;
+    PCOLORS *pcolors = Pmaster && Pmaster->colors ? Pmaster->colors : Pcolors;
 
-    ac.c = ' ';
+    ac.c = '\0';
     ac.a = 0;
 
     if(Pmaster == NULL)
@@ -269,8 +274,9 @@ vtputc(CELL c)
     int      w;
 
     vp = vscreen[vtrow];
-    ac.c = ' ';
+    ac.c = '\0';
     ac.a = c.a;
+    ac.d = c.d;
 
     if (vtcol >= term.t_ncol) {
 	/*
@@ -299,6 +305,7 @@ vtputc(CELL c)
           vp->v_text[vtind-1] = ac;
     }
     else if (c.c == '\t') {
+	ac.c = ' ';
         do {
             vtputc(ac);
 	}
@@ -356,7 +363,7 @@ vteeol(void)
     register VIDEO      *vp;
     CELL     c;
 
-    c.c = ' ';
+    c.c = '\0';
     c.a = 0;
     vp = vscreen[vtrow];
 
@@ -365,6 +372,41 @@ vteeol(void)
         vp->v_text[vtind++] = c;
 
     vtcol = term.t_ncol;
+}
+
+int
+window_signature_block(WINDOW *wp)
+{
+  LINE *lp, *llp;
+  int in_sig, is_sig_start;
+  int change = 0;
+
+  llp = wp->w_linep;
+  lp = lforw(wp->w_bufp->b_linep);
+
+  do {
+    in_sig = lback(lp) == wp->w_bufp->b_linep ? 0 : lback(lp)->l_sig;
+    if(in_sig == 0){
+       if(llength(lp) == 3){
+	 if(lgetc(lp, 0).c == '-' 
+	     && lgetc(lp, 1).c == '-' 
+	     && lgetc(lp, 2).c == ' '){
+	   in_sig = 1; 
+	   is_sig_start = 1;
+	 }
+       }
+    } else {
+	if(lisblank(lp))
+	   if(is_sig_start == 0) in_sig = 0;
+	is_sig_start = 0;
+    }
+    if(lp->l_sig != in_sig)
+      change++;
+    lp->l_sig = in_sig;
+    lp = lforw(lp);
+  } while(lp != wp->w_bufp->b_linep);
+  wp->w_linep = llp;
+  return change;
 }
 
 
@@ -385,7 +427,10 @@ update(void)
     int     i;
     int     j;
     int     scroll = 0;
+    int     repaint= 0;
+    int	    quoted;
     CELL	     c;
+    PCOLORS *pcolors = Pmaster && Pmaster->colors ? Pmaster->colors : Pcolors;
 
 #if	TYPEAH
     if (typahead())
@@ -412,6 +457,8 @@ update(void)
     while (wp != NULL){
         /* Look at any window with update flags set on. */
 
+	if(pcolors)
+	   repaint = window_signature_block(wp);
         if (wp->w_flag != 0){
             /* If not force reframe, check the framing. */
 
@@ -564,22 +611,49 @@ out:
             i = wp->w_toprow;
 
             if ((wp->w_flag & ~WFMODE) == WFEDIT){
+		/* if the signature separator was modified (or created)
+		 * do the other side below
+		 */
+		if(repaint) goto other;
                 while (lp != wp->w_dotp){
                     ++i;
                     lp = lforw(lp);
 		}
 
-                vscreen[i]->v_flag |= VFCHG;
+                for (j = 0, quoted = -1; j < llength(lp); ++j){
+		    if(quoted < 0){
+		       if(lgetc(lp,j).c != '>' && lgetc(lp, j).c != ' ')
+			 quoted = 0;
+		       else if(lgetc(lp,j).c == '>')
+			 quoted = 1;
+		    }  
+		}
+
+		vscreen[i]->v_flag &= ~(VFSIG|VFNOR|VFQUO);
+                vscreen[i]->v_flag |= (quoted > 0 ? VFQUO : 0)|(lp->l_sig ? VFSIG : 0)| VFCHG;
                 vtmove(i, 0);
 
                 for (j = 0; j < llength(lp); ++j)
                     vtputc(lgetc(lp, j));
-
                 vteeol();
 	    }
 	    else if ((wp->w_flag & (WFEDIT | WFHARD)) != 0){
+other:
                 while (i < wp->w_toprow+wp->w_ntrows){
-                    vscreen[i]->v_flag |= VFCHG;
+		    int flag = 0;
+		    for (j = 0, quoted = -1; j < llength(lp) && quoted < 0; ++j){
+		       if(quoted < 0){
+			 if(lgetc(lp,j).c != '>' && lgetc(lp, j).c != ' ')
+			    quoted = 0;
+			 else if(lgetc(lp,j).c == '>')
+			    quoted = 1;
+		      }  
+		    }
+		    if(repaint && (vscreen[i]->v_flag & VFSIG) && lp->l_sig == 0)
+		      flag |= VFNOR;
+		    if(quoted > 0) flag |= VFQUO;
+		    vscreen[i]->v_flag &= ~(VFSIG | VFNOR | VFQUO);
+                    vscreen[i]->v_flag |= flag | (lp->l_sig ? VFSIG : 0 )| VFCHG;
                     vtmove(i, 0);
 
 		    /* if line has been changed */
@@ -717,18 +791,22 @@ out:
 	    movecursor(wheadp->w_toprow, 0);
 	}
 	else{
-	    for (i = 0; i < term.t_nrow-term.t_mrow; ++i){
+	    c.c = '\0';
+	    c.a = 0;
+	    for (i = 0; i < term.t_nrow-term.t_mrow; i++){
 		vscreen[i]->v_flag |= VFCHG;
 		vp1 = pscreen[i];
-		c.c = ' ';
-		c.a = 0;
-		for (j = 0; j < term.t_ncol; ++j)
+		for (j = 0; j < term.t_ncol; j++)
 		  vp1->v_text[j] = c;
+		if(sgarbf == FALSE){
+		   movecursor(i, 0);
+		   term.t_eeol();
+		}
 	    }
-
-	    movecursor(0, 0);	               /* Erase the screen. */
-	    (*term.t_eeop)();
-
+	    if(sgarbf != FALSE){
+	      movecursor(0, 0);	               /* Erase the screen. */
+	      (*term.t_eeop)();
+	    }
 	}
 
         sgarbf = FALSE;				/* Erase-page clears */
@@ -915,6 +993,11 @@ updateline(int row,			/* row on screen */
     int   display = TRUE;
     int   nbflag;		/* non-blanks to the right flag? */
     int   cleartoeol = 0;
+    int   in_quote, quote_found = 0, level;
+    PCOLORS *pcolors = Pmaster && Pmaster->colors ? Pmaster->colors : Pcolors;
+    COLOR_PAIR *qcolor = NULL, *lastc = NULL;
+    int first = 1;
+    int x;	/* bit to indicate if we should eXecute a block below */
 
     if(row < 0 || row > term.t_nrow)
       return;
@@ -925,10 +1008,12 @@ updateline(int row,			/* row on screen */
     cp3 = &vline[term.t_ncol];
 
     /* advance past any common chars at the left */
-    while (cp1 != cp3 && cp1[0].c == cp2[0].c && cp1[0].a == cp2[0].a) {
+    if(!(*flags & (VFSIG|VFNOR|VFQUO)) 
+	&& (pcolors == NULL || vline[0].c != ' '))
+      while (cp1 != cp3 && cp1[0].c == cp2[0].c && cp1[0].a == cp2[0].a) {
 	++cp1;
 	++cp2;
-    }
+      }
 
 /* This can still happen, even though we only call this routine on changed
  * lines. A hard update is always done when a line splits, a massive
@@ -948,17 +1033,17 @@ updateline(int row,			/* row on screen */
     cp4 = &pline[term.t_ncol];
 
     if(cellwidth_ptr_to_ptr(cp1, cp3) == cellwidth_ptr_to_ptr(cp2, cp4))
-      while (cp3[-1].c == cp4[-1].c && cp3[-1].a == cp4[-1].a) {
+      while (cp3 != cp1 && cp3[-1].c == cp4[-1].c && cp3[-1].a == cp4[-1].a) {
 	--cp3;
 	--cp4;
-	if (cp3[0].c != ' ' || cp3[0].a != 0)	/* Note if any nonblank */
+	if (cp3[0].c != '\0' || cp3[0].a != 0)	/* Note if any nonblank */
 	  nbflag = TRUE;			/* in right match. */
       }
 
     cp5 = cp3;
 
     if (nbflag == FALSE && TERM_EOLEXIST) {	/* Erase to EOL ? */
-	while (cp5 != cp1 && cp5[-1].c == ' ' && cp5[-1].a == 0)
+	while (cp5 != cp1 && cp5[-1].c == '\0' && cp5[-1].a == 0)
 	  --cp5;
 
 	if (cp3-cp5 <= 3)		/* Use only if erase is */
@@ -968,7 +1053,13 @@ updateline(int row,			/* row on screen */
     /* go to start of differences */
     movecursor(row, cellwidth_ptr_to_ptr(&vline[0], cp1));
 
-    if (!nbflag) {				/* use insert or del char? */
+    /* the next code inserts a character or deletes one in the middle
+     * of a line. However, we do not need this code to work when we
+     * are using colors that depend on what is inserted/deleted, so
+     * we defer this work to the code below
+     */
+    x = pcolors && (pcolors->qlcp || pcolors->qllcp || pcolors->qlllcp);
+    if (!nbflag && x == 0) {				/* use insert or del char? */
 	cp6 = cp3;
 	cp7 = cp4;
 
@@ -1008,9 +1099,20 @@ updateline(int row,			/* row on screen */
 	}
     }
 
+    if(cp1 == cp5 && (*flags & (VFSIG|VFNOR|VFQUO)))
+      while(cp5 < &vline[term.t_ncol] && cp5->c != '\0') 
+	cp5++;
+
     if(cp1 != cp5 && display){
 	int w1, w2;
 
+	if(pcolors){
+	   lastc = pico_get_cur_color();
+	   if(row == 0)
+	      pico_set_colorp(pcolors->tbcp, PSC_NONE);
+	   else if(row < term.t_nrow - 2)
+		pico_set_colorp((*flags & VFSIG) ? pcolors->sbcp : pcolors->ntcp, PSC_NONE);
+	}
 	/*
 	 * If we need to copy characters from cp1 to cp2 and
 	 * we need to display them, then we have to worry about
@@ -1072,18 +1174,46 @@ updateline(int row,			/* row on screen */
 	}
     }
 
+    in_quote = 1;
+    level = -1;
     while (cp1 != cp5) {		/* Ordinary. */
 	int ww;
 
 	if(display){
+	    if(pcolors){
+	       if(cp1->c != '>' && cp1->c != ' '){
+		in_quote = 0;
+	       } else if (in_quote && cp1->c == '>' && pcolors != NULL)
+		          level = (level + 1) % 3;
+	       if(level >= 0){
+		 if(level == 0) qcolor = pcolors->qlcp;
+		 else if(level == 1) qcolor = pcolors->qllcp;
+		 else if(level == 2) qcolor = pcolors->qlllcp;
+		 pico_set_colorp(qcolor, PSC_NONE);
+	       }
+	    }
+
+	    /* cp1->c could be null because we set it up that way by default. Initialization
+	     * is made with null characters. We did this because otherwise Pico does not
+	     * color trailing spaces in lines, so this gives a way for pico to distinguish
+	     * trailing spaces in lines from its own old default initialization of cells
+	     * using spaces. So when we get a null character we output the corresponding 
+	     * space that would have been output in the past. If you want to see what
+	     * would happen if we output a null character, rewrite the code below.
+	     */
 	    (*term.t_rev)(cp1->a);	/* set inverse for this char */
-	    (*term.t_putchar)(cp1->c);
+	    (*term.t_putchar)(cp1->c || pcolors == NULL ? cp1->c : ' ');
 	}
 
 	ww = wcellwidth((UCS) cp1->c);
 	ttcol += (ww >= 0 ? ww : 1);
 
 	*cp2++ = *cp1++;
+    }
+
+    if (pcolors && lastc){
+	(void)pico_set_colorp(lastc, PSC_NONE);
+	free_color_pair(&lastc);
     }
 
     (*term.t_rev)(0);			/* turn off inverse anyway! */
@@ -1533,6 +1663,7 @@ mlyesno(UCS *prompt, int dflt)
     UCS     buf[NLINE], lbuf[10];
     KEYMENU menu_yesno[12];
     COLOR_PAIR *lastc = NULL;
+    PCOLORS *pcolors = Pmaster && Pmaster->colors ? Pmaster->colors : Pcolors;
 
 #ifdef _WINDOWS
     if (mswin_usedialog ()) 
@@ -1566,12 +1697,11 @@ mlyesno(UCS *prompt, int dflt)
     ucs4_strncat(buf, lbuf, NLINE - ucs4_strlen(buf) - 1);
     buf[NLINE-1] = '\0';
     mlwrite(buf, NULL);
-    if(Pmaster && Pmaster->colors && Pmaster->colors->prcp
-       && pico_is_good_colorpair(Pmaster->colors->prcp)){
+    if(pcolors && pcolors->prcp
+       && pico_is_good_colorpair(pcolors->prcp)){
 	lastc = pico_get_cur_color();
-	(void) pico_set_colorp(Pmaster->colors->prcp, PSC_NONE);
-    }
-    else
+	(void) pico_set_colorp(pcolors->prcp, PSC_NONE);
+    } else 
       (*term.t_rev)(1);
 
     rv = -1;
@@ -1621,10 +1751,10 @@ mlyesno(UCS *prompt, int dflt)
 
 		wkeyhelp(menu_yesno);		/* paint generic menu */
 		mlwrite(buf, NULL);
-		if(Pmaster && Pmaster->colors && Pmaster->colors->prcp
-		   && pico_is_good_colorpair(Pmaster->colors->prcp)){
-		    lastc = pico_get_cur_color();
-		    (void) pico_set_colorp(Pmaster->colors->prcp, PSC_NONE);
+		if(pcolors && pcolors->prcp
+		       && pico_is_good_colorpair(pcolors->prcp)){
+		   lastc = pico_get_cur_color();
+		   (void) pico_set_colorp(pcolors->prcp, PSC_NONE);
 		}
 		else
 		  (*term.t_rev)(1);
@@ -1769,6 +1899,7 @@ mlreplyd(UCS *prompt, UCS *buf, int nbuf, int flg, EXTRAKEYS *extras)
     UCS	     extra_v[12];
     struct   display_line dline;
     COLOR_PAIR *lastc = NULL;
+    PCOLORS *pcolors = Pmaster && Pmaster->colors ? Pmaster->colors : Pcolors;
 
 #ifdef _WINDOWS
     if(mswin_usedialog()){
@@ -1887,10 +2018,10 @@ mlreplyd(UCS *prompt, UCS *buf, int nbuf, int flg, EXTRAKEYS *extras)
 
     sgarbk = 1;				/* mark menu dirty */
 
-    if(Pmaster && Pmaster->colors && Pmaster->colors->prcp
-       && pico_is_good_colorpair(Pmaster->colors->prcp)){
-	lastc = pico_get_cur_color();
-	(void) pico_set_colorp(Pmaster->colors->prcp, PSC_NONE);
+    if(pcolors && pcolors->prcp
+       && pico_is_good_colorpair(pcolors->prcp)){
+       lastc = pico_get_cur_color();
+       (void) pico_set_colorp(pcolors->prcp, PSC_NONE);
     }
     else
       (*term.t_rev)(1);
@@ -1970,10 +2101,10 @@ mlreplyd(UCS *prompt, UCS *buf, int nbuf, int flg, EXTRAKEYS *extras)
 
 		wkeyhelp(menu_mlreply);		/* paint generic menu */
 		plen = mlwrite(prompt, NULL);		/* paint prompt */
-		if(Pmaster && Pmaster->colors && Pmaster->colors->prcp
-		   && pico_is_good_colorpair(Pmaster->colors->prcp)){
-		    lastc = pico_get_cur_color();
-		    (void) pico_set_colorp(Pmaster->colors->prcp, PSC_NONE);
+		if(pcolors && pcolors->prcp
+		   && pico_is_good_colorpair(pcolors->prcp)){
+		   lastc = pico_get_cur_color();
+		   (void) pico_set_colorp(pcolors->prcp, PSC_NONE);
 		}
 		else
 		  (*term.t_rev)(1);
@@ -2154,6 +2285,7 @@ emlwrite_ucs4(UCS *message, EML *eml)
     UCS  *bufp, *ap;
     int   width;
     COLOR_PAIR *lastc = NULL;
+    PCOLORS *pcolors = Pmaster && Pmaster->colors ? Pmaster->colors : Pcolors;
 
     mlerase();
 
@@ -2198,10 +2330,10 @@ emlwrite_ucs4(UCS *message, EML *eml)
     else
       movecursor(term.t_nrow-term.t_mrow, 0);
 
-    if(Pmaster && Pmaster->colors && Pmaster->colors->stcp
-       && pico_is_good_colorpair(Pmaster->colors->stcp)){
-	lastc = pico_get_cur_color();
-	(void) pico_set_colorp(Pmaster->colors->stcp, PSC_NONE);
+    if(pcolors && pcolors->stcp
+       && pico_is_good_colorpair(pcolors->stcp)){
+	   lastc = pico_get_cur_color();
+	   (void) pico_set_colorp(pcolors->stcp, PSC_NONE);
     }
     else
       (*term.t_rev)(1);
@@ -2288,6 +2420,7 @@ mlwrite(UCS *fmt, void *arg)
     UCS   c;
     char *ap;
     COLOR_PAIR *lastc = NULL;
+    PCOLORS *pcolors = Pmaster && Pmaster->colors ? Pmaster->colors : Pcolors;
 
     /*
      * the idea is to only highlight if there is something to show
@@ -2295,10 +2428,10 @@ mlwrite(UCS *fmt, void *arg)
     mlerase();
     movecursor(ttrow, 0);
 
-    if(Pmaster && Pmaster->colors && Pmaster->colors->prcp
-       && pico_is_good_colorpair(Pmaster->colors->prcp)){
-	lastc = pico_get_cur_color();
-	(void) pico_set_colorp(Pmaster->colors->prcp, PSC_NONE);
+    if(pcolors && pcolors->prcp
+       && pico_is_good_colorpair(pcolors->prcp)){
+	   lastc = pico_get_cur_color();
+	   (void) pico_set_colorp(pcolors->prcp, PSC_NONE);
     }
     else
       (*term.t_rev)(1);
@@ -2913,7 +3046,7 @@ peeol(void)
     if(ttrow < 0 || ttrow > term.t_nrow)
       return;
 
-    cl.c = ' ';
+    cl.c = '\0';
     cl.a = 0;
 
     /*
@@ -3107,10 +3240,13 @@ wstripe(int line, int column, char *utf8pmt, int key)
 
       if(klcp && pico_is_good_colorpair(Pmaster->colors->kncp))
         kncp = Pmaster->colors->kncp;
-
-      lastc = pico_get_cur_color();
+    }
+    else if(Pcolors){
+       klcp = Pcolors->klcp;
+       kncp = Pcolors->kncp;
     }
 
+    lastc = pico_get_cur_color();
     ucs4pmt = utf8_to_ucs4_cpystr(utf8pmt);
     l = ucs4_strlen(ucs4pmt);
     while(1){

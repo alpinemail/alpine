@@ -79,6 +79,9 @@ char *pico_args(int, char **, int *, int *, int *);
 void  pico_args_help(void);
 void  pico_vers_help(void);
 void  pico_display_args_err(char *, char **, int);
+PCOLORS *pico_set_global_colors(int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int);
+void  display_color_codes(void);
+
 
 /* TRANSLATORS: An error message about an unknown flag (option)
    on the command line */
@@ -130,6 +133,30 @@ N_("\t -cnb color \tbackground color"),
 N_("\t -crf color \treverse foreground color"),
 N_("\t -crb color \treverse background color"),
 #endif	/* _WINDOWS */
+N_("\t -color_code  \tdisplay number codes for different colors"),
+N_("\t -ncolors number \tnumber of colors for screen (8, 16, or 256)"),
+N_("\t -ntfc number \tnumber of color of foreground text"),
+N_("\t -ntbc number \tnumber of color of the background"),
+N_("\t -rtfc number \tnumber of color of reverse text"),
+N_("\t -rtbc number \tnumber of color of reverse background"),
+N_("\t -tbfc number \tnumber of color of foreground (text) of the title bar"),
+N_("\t -tbbc number \tnumber of color of background of the title bar"),
+N_("\t -klfc number \tnumber of color of foreground (text) of the key label"),
+N_("\t -klbc number \tnumber of color of background of the key label"),
+N_("\t -knfc number \tnumber of color of foreground (text) of the key name"),
+N_("\t -knbc number \tnumber of color of background of the key name"),
+N_("\t -stfc number \tnumber of color of foreground (text) of the status line"),
+N_("\t -stbc number \tnumber of color of background of the status line"),
+N_("\t -prfc number \tnumber of color of foreground (text) of a prompt"),
+N_("\t -prbc number \tnumber of color of background of a prompt"),
+N_("\t -q1fc number \tnumber of color of foreground (text) of level one of quoted text"),
+N_("\t -q1bc number \tnumber of color of background of level one of quoted text"),
+N_("\t -q2fc number \tnumber of color of foreground (text) of level two of quoted text"),
+N_("\t -q2bc number \tnumber of color of background of level two of quoted text"),
+N_("\t -q3fc number \tnumber of color of foreground (text) of level three of quoted text"),
+N_("\t -q3bc number \tnumber of color of background of level three of quoted text"),
+N_("\t -sbfc number \tnumber of color of foreground of signature block text"),
+N_("\t -sbbc number \tnumber of color of background of signature block text"),
 N_("\t +[line#] \tLine - start on line# line, default=1"),
 N_("\t -v \t\tView - view file"),
 N_("\t -no_setlocale_collate\tdo not do setlocale(LC_COLLATE)"),
@@ -287,6 +314,7 @@ main(int argc, char *argv[])
     edinit(bname);			/* Buffers, windows.   */
 
     update();				/* let the user know we are here */
+    sgarbf = TRUE;			/* next update, repaint all */
 
 #ifdef	_WINDOWS
     mswin_setwindow(NULL, NULL, NULL, NULL, NULL, NULL);
@@ -381,11 +409,12 @@ main(int argc, char *argv[])
 	    peeol();
 	}
 
-	update();			/* Fix up the screen    */
 	if(km_popped){
 	    term.t_mrow = 0;
 	    curwp->w_ntrows += 2;
 	}
+
+	update();			/* Fix up the screen    */
 
 #ifdef	MOUSE
 #ifdef  EX_MOUSE
@@ -452,6 +481,137 @@ main(int argc, char *argv[])
     }
 }
 
+void
+display_color_codes(void)
+{
+#define SPACES "   "
+  int i, j, k, l, a, len, len_entry, row;
+  int ncolors;
+  COLOR_PAIR *lastc = NULL, *newcp;
+  char *fg;
+
+  /* this is the format "SPACE COLORED_SPACES = CODE SPACE" */
+  vtterminalinfo(gmode & MDTCAPWINS);
+  (*term.t_open)();
+  (*term.t_rev)(FALSE);
+
+  pico_toggle_color(1);
+  if((ncolors = pico_count_in_color_table()) <= 0){
+    fprintf(stderr, "%s", "Your screen does not support colors\r\n");
+    exit(1);
+  }
+
+
+  if(term.t_ncol < 62 || term.t_nrow < 23){
+    fprintf(stderr, "%s", "Screen must have at least 24 rows and 63 columns\r\n");
+    exit(1);
+  }
+
+
+  fprintf(stdout, "%s", "The code of a color is the number in the same row plus\r\n");
+  fprintf(stdout, "%s", "the number in the same column as that color.\r\n\r\n");
+
+  lastc = pico_get_cur_color();
+  switch(ncolors){
+      case   8: pico_set_color_options(COLOR_ANSI8_OPT|COLOR_TRANS_OPT); break;
+      case  16: pico_set_color_options(COLOR_ANSI16_OPT|COLOR_TRANS_OPT); break;
+      case 256: pico_set_color_options(COLOR_ANSI256_OPT|COLOR_TRANS_OPT); break;
+      default : fprintf(stderr, "Unknown number of colors %d\n", ncolors); 
+	        exit(1);
+	        break;
+    }
+
+    if(ncolors != 256){
+      for(k = -1; 16*k < ncolors; k++){
+	for(l = -1; l < ncolors; l++){
+	   if(k == -1){
+		if(ncolors == 8){
+		   if(l == -1)
+		      fprintf(stdout, "%s", "    ");
+	   	   else 
+		      fprintf(stdout, "%3d", l);
+		}
+	   }
+	   else{
+		if(l == -1){
+		    pico_toggle_color(1);
+		    fprintf(stdout, "%3d ", k);
+		}
+	   	else{
+		    if(ncolors || l < 8){
+		      i = 16*k + l;
+		      newcp = new_color_pair(colorx(0), colorx(i));
+		      pico_set_colorp(newcp, PSC_NONE);
+		      fprintf(stdout, "%s", SPACES);
+		      pico_set_colorp(lastc, PSC_NONE);
+		    }
+		}
+	   }
+	}
+	pico_toggle_color(0);
+	if(k == 0)
+	  fprintf(stdout, " (%d colors)", ncolors);
+	if(k != -1 || ncolors == 8)
+	  fprintf(stdout, "%s", "\r\n");
+      }
+    } else {
+      fprintf(stdout, "%s", "Codes for terminal with 256 colors:\r\n");
+      a = 16;
+      for(k = -1; 36*k < ncolors; k++){
+	for(l = -1; l < ncolors && l < 16; l++){
+	   if(k == -1){
+		if(l == -1)
+		    fprintf(stdout, "%s", "    ");
+	   	else 
+		    fprintf(stdout, "%3d", l);
+	   }
+	   else{
+		if(l == -1){
+		    pico_toggle_color(1);
+		    fprintf(stdout, "%3d ", 36*k);
+		}
+	   	else{
+		    i = 36*k + l;
+		    newcp = new_color_pair(colorx(0), colorx(i));
+		    pico_set_colorp(newcp, PSC_NONE);
+		    fprintf(stdout, "%s", SPACES);
+		    pico_set_colorp(lastc, PSC_NONE);
+		}
+	   }
+	}
+	pico_toggle_color(0);
+	fprintf(stdout, "%s", "\r\n");
+      }
+      a = 20;
+      for(k = -1; 16 + 36*k < ncolors; k++){
+	for(l = -1; l < ncolors && l < a; l++){
+	   if(k == -1){
+		if(l == -1)
+		    fprintf(stdout, "%s", "    ");
+	   	else 
+		    fprintf(stdout, "%3d", l);
+	   }
+	   else{
+		if(l == -1){
+		    pico_toggle_color(1);
+		    fprintf(stdout, "%3d ", 16 + 36*k);
+		}
+	   	else{
+		    i = 16 + 36*k + l;
+		    newcp = new_color_pair(colorx(0), colorx(i));
+		    pico_set_colorp(newcp, PSC_NONE);
+		    fprintf(stdout, "%s", SPACES);
+		    pico_set_colorp(lastc, PSC_NONE);
+		}
+	   }
+	}
+	pico_toggle_color(0);
+	fprintf(stdout, "%s", "\r\n");
+      }
+    }
+    pico_set_colorp(lastc, PSC_NONE);
+}
+
 
 /*
  *  Parse the command line args.
@@ -472,7 +632,14 @@ pico_args(int ac, char **av, int *starton, int *viewflag, int *setlocale_collate
     int   c, usage = 0;
     char *str;
     char  tmp_1k_buf[1000];     /* tmp buf to contain err msgs  */ 
+    int ncolors, ntfc, ntbc, rtfc, rtbc;
+    int tbfc, tbbc, klfc, klbc, knfc, knbc, stfc, stbc, prfc, prbc;
+    int q1fc, q1bc, q2fc, q2bc, q3fc, q3bc, sbfc, sbbc;
 
+    ncolors = 0;
+    ntfc = ntbc = rtfc = rtbc = tbfc = tbbc = klfc = klbc = knfc = 
+    knbc = stfc = stbc = prfc = prbc = q1fc = q1bc = q2fc = q2bc = 
+    q3fc = q3bc = sbfc = sbbc = -1;
 Loop:
     /* while more arguments with leading - or + */
     while(--ac > 0 && (**++av == '-' || **av == '+')){
@@ -505,6 +672,84 @@ Loop:
 
 	if(strcmp(*av, "version") == 0){
 	    pico_vers_help();
+	}
+	else if(strcmp(*av, "ntfc") == 0
+		|| strcmp(*av, "ntbc") == 0
+		|| strcmp(*av, "rtfc") == 0
+		|| strcmp(*av, "rtbc") == 0
+		|| strcmp(*av, "tbfc") == 0
+		|| strcmp(*av, "tbbc") == 0
+		|| strcmp(*av, "klfc") == 0
+		|| strcmp(*av, "klbc") == 0
+		|| strcmp(*av, "knfc") == 0
+		|| strcmp(*av, "knbc") == 0
+		|| strcmp(*av, "stfc") == 0
+		|| strcmp(*av, "stbc") == 0
+		|| strcmp(*av, "prfc") == 0
+		|| strcmp(*av, "prbc") == 0
+		|| strcmp(*av, "q1fc") == 0
+		|| strcmp(*av, "q1bc") == 0
+		|| strcmp(*av, "q2fc") == 0
+		|| strcmp(*av, "q2bc") == 0
+		|| strcmp(*av, "q3fc") == 0
+		|| strcmp(*av, "q3bc") == 0
+		|| strcmp(*av, "sbfc") == 0
+		|| strcmp(*av, "sbbc") == 0
+		|| strcmp(*av, "ncolors") == 0){
+	  str = *av;
+	  if(--ac)
+	    ++av;
+	  else{
+	    snprintf(tmp_1k_buf, sizeof(tmp_1k_buf), _(args_pico_missing_arg), '-');
+	    pico_display_args_err(tmp_1k_buf, NULL, 1);
+	    usage++;
+	    goto Loop;
+	  }
+
+	  if(!isdigit((unsigned char)**av)){
+	    snprintf(tmp_1k_buf, sizeof(tmp_1k_buf), _(args_pico_missing_num), '-');
+	    pico_display_args_err(tmp_1k_buf, NULL, 1);
+	    usage++;
+	  }
+	  if(strcmp(str, "ntfc") == 0) ntfc = atoi(*av);
+	  else if (strcmp(str, "ntbc") == 0) ntbc = atoi(*av);
+	  else if (strcmp(str, "rtfc") == 0) rtfc = atoi(*av);
+	  else if (strcmp(str, "rtbc") == 0) rtbc = atoi(*av);
+	  else if (strcmp(str, "tbfc") == 0) tbfc = atoi(*av);
+	  else if (strcmp(str, "tbbc") == 0) tbbc = atoi(*av);
+	  else if (strcmp(str, "klfc") == 0) klfc = atoi(*av);
+	  else if (strcmp(str, "klbc") == 0) klbc = atoi(*av);
+	  else if (strcmp(str, "knfc") == 0) knfc = atoi(*av);
+	  else if (strcmp(str, "knbc") == 0) knbc = atoi(*av);
+	  else if (strcmp(str, "stfc") == 0) stfc = atoi(*av);
+	  else if (strcmp(str, "stbc") == 0) stbc = atoi(*av);
+	  else if (strcmp(str, "prfc") == 0) prfc = atoi(*av);
+	  else if (strcmp(str, "prbc") == 0) prbc = atoi(*av);
+	  else if (strcmp(str, "q1fc") == 0) q1fc = atoi(*av);
+	  else if (strcmp(str, "q1bc") == 0) q1bc = atoi(*av);
+	  else if (strcmp(str, "q2fc") == 0) q2fc = atoi(*av);
+	  else if (strcmp(str, "q2bc") == 0) q2bc = atoi(*av);
+	  else if (strcmp(str, "q3fc") == 0) q3fc = atoi(*av);
+	  else if (strcmp(str, "q3bc") == 0) q3bc = atoi(*av);
+	  else if (strcmp(str, "sbfc") == 0) sbfc = atoi(*av);
+	  else if (strcmp(str, "sbbc") == 0) sbbc = atoi(*av);
+	  else if (strcmp(str, "ncolors") == 0) ncolors = atoi(*av);
+	  if(!strcmp(str, "ncolors")){
+	     switch(ncolors){
+		case   8: pico_set_color_options(COLOR_ANSI8_OPT|COLOR_TRANS_OPT); break;
+		case  16: pico_set_color_options(COLOR_ANSI16_OPT|COLOR_TRANS_OPT); break;
+		case 256: pico_set_color_options(COLOR_ANSI256_OPT|COLOR_TRANS_OPT); break;
+		default : snprintf(tmp_1k_buf, sizeof(tmp_1k_buf), _("Unsupported number of colors: %d"), ncolors);
+			  pico_display_args_err(tmp_1k_buf, NULL, 1);
+			  exit(1);
+			  break;
+	     }
+	  }
+	  goto Loop;
+	}
+	else if(strcmp(*av, "color_codes") == 0){
+	   display_color_codes();
+	   exit(0);
 	}
 	else if(strcmp(*av, "no_setlocale_collate") == 0){
 	    *setlocale_collate = 0;
@@ -727,6 +972,10 @@ Loop:
     if(usage)
       pico_args_help();
 
+    Pcolors = pico_set_global_colors(ncolors, ntfc, ntbc, rtfc, rtbc,
+		tbfc, tbbc, klfc, klbc, knfc, knbc, stfc, stbc, prfc, prbc,
+		q1fc, q1bc, q2fc, q2bc, q3fc, q3bc, sbfc, sbbc);
+
     /* return the first filename for editing */
     if(ac > 0)
       return(*av);
@@ -734,6 +983,127 @@ Loop:
       return(NULL);
 }
 
+
+PCOLORS *
+pico_set_global_colors(int nc, int ntfg, int ntbg, int rtfg, int rtbg,
+	int tbfg, int tbbg, int klfg, int klbg,
+	int knfg, int knbg, int stfg, int stbg, int prfg, int prbg,
+	int q1fg, int q1bg, int q2fg, int q2bg, int q3fg, int q3bg,
+	int sbfg, int sbbg)
+{
+  PCOLORS *pcolors = NULL;
+  char *fg, *bg;
+
+  if(nc != 0 && nc != 8 && nc != 16 && nc != 256){
+    fprintf(stderr, "number of colors must be either 8, 16 or 256\n");
+    exit(1);
+  }
+
+  if(nc == 0){
+     if(ntfg != -1 || ntbg != -1 || tbfg != -1 || tbbg != -1 || 
+	klfg != -1 || klbg != -1 || knfg != -1 || knbg != -1 || 
+	stfg != -1 || stbg != -1 || prfg != -1 || prbg != -1 ||
+	q1fg != -1 || q1bg != -1 || q2fg != -1 || q1bg != -1 ||
+	q3fg != -1 || q3bg != -1 || sbfg != -1 || sbbg != -1 ||
+	rtfg != -1 || rtbg != -1){
+	fprintf(stderr, "can not specify color numbers without specifying number of colors\n");
+	exit(1);
+     }
+     else
+	return pcolors;		/* no colors used */
+  }
+
+  if(ntfg >= nc || ntbg >= nc || tbfg >= nc || tbbg >= nc 
+	|| klfg >= nc || klbg >= nc || knfg >= nc || knbg >= nc 
+	|| stfg >= nc || stbg >= nc || prfg >= nc || prbg >= nc 
+	|| q1fg >= nc || q1bg >= nc || q2fg >= nc || q2bg >= nc 
+	|| q3fg >= nc || q3bg >= nc || sbfg >= nc || sbbg >= nc
+	|| rtfg >= nc || rtbg >= nc){
+	fprintf(stderr, "Error: specified a color bigger than number of colors\n");
+	exit(1);
+  }
+
+  /* Finally, we set up colors */
+  pico_toggle_color(0);
+  switch(nc){
+    case   8: pico_set_color_options(COLOR_ANSI8_OPT|COLOR_TRANS_OPT); break;
+    case  16: pico_set_color_options(COLOR_ANSI16_OPT|COLOR_TRANS_OPT); break;
+    case 256: pico_set_color_options(COLOR_ANSI256_OPT|COLOR_TRANS_OPT); break;
+    default : break;	/* impossible case */
+  }
+  pico_toggle_color(1);
+
+  pcolors = (PCOLORS *) malloc(sizeof(PCOLORS));
+  memset((void *)pcolors, 0, sizeof(PCOLORS));
+  /* ignore bad pair settings, also we set tbcp backwards because it will
+   * be reversed later in the modeline function, so tbcp->fg is actually 
+   * tbcp->bg and viceversa.
+   */
+  if(ntfg >= 0 && ntbg >= 0){	/* set normal text color */
+        fg = colorx(ntfg); bg = colorx(ntbg);
+	pcolors->ntcp = new_color_pair(fg, bg);
+	pico_nfcolor(fg);
+	pico_nbcolor(bg);
+  }
+  /* reverse means reverse of normal text */
+  if((rtfg < 0 || rtbg < 0) && (ntfg >= 0 && ntbg >= 0)){
+	rtfg = ntbg;
+	rtbg = ntfg;
+  }
+  if(rtfg >= 0 && rtbg >= 0){	/* set reverse text color */
+        fg = colorx(rtfg); bg = colorx(rtbg);
+	pcolors->rtcp = new_color_pair(fg, bg);
+	pico_rfcolor(fg);
+	pico_rbcolor(bg);
+  }
+  /* If the user does not specify this, we will set up all 
+   * backgrounds for text to the normal text background
+   */
+  if(ntbg >= 0){
+    if(knbg < 0) knbg = ntbg;
+    if(q1bg < 0) q1bg = ntbg;
+    if(q2bg < 0) q2bg = ntbg;
+    if(q3bg < 0) q3bg = ntbg;
+    if(sbbg < 0) sbbg = ntbg;
+  }
+  if(rtfg >= 0 && rtbg >= 0){   /* set default reverse */
+    if(tbfg < 0 || tbbg < 0){	/* set titlebar colors to reverse color if any missing*/
+	tbfg = rtfg; tbbg = rtbg;
+    }
+    if(klfg < 0 || klbg < 0){	/* set key label colors */
+	klfg = rtfg; klbg = rtbg;
+    }
+    if(stfg < 0 || stbg < 0){	/* set status colors */
+	stfg = rtfg; stbg = rtbg;
+    }
+    if(prfg >= 0 && prbg >= 0){	/* set prompt colors */
+	prfg = rtfg; prbg = rtbg;
+    }
+  }
+  if(tbfg >= 0 && tbbg >= 0)	/* set titlebar colors */
+     pcolors->tbcp = new_color_pair(colorx(tbbg), colorx(tbfg));
+  if(klfg >= 0 && klbg >= 0)	/* set key label colors */
+     pcolors->klcp = new_color_pair(colorx(klfg), colorx(klbg));
+  if(knfg >= 0 && knbg >= 0)	/* set key name colors */
+     pcolors->kncp = new_color_pair(colorx(knfg), colorx(knbg));
+  if(stfg >= 0 && stbg >= 0)	/* set status colors */
+     pcolors->stcp = new_color_pair(colorx(stfg), colorx(stbg));
+  if(prfg >= 0 && prbg >= 0)	/* set prompt colors */
+     pcolors->prcp = new_color_pair(colorx(prfg), colorx(prbg));
+  if(q1fg >= 0 && q1bg >= 0)	/* set quote level 1 colors */
+     pcolors->qlcp = new_color_pair(colorx(q1fg), colorx(q1bg));
+  if(q2fg >= 0 && q2bg >= 0)	/* set quote level 2 colors */
+     pcolors->qllcp = new_color_pair(colorx(q2fg), colorx(q2bg));
+  if(q3fg >= 0 && q3bg >= 0)	/* set quote level 3 colors */
+     pcolors->qlllcp = new_color_pair(colorx(q3fg), colorx(q3bg));
+  if(sbfg >= 0 && sbbg >= 0)	/* set signature block colors */
+     pcolors->sbcp = new_color_pair(colorx(sbfg), colorx(sbbg));
+
+  if(pico_usingcolor()) 
+     pico_set_normal_color();
+
+  return pcolors;
+}
 
 #ifdef	_WINDOWS
 /*

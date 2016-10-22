@@ -2696,6 +2696,36 @@ colors_for_pico(void)
 				      VAR_PROMPT_BACK_COLOR);
       }
       else colors->prcp = NULL;
+
+      if (VAR_QUOTE1_FORE_COLOR && VAR_QUOTE1_BACK_COLOR){
+	colors->qlcp = new_color_pair(VAR_QUOTE1_FORE_COLOR, 
+				      VAR_QUOTE1_BACK_COLOR);
+      }
+      else colors->qlcp = NULL;
+
+      if (VAR_QUOTE2_FORE_COLOR && VAR_QUOTE2_BACK_COLOR){
+	colors->qllcp = new_color_pair(VAR_QUOTE2_FORE_COLOR, 
+				       VAR_QUOTE2_BACK_COLOR);
+      }
+      else colors->qllcp = NULL;
+
+      if (VAR_QUOTE3_FORE_COLOR && VAR_QUOTE3_BACK_COLOR){
+	colors->qlllcp = new_color_pair(VAR_QUOTE3_FORE_COLOR, 
+				        VAR_QUOTE3_BACK_COLOR);
+      }
+      else colors->qlllcp = NULL;
+
+      if (VAR_NORM_FORE_COLOR && VAR_NORM_BACK_COLOR){
+	colors->ntcp = new_color_pair(VAR_NORM_FORE_COLOR,
+				      VAR_NORM_BACK_COLOR);
+      }
+      else colors->ntcp = NULL;
+
+      if (VAR_SIGNATURE_FORE_COLOR && VAR_SIGNATURE_BACK_COLOR){
+	colors->sbcp = new_color_pair(VAR_SIGNATURE_FORE_COLOR,
+				      VAR_SIGNATURE_BACK_COLOR);
+      }
+      else colors->sbcp = NULL;
     }
     
     return colors;

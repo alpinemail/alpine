@@ -270,6 +270,7 @@ typedef	struct CELL {
 typedef struct  LINE {
         struct  LINE *l_fp;             /* Link to the next line        */
         struct  LINE *l_bp;             /* Link to the previous line    */
+        int     l_sig;                  /* line is part of signature    */
         int     l_size;                 /* Allocated size               */
         int     l_used;                 /* Used size                    */
         CELL    l_text[1];              /* A bunch of characters.       */

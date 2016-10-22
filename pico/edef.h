@@ -31,7 +31,7 @@
 /* for MAIN.C */
 
 /* initialized global definitions */
-
+PCOLORS  *Pcolors = NULL;		/* colors for Pico		*/
 int	direction = 0;			/* direction of writing		*/
 int     fillcol = 72;                   /* Current fill column          */
 int     userfillcol = -1;               /* Fillcol set from cmd line    */
@@ -89,6 +89,7 @@ void    *input_cs;		/* passed to mbtow() via kbseq() */
 
 /* initialized global external declarations */
 
+extern  PCOLORS *Pcolors;		/* colors for Pico		*/
 extern  int	direction;
 extern  int     fillcol;                /* Fill column                  */
 extern  int     userfillcol;            /* Fillcol set from cmd line    */

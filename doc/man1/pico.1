@@ -1,4 +1,4 @@
-.TH pico 1 "Version 5.08"
+.TH pico 1 "Version 5.07"
 .SH Name
 pico \- simple text editor in the style of the Alpine Composer
 .SH Syntax
@@ -29,11 +29,9 @@ immediately below.  Paragraphs are delimited by blank lines, or by lines
 beginning with a space or tab.  Unjustification can be done immediately
 after justification using the control-U key combination. 
 .PP
-String searches are not sensitive to case, but one can be done
-by pressing the control-W followed by control-^.  A search begins at 
-the current cursor position and wraps around the end of the text.  
-The most recent search string is offered as the default in subsequent 
-searches.
+String searches are not sensitive to case.  A search begins at the current
+cursor position and wraps around the end of the text.  The most recent   
+search string is offered as the default in subsequent searches.
 .PP
 Blocks of text can be moved, copied or deleted with creative use of the
 command for mark (ctrl-^), delete (ctrl-k) and undelete (ctrl-u).
@@ -148,6 +146,88 @@ SIGHUP), \fIpico\fR will save the current work if needed before exiting.
 Work is saved under the current filename with ".save" appended.
 If the current work is unnamed, it is saved under the filename "pico.save".
 .PP
+.SH Color Support
+If your terminal supports colors, Pico can be configured to color
+text. Users can configure the color of the text, the text in the key menu,
+the titlebar, messages and prompt in the status line. As an added feature
+Pico can also be used to configure the color of up to three different
+levels of quoted text, and the signature of an email message. This is 
+useful when Pico is used as a tool (with the -t command line switch.)
+.PP
+Pico can tell you the number of colors that your terminal supports, when
+started with the switch -color_codes. In addition Pico will print a table
+showing the numerical code of every color supported in that terminal. In order
+to configure colors, one must use these numerical codes. For example, 0 is
+for black, so in order to configure a black color, one must use its code, the
+number 0.
+.PP
+In order to activate colors, one must use the option -ncolors with a numerical
+value indicating the number of colors tht your teminal supports, for example,
+\fI-ncolors 256\fR indicates that the user wishes to use a table of 256 colors.
+.PP
+All options that control color, are four letter options. Their last two 
+letters are either "fc" or "bc", indicating \fIforeground color\fR and 
+\fIbacground color\fR, respectively. The first two letters indicate the 
+type of text that is being configured, for example "nt" stands for 
+\fInormal text\fR, so that -ntfc represents the color of the normal text,
+while -ntbc represents the color of the background of normal text. Here
+is a complete list of the color options supported by Pico.
+.IP -color_codes
+displays the number of colors supported by the terminal, and a 
+table showing the association of colors and numerical codes
+.IP -ncolors \fInumber\fR
+activates color support in Pico, and tells Pico how many colors to use.
+Depending on your terminal \fInumber\fR could be 8, 16, or 256.
+.IP -ntfc \fInumber\fR
+specifies the number \fInum\fR of the color to be used to color normal text.
+.IP -ntbc \fInumber\fR
+specifies the number \fInum\fR of the color of the background for normal text.
+.IP -rtfc \fInumber\fR 	
+number of the color of reverse text. Default: same as background color
+of normal text (if specified.)
+.IP -rtbc \fInumber\fR 	
+number of the color of the background of reverse text. Default: same as 
+color of normal text (if specified.)
+.IP -tbfc \fInumber\fR
+number of color of text of the title bar. Default: same as
+foreground color of reverse text.
+.IP -tbbc \fInumber\fR
+number of the color of background of the title bar.
+.IP -klfc \fInumber\fR 	
+number of the color of the text of the key label.
+.IP -klbc \fInumber\fR
+number of color of background of the key label.
+.IP -knfc \fInumber\fR
+number of color of text of the key name.
+.IP -knbc \fInumber\fR
+number of color of background of the key name.
+.IP -stfc \fInumber\fR
+number of color of text of the status line.
+.IP -stbc \fInumber\fR
+number of color of background of the status line.
+.IP -prfc \fInumber\fR
+number of color of text of a prompt.
+.IP -prbc \fInumber\fR
+number of color of background of a prompt.
+.IP -q1fc \fInumber\fR
+number of color of text of level one of quoted text.
+.IP -q1bc \fnumber\fR
+number of color of background of level one of quoted text. If the option
+-q1bc is used, the default value of this option is the background color
+or normal text.
+.IP -q2fc \fInumber\fR
+number of color of text of level two of quoted text.
+.IP -q2bc \fInumber\fR
+number of color of background of level two of quoted text. If the option
+-q1bc is used, the default value of this option is the background color
+or normal text.
+.IP -q3fc \fInumber\fR
+number of color of text of level three of quoted text.
+.IP -sbfc \fInumber\fR
+number of color of text of signature block text.
+.IP -sbbc n\fIumber\fR
+number of color of background of signature block text.
+.PP
 .SH Bugs
 The manner in which lines longer than the display width are dealt
 is not immediately obvious.  Lines that continue beyond the edge
@@ -174,4 +254,4 @@ alpine(1)
 Source distribution (part of the Alpine Message System):
 
 .nf
-$Date: 2015-04-19 12:28:01 -0500 (Sun, 19 Apr 2015) $
+$Date: 2009-02-02 13:54:23 -0600 (Mon, 02 Feb 2009) $

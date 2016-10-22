@@ -159,11 +159,17 @@ typedef struct pico_atmt {
  * Structure to contain color options
  */
 typedef struct pico_colors {
+    COLOR_PAIR *ntcp;                   /* normal text color pair */
+    COLOR_PAIR *rtcp;                   /* reverse text color pair */
     COLOR_PAIR *tbcp;                   /* title bar color pair */
     COLOR_PAIR *klcp;                   /* key label color pair */
     COLOR_PAIR *kncp;                   /* key name color pair  */
     COLOR_PAIR *stcp;                   /* status color pair    */
     COLOR_PAIR *prcp;                   /* prompt color pair    */
+    COLOR_PAIR *qlcp;			/* quote level 1 pair	*/
+    COLOR_PAIR *qllcp;			/* quote level 2 pair	*/
+    COLOR_PAIR *qlllcp;			/* quote level 3 pair	*/
+    COLOR_PAIR *sbcp;                   /* signature block color pair */
 } PCOLORS;
 
 /*
