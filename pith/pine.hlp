@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 177 2016-10-22 00:32:52
+Alpine Commit 178 2016-10-23 23:14:56
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -187,6 +187,8 @@ Additions include:
 
   <LI> Unix-Alpine: Connect securely to a LDAP server on a secure port. 
        Based on a contribution by Wang Kang.
+
+  <LI> Colors configured in Alpine are inherited in the composer.
 
   <LI> When Alpine is compiled with password file and SMIME support 
        the password file is encrypted using a private key/public 

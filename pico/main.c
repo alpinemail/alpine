@@ -409,12 +409,11 @@ main(int argc, char *argv[])
 	    peeol();
 	}
 
+	update();			/* Fix up the screen    */
 	if(km_popped){
 	    term.t_mrow = 0;
 	    curwp->w_ntrows += 2;
 	}
-
-	update();			/* Fix up the screen    */
 
 #ifdef	MOUSE
 #ifdef  EX_MOUSE
@@ -975,6 +974,9 @@ Loop:
     Pcolors = pico_set_global_colors(ncolors, ntfc, ntbc, rtfc, rtbc,
 		tbfc, tbbc, klfc, klbc, knfc, knbc, stfc, stbc, prfc, prbc,
 		q1fc, q1bc, q2fc, q2bc, q3fc, q3bc, sbfc, sbbc);
+
+    if(Pcolors)
+       pico_toggle_color(1);
 
     /* return the first filename for editing */
     if(ac > 0)
