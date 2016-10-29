@@ -2820,7 +2820,7 @@ folder_lister_choice(SCROLL_S *sparms)
 	  return rv;
 	}
 
-	if(cntxt->dir->status & CNTXT_NOFIND){
+	if(index < 0 || (cntxt->dir->status & CNTXT_NOFIND)){
 	    rv = 1;		/* leave scrolltool to rebuild screen */
 	    FPROC(sparms)->fs->context = cntxt;
 	    FPROC(sparms)->fs->first_folder[0] = '\0';

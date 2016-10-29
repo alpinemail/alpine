@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 178 2016-10-23 23:14:56
+Alpine Commit 179 2016-10-28 19:53:46
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -477,6 +477,9 @@ Bugs that have been addressed include:
        by Holger Trapp.
 
   <LI> Crash when reviewing history of saving attachments.
+
+  <LI> Crash when canceling a goto command on a local collection that has
+       not been expanded and attempting to expand such collection.
 
   <LI> Crash in Pico when forwarding messages that contain a direction mark
        at the end of a line. Reported by James Mingo.
