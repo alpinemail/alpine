@@ -2773,6 +2773,12 @@ PaintHeader(int line,		/* physical line on screen */
     UCS              buf[NLINE];
     UCS	            *bufp;
     int              i, e, w;
+    COLOR_PAIR *lastc = NULL;
+
+    if(Pmaster && Pmaster->colors){
+       lastc = pico_get_cur_color();
+       pico_set_colorp(Pmaster->colors->ntcp, PSC_NONE);
+    }
 
     if(clear)
       pclear(COMPOSER_TOP_LINE, ComposerTopLine-1);
@@ -2857,6 +2863,9 @@ PaintHeader(int line,		/* physical line on screen */
     }
 
     display_delimiter(ComposerEditing ? 0 : 1);
+
+    if(lastc)
+       pico_set_colorp(lastc, PSC_NONE);
 }
 
 
@@ -3361,6 +3370,12 @@ void
 display_delimiter(int state)
 {
     UCS    *bufp, *buf;
+    COLOR_PAIR *lastc = NULL;
+
+    if(Pmaster && Pmaster->colors){
+       lastc = pico_get_cur_color();
+       pico_set_colorp(Pmaster->colors->ntcp, PSC_NONE);
+    }
 
     if(ComposerTopLine - 1 >= BOTTOM())		/* silently forget it */
       return;
@@ -3396,6 +3411,9 @@ display_delimiter(int state)
 
     peeol();
     fs_give((void **) &buf);
+
+    if(lastc)
+       pico_set_colorp(lastc, PSC_NONE);
 }
 
 

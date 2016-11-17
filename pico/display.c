@@ -141,9 +141,8 @@ vtinit(void)
     int i, j;
     VIDEO *vp;
     CELL   ac;
-    PCOLORS *pcolors = Pmaster && Pmaster->colors ? Pmaster->colors : Pcolors;
 
-    ac.c = ' ';
+    ac.c = '\0';
     ac.a = 0;
 
     if(Pmaster == NULL)
@@ -274,7 +273,7 @@ vtputc(CELL c)
     int      w;
 
     vp = vscreen[vtrow];
-    ac.c = ' ';
+    ac.c = '\0';
     ac.a = c.a;
     ac.d = c.d;
 
@@ -305,6 +304,7 @@ vtputc(CELL c)
           vp->v_text[vtind-1] = ac;
     }
     else if (c.c == '\t') {
+	ac.c = ' ';
         do {
             vtputc(ac);
 	}
@@ -362,7 +362,7 @@ vteeol(void)
     register VIDEO      *vp;
     CELL     c;
 
-    c.c = ' ';
+    c.c = Pmaster && Pmaster->colors || Pcolors ? '\0' : ' ';
     c.a = 0;
     vp = vscreen[vtrow];
 
@@ -456,8 +456,8 @@ update(void)
     while (wp != NULL){
         /* Look at any window with update flags set on. */
 
-	if(pcolors)
-	   repaint = window_signature_block(wp);
+	if(pcolors && (repaint = window_signature_block(wp)))
+	   wp->w_flag |= WFHARD;
         if (wp->w_flag != 0){
             /* If not force reframe, check the framing. */
 
@@ -610,27 +610,21 @@ out:
             i = wp->w_toprow;
 
             if ((wp->w_flag & ~WFMODE) == WFEDIT){
-		/* if the signature separator was modified (or created)
-		 * do the other side below
-		 */
-		if(repaint) goto other;
                 while (lp != wp->w_dotp){
                     ++i;
                     lp = lforw(lp);
 		}
 
-		if(pcolors != NULL)
-		   for (j = 0, quoted = -1; j < llength(lp); ++j){
-		      if(quoted < 0){
-		         if(lgetc(lp,j).c != '>' && lgetc(lp, j).c != ' ')
-			   quoted = 0;
-		         else if(lgetc(lp,j).c == '>')
-			   quoted = 1;
-		      }  
-		   }
-		else	/* turn off quoted flag if there are no colors */
-		   quoted = 0;
+                for (j = 0, quoted = -1; j < llength(lp); ++j){
+		    if(quoted < 0){
+		       if(lgetc(lp,j).c != '>' && lgetc(lp, j).c != ' ')
+			 quoted = 0;
+		       else if(lgetc(lp,j).c == '>')
+			 quoted = 1;
+		    }  
+		}
 
+		vscreen[i]->v_flag &= ~(VFSIG|VFNOR|VFQUO);
                 vscreen[i]->v_flag |= (quoted > 0 ? VFQUO : 0)|(lp->l_sig ? VFSIG : 0)| VFCHG;
                 vtmove(i, 0);
 
@@ -639,23 +633,20 @@ out:
                 vteeol();
 	    }
 	    else if ((wp->w_flag & (WFEDIT | WFHARD)) != 0){
-other:
                 while (i < wp->w_toprow+wp->w_ntrows){
 		    int flag = 0;
-		    if(pcolors != NULL)
-		       for (j = 0, quoted = -1; j < llength(lp) && quoted < 0; ++j){
-		         if(quoted < 0){
-			   if(lgetc(lp,j).c != '>' && lgetc(lp, j).c != ' ')
-			      quoted = 0;
-			   else if(lgetc(lp,j).c == '>')
-			      quoted = 1;
-		         }  
-		       }
-		    else	/* turn off quoted flag if there are no colors */
-			quoted = 0;
+		    for (j = 0, quoted = -1; j < llength(lp) && quoted < 0; ++j){
+		       if(quoted < 0){
+			 if(lgetc(lp,j).c != '>' && lgetc(lp, j).c != ' ')
+			    quoted = 0;
+			 else if(lgetc(lp,j).c == '>')
+			    quoted = 1;
+		      }  
+		    }
 		    if(repaint && (vscreen[i]->v_flag & VFSIG) && lp->l_sig == 0)
 		      flag |= VFNOR;
 		    if(quoted > 0) flag |= VFQUO;
+		    vscreen[i]->v_flag &= ~(VFSIG | VFNOR | VFQUO);
                     vscreen[i]->v_flag |= flag | (lp->l_sig ? VFSIG : 0 )| VFCHG;
                     vtmove(i, 0);
 
@@ -794,7 +785,7 @@ other:
 	    movecursor(wheadp->w_toprow, 0);
 	}
 	else{
-	    c.c = ' ';
+	    c.c = '\0';
 	    c.a = 0;
 	    for (i = 0; i < term.t_nrow-term.t_mrow; i++){
 		vscreen[i]->v_flag |= VFCHG;
@@ -998,11 +989,15 @@ updateline(int row,			/* row on screen */
     int   cleartoeol = 0;
     int   in_quote, quote_found = 0, level;
     PCOLORS *pcolors = Pmaster && Pmaster->colors ? Pmaster->colors : Pcolors;
-    COLOR_PAIR *qcolor = NULL, *lastc = NULL;
+    COLOR_PAIR *qcolor = NULL, *lastc = NULL, *pcolor = NULL;
+    int first = 1, lastattr = -1, change = 0;
     int x;	/* bit to indicate if we should eXecute a block below */
 
     if(row < 0 || row > term.t_nrow)
       return;
+
+    if(pcolors)
+      lastc = pico_get_cur_color();
 
     /* set up pointers to virtual and physical lines */
     cp1 = &vline[0];
@@ -1010,8 +1005,7 @@ updateline(int row,			/* row on screen */
     cp3 = &vline[term.t_ncol];
 
     /* advance past any common chars at the left */
-    if(pcolors == NULL 
-	|| !(*flags & (VFSIG|VFNOR|VFQUO)) && vline[0].c != ' ')
+    if(pcolors == NULL)
       while (cp1 != cp3 && cp1[0].c == cp2[0].c && cp1[0].a == cp2[0].a) {
 	++cp1;
 	++cp2;
@@ -1035,17 +1029,17 @@ updateline(int row,			/* row on screen */
     cp4 = &pline[term.t_ncol];
 
     if(cellwidth_ptr_to_ptr(cp1, cp3) == cellwidth_ptr_to_ptr(cp2, cp4))
-      while (cp3[-1].c == cp4[-1].c && cp3[-1].a == cp4[-1].a) {
+      while (cp3 != cp1 && cp3[-1].c == cp4[-1].c && cp3[-1].a == cp4[-1].a) {
 	--cp3;
 	--cp4;
-	if (cp3[0].c != ' ' || cp3[0].a != 0)	/* Note if any nonblank */
+	if (cp3[0].c != '\0' || cp3[0].a != 0)	/* Note if any nonblank */
 	  nbflag = TRUE;			/* in right match. */
       }
 
     cp5 = cp3;
 
     if (nbflag == FALSE && TERM_EOLEXIST) {	/* Erase to EOL ? */
-	while (cp5 != cp1 && cp5[-1].c == ' ' && cp5[-1].a == 0)
+	while (cp5 != cp1 && cp5[-1].c == '\0' && cp5[-1].a == 0)
 	  --cp5;
 
 	if (cp3-cp5 <= 3)		/* Use only if erase is */
@@ -1055,7 +1049,13 @@ updateline(int row,			/* row on screen */
     /* go to start of differences */
     movecursor(row, cellwidth_ptr_to_ptr(&vline[0], cp1));
 
-    if (!nbflag){				/* use insert or del char? */
+    /* the next code inserts a character or deletes one in the middle
+     * of a line. However, we do not need this code to work when we
+     * are using colors that depend on what is inserted/deleted, so
+     * we defer this work to the code below
+     */
+    x = pcolors && (pcolors->qlcp || pcolors->qllcp || pcolors->qlllcp);
+    if (!nbflag && x == 0){		/* use insert or del char? */
 	cp6 = cp3;
 	cp7 = cp4;
 
@@ -1095,20 +1095,9 @@ updateline(int row,			/* row on screen */
 	}
     }
 
-    if(pcolors && cp1 == cp5 && (*flags & (VFSIG|VFNOR|VFQUO)))
-      while(cp5 < &vline[term.t_ncol] && cp5->c != ' ') 
-	cp5++;
-
     if(cp1 != cp5 && display){
 	int w1, w2;
 
-	if(pcolors){
-	   lastc = pico_get_cur_color();
-	   if(row == 0)
-	      pico_set_colorp(pcolors->tbcp, PSC_NONE);
-	   else if(row < term.t_nrow - 2)
-		pico_set_colorp((*flags & VFSIG) ? pcolors->sbcp : pcolors->ntcp, PSC_NONE);
-	}
 	/*
 	 * If we need to copy characters from cp1 to cp2 and
 	 * we need to display them, then we have to worry about
@@ -1177,20 +1166,46 @@ updateline(int row,			/* row on screen */
 
 	if(display){
 	    if(pcolors){
-	       if(cp1->c != '>' && cp1->c != ' '){
-		in_quote = 0;
-	       } else if (in_quote && cp1->c == '>' && pcolors != NULL)
-		          level = (level + 1) % 3;
-	       if(level >= 0){
-		 if(level == 0) qcolor = pcolors->qlcp;
-		 else if(level == 1) qcolor = pcolors->qllcp;
-		 else if(level == 2) qcolor = pcolors->qlllcp;
-		 pico_set_colorp(qcolor, PSC_NONE);
-	       }
+		if(lastattr < 0){
+		  lastattr = cp1->a;
+		  change = 0;
+		}
+		else change = lastattr != cp1->a;
+		if(first != 0){
+		  first = 0;
+		  if(row == 0)
+		     pico_set_colorp(pcolors->tbcp, PSC_NONE);
+		  else if(row < term.t_nrow - 2)
+		     pcolor = (*flags & VFSIG) ? pcolors->sbcp : pcolors->ntcp;
+		}
+		if(cp1->c != '>' && cp1->c != ' ')
+		   in_quote = 0;
+		else if (in_quote && cp1->c == '>' && pcolors != NULL)
+		   level = (level + 1) % 3;
+		if(level >= 0){
+		   if(level == 0) pcolor = pcolors->qlcp;
+		   else if(level == 1) pcolor = pcolors->qllcp;
+		   else if(level == 2) pcolor = pcolors->qlllcp;
+	        }
+		if(cp1->a == 1)
+		   pcolor = pcolors->rtcp;	/* pcolor = proposed color */
+		if(change == 0)
+		  pico_set_colorp(pcolor, PSC_NONE);
+		else
+		  (*term.t_rev)(cp1->a);	/* set inverse for this char */
 	    }
 
-	    (*term.t_rev)(cp1->a);	/* set inverse for this char */
-	    (*term.t_putchar)((UCS) cp1->c);
+	    /* cp1->c could be null because we set it up that way by default. Initialization
+	     * is made with null characters. We did this because otherwise Pico does not
+	     * color trailing spaces in lines, so this gives a way for pico to distinguish
+	     * trailing spaces in lines from its own old default initialization of cells
+	     * using spaces. So when we get a null character we output the corresponding 
+	     * space that would have been output in the past. If you want to see what
+	     * would happen if we output a null character, rewrite the code below.
+	     */
+	    if(change == 0)
+	       (*term.t_rev)(cp1->a);	/* set inverse for this char */
+	    (*term.t_putchar)(cp1->c || pcolors == NULL ? cp1->c : ' ');
 	}
 
 	ww = wcellwidth((UCS) cp1->c);
@@ -1199,7 +1214,7 @@ updateline(int row,			/* row on screen */
 	*cp2++ = *cp1++;
     }
 
-    if (pcolors && lastc){
+    if (lastc){
 	(void)pico_set_colorp(lastc, PSC_NONE);
 	free_color_pair(&lastc);
     }
@@ -1214,8 +1229,7 @@ updateline(int row,			/* row on screen */
 	    *cp2++ = *cp1++;
     }
 
-    *flags &= ~(VFCHG|VFSIG|VFNOR|VFQUO);    /* flag this line is changed 
-*/
+    *flags &= ~VFCHG;			/* flag this line is changed */
 }
 
 
@@ -3035,7 +3049,7 @@ peeol(void)
     if(ttrow < 0 || ttrow > term.t_nrow)
       return;
 
-    cl.c = ' ';
+    cl.c = '\0';
     cl.a = 0;
 
     /*

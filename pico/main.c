@@ -395,6 +395,9 @@ main(int argc, char *argv[])
 
     while(1){
 
+	if(Pcolors)
+	   pico_set_colorp(Pcolors->ntcp, PSC_NONE);
+
 	if(km_popped){
 	    km_popped--;
 	    if(km_popped == 0) /* cause bottom three lines to be repainted */

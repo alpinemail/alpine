@@ -2721,6 +2721,12 @@ colors_for_pico(void)
       }
       else colors->ntcp = NULL;
 
+      if (VAR_REV_FORE_COLOR && VAR_REV_BACK_COLOR){
+	colors->rtcp = new_color_pair(VAR_REV_FORE_COLOR,
+				      VAR_REV_BACK_COLOR);
+      }
+      else colors->rtcp = NULL;
+
       if (VAR_SIGNATURE_FORE_COLOR && VAR_SIGNATURE_BACK_COLOR){
 	colors->sbcp = new_color_pair(VAR_SIGNATURE_FORE_COLOR,
 				      VAR_SIGNATURE_BACK_COLOR);
