@@ -103,7 +103,6 @@ void utf8_searchpgm (SEARCHPGM *pgm,char *charset)
  */
 
 #define MINENCWORD 9
-#define MAXENCWORD 75
 
 /* This resizing algorithm is stupid, but hopefully it should never be triggered
  * except for a pathological header.  The main concern is that we don't get a
@@ -129,8 +128,7 @@ long utf8_mime2text (SIZEDTEXT *src,SIZEDTEXT *dst,long flags)
     if (((se - s) > MINENCWORD) && (*s == '=') && (s[1] == '?') &&
       (cs = (char *) mime2_token (s+2,se,(unsigned char **) &ce)) &&
 	(e = mime2_token ((unsigned char *) ce+1,se,&ee)) &&
-	(te = mime2_text (t = e+2,se)) && (ee == e + 1) &&
-	((te - s) < MAXENCWORD)) {
+	(te = mime2_text (t = e+2,se)) && (ee == e + 1)){
       if (mime2_decode (e,t,te,&txt)) {
 	*ce = '\0';		/* temporarily tie off charset */
 	if ((ls = strchr (cs,'*')) != NULL) *ls = '\0';
