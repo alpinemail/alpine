@@ -3661,6 +3661,7 @@ sign_outgoing_message(METAENV *header, BODY **bodyP, int dont_detach, BODY **bp)
     PKCS7   *p7 = NULL;
     PKCS7   *p7_2 = NULL;
     STACK_OF(X509) *chain;
+    const EVP_MD *md = EVP_sha256();	/* use this digest instead of sha1 */
     int result = 0, error;
     int flags = dont_detach ? 0 : PKCS7_DETACHED;
     int level;
@@ -3701,7 +3702,10 @@ sign_outgoing_message(METAENV *header, BODY **bodyP, int dont_detach, BODY **bp)
    
     in = body_to_bio(body);
 
-    p7 = PKCS7_sign(pcert->cert, pcert->key, chain, in, flags);
+    flags |= PKCS7_PARTIAL;
+    if((p7 = PKCS7_sign(NULL, NULL, chain, in, flags)) != NULL
+	&& PKCS7_sign_add_signer(p7, pcert->cert, pcert->key, md, flags))
+	   PKCS7_final(p7, in, flags);
 
     if(bp && *bp){
       int i, save_encoding;
@@ -3722,8 +3726,11 @@ sign_outgoing_message(METAENV *header, BODY **bodyP, int dont_detach, BODY **bp)
       }
     }
 
-    if(bp && *bp)
-       p7_2 = PKCS7_sign(pcert->cert, pcert->key, chain, in_2, flags);
+    if(bp && *bp){
+       if((p7_2 = PKCS7_sign(NULL, NULL, chain, in_2, flags)) != NULL
+	&& PKCS7_sign_add_signer(p7_2, pcert->cert, pcert->key, md, flags))
+	   PKCS7_final(p7_2, in_2, flags);
+    }
 
     if(F_OFF(F_REMEMBER_SMIME_PASSPHRASE,ps_global))
       forget_private_keys();
@@ -3786,7 +3793,7 @@ sign_outgoing_message(METAENV *header, BODY **bodyP, int dont_detach, BODY **bp)
 	newBody->encoding = ENC7BIT;
 
 	set_parameter(&newBody->parameter, "protocol", "application/pkcs7-signature");
-	set_parameter(&newBody->parameter, "micalg", "sha1");
+	set_parameter(&newBody->parameter, "micalg", "sha-256");
 
 	p1 = mail_newbody_part();
 	p2 = mail_newbody_part();

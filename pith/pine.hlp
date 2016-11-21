@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 181 2016-11-18 23:17:58
+Alpine Commit 182 2016-11-21 15:27:11
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -212,6 +212,9 @@ Additions include:
   <LI> Add configuration <A href="h_config_ignore_size"><!--#echo var="FEAT_ignore-size-changes"--></A>
        that allows users to ignore errors in the computation of the size
        of a message from defective servers.
+
+  <LI> SMIME: Upgrade the default signature digest from sha1 to sha-256, since 
+       clients such as Thunderbird do not validate signatures that use sha1 digest.
 
   <LI> Add the configuration variable "default-directories", which is called
        <A href="h_config_history"><!--#echo var="VAR_default-directories"--></A>
