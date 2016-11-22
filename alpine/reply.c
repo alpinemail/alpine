@@ -2752,7 +2752,18 @@ free_pcolors(PCOLORS **colors)
 		free_color_pair(&(*colors)->stcp);
 	  if ((*colors)->prcp)
 		free_color_pair(&(*colors)->prcp);
-	  fs_give((void **)colors);
+	  if ((*colors)->qlcp)
+		free_color_pair(&(*colors)->qlcp);
+	  if ((*colors)->qllcp)
+		free_color_pair(&(*colors)->qllcp);
+	  if ((*colors)->qlllcp)
+		free_color_pair(&(*colors)->qlllcp);
+	  if ((*colors)->ntcp)
+		free_color_pair(&(*colors)->ntcp);
+	  if ((*colors)->rtcp)
+		free_color_pair(&(*colors)->rtcp);
+	  if ((*colors)->sbcp)
+		free_color_pair(&(*colors)->sbcp);
 	  fs_give((void **)colors);
 	  *colors = NULL;
 	}
