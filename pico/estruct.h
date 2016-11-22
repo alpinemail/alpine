@@ -344,6 +344,7 @@ typedef struct lmlist {
 
 typedef struct	VIDEO {
 	short	v_flag;			/* Flags */
+	int	v_length;		/* length of line */
 	CELL	v_text[1];		/* Screen data. */
 }	VIDEO;
 

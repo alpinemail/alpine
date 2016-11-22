@@ -43,7 +43,7 @@ static char rcsid[] = "$Id: display.c 1025 2008-04-08 22:59:38Z hubert@u.washing
 void     vtmove(int, int);
 void     vtputc(CELL);
 void     vteeol(void);
-void     updateline(int, CELL *, CELL *, short *);
+void     updateline(int, CELL *, CELL *, short *, int);
 void     updext(void);
 void     mlputi(int, int);
 void     pprints(int, int);
@@ -110,11 +110,7 @@ static KEYMENU menu_compose[] = {
 
 #define VFCHG   0x0001                  /* Changed flag			*/
 #define	VFEXT	0x0002			/* extended (beyond column 80)	*/
-#define	VFREV	0x0004			/* reverse video status		*/
-#define	VFREQ	0x0008			/* reverse video request	*/
-#define VFSIG	0x0010			/* in signature block		*/
-#define VFNOR	0x0020			/* in not signature block	*/
-#define VFQUO	0x0040			/* in quoted text		*/
+#define VFSIG	0x0004			/* in signature block		*/
 
 int     vtrow   = 0;                    /* Row location of SW cursor */
 int     vtcol   = 0;                    /* Column location of SW cursor */
@@ -142,7 +138,7 @@ vtinit(void)
     VIDEO *vp;
     CELL   ac;
 
-    ac.c = '\0';
+    ac.c = ' ';
     ac.a = 0;
 
     if(Pmaster == NULL)
@@ -182,6 +178,7 @@ vtinit(void)
 	    vp->v_text[j] = ac;
 
 	vp->v_flag = 0;
+	vp->v_length = 0;
         vscreen[i] = vp;
 
         vp = (VIDEO *) malloc(sizeof(VIDEO)+(term.t_ncol*sizeof(CELL)));
@@ -204,6 +201,7 @@ vtinit(void)
 	    vp->v_text[j] = ac;
 
 	vp->v_flag = 0;
+	vp->v_length = 0;
         pscreen[i] = vp;
     }
 
@@ -273,7 +271,7 @@ vtputc(CELL c)
     int      w;
 
     vp = vscreen[vtrow];
-    ac.c = '\0';
+    ac.c = ' ';
     ac.a = c.a;
     ac.d = c.d;
 
@@ -362,7 +360,7 @@ vteeol(void)
     register VIDEO      *vp;
     CELL     c;
 
-    c.c = Pmaster && Pmaster->colors || Pcolors ? '\0' : ' ';
+    c.c = ' ';
     c.a = 0;
     vp = vscreen[vtrow];
 
@@ -456,8 +454,10 @@ update(void)
     while (wp != NULL){
         /* Look at any window with update flags set on. */
 
-	if(pcolors && (repaint = window_signature_block(wp)))
-	   wp->w_flag |= WFHARD;
+	if(pcolors && (repaint = window_signature_block(wp))){
+	   sgarbf = TRUE;
+	   wp->w_flag |= WFEDIT | WFHARD;
+	}
         if (wp->w_flag != 0){
             /* If not force reframe, check the framing. */
 
@@ -614,18 +614,8 @@ out:
                     ++i;
                     lp = lforw(lp);
 		}
-
-                for (j = 0, quoted = -1; j < llength(lp); ++j){
-		    if(quoted < 0){
-		       if(lgetc(lp,j).c != '>' && lgetc(lp, j).c != ' ')
-			 quoted = 0;
-		       else if(lgetc(lp,j).c == '>')
-			 quoted = 1;
-		    }  
-		}
-
-		vscreen[i]->v_flag &= ~(VFSIG|VFNOR|VFQUO);
-                vscreen[i]->v_flag |= (quoted > 0 ? VFQUO : 0)|(lp->l_sig ? VFSIG : 0)| VFCHG;
+		vscreen[i]->v_flag |= (lp->l_sig ? VFSIG : 0)| VFCHG;
+		vscreen[i]->v_length = llength(lp);
                 vtmove(i, 0);
 
                 for (j = 0; j < llength(lp); ++j)
@@ -634,20 +624,8 @@ out:
 	    }
 	    else if ((wp->w_flag & (WFEDIT | WFHARD)) != 0){
                 while (i < wp->w_toprow+wp->w_ntrows){
-		    int flag = 0;
-		    for (j = 0, quoted = -1; j < llength(lp) && quoted < 0; ++j){
-		       if(quoted < 0){
-			 if(lgetc(lp,j).c != '>' && lgetc(lp, j).c != ' ')
-			    quoted = 0;
-			 else if(lgetc(lp,j).c == '>')
-			    quoted = 1;
-		      }  
-		    }
-		    if(repaint && (vscreen[i]->v_flag & VFSIG) && lp->l_sig == 0)
-		      flag |= VFNOR;
-		    if(quoted > 0) flag |= VFQUO;
-		    vscreen[i]->v_flag &= ~(VFSIG | VFNOR | VFQUO);
-                    vscreen[i]->v_flag |= flag | (lp->l_sig ? VFSIG : 0 )| VFCHG;
+                    vscreen[i]->v_flag |= (lp->l_sig ? VFSIG : 0 )| VFCHG;
+		    vscreen[i]->v_length = llength(lp);
                     vtmove(i, 0);
 
 		    /* if line has been changed */
@@ -785,7 +763,7 @@ out:
 	    movecursor(wheadp->w_toprow, 0);
 	}
 	else{
-	    c.c = '\0';
+	    c.c = ' ';
 	    c.a = 0;
 	    for (i = 0; i < term.t_nrow-term.t_mrow; i++){
 		vscreen[i]->v_flag |= VFCHG;
@@ -845,7 +823,7 @@ out:
 #endif
             vp2 = pscreen[i];
 
-            updateline(i, &vp1->v_text[0], &vp2->v_text[0], &vp1->v_flag);
+            updateline(i, &vp1->v_text[0], &vp2->v_text[0], &vp1->v_flag, vp1->v_length);
 	}
     }
 
@@ -981,7 +959,8 @@ void
 updateline(int row,			/* row on screen */
 	   CELL vline[],		/* what we want it to end up as */
 	   CELL pline[],		/* what it looks like now       */
-	   short *flags)
+	   short *flags,
+	   int len)
 {
     CELL *cp1, *cp2, *cp3, *cp4, *cp5, *cp6, *cp7;
     int   display = TRUE;
@@ -1019,7 +998,7 @@ updateline(int row,			/* row on screen */
  */
     /* if both lines are the same, no update needs to be done */
     if (cp1 == cp3){
-	*flags &= ~VFCHG;			/* mark it clean */
+	*flags &= ~(VFCHG|VFSIG);			/* mark it clean */
 	return;
     }
 
@@ -1032,14 +1011,14 @@ updateline(int row,			/* row on screen */
       while (cp3 != cp1 && cp3[-1].c == cp4[-1].c && cp3[-1].a == cp4[-1].a) {
 	--cp3;
 	--cp4;
-	if (cp3[0].c != '\0' || cp3[0].a != 0)	/* Note if any nonblank */
+	if (cp3[0].c != ' ' || cp3[0].a != 0)	/* Note if any nonblank */
 	  nbflag = TRUE;			/* in right match. */
       }
 
     cp5 = cp3;
 
     if (nbflag == FALSE && TERM_EOLEXIST) {	/* Erase to EOL ? */
-	while (cp5 != cp1 && cp5[-1].c == '\0' && cp5[-1].a == 0)
+	while (cp5 != cp1 && cp5[-1].c == ' ' && cp5[-1].a == 0)
 	  --cp5;
 
 	if (cp3-cp5 <= 3)		/* Use only if erase is */
@@ -1159,6 +1138,9 @@ updateline(int row,			/* row on screen */
 	}
     }
 
+    if(pcolors && len < term.t_ncol)
+      cp5 = cp1 + len;
+
     in_quote = 1;
     level = -1;
     while (cp1 != cp5) {		/* Ordinary. */
@@ -1195,17 +1177,9 @@ updateline(int row,			/* row on screen */
 		  (*term.t_rev)(cp1->a);	/* set inverse for this char */
 	    }
 
-	    /* cp1->c could be null because we set it up that way by default. Initialization
-	     * is made with null characters. We did this because otherwise Pico does not
-	     * color trailing spaces in lines, so this gives a way for pico to distinguish
-	     * trailing spaces in lines from its own old default initialization of cells
-	     * using spaces. So when we get a null character we output the corresponding 
-	     * space that would have been output in the past. If you want to see what
-	     * would happen if we output a null character, rewrite the code below.
-	     */
 	    if(change == 0)
 	       (*term.t_rev)(cp1->a);	/* set inverse for this char */
-	    (*term.t_putchar)(cp1->c || pcolors == NULL ? cp1->c : ' ');
+	    (*term.t_putchar)(cp1->c);
 	}
 
 	ww = wcellwidth((UCS) cp1->c);
@@ -1229,7 +1203,7 @@ updateline(int row,			/* row on screen */
 	    *cp2++ = *cp1++;
     }
 
-    *flags &= ~VFCHG;			/* flag this line is changed */
+    *flags &= ~(VFCHG|VFSIG);			/* flag this line is changed */
 }
 
 
@@ -3049,7 +3023,7 @@ peeol(void)
     if(ttrow < 0 || ttrow > term.t_nrow)
       return;
 
-    cl.c = '\0';
+    cl.c = ' ';
     cl.a = 0;
 
     /*
