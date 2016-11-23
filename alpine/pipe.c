@@ -3,8 +3,8 @@ static char rcsid[] = "$Id: pipe.c 155 2006-09-29 23:28:46Z hubert@u.washington.
 #endif
 /*
  * ========================================================================
- * Copyright 2006-2007 University of Washington
  * Copyright 2013-2016 Eduardo Chappa
+ * Copyright 2006-2007 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

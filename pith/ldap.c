@@ -4,8 +4,8 @@ static char rcsid[] = "$Id: ldap.c 1204 2009-02-02 19:54:23Z hubert@u.washington
 
 /*
  * ========================================================================
- * Copyright 2006-2008 University of Washington
  * Copyright 2013-2016 Eduardo Chappa
+ * Copyright 2006-2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

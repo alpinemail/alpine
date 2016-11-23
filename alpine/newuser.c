@@ -4,8 +4,8 @@ static char rcsid[] = "$Id: newuser.c 1266 2009-07-14 18:39:12Z hubert@u.washing
 
 /*
  * ========================================================================
- * Copyright 2006-2008 University of Washington
  * Copyright 2013-2016 Eduardo Chappa
+ * Copyright 2006-2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ new_user_or_version(struct pine *ps)
     shown_text = text;
 
     /*
-     * Set it if the major revision number
+     * Set this if the major revision number
      * (the first after the dot) has changed.
      */
     ps->phone_home = (first_time_alpine_user
@@ -141,7 +141,7 @@ new_user_or_version(struct pine *ps)
 		setbitmap(sargs.keys.bitmap);
 
 		if(ps->phone_home){
-		    km.keys[NUOV_EXIT].label = "Exit this greeting";
+	            km.keys[NUOV_EXIT].label = "Exit this greeting";
 		    km.keys[NUOV_EXIT].bind.nch = 1;
 		}
 		else{

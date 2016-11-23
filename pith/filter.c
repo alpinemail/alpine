@@ -4,8 +4,8 @@ static char rcsid[] = "$Id: filter.c 1266 2009-07-14 18:39:12Z hubert@u.washingt
 
 /*
  * ========================================================================
- * Copyright 2006-2008 University of Washington
  * Copyright 2013-2016 Eduardo Chappa
+ * Copyright 2006-2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -7542,7 +7542,7 @@ html_element_comment(FILTER_S *f, char *s)
 		      HD(f)->bitbucket = 0;
 		    else if(!strucmp(s, "running"))
 		      HD(f)->bitbucket = 0;
-		    else if(!strucmp(s, "phone_home") && ps_global->phone_home)
+		    else if(!strucmp(s, "PHONE_HOME") && ps_global->phone_home)
 		      HD(f)->bitbucket = 0;
 #ifdef	_WINDOWS
 		    else if(!strucmp(s, "os_windows"))

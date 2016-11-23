@@ -4,8 +4,8 @@ static char rcsid[] = "$Id: send.c 1142 2008-08-13 17:22:21Z hubert@u.washington
 
 /*
  * ========================================================================
- * Copyright 2006-2008 University of Washington
  * Copyright 2013-2016 Eduardo Chappa
+ * Copyright 2006-2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,6 +72,7 @@ typedef struct body_particulars {
 } BODY_PARTICULARS_S;
 
 #define	PHONE_HOME_VERSION	"-count"
+
 #define	PHONE_HOME_HOST		"patches.freeiz.com"
 
 /*
@@ -5572,7 +5573,7 @@ phone_home(char *addr)
 
     if((body->contents.text.data = (void *)so_get(PicoText,NULL,EDIT_ACCESS)) != NULL){
 	so_puts((STORE_S *)body->contents.text.data, "Document request: ");
-	so_puts((STORE_S *)body->contents.text.data, "Alpine-");
+	so_puts((STORE_S *)body->contents.text.data, "Alpine-"); 
 	so_puts((STORE_S *)body->contents.text.data, ALPINE_VERSION);
 	if(ps_global->first_time_user)
 	  so_puts((STORE_S *)body->contents.text.data, " for New Users");
@@ -5586,7 +5587,7 @@ phone_home(char *addr)
 
 	(void) pine_simple_send(outgoing, &body, NULL,NULL,NULL,NULL, SS_NULLRP);
 
-	q_status_message(SM_ORDER, 1, 3, "Thanks for being counted!");
+	q_status_message(SM_ORDER, 1, 3, "Thank you for being counted!");
     }
     else
       q_status_message(SM_ORDER | SM_DING, 3, 4,

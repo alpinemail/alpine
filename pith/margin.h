@@ -2,8 +2,8 @@
  * $Id: margin.h 1032 2008-04-11 00:30:04Z hubert@u.washington.edu $
  *
  * ========================================================================
- * Copyright 2006-2008 University of Washington
  * Copyright 2013-2016 Eduardo Chappa
+ * Copyright 2006-2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

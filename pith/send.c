@@ -1689,7 +1689,7 @@ ADDRESS *
 phone_home_from(void)
 {
     ADDRESS *addr = mail_newaddr();
-    char     tmp[32];	
+    char     tmp[64];	
 
     /* garble up mailbox name */
     snprintf(tmp, sizeof(tmp), "hash_%08u", phone_home_hash(ps_global->VAR_USER_ID));

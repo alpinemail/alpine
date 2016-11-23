@@ -42,12 +42,12 @@ int	    pine_simple_send(ENVELOPE *, BODY **, ACTION_S **, char *, char *, char 
 void	    pine_send(ENVELOPE *, BODY **, char *, ACTION_S *, char *, REPLY_S *,
 		      REDRAFT_POS_S *, char *, PINEFIELD *, int);
 int	    upload_msg_to_pico(char *, size_t, long *);
-void        phone_home(char *);
 void        create_message_body(BODY **, PATMT *, int);
 char	   *pine_send_status(int, char *, char *, size_t, int *);
 int	    confirm_daemon_send(void);
 int	    build_address(char *, char **,char **, BUILDER_ARG *, int *);
 void	    free_attachment_list(PATMT **);
+void        phone_home(char *);
 
 
 #endif /* PINE_SEND_INCLUDED */

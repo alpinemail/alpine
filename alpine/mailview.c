@@ -174,11 +174,11 @@ int	    url_launch(HANDLE_S *);
 int	    url_launch_too_long(int);
 char	   *url_external_handler(HANDLE_S *, int);
 void	    url_mailto_addr(ADDRESS **, char *);
+int	    url_local_phone_home(char *);
 int	    url_local_imap(char *);
 int	    url_local_nntp(char *);
 int	    url_local_news(char *);
 int	    url_local_file(char *);
-int	    url_local_phone_home(char *);
 static int  print_to_printer(SCROLL_S *);
 int	    search_text(int, long, int, char **, Pos *, int *);
 void	    update_scroll_titlebar(long, int);
@@ -1605,10 +1605,10 @@ url_local_handler(char *s)
 	{"ldap://", 7, url_local_ldap},
 #endif
 	{"news:", 5, url_local_news},
+	{"x-alpine-phone-home:", 20, url_local_phone_home},
 	{"x-alpine-gripe:", 15, gripe_gripe_to},
 	{"x-alpine-help:", 14, url_local_helper},
 	{"x-pine-help:", 12, url_local_helper},
-	{"x-alpine-phone-home:", 20, url_local_phone_home},
 	{"x-alpine-config:", 16, url_local_config},
 	{"x-alpine-cert:", 14, url_local_certdetails},
 	{"#", 1, url_local_fragment},
@@ -2164,10 +2164,10 @@ url_local_fragment(char *fragment)
 
 
 int
-url_local_phone_home(char *url)
+url_local_phone_home(char *URL)
 {
-    phone_home(url + strlen("x-alpine-phone-home:"));
-    return(2);
+   phone_home(URL + strlen("x-alpine-phone-home:"));
+   return(2);
 }
 
 

@@ -2,6 +2,7 @@
  * $Id: pattern.h 137 2006-09-22 21:34:06Z mikes@u.washington.edu $
  *
  * ========================================================================
+ * Copyright 2013-2016 Eduardo Chappa
  * Copyright 2006 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
