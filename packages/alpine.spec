@@ -1,13 +1,13 @@
 Summary: Alpine mail user agent
 Name: alpine
-Version: 2.20
+Version: 2.20.99
 Release: 1
 License: Apache License
 Group: Applications/Mail
 Source: http://patches.freeiz.com/alpine/release/src/%{name}-%{version}.tar.xz
 URL: http://patches.freeiz.com/alpine/
 Vendor: Patches for Pine and Alpine
-Packager: Eduardo Chappa <chappa@gmx.com>
+Packager: Eduardo Chappa <alpine.chappa@gmx.com>
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %description
