@@ -302,7 +302,6 @@ vtputc(CELL c)
           vp->v_text[vtind-1] = ac;
     }
     else if (c.c == '\t') {
-	ac.c = ' ';
         do {
             vtputc(ac);
 	}
@@ -615,7 +614,25 @@ out:
                     lp = lforw(lp);
 		}
 		vscreen[i]->v_flag |= (lp->l_sig ? VFSIG : 0)| VFCHG;
-		vscreen[i]->v_length = llength(lp);
+		/* compute physical length of line in screen */
+		vscreen[i]->v_length = 0;
+		for (j = 0; vscreen[i]->v_length < term.t_ncol
+			    && j < llength(lp); ++j){
+		    c = lgetc(lp, j);
+		    if(c.c == '\t'){
+		       vscreen[i]->v_length |= 0x07;
+		       vscreen[i]->v_length++;
+		    }
+		    else if(ISCONTROL(c.c)){
+		       vscreen[i]->v_length += 2;
+		    }
+		    else{
+		       int w;
+
+		       w = wcellwidth((UCS) c.c);
+		       vscreen[i]->v_length += (w >= 0 ? w : 1);
+		    }
+		}
                 vtmove(i, 0);
 
                 for (j = 0; j < llength(lp); ++j)
@@ -625,7 +642,25 @@ out:
 	    else if ((wp->w_flag & (WFEDIT | WFHARD)) != 0){
                 while (i < wp->w_toprow+wp->w_ntrows){
                     vscreen[i]->v_flag |= (lp->l_sig ? VFSIG : 0 )| VFCHG;
-		    vscreen[i]->v_length = llength(lp);
+		    /* compute physical length of line in screen */
+		    vscreen[i]->v_length = 0;
+		    for (j = 0; vscreen[i]->v_length < term.t_ncol
+			    && j < llength(lp); ++j){
+		        c = lgetc(lp, j);
+		        if(c.c == '\t'){
+		           vscreen[i]->v_length |= 0x07;
+		           vscreen[i]->v_length++;
+		        }
+		        else if(ISCONTROL(c.c)){
+		           vscreen[i]->v_length += 2;
+		        }
+		        else{
+		           int w;
+
+			   w = wcellwidth((UCS) c.c);
+		           vscreen[i]->v_length += (w >= 0 ? w : 1);
+		       }
+		    }
                     vtmove(i, 0);
 
 		    /* if line has been changed */
@@ -1138,7 +1173,7 @@ updateline(int row,			/* row on screen */
 	}
     }
 
-    if(pcolors && len < term.t_ncol)
+    if(row != 0 && pcolors && len < term.t_ncol)
       cp5 = cp1 + len;
 
     in_quote = 1;
