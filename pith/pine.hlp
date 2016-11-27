@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 187 2016-11-25 17:31:13
+Alpine Commit 188 2016-11-26 17:58:22
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -461,6 +461,10 @@ Bugs that have been addressed include:
 
   <LI> The _INIT_ token does not skip over non-alphanumeric characters in
        the name. Reported by Andreas Fehr.
+
+  <LI> When opening an INBOX folder in a context different from the 
+       incoming folders collection, from the command line, Alpine would 
+       open the INBOX folder from the incoming folders collection.
 
   <LI> Mismatch in size of UCS and CELL caused a corruption in the
        content of a pointer, which made the speller in PC-Alpine get the 

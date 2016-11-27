@@ -1179,6 +1179,11 @@ main(int argc, char **argv)
 		pine_state->mangled_footer = 1;
 	    }
 
+	    if(args.data.folder && *args.data.folder 
+		&& !strucmp(args.data.folder, ps_global->inbox_name)
+		&& cntxt != ps_global->context_list)
+		notrealinbox = 1;
+
             if(do_broach_folder(args.data.folder, cntxt, NULL, notrealinbox ? 0L : DB_INBOXWOCNTXT) <= 0){
 		q_status_message1(SM_ORDER, 3, 4,
 		    _("Unable to open folder \"%s\""), args.data.folder);
