@@ -15,7 +15,7 @@ dnl  */
 
 AC_PREREQ([2.69])
 
-AC_REVISION([Rev:18 by chappa@washington.edu])
+AC_REVISION([Rev:19 by chappa@washington.edu])
 
 dnl Alpine Version Number is in $srcdir/VERSION
 AC_INIT([alpine],[m4_normalize(m4_include(VERSION))],[chappa@washington.edu])
@@ -1450,6 +1450,11 @@ if test "x$alpine_SSLTYPE" != "xnone" ; then
   fi
   if test "x$alpine_CRYPTO" = "xnone" ; then
      AC_MSG_ERROR(crypto library NOT found)
+     exit 1
+  fi
+  AC_CHECK_HEADER(crypto.h, , [ alpine_CRYPTO_DEVEL="none" ])
+  if test "x$alpine_CRYPTO_DEVEL" = "xnone" ; then
+     AC_MSG_ERROR(crypto library file crypt.h NOT found. Install correspoding licrypt-devel package)
      exit 1
   fi
 fi
