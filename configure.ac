@@ -15,7 +15,7 @@ dnl  */
 
 AC_PREREQ([2.69])
 
-AC_REVISION([Rev:19 by chappa@washington.edu])
+AC_REVISION([Rev:20 by chappa@washington.edu])
 
 dnl Alpine Version Number is in $srcdir/VERSION
 AC_INIT([alpine],[m4_normalize(m4_include(VERSION))],[chappa@washington.edu])
@@ -764,6 +764,12 @@ else
 	   alpine_SSLINCLUDE="/usr/include/openssl" 
 	   alpine_SSLLIB="/usr/lib"
         fi
+      elif test -f /etc/manjaro-release ; then
+	   alpine_SSLDIR="/etc/ssl"
+	   alpine_SSLCERTS="$alpine_SSLDIR/certs"
+	   alpine_SSLKEYS="$alpine_SSLDIR/private"
+	   alpine_SSLINCLUDE="/usr/include/openssl" 
+	   alpine_SSLLIB="/usr/lib"
       else
         alpine_SSLTYPE="nopwd"
         alpine_SSLDIR="/usr"
@@ -1454,7 +1460,7 @@ if test "x$alpine_SSLTYPE" != "xnone" ; then
   fi
   AC_CHECK_HEADER(crypto.h, , [ alpine_CRYPTO_DEVEL="none" ])
   if test "x$alpine_CRYPTO_DEVEL" = "xnone" ; then
-     AC_MSG_ERROR(crypto library file crypt.h NOT found. Install correspoding licrypt-devel package)
+     AC_MSG_ERROR(crypto library file crypto.h NOT found. Install correspoding libcrypt-devel package)
      exit 1
   fi
 fi
