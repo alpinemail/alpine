@@ -44,6 +44,7 @@ void     vtmove(int, int);
 void     vtputc(CELL);
 void     vteeol(void);
 void     updateline(int, CELL *, CELL *, short *, int);
+void     updatelinecolor(int, CELL *, CELL *, short *, int);
 void     updext(void);
 void     mlputi(int, int);
 void     pprints(int, int);
@@ -984,61 +985,29 @@ updext(void)
     }
 }
 
-
-/*
- * Update a single line. This does not know how to use insert or delete
- * character sequences; we are using VT52 functionality. Update the physical
- * row and column variables.
- */
+/* update line color, to be executed to update lines when color is on */
 void
-updateline(int row,			/* row on screen */
-	   CELL vline[],		/* what we want it to end up as */
-	   CELL pline[],		/* what it looks like now       */
-	   short *flags,
-	   int len)
+updatelinecolor (int row, CELL vline[], CELL pline[], short *flags, int len)
 {
     CELL *cp1, *cp2, *cp3, *cp4, *cp5, *cp6, *cp7;
-    int   display = TRUE;
     int   nbflag;		/* non-blanks to the right flag? */
     int   cleartoeol = 0;
     int   in_quote, quote_found = 0, level;
     PCOLORS *pcolors = Pmaster && Pmaster->colors ? Pmaster->colors : Pcolors;
     COLOR_PAIR *qcolor = NULL, *lastc = NULL, *pcolor = NULL;
     int first = 1, lastattr = -1, change = 0;
-    int x;	/* bit to indicate if we should eXecute a block below */
 
-    if(row < 0 || row > term.t_nrow)
+    if(pcolors == NULL){
+      updateline(row, vline, pline, flags, len);
       return;
+    }
 
-    if(pcolors)
-      lastc = pico_get_cur_color();
+    nbflag = FALSE;
+    lastc = pico_get_cur_color();
 
     /* set up pointers to virtual and physical lines */
     cp1 = &vline[0];
     cp2 = &pline[0];
-    cp3 = &vline[term.t_ncol];
-
-    /* advance past any common chars at the left */
-    if(pcolors == NULL)
-      while (cp1 != cp3 && cp1[0].c == cp2[0].c && cp1[0].a == cp2[0].a) {
-	++cp1;
-	++cp2;
-      }
-
-/* This can still happen, even though we only call this routine on changed
- * lines. A hard update is always done when a line splits, a massive
- * change is done, or a buffer is displayed twice. This optimizes out most
- * of the excess updating. A lot of computes are used, but these tend to
- * be hard operations that do a lot of update, so I don't really care.
- */
-    /* if both lines are the same, no update needs to be done */
-    if (cp1 == cp3){
-	*flags &= ~(VFCHG|VFSIG);			/* mark it clean */
-	return;
-    }
-
-    /* find out if there is a match on the right */
-    nbflag = FALSE;
     cp3 = &vline[term.t_ncol];
     cp4 = &pline[term.t_ncol];
 
@@ -1060,16 +1029,196 @@ updateline(int row,			/* row on screen */
 	  cp5 = cp3;			/* fewer characters. */
     }
 
+    /* go to start of line */
+    movecursor(row, 0);
+
+    if(cp1 != cp5){
+	int w1, w2;
+
+	w1 = cellwidth_ptr_to_ptr(cp1, cp3);
+	w2 = cellwidth_ptr_to_ptr(cp2, cp2 + (cp3-cp1));
+
+	if(w1 < w2 || (nbflag && w1 != w2)){
+	    if(TERM_EOLEXIST){
+		if(nbflag){
+		    /*
+		     * Draw all of the characters starting with cp1
+		     * until we get to all spaces, then clear to the end of
+		     * line from there. Watch out we don't run over the
+		     * right hand edge, which shouldn't happen.
+		     *
+		     * Set cp5 to the first of the repeating spaces.
+		     */
+		    cp5 = &vline[term.t_ncol];
+		    while (cp5 != cp1 && cp5[-1].c == ' ' && cp5[-1].a == 0)
+		      --cp5;
+		}
+
+		/*
+		 * In the !nbflag case we want spaces from cp5 on.
+		 * Setting cp3 to something different from cp5 triggers
+		 * the clear to end of line below.
+		 */
+		if(cellwidth_ptr_to_ptr(&vline[0], cp5) < term.t_ncol)
+		  cleartoeol++;
+	    }
+	    else{
+		int w;
+
+		/*
+		 * No peeol so draw all the way to the edge whether they
+		 * are spaces or not.
+		 */
+		cp3 = &vline[0];
+		for(w = 0; w < term.t_ncol; cp3++){
+		    int ww;
+
+		    ww = wcellwidth((UCS) cp3->c);
+		    w += (ww >= 0 ? ww : 1);
+		}
+
+		cp5 = cp3;
+	    }
+	}
+    }
+
+    if(row != 0 && len < term.t_ncol)
+      cp5 = cp1 + len;
+
+    in_quote = 1;
+    level = -1;
+    while (cp1 != cp5){		/* Ordinary. */
+	int ww;
+
+	if(lastattr < 0){
+	    lastattr = cp1->a;
+	    change = 0;
+	}
+	else 
+	    change = lastattr != cp1->a;
+	if(first != 0){
+	  first = 0;
+	  if(row == 0)
+	     pico_set_colorp(pcolors->tbcp, PSC_NONE);
+	  else if(row < term.t_nrow - 2)
+	     pcolor = (*flags & VFSIG) ? pcolors->sbcp : pcolors->ntcp;
+	}
+	if(cp1->c != '>' && cp1->c != ' ')
+	   in_quote = 0;
+	else if (in_quote && cp1->c == '>' && pcolors != NULL)
+	   level = (level + 1) % 3;
+	if(level >= 0){
+	   if(level == 0) pcolor = pcolors->qlcp;
+	   else if(level == 1) pcolor = pcolors->qllcp;
+	   else if(level == 2) pcolor = pcolors->qlllcp;
+	}
+	if(cp1->a == 1)
+	   pcolor = pcolors->rtcp;	/* pcolor = proposed color */
+	if(change == 0)
+	  pico_set_colorp(pcolor, PSC_NONE);
+	else
+	  (*term.t_rev)(cp1->a);	/* set inverse for this char */
+
+	if(change == 0)
+	   (*term.t_rev)(cp1->a);	/* set inverse for this char */
+	(*term.t_putchar)(cp1->c);
+
+	ww = wcellwidth((UCS) cp1->c);
+	ttcol += (ww >= 0 ? ww : 1);
+
+	*cp2++ = *cp1++;
+    }
+
+    if (lastc){
+	(void)pico_set_colorp(lastc, PSC_NONE);
+	free_color_pair(&lastc);
+    }
+
+    (*term.t_rev)(0);			/* turn off inverse anyway! */
+
+    if (cp5 != cp3 || cleartoeol)	/* Erase. */
+	peeol();
+
+    *flags &= ~(VFCHG|VFSIG);			/* flag this line is changed */
+}
+
+
+
+/*
+ * Update a single line. This does not know how to use insert or delete
+ * character sequences; we are using VT52 functionality. Update the physical
+ * row and column variables.
+ */
+void
+updateline(int row,			/* row on screen */
+	   CELL vline[],		/* what we want it to end up as */
+	   CELL pline[],		/* what it looks like now       */
+	   short *flags,
+	   int len)
+{
+    CELL *cp1, *cp2, *cp3, *cp4, *cp5, *cp6, *cp7;
+    int   display = TRUE;
+    int   nbflag;		/* non-blanks to the right flag? */
+    int   cleartoeol = 0;
+
+    if(row < 0 || row > term.t_nrow)
+      return;
+
+    if((Pmaster && Pmaster->colors) || Pcolors){
+      updatelinecolor(row, vline, pline, flags, len);
+      return;
+    }
+
+    /* set up pointers to virtual and physical lines */
+    cp1 = &vline[0];
+    cp2 = &pline[0];
+    cp3 = &vline[term.t_ncol];
+
+    /* advance past any common chars at the left */
+    while (cp1 != cp3 && cp1[0].c == cp2[0].c && cp1[0].a == cp2[0].a) {
+	++cp1;
+	++cp2;
+    }
+
+/* This can still happen, even though we only call this routine on changed
+ * lines. A hard update is always done when a line splits, a massive
+ * change is done, or a buffer is displayed twice. This optimizes out most
+ * of the excess updating. A lot of computes are used, but these tend to
+ * be hard operations that do a lot of update, so I don't really care.
+ */
+    /* if both lines are the same, no update needs to be done */
+    if (cp1 == cp3){
+	*flags &= ~VFCHG;			/* mark it clean */
+	return;
+    }
+
+    /* find out if there is a match on the right */
+    nbflag = FALSE;
+    cp3 = &vline[term.t_ncol];
+    cp4 = &pline[term.t_ncol];
+
+    if(cellwidth_ptr_to_ptr(cp1, cp3) == cellwidth_ptr_to_ptr(cp2, cp4))
+      while (cp3[-1].c == cp4[-1].c && cp3[-1].a == cp4[-1].a) {
+	--cp3;
+	--cp4;
+	if (cp3[0].c != ' ' || cp3[0].a != 0)	/* Note if any nonblank */
+	  nbflag = TRUE;			/* in right match. */
+      }
+
+    cp5 = cp3;
+
+    if (nbflag == FALSE && TERM_EOLEXIST) {	/* Erase to EOL ? */
+	while (cp5 != cp1 && cp5[-1].c == ' ' && cp5[-1].a == 0)
+	  --cp5;
+
+	if (cp3-cp5 <= 3)		/* Use only if erase is */
+	  cp5 = cp3;			/* fewer characters. */
+    }
+
     /* go to start of differences */
     movecursor(row, cellwidth_ptr_to_ptr(&vline[0], cp1));
 
-    /* the next code inserts a character or deletes one in the middle
-     * of a line. However, we do not need this code to work when we
-     * are using colors that depend on what is inserted/deleted, so
-     * we defer this work to the code below
-     */
-    x = pcolors && (pcolors->qlcp || pcolors->qllcp || pcolors->qlllcp);
-    if (!nbflag && x == 0){		/* use insert or del char? */
+    if (!nbflag) {				/* use insert or del char? */
 	cp6 = cp3;
 	cp7 = cp4;
 
@@ -1173,47 +1322,11 @@ updateline(int row,			/* row on screen */
 	}
     }
 
-    if(row != 0 && pcolors && len < term.t_ncol)
-      cp5 = cp1 + len;
-
-    in_quote = 1;
-    level = -1;
     while (cp1 != cp5) {		/* Ordinary. */
 	int ww;
 
 	if(display){
-	    if(pcolors){
-		if(lastattr < 0){
-		  lastattr = cp1->a;
-		  change = 0;
-		}
-		else change = lastattr != cp1->a;
-		if(first != 0){
-		  first = 0;
-		  if(row == 0)
-		     pico_set_colorp(pcolors->tbcp, PSC_NONE);
-		  else if(row < term.t_nrow - 2)
-		     pcolor = (*flags & VFSIG) ? pcolors->sbcp : pcolors->ntcp;
-		}
-		if(cp1->c != '>' && cp1->c != ' ')
-		   in_quote = 0;
-		else if (in_quote && cp1->c == '>' && pcolors != NULL)
-		   level = (level + 1) % 3;
-		if(level >= 0){
-		   if(level == 0) pcolor = pcolors->qlcp;
-		   else if(level == 1) pcolor = pcolors->qllcp;
-		   else if(level == 2) pcolor = pcolors->qlllcp;
-	        }
-		if(cp1->a == 1)
-		   pcolor = pcolors->rtcp;	/* pcolor = proposed color */
-		if(change == 0)
-		  pico_set_colorp(pcolor, PSC_NONE);
-		else
-		  (*term.t_rev)(cp1->a);	/* set inverse for this char */
-	    }
-
-	    if(change == 0)
-	       (*term.t_rev)(cp1->a);	/* set inverse for this char */
+	    (*term.t_rev)(cp1->a);	/* set inverse for this char */
 	    (*term.t_putchar)(cp1->c);
 	}
 
@@ -1221,11 +1334,6 @@ updateline(int row,			/* row on screen */
 	ttcol += (ww >= 0 ? ww : 1);
 
 	*cp2++ = *cp1++;
-    }
-
-    if (lastc){
-	(void)pico_set_colorp(lastc, PSC_NONE);
-	free_color_pair(&lastc);
     }
 
     (*term.t_rev)(0);			/* turn off inverse anyway! */
@@ -1238,7 +1346,7 @@ updateline(int row,			/* row on screen */
 	    *cp2++ = *cp1++;
     }
 
-    *flags &= ~(VFCHG|VFSIG);			/* flag this line is changed */
+    *flags &= ~VFCHG;			/* flag this line is changed */
 }
 
 

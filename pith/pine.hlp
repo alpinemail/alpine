@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 191 2016-12-09 23:51:19
+Alpine Commit 192 2016-12-16 19:36:50
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -195,8 +195,9 @@ Additions include:
        certificate pair. If one such pair cannot be found, one will be 
        created. <A HREF="h_password_file_support">Learn more</A>.
 
-  <LI> Alpine builds with any version bigger or equal to 1.0.0c, including
-       version 1.1.0, as well as LibreSSL.
+  <LI> Alpine builds with any version of OpenSSL greater than or equal
+       to 1.0.0c. This includes version 1.1.0. Alpine also builds with
+       LibreSSL.
 
   <LI> Alpine will include attachments when forwarding some 
        multipart/alternative messages for which it did not use to include 
