@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 194 2016-12-18 12:55:24
+Alpine Commit 195 2016-12-18 13:09:41
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -19053,7 +19053,8 @@ and in the target of Filter Rules.
 <DD>
 This token represents the Subject the sender gave the message.
 Alternatives for use in the index screen are SHORTSUBJECT,
-SUBJKEY, SUBJKEYINIT, SUBJECTTEXT, SUBJKEYTEXT, and SUBJKEYINITTEXT.
+SUBJKEY, SHORTSUBJKEY, SUBJKEYINIT, SHORTSUBJKEYINIT, SUBJECTTEXT, 
+SUBJKEYTEXT, and SUBJKEYINITTEXT.
 You may color the subject text in the MESSAGE INDEX screen differently by using the
 <A HREF="h_config_index_subject_color">Index Subject Color</A> and the
 <A HREF="h_config_index_opening_color">Index Opening Color</A>
@@ -19644,13 +19645,11 @@ the &quot;<!--#echo var="VAR_index-format"-->&quot; could slow down the
 display a little while Alpine collects the necessary information.
 </DD>
 
-<DT>SHORTSUBJECT</DT>
-<DD>
-This token is the same as SUBJECT, but 
-removes text between &quot;[&quot; and &quot;]&quot;. 
-Typically text enclosed between these characters corresponds to 
-mailing list names, and may be unnecessary or unwanted in some
-instances.
+<DT>SHORTSUBJECT</DT> 
+<DD> This token is the same as SUBJECT, but removes 
+text between &quot;[&quot; and &quot;]&quot;. Typically text enclosed 
+between these characters corresponds to mailing list names, and may be 
+unnecessary or unwanted in some instances. 
 </DD>
 
 <DT>SUBJKEY</DT>
@@ -19674,6 +19673,11 @@ The <A HREF="h_config_kw_braces"><!--#echo var="VAR_keyword-surrounding-chars"--
 option may be used to modify this token slightly.
 It is also possible to color keywords in the index using the
 Setup/Kolor screen (<A HREF="h_config_kw_color">Keyword Colors</A>).
+</DD>
+
+<DT>SHORTSUBJKEY</DT>
+<DD> This token is the same as SUBJKEY, but it is based on
+SHORTSUBJECT, instead of in SUBJECT.
 </DD>
 
 <DT>SUBJKEYINIT</DT>
@@ -19701,6 +19705,11 @@ The <A HREF="h_config_kw_braces"><!--#echo var="VAR_keyword-surrounding-chars"--
 option may be used to modify this token slightly.
 It is also possible to color keywords in the index using the
 Setup/Kolor screen (<A HREF="h_config_kw_color">Keyword Colors</A>).
+</DD>
+
+<DT>SHORTSUBJKEYINIT</DT>
+<DD> This token is the same as SUBJKEYINIT, but it is based on
+SHORTSUBJECT, instead of in SUBJECT.
 </DD>
 
 <DT>SUBJECTTEXT</DT>
