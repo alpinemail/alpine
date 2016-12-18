@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 193 2016-12-16 20:11:15
+Alpine Commit 194 2016-12-18 12:55:24
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -198,6 +198,10 @@ Additions include:
   <LI> Alpine builds with any version of OpenSSL greater than or equal
        to 1.0.0c. This includes version 1.1.0. Alpine also builds with
        LibreSSL.
+
+  <LI> New SHORTSUBJECT, SHORTSUBJKEY and SHORTSUBJKEYINIT token for index 
+       format, which removes text in the SUBJECT between &quot;[&quot; and 
+       &quot;]&quot;.
 
   <LI> Alpine will include attachments when forwarding some 
        multipart/alternative messages for which it did not use to include 
@@ -19048,7 +19052,7 @@ and in the target of Filter Rules.
 <DT>SUBJECT</DT>
 <DD>
 This token represents the Subject the sender gave the message.
-Alternatives for use in the index screen are
+Alternatives for use in the index screen are SHORTSUBJECT,
 SUBJKEY, SUBJKEYINIT, SUBJECTTEXT, SUBJKEYTEXT, and SUBJKEYINITTEXT.
 You may color the subject text in the MESSAGE INDEX screen differently by using the
 <A HREF="h_config_index_subject_color">Index Subject Color</A> and the
@@ -19256,7 +19260,7 @@ to format the date string. It may end up formatting dates so that they look
 like DATEISO tokens, or SHORTDATE2 tokens, or something else entirely.
 The feature
 <A HREF="h_config_dates_to_local"><!--#echo var="FEAT_convert-dates-to-localtime"--></A>
-may have an affect on the values of these tokens.
+may have an effect on the values of these tokens.
 If you want more control you may use one of the following.
   <DL>
   <DT>SMARTDATE</DT> <DD>If the option
@@ -19289,7 +19293,7 @@ to format the date string. It may end up formatting dates so that they look
 like DATEISO tokens, or SHORTDATE2 tokens, or something else entirely.
 The feature
 <A HREF="h_config_dates_to_local"><!--#echo var="FEAT_convert-dates-to-localtime"--></A>
-may have an affect on the values of these tokens.
+may have an effect on the values of these tokens.
 The possible choices are:
   <DL>
   <DT>SMARTDATETIME</DT> <DD>If the option
@@ -19638,6 +19642,15 @@ The plus sign in this view means there are attachments.
 Note that including this token in
 the &quot;<!--#echo var="VAR_index-format"-->&quot; could slow down the
 display a little while Alpine collects the necessary information.
+</DD>
+
+<DT>SHORTSUBJECT</DT>
+<DD>
+This token is the same as SUBJECT, but 
+removes text between &quot;[&quot; and &quot;]&quot;. 
+Typically text enclosed between these characters corresponds to 
+mailing list names, and may be unnecessary or unwanted in some
+instances.
 </DD>
 
 <DT>SUBJKEY</DT>

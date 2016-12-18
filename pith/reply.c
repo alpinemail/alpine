@@ -1704,6 +1704,33 @@ get_news_data(ENVELOPE *env, IndexColType type, char *buf, size_t maxlen)
     buf[orig_maxlen] = '\0';
 }
 
+void
+shorten_subject(char *origsubj)
+{ 
+  char *s, *t, *u;
+  int endlist = 0;
+
+  if(origsubj == NULL || *origsubj == '\0')
+    return;
+
+  for(t=s=origsubj; *s ; s++){
+    switch(*s){
+	/* this transforms "A [B [C] D" into "A D" should this be
+         * "A [B D"?
+         */ 
+	case '[' : if((u = strchr(s+1,']')) != NULL){ 
+			s = u; 
+			endlist = 1;
+		   }
+		   else
+			*t++ = *s;
+		   break;
+	case ' ' : if(endlist == 0) *t++ = *s; break;
+	default  : endlist = 0; *t++ = *s; break;
+    }
+  }
+  *t = '\0';
+}
 
 /*
  * Buf is at least size maxlen+1
@@ -1863,6 +1890,7 @@ get_reply_data(ENVELOPE *env, ACTION_S *role, IndexColType type, char *buf, size
 	break;
 
       case iSubject:
+      case iShortSubject:
 	if(env && env->subject){
 	    size_t n, len;
 	    unsigned char *p, *tmp = NULL;
@@ -1882,6 +1910,9 @@ get_reply_data(ENVELOPE *env, ACTION_S *role, IndexColType type, char *buf, size
 
 	    if(tmp)
 	      fs_give((void **)&tmp);
+
+	    if(type == iShortSubject)
+	      shorten_subject(buf);
 	}
 
 	break;

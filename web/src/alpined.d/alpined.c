@@ -7574,7 +7574,10 @@ peIndexFormat(Tcl_Interp *interp)
 	  case iSubjKeyInit :
 	  case iSubjectText :
 	  case iSubjKeyText :
+	  case iShortSubject :
+	  case iShortSubjKey :
 	  case iSubjKeyInitText :
+	  case iShortSubjKeyInit :
 	    name = "Subject";
 	    break;
 

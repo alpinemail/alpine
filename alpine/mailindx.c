@@ -2159,6 +2159,7 @@ setup_index_state(int threaded)
 		    col++;
 
 		  if((cdesc->ctype == iSubject
+		      || cdesc->ctype == iShortSubject
 		      || cdesc->ctype == iSubjectText
 		      || cdesc->ctype == iSubjKey
 		      || cdesc->ctype == iSubjKeyText

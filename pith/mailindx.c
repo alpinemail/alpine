@@ -89,7 +89,7 @@ long		fetch_size(INDEXDATA_S *);
 BODY	       *fetch_body(INDEXDATA_S *);
 char           *fetch_firsttext(INDEXDATA_S *idata, int);
 char           *fetch_header(INDEXDATA_S *idata, char *hdrname);
-void		subj_str(INDEXDATA_S *, char *, size_t, SubjKW, int, ICE_S *);
+void		subj_str(INDEXDATA_S *, char *, size_t, SubjKW, int, int, ICE_S *);
 void		key_str(INDEXDATA_S *, SubjKW, ICE_S *);
 void		header_str(INDEXDATA_S *, HEADER_TOK_S *, ICE_S *);
 void		prio_str(INDEXDATA_S *, IndexColType, ICE_S *);
@@ -455,11 +455,14 @@ static INDEX_PARSE_T itokens[] = {
     {"SIZENARROW",	iSizeNarrow,	FOR_INDEX},
     {"KSIZE",		iKSize,		FOR_INDEX},
     {"SUBJECT",		iSubject,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SHORTSUBJECT",	iShortSubject,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
     {"FULLSTATUS",	iFStatus,	FOR_INDEX},
     {"IMAPSTATUS",	iIStatus,	FOR_INDEX},
     {"SHORTIMAPSTATUS",	iSIStatus,	FOR_INDEX},
     {"SUBJKEY",		iSubjKey,	FOR_INDEX},
+    {"SHORTSUBJKEY",	iShortSubjKey,	FOR_INDEX},
     {"SUBJKEYINIT",	iSubjKeyInit,	FOR_INDEX},
+    {"SHORTSUBJKEYINIT",iShortSubjKeyInit, FOR_INDEX},
     {"SUBJECTTEXT",	iSubjectText,	FOR_INDEX},
     {"SUBJKEYTEXT",	iSubjKeyText,	FOR_INDEX},
     {"SUBJKEYINITTEXT", iSubjKeyInitText, FOR_INDEX},
@@ -1355,10 +1358,13 @@ setup_index_header_widths(MAILSTREAM *stream)
 	  cdesc->width++;
 	  space_left--;
 	  if(space_left > 0 && (cdesc->ctype == iSubject
+				|| cdesc->ctype == iShortSubject
 				|| cdesc->ctype == iSubjectText
 				|| cdesc->ctype == iSubjKey
+				|| cdesc->ctype == iShortSubjKey
 				|| cdesc->ctype == iSubjKeyText
 				|| cdesc->ctype == iSubjKeyInit
+				|| cdesc->ctype == iShortSubjKeyInit
 				|| cdesc->ctype == iSubjKeyInitText)){
 	      cdesc->width++;
 	      space_left--;
@@ -2048,10 +2054,13 @@ format_index_index_line(INDEXDATA_S *idata)
 	      if(cdesc->ctype == iMessNo)
 		snprintf(str, sizeof(str), "%*.*s", ifield->width, ifield->width, " ");
 	      else if(idata->bogus < 2 && (cdesc->ctype == iSubject
+					   || cdesc->ctype == iShortSubject
 					   || cdesc->ctype == iSubjectText
 					   || cdesc->ctype == iSubjKey
+					   || cdesc->ctype == iShortSubjKey
 					   || cdesc->ctype == iSubjKeyText
 					   || cdesc->ctype == iSubjKeyInit
+					   || cdesc->ctype == iShortSubjKeyInit
 					   || cdesc->ctype == iSubjKeyInitText))
 		snprintf(str, sizeof(str), "%s", _("[ No Message Text Available ]"));
 	  }
@@ -2751,27 +2760,39 @@ format_index_index_line(INDEXDATA_S *idata)
 		break;
 
 	      case iSubject:
-		subj_str(idata, str, sizeof(str), NoKW, 0, ice);
+		subj_str(idata, str, sizeof(str), NoKW, 0, 0, ice);
+		break;
+
+	      case iShortSubject:
+		subj_str(idata, str, sizeof(str), NoKW, 0, 1, ice);
 		break;
 
 	      case iSubjectText:
-		subj_str(idata, str, sizeof(str), NoKW, 1, ice);
+		subj_str(idata, str, sizeof(str), NoKW, 1, 0, ice);
 		break;
 
 	      case iSubjKey:
-		subj_str(idata, str, sizeof(str), KW, 0, ice);
+		subj_str(idata, str, sizeof(str), KW, 0, 0, ice);
+		break;
+
+	      case iShortSubjKey:
+		subj_str(idata, str, sizeof(str), KW, 0, 1, ice);
 		break;
 
 	      case iSubjKeyText:
-		subj_str(idata, str, sizeof(str), KW, 1, ice);
+		subj_str(idata, str, sizeof(str), KW, 1, 0, ice);
 		break;
 
 	      case iSubjKeyInit:
-		subj_str(idata, str, sizeof(str), KWInit, 0, ice);
+		subj_str(idata, str, sizeof(str), KWInit, 0, 0, ice);
+		break;
+
+	      case iShortSubjKeyInit:
+		subj_str(idata, str, sizeof(str), KWInit, 0, 1, ice);
 		break;
 
 	      case iSubjKeyInitText:
-		subj_str(idata, str, sizeof(str), KWInit, 1, ice);
+		subj_str(idata, str, sizeof(str), KWInit, 1, 0, ice);
 		break;
 
 	      case iOpeningText:
@@ -3257,7 +3278,7 @@ format_thread_index_line(INDEXDATA_S *idata)
 		buffer[0] = '\0';
 		save_sfstr_func = pith_opt_truncate_sfstr;
 		pith_opt_truncate_sfstr = NULL;
-		subj_str(idata, buffer, sizeof(buffer), NoKW, 0, NULL);
+		subj_str(idata, buffer, sizeof(buffer), NoKW, 0, 0, NULL);
 		pith_opt_truncate_sfstr = save_sfstr_func;
 	    }
 
@@ -5248,7 +5269,6 @@ scorevalfrommsg(MAILSTREAM *stream, MsgNo rawno, HEADER_TOK_S *hdrtok, int no_fe
     return(retval);
 }
 
-
 /*
  * Put a string representing the subject into str. Idata tells us which
  * message we are referring to.
@@ -5261,10 +5281,11 @@ scorevalfrommsg(MAILSTREAM *stream, MsgNo rawno, HEADER_TOK_S *hdrtok, int no_fe
  *     strsize -- size of str buffer
  *      kwtype -- prepend keywords or kw initials before the subject
  *     opening -- add first text from body of message if there's room
+ *     shorten -- if on, shorten the subject.
  *         ice -- index cache entry for message
  */
 void
-subj_str(INDEXDATA_S *idata, char *str, size_t strsize, SubjKW kwtype, int opening, ICE_S *ice)
+subj_str(INDEXDATA_S *idata, char *str, size_t strsize, SubjKW kwtype, int opening, int shorten, ICE_S *ice)
 {
     char          *subject, *origsubj, *origstr, *rawsubj, *sptr = NULL;
     char          *p, *border, *q = NULL, *free_subj = NULL;
@@ -5327,6 +5348,8 @@ subj_str(INDEXDATA_S *idata, char *str, size_t strsize, SubjKW kwtype, int openi
      * to free it at the end of this routine.
      */
 
+    if(shorten)
+       shorten_subject(origsubj);
 
     /*
      * prepend_keyword will put the keyword stuff before the subject

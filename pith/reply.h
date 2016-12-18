@@ -104,6 +104,6 @@ char       *simple_read_remote_file(char *, char *);
 BODY	   *forward_multi_alt(MAILSTREAM *, ENVELOPE *, BODY *, long, char *, void *, gf_io_t, int);
 BODY	   *forward_multi_alt_mixed(MAILSTREAM *, ENVELOPE *, BODY *, long, char *, void *, gf_io_t, int);
 int	    same_subject(char *, char *s);
-
+void	    shorten_subject(char *);
 
 #endif /* PITH_REPLY_INCLUDED */
