@@ -1744,7 +1744,7 @@ get_reply_data(ENVELOPE *env, ACTION_S *role, IndexColType type, char *buf, size
     buf[0] = '\0';
 
     switch(type){
-      case iRDate: case iSDate: case iSTime:
+      case iRDate: case iSDate: case iSTime: case iSTime24:
       case iS1Date: case iS2Date: case iS3Date: case iS4Date:
       case iSDateIso: case iSDateIsoS:
       case iSDateS1: case iSDateS2: case iSDateS3: case iSDateS4: 

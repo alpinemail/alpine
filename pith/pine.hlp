@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 195 2016-12-18 13:09:41
+Alpine Commit 196 2016-12-18 22:45:44
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -202,6 +202,11 @@ Additions include:
   <LI> New SHORTSUBJECT, SHORTSUBJKEY and SHORTSUBJKEYINIT token for index 
        format, which removes text in the SUBJECT between &quot;[&quot; and 
        &quot;]&quot;.
+
+  <LI> New SMARTTIME24 token for index screen. It is close to SMARTDATETIME
+       but it differns in that it gives the time in which the message was
+       sent for messages that are less than a week old. it uses a 24 hour
+       format.
 
   <LI> Alpine will include attachments when forwarding some 
        multipart/alternative messages for which it did not use to include 
@@ -19193,6 +19198,17 @@ the past week, the day of the week and the hour are used
 (e.g. &quot;Wed09am&quot;, &quot;Thu10pm&quot;); other dates are
 given as date, month, and year (e.g. &quot;23Aug00&quot;,
 &quot;9Apr98&quot;).
+</DD>
+
+<DT>SMARTTIME24</DT>
+<DD>
+This token has the structure &quot;day hour:minute&quot;
+(e.g. &quot;Sun 19:03&quot;) for messages dated less than a week
+from the current date, or &quot;month day&quot; (e.g.
+&quot;Nov 23&quot;) for messages dated less than 6 months
+ago, or &quot;day/month/year&quot; (e.g &quot;06/Jan/16&quot;)
+for messages dated more than 6 months ago. It uses 9 characters
+of the width of the screen, and it left aligned.
 </DD>
 
 <DT>SMARTDATETIME</DT>

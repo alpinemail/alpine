@@ -239,6 +239,9 @@ init_index_format(char *format, INDEX_COL_S **answer)
 	      case iSizeComma:
 		(*answer)[column].req_width = 8;
 		break;
+	      case iSTime24:
+		(*answer)[column].req_width = 9;
+		break;
 	      case iMonAbb:
 		(*answer)[column].req_width = monabb_width;
 		(*answer)[column].monabb_width = monabb_width;
@@ -485,6 +488,7 @@ static INDEX_PARSE_T itokens[] = {
     {"SHORTDATEISO",	iDateIsoS,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
     {"SMARTDATE",	iSDate,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
     {"SMARTTIME",	iSTime,		FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
+    {"SMARTTIME24",	iSTime24,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
     {"SMARTDATEISO",	iSDateIso,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
     {"SMARTDATESHORTISO",iSDateIsoS,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
     {"SMARTDATES1",	iSDateS1,	FOR_INDEX|FOR_REPLY_INTRO|FOR_TEMPLATE},
@@ -938,7 +942,7 @@ parse_index_format(char *format_str, INDEX_COL_S **answer)
 static IndexColType fixed_ctypes[] = {
     iMessNo, iStatus, iFStatus, iIStatus, iSIStatus,
     iDate, iSDate, iSDateTime, iSDateTime24,
-    iSTime, iLDate,
+    iSTime, iSTime24, iLDate,
     iS1Date, iS2Date, iS3Date, iS4Date, iDateIso, iDateIsoS,
     iSDateIso, iSDateIsoS,
     iSDateS1, iSDateS2, iSDateS3, iSDateS4,
@@ -1059,7 +1063,7 @@ setup_index_header_widths(MAILSTREAM *stream)
 	      case iSDateTimeS1: case iSDateTimeS2: case iSDateTimeS3: case iSDateTimeS4:
 	      case iSDateTime24: case iSDateTimeIso24: case iSDateTimeIsoS24:
 	      case iSDateTimeS124: case iSDateTimeS224: case iSDateTimeS324: case iSDateTimeS424:
-	      case iSTime:
+	      case iSTime: case iSTime24:
 		set_format_includes_smartdate(stream);
 	        break;
 
@@ -1180,6 +1184,7 @@ setup_index_header_widths(MAILSTREAM *stream)
 		    cdesc->adjustment = Left;
 		    break;
 
+		  case iSTime24:
 		  case iSDateIsoS:
 		  case iSDateS1: case iSDateS2: case iSDateS3: case iSDateS4:
 		  case iSDateTimeIsoS:
@@ -2447,7 +2452,7 @@ format_index_index_line(INDEXDATA_S *idata)
 		break;
 
 	      case iDate: case iMonAbb: case iLDate:
-	      case iSDate: case iSTime:
+	      case iSDate: case iSTime: case iSTime24:
 	      case iS1Date: case iS2Date: case iS3Date: case iS4Date:
 	      case iDateIso: case iDateIsoS: case iTime24: case iTime12:
 	      case iSDateIsoS: case iSDateIso:
@@ -4904,6 +4909,116 @@ date_str(char *datesrc, IndexColType type, int v, char *str, size_t str_len,
 	    }
 
 	    snprintf(str, str_len, "%s%s%s", dayzero, monabb, yearzero);
+	}
+
+	if(str[0] == '0'){	/* leading 0 (date|hour) elided or blanked */
+	    if(v)
+	      memmove(str, str + 1, strlen(str));
+	    else
+	      str[0] = ' ';
+	}
+    }
+
+    /* This is like iSTime, but the format is different */
+    if(type == iSTime24){
+	struct date now, last_day;
+	char        dbuf[200], *Ddd, *ampm;
+	int         daydiff;
+
+	str[0] = '\0';
+	rfc822_date(dbuf);
+	parse_date(dbuf, &now);
+
+	/* (if message dated this month or last month...) */
+	if((d.year == now.year && d.month >= now.month - 6) ||
+	   (d.year == now.year - 1 && d.month == 12 && now.month == 6)){
+
+	    daydiff = day_of_year(&now) - day_of_year(&d);
+
+	    /*
+	     * If msg in end of last year (and we're in first bit of "this"
+	     * year), diff will be backwards; fix up by adding number of days
+	     * in last year (usually 365, but occasionally 366)...
+	     */
+	    if(d.year == now.year - 1){
+		last_day = d;
+		last_day.month = 12;
+		last_day.day   = 31;
+
+		daydiff += day_of_year(&last_day);
+	    }
+	}
+	else
+	  daydiff = 181;	/* comfortably out of range (of past week) */
+
+	/* Build 2-digit hour and am/pm indicator, used below */
+
+	if(d.hour >= 0 && d.hour < 24){
+	    snprintf(hour12, sizeof(hour12), "%02d", (d.hour % 12 == 0) ? 12 : d.hour % 12);
+	    ampm = (d.hour < 12) ? "am" : "pm";
+	    snprintf(hour24, sizeof(hour24), "%02d", d.hour);
+	}
+	else{
+	    strncpy(hour12, "??", sizeof(hour12));
+	    hour12[sizeof(hour12)-1] = '\0';
+	    ampm = "__";
+	    strncpy(hour24, "??", sizeof(hour24));
+	    hour24[sizeof(hour24)-1] = '\0';
+	}
+
+	/* Build date/time in str, in format similar to that used by w(1) */
+
+	if(daydiff >= 0 && daydiff < 6){ /* If <1wk ago, "Ddd HH:mm" */
+
+	    if(d.month >= 1 && d.day >= 1 && d.year >= 0 &&
+	       d.month <= 12 && d.day <= 31 && d.year <= 9999)
+	      Ddd = day_abbrev_locale(day_of_week(&d));
+	    else
+	      Ddd = "???";
+
+	    if(d.minute >= 0 && d.minute < 60)
+	      snprintf(minzero, sizeof(minzero), "%02d", d.minute);
+	    else{
+	      strncpy(minzero, "??", sizeof(minzero));
+	      minzero[sizeof(minzero)-1] = '\0';
+	    }
+
+	    snprintf(str, str_len, "%s %s:%s", Ddd, hour24, minzero);
+	}
+	else if(daydiff < 180){		       /* date is "Mmm dd" */
+	    strncpy(monabb, (d.month >= 1 && d.month <= 12)
+			     ? month_abbrev_locale(d.month) : "???", sizeof(monabb));
+	    monabb[sizeof(monabb)-1] = '\0';
+
+	    if(d.day >= 1 && d.day <= 31)
+	      snprintf(dayzero, sizeof(dayzero), "%02d", d.day);
+	    else{
+	      strncpy(dayzero, "??", sizeof(dayzero));
+	      dayzero[sizeof(dayzero)-1] = '\0';
+	    }
+
+	    snprintf(str, str_len, "%s %s", monabb, dayzero);
+	}
+	else {		       /* date is old or future, "dd/Mmm/yy" */
+	    strncpy(monabb, (d.month >= 1 && d.month <= 12)
+			     ? month_abbrev_locale(d.month) : "???", sizeof(monabb));
+	    monabb[sizeof(monabb)-1] = '\0';
+
+	    if(d.day >= 1 && d.day <= 31)
+	      snprintf(dayzero, sizeof(dayzero), "%02d", d.day);
+	    else{
+	      strncpy(dayzero, "??", sizeof(dayzero));
+	      dayzero[sizeof(dayzero)-1] = '\0';
+	    }
+
+	    if(d.year >= 0 && d.year <= 9999)
+	      snprintf(yearzero, sizeof(yearzero), "%02d", d.year % 100);
+	    else{
+	      strncpy(yearzero, "??", sizeof(yearzero));
+	      yearzero[sizeof(yearzero)-1] = '\0';
+	    }
+
+	    snprintf(str, str_len, "%s/%s/%s", dayzero, monabb, yearzero);
 	}
 
 	if(str[0] == '0'){	/* leading 0 (date|hour) elided or blanked */
