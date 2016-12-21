@@ -655,17 +655,20 @@ parse_index_format(char *format_str, INDEX_COL_S **answer)
 	
 	/* ignore unrecognized word */
 	if(!pt){
+	    char c;
 	    for(q = p; *p && !isspace((unsigned char)*p); p++)
 	      ;
 
-	    if(*p)
-	      *p++ = '\0';
+	    if((c = *p) != '\0')
+	       *p++ = '\0';
 
 	    dprint((1,
 		   "parse_index_format: unrecognized token: %s\n",
 		   q ? q : "?"));
 	    q_status_message1(SM_ORDER | SM_DING, 0, 3,
 			      _("Unrecognized word in index-format: %s"), q);
+	    if(c != '\0')
+	      *(p-1) = c;
 	    continue;
 	}
 
@@ -4990,8 +4993,11 @@ date_str(char *datesrc, IndexColType type, int v, char *str, size_t str_len,
 			     ? month_abbrev_locale(d.month) : "???", sizeof(monabb));
 	    monabb[sizeof(monabb)-1] = '\0';
 
-	    if(d.day >= 1 && d.day <= 31)
-	      snprintf(dayzero, sizeof(dayzero), "%02d", d.day);
+	    if(d.day >= 1 && d.day <= 31){
+	      snprintf(dayzero, sizeof(dayzero), "%*d", 2, d.day);
+//	      if(d.day < 10)
+//		dayzero[0] = ' ';
+	    }
 	    else{
 	      strncpy(dayzero, "??", sizeof(dayzero));
 	      dayzero[sizeof(dayzero)-1] = '\0';

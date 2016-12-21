@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 196 2016-12-18 22:45:44
+Alpine Commit 197 2016-12-20 21:55:31
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -440,6 +440,9 @@ Bugs that have been addressed include:
   <LI> When selecting messages while in Threaded Index Screen, some 
        messages other than top of threads could appear in the index, making
        Alpine display messages &quot;out of the screen.&quot;
+
+  <LI> The index format would be chopped at the position of an unrecognized 
+       token, instead of skipping the token as intended.
 
   <LI> Work in progress: Avoid calling non-safe functions when Alpine
        receives a signal. See bug report 
