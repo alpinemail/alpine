@@ -4993,11 +4993,8 @@ date_str(char *datesrc, IndexColType type, int v, char *str, size_t str_len,
 			     ? month_abbrev_locale(d.month) : "???", sizeof(monabb));
 	    monabb[sizeof(monabb)-1] = '\0';
 
-	    if(d.day >= 1 && d.day <= 31){
+	    if(d.day >= 1 && d.day <= 31)
 	      snprintf(dayzero, sizeof(dayzero), "%*d", 2, d.day);
-//	      if(d.day < 10)
-//		dayzero[0] = ' ';
-	    }
 	    else{
 	      strncpy(dayzero, "??", sizeof(dayzero));
 	      dayzero[sizeof(dayzero)-1] = '\0';
