@@ -4971,7 +4971,7 @@ date_str(char *datesrc, IndexColType type, int v, char *str, size_t str_len,
 
 	/* Build date/time in str, in format similar to that used by w(1) */
 
-	if(daydiff >= 0 && daydiff < 6){ /* If <1wk ago, "Ddd HH:mm" */
+	if(daydiff >= 0 && daydiff <= 6){ /* If <1wk ago, "Ddd HH:mm" */
 
 	    if(d.month >= 1 && d.day >= 1 && d.year >= 0 &&
 	       d.month <= 12 && d.day <= 31 && d.year <= 9999)
