@@ -2913,3 +2913,72 @@ free_strlist(STRLIST_S **strp)
 	fs_give((void **) strp);
     }
 }
+
+void
+convert_decimal_to_roman (char *rn, size_t len, long n, char l)
+{
+  char *symbols;
+  int amo[6];
+  int i, j, k;
+
+  rn[0] = '\0';
+  if(n >= 4000L || n <= 0L)
+    return;
+
+  if(l == 'i')
+    symbols = "mdclxvi";
+  else
+    symbols = "MDCLXVI";
+
+  amo[0] = n/1000; n -= amo[0]*1000;
+  amo[1] = n/500;  n -= amo[1]*500;
+  amo[2] = n/100;  n -= amo[2]*100;
+  amo[3] = n/50;   n -= amo[3]*50;
+  amo[4] = n/10;   n -= amo[4]*10;
+  amo[5] = n/5;    n -= amo[5]*5;
+  amo[6] = n;
+
+  for(i = 0, j = 0; j < strlen(symbols); j++){
+     if(amo[j] < 4){
+	if(amo[j+1] != 4){
+	  for(k = 0; k < amo[j]; k++)
+	    rn[i++] = symbols[j];
+	}
+     } else {
+	if(amo[j-1] == 0){
+	  rn[i++] = symbols[j];
+	  rn[i++] = symbols[j-1];
+	} else {
+	  rn[i++] = symbols[j];
+	  rn[i++] = symbols[j-2];
+	}
+     }
+  }
+  rn[i++] = '\0';
+  rn[len] = '\0';
+}
+
+void
+convert_decimal_to_alpha (char *rn, size_t len, long n, char l)
+{
+  char *symbols;
+  int amo[16];
+  int i, j, k;
+
+  rn[0] = '\0';
+
+  if(n < 0)
+    return;
+
+  for(i = 0; n > 0; i++){
+     amo[i] = n % 26; 
+         n = (n - amo[i])/26;
+  }
+  amo[i] = -1;
+
+  for(i = 0; amo[i] >= 0; i++)
+     rn[i] = l + amo[i] - 1;
+  rn[i] = '\0';
+  rn[len] = '\0';
+}
+

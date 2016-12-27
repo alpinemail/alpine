@@ -149,5 +149,7 @@ void	    combine_strlists(STRLIST_S **, STRLIST_S *);
 void	    free_strlist(STRLIST_S **);
 int         read_octal(char **);
 time_t      date_to_local_time_t(char *);
+void	    convert_decimal_to_roman (char *, size_t, long, char);
+void	    convert_decimal_to_alpha (char *, size_t, long, char);
 
 #endif /* PITH_STRING_INCLUDED */

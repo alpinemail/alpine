@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 199 2016-12-22 23:43:01
+Alpine Commit 200 2016-12-27 11:09:52
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -242,6 +242,9 @@ Additions include:
   <LI> The TAB key allows autocomplete in the Fcc field in the composer headers,
        as well as autocompletes automatically when only one possibility exists 
        for the ^J attach command.
+
+  <LI> Add support for the &quot;TYPE&quot; and &quot;VALUE&quot; attributes of
+       the html OL tag.
 
   <LI> Ignore message from smtp server after a successful authentication
        challenge.

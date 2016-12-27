@@ -2786,6 +2786,14 @@ gf_enriched2plain_opt(int *plain)
 #define	RSS_ITEM_LIMIT	20		/* RSS 2.0 ITEM depth limit */
 
 
+/* types of lists that we will support */
+#define LIST_DECIMAL  (long) 0
+#define LIST_ALPHALO  (long) 1
+#define LIST_ALPHAUP  (long) 2
+#define LIST_ROMANLO  (long) 3
+#define LIST_ROMANUP  (long) 4
+#define LIST_UNKNOWN  (long) 10
+
 /*
  * Handler data, state information including function that uses it
  */
@@ -5624,12 +5632,34 @@ html_ol(HANDLER_S *hd, int ch, int cmd)
 	    html_output_raw_tag(hd->html_data, "ol");
 	}
 	else{
+	    PARAMETER *p;
 	    /*
 	     * Signal that we're expecting to see <LI> as our next elemnt
 	     * and set the the initial ordered count.
 	     */
+	    hd->x = 1L;			/* set default */
+	    hd->y = LIST_DECIMAL;	/* set default */
+	    for(p = HD(hd->html_data)->el_data->attribs;
+		p && p->attribute;
+		p = p->next)
+	    if(p->value){
+		if(!strucmp(p->attribute, "TYPE")){
+		   if(!strucmp(p->value, "a"))	/* alpha, capital */
+		      hd->y = LIST_ALPHALO;
+		   else if(!strucmp(p->value, "A"))	/* alpha, lowercase */
+		      hd->y = LIST_ALPHAUP;
+		   else if(!strucmp(p->value, "i"))	/* roman, capital */
+		      hd->y = LIST_ROMANLO;
+		   else if(!strucmp(p->value, "I"))	/* roman, lowercase */
+		      hd->y = LIST_ROMANUP;
+		   else if(strucmp(p->value, "1"))	/* decimal, the default */
+		      hd->y = LIST_UNKNOWN;
+		}
+		else if(!strucmp(p->attribute, "START"))
+			hd->x = atol(p->value);
+//		else ADD SUPPORT FOR OTHER ATTRIBUTES... LATER
+	    }
 	    HD(hd->html_data)->li_pending = 1;
-	    hd->x = 1L;
 	    html_blank(hd->html_data, 0);
 	}
     }
@@ -5753,7 +5783,7 @@ html_li(HANDLER_S *hd, int ch, int cmd)
 	    if(PASS_HTML(hd->html_data)){
 	    }
 	    else{
-		char buf[8], *p;
+		char buf[16], tmp[16], *p;
 		int  wrapstate;
 
 		/* Start a new line */
@@ -5771,8 +5801,20 @@ html_li(HANDLER_S *hd, int ch, int cmd)
 		    strncpy(buf, "   ", sizeof(buf));
 		    buf[1] = (l < 5) ? '*' : (l < 9) ? '+' : (l < 17) ? 'o' : '#';
 		}
-		else if(EL(found)->handler == html_ol)
-		  snprintf(buf, sizeof(buf), "%2ld.", found->x++);
+		else if(EL(found)->handler == html_ol){
+		  if(found->y == LIST_DECIMAL || found->y == LIST_UNKNOWN)
+		    snprintf(tmp, sizeof(tmp), "%ld", found->x++);
+		  else if(found->y == LIST_ALPHALO)
+		    convert_decimal_to_alpha(tmp, sizeof(tmp), found->x++, 'a');
+		  else if(found->y == LIST_ALPHAUP)
+		    convert_decimal_to_alpha(tmp, sizeof(tmp), found->x++, 'A');
+		  else if(found->y == LIST_ROMANLO)
+		    convert_decimal_to_roman(tmp, sizeof(tmp), found->x++, 'i');
+		  else if(found->y == LIST_ROMANUP)
+		    convert_decimal_to_roman(tmp, sizeof(tmp), found->x++, 'I');
+		  snprintf(buf, sizeof(buf), " %s.", tmp);
+		  buf[sizeof(buf)-1] = '\0';
+		}
 		else if(EL(found)->handler == html_menu){
 		    strncpy(buf, " ->", sizeof(buf));
 		    buf[sizeof(buf)-1] = '\0';
@@ -5787,7 +5829,6 @@ html_li(HANDLER_S *hd, int ch, int cmd)
 		html_write_indent(hd->html_data, HD(hd->html_data)->indent_level);
 		for(p = buf; *p; p++)
 		  html_output(hd->html_data, (int) *p);
-
 		HD(hd->html_data)->wrapstate = wrapstate;
 		html_indent(hd->html_data, 4, HTML_ID_INC);
 	    }
