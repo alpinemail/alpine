@@ -15,7 +15,7 @@ dnl  */
 
 AC_PREREQ([2.69])
 
-AC_REVISION([Rev:20 by chappa@washington.edu])
+AC_REVISION([Rev:21 by chappa@washington.edu])
 
 dnl Alpine Version Number is in $srcdir/VERSION
 AC_INIT([alpine],[m4_normalize(m4_include(VERSION))],[chappa@washington.edu])
@@ -134,6 +134,7 @@ case $host in
       localedir="\${datadir}/locale"
       ;;
 esac
+
 AC_ARG_WITH(localedir,
   AS_HELP_STRING([--with-localedir=DIR],[Name of gettext locale directory]),
   [
@@ -1458,11 +1459,16 @@ if test "x$alpine_SSLTYPE" != "xnone" ; then
      AC_MSG_ERROR(crypto library NOT found)
      exit 1
   fi
-  AC_CHECK_HEADER(crypto.h, , [ alpine_CRYPTO_DEVEL="none" ])
-  if test "x$alpine_CRYPTO_DEVEL" = "xnone" ; then
-     AC_MSG_ERROR(crypto library file crypto.h NOT found. Install correspoding libcrypt-devel package)
-     exit 1
-  fi
+  case $host in
+    *-*-cygwin)
+	AC_CHECK_HEADER(crypto.h, , [ alpine_CRYPTO_DEVEL="none" ])
+	if test "x$alpine_CRYPTO_DEVEL" = "xnone" ; then
+	   AC_MSG_ERROR(crypto library file crypto.h NOT found. Install correspoding libcrypt-devel package)
+	   exit 1
+	fi
+	;;
+    *)  ;;
+   esac
 fi
 
 if test "x$alpine_SSLTYPE" != "xnone" ; then
