@@ -2917,19 +2917,22 @@ free_strlist(STRLIST_S **strp)
 void
 convert_decimal_to_roman (char *rn, size_t len, long n, char l)
 {
-  char *symbols;
-  int amo[6];
+  char symbols[7];
+  int amo[7];
   int i, j, k;
 
   rn[0] = '\0';
   if(n >= 4000L || n <= 0L)
     return;
 
-  if(l == 'i')
-    symbols = "mdclxvi";
-  else
-    symbols = "MDCLXVI";
-
+  symbols[0] = l + 'm' - 'i';
+  symbols[1] = l + 'd' - 'i';
+  symbols[2] = l + 'c' - 'i';
+  symbols[3] = l + 'l' - 'i';
+  symbols[4] = l + 'x' - 'i';
+  symbols[5] = l + 'v' - 'i';
+  symbols[6] = l;
+  
   amo[0] = n/1000; n -= amo[0]*1000;
   amo[1] = n/500;  n -= amo[1]*500;
   amo[2] = n/100;  n -= amo[2]*100;
@@ -2938,7 +2941,7 @@ convert_decimal_to_roman (char *rn, size_t len, long n, char l)
   amo[5] = n/5;    n -= amo[5]*5;
   amo[6] = n;
 
-  for(i = 0, j = 0; j < strlen(symbols); j++){
+  for(i = 0, j = 0; i < len && j < strlen(symbols); j++){
      if(amo[j] < 4){
 	if(amo[j+1] != 4){
 	  for(k = 0; k < amo[j]; k++)
@@ -2954,31 +2957,29 @@ convert_decimal_to_roman (char *rn, size_t len, long n, char l)
 	}
      }
   }
-  rn[i++] = '\0';
-  rn[len] = '\0';
+  if(i < len) rn[i] = '\0';
+  rn[len-1] = '\0';
 }
 
 void
 convert_decimal_to_alpha (char *rn, size_t len, long n, char l)
 {
-  char *symbols;
   int amo[16];
-  int i, j, k;
+  int i;
 
   rn[0] = '\0';
 
   if(n < 0)
     return;
 
-  for(i = 0; n > 0; i++){
+  for(i = 0; i < sizeof(amo) && n > 0; i++){
      amo[i] = n % 26; 
-         n = (n - amo[i])/26;
+          n = (n - amo[i])/26;
   }
   amo[i] = -1;
 
-  for(i = 0; amo[i] >= 0; i++)
+  for(i = 0; i < len && amo[i] >= 0; i++)
      rn[i] = l + amo[i] - 1;
-  rn[i] = '\0';
-  rn[len] = '\0';
+  if(i < len) rn[i] = '\0';
+  rn[len-1] = '\0';
 }
-

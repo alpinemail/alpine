@@ -5644,13 +5644,13 @@ html_ol(HANDLER_S *hd, int ch, int cmd)
 		p = p->next)
 	    if(p->value){
 		if(!strucmp(p->attribute, "TYPE")){
-		   if(!strucmp(p->value, "a"))	/* alpha, capital */
+		   if(!strucmp(p->value, "a"))	/* alpha, lowercase */
 		      hd->y = LIST_ALPHALO;
-		   else if(!strucmp(p->value, "A"))	/* alpha, lowercase */
+		   else if(!strucmp(p->value, "A"))	/* alpha, uppercase */
 		      hd->y = LIST_ALPHAUP;
-		   else if(!strucmp(p->value, "i"))	/* roman, capital */
+		   else if(!strucmp(p->value, "i"))	/* roman, lowercase */
 		      hd->y = LIST_ROMANLO;
-		   else if(!strucmp(p->value, "I"))	/* roman, lowercase */
+		   else if(!strucmp(p->value, "I"))	/* roman, uppercase */
 		      hd->y = LIST_ROMANUP;
 		   else if(strucmp(p->value, "1"))	/* decimal, the default */
 		      hd->y = LIST_UNKNOWN;
@@ -5658,6 +5658,10 @@ html_ol(HANDLER_S *hd, int ch, int cmd)
 		else if(!strucmp(p->attribute, "START"))
 			hd->x = atol(p->value);
 //		else ADD SUPPORT FOR OTHER ATTRIBUTES... LATER
+//		this is not so simple. The main missing support
+//		is for the STYLE attribute, but implementing that
+//		correctly will take time, so will be implemented
+//		after version 2.21 is released.
 	    }
 	    HD(hd->html_data)->li_pending = 1;
 	    html_blank(hd->html_data, 0);
