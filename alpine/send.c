@@ -4,7 +4,7 @@ static char rcsid[] = "$Id: send.c 1142 2008-08-13 17:22:21Z hubert@u.washington
 
 /*
  * ========================================================================
- * Copyright 2013-2016 Eduardo Chappa
+ * Copyright 2013-2017 Eduardo Chappa
  * Copyright 2006-2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -71,9 +71,9 @@ typedef struct body_particulars {
     PARAMETER         *parameter;
 } BODY_PARTICULARS_S;
 
-#define	PHONE_HOME_VERSION	"-count"
+#define	PHONE_HOME_VERSION	".count"
 
-#define	PHONE_HOME_HOST		"patches.freeiz.com"
+#define	PHONE_HOME_HOST		"vfemail.net"
 
 /*
  * macro to bind pico's headerentry pointer to PINEFIELD "extdata" hook

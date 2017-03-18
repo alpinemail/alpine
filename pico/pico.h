@@ -3,7 +3,7 @@
  *
  * ========================================================================
  * Copyright 2006-2009 University of Washington
- * Copyright 2013-2016 Eduardo Chappa
+ * Copyright 2013-2017 Eduardo Chappa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -389,7 +389,7 @@ typedef struct  KBSTREE {
  */
 #ifdef	maindef
 PICO	*Pmaster = NULL;		/* composer specific stuff */
-char	*version = "5.08";		/* PICO version number */
+char	*version = "5.09";		/* PICO version number */
 
 #else
 extern	PICO *Pmaster;			/* composer specific stuff */
