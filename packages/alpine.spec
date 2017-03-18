@@ -42,11 +42,11 @@ echo "*** DO NOT FORGET TO DO THE FOLLOWING BY HAND while root:
 ***  chgrp mail $RPM_BUILD_ROOT%{_sysconfdir}/mlock
 ***  echo chmod 2755 $RPM_BUILD_ROOT%{_sysconfdir}/mlock"
 fi
-install -D -m644 doc/alpine.1 $RPM_BUILD_ROOT%{_mandir}/man1/alpine.1
-install -D -m644 doc/pico.1 $RPM_BUILD_ROOT%{_mandir}/man1/pico.1
-install -D -m644 doc/pilot.1 $RPM_BUILD_ROOT%{_mandir}/man1/pilot.1
-install -D -m644 doc/rpload.1 $RPM_BUILD_ROOT%{_mandir}/man1/rpload.1
-install -D -m644 doc/rpdump.1 $RPM_BUILD_ROOT%{_mandir}/man1/rpdump.1
+install -D -m644 doc/man1/alpine.1 $RPM_BUILD_ROOT%{_mandir}/man1/alpine.1
+install -D -m644 doc/man1/pico.1 $RPM_BUILD_ROOT%{_mandir}/man1/pico.1
+install -D -m644 doc/man1/pilot.1 $RPM_BUILD_ROOT%{_mandir}/man1/pilot.1
+install -D -m644 doc/man1/rpload.1 $RPM_BUILD_ROOT%{_mandir}/man1/rpload.1
+install -D -m644 doc/man1/rpdump.1 $RPM_BUILD_ROOT%{_mandir}/man1/rpdump.1
 install -D -m644 imap/src/mailutil/mailutil.1 $RPM_BUILD_ROOT%{_mandir}/man1/mailutil.1
 
 %clean
