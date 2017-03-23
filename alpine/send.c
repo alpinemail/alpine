@@ -1056,7 +1056,7 @@ pine_simple_send(ENVELOPE *outgoing,	/* envelope for outgoing message */
     int        og2s_done = 0;
     HelpType   help;
     static HISTORY_S *history = NULL;
-    ESCKEY_S   ekey[5];
+    ESCKEY_S   ekey[6];
     BUILDER_ARG ba_fcc;
     METAENV   *header;
     ACTION_S  *role = rolep ? *rolep : NULL;

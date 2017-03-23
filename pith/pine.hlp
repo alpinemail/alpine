@@ -177,6 +177,17 @@ Version <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)
 addresses bugs found in previous releases and has a few additions as well.
 
 <P>
+Bugs that have been addressed include:
+<UL>
+   <LI> Crash when attempting to bounce a message due to lack of space in
+        allocated space for key menu array. Reported by David Sewell.
+</UL>
+
+<P>
+Version 2.21 addresses bugs found in previous releases and has several 
+additions as well.
+
+<P>
 Additions include:
 <UL>
   <LI> PC-Alpine: New configuration option "Aspell Dictionaries" allows a
