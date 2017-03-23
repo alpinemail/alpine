@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 208 2017-03-23 12:55:14
+Alpine Commit 209 2017-03-23 16:14:06
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -345,9 +345,9 @@ Additions include:
        fits in the title.
 
   <LI> The feature <a href="h_config_scramble_message_id">FEATURE: <!--#echo var="FEAT_scramble-message-id"--></a>
-       will also scramble the name, version and operative system in the message-id header. 
-       Based on a contribution by Dennis Davis, which is itself based on a contribution by 
-       Mark Hills.
+       will also scramble the name, version and operating system in the 
+       message-id header. Based on a contribution by Dennis Davis, which 
+       is itself based on a contribution by Mark Hills.
 
   <LI> Change in logic in imap_set_password function to make Alpine ask if
        a user wants to save a password before reading the password file.
