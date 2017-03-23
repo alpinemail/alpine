@@ -454,13 +454,13 @@
 #define PACKAGE_NAME "alpine"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "alpine 2.21"
+#define PACKAGE_STRING "alpine 2.21.1"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "alpine"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "2.21"
+#define PACKAGE_VERSION "2.21.1"
 
 /* Program users use to change their password */
 /* #undef PASSWD_PROG */
@@ -552,7 +552,7 @@
 #define UTF8_INTERNAL
 
 /* Version number of package */
-#define VERSION "2.21"
+#define VERSION "2.21.1"
 
 /* Windows is just too different */
 #ifndef _WINDOWS
