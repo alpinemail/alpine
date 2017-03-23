@@ -6748,15 +6748,15 @@ _("\n \"^G\" for help specific to each item. \"^X\" to make the query, or \"^C\"
 			 ((*sq->locality != '\0') ? 1 : 0);
 	    need_and = (categories > 1);
 
-	    if((sq->cn ? strlen(sq->cn) : 0 +
-	        sq->sn ? strlen(sq->sn) : 0 +
-	        sq->gn ? strlen(sq->gn) : 0 +
-	        sq->mail ? strlen(sq->mail) : 0 +
-	        sq->org ? strlen(sq->org) : 0 +
-	        sq->unit ? strlen(sq->unit) : 0 +
-	        sq->country ? strlen(sq->country) : 0 +
-	        sq->state ? strlen(sq->state) : 0 +
-	        sq->locality ? strlen(sq->locality) : 0) > FILTSIZE - 100){
+	    if(((sq->cn ? strlen(sq->cn) : 0) +
+	        (sq->sn ? strlen(sq->sn) : 0) +
+	        (sq->gn ? strlen(sq->gn) : 0) +
+	        (sq->mail ? strlen(sq->mail) : 0) +
+	        (sq->org ? strlen(sq->org) : 0) +
+	        (sq->unit ? strlen(sq->unit) : 0) +
+	        (sq->country ? strlen(sq->country) : 0) +
+	        (sq->state ? strlen(sq->state) : 0) +
+	        (sq->locality ? strlen(sq->locality) : 0)) > FILTSIZE - 100){
 		if(error)
 		  *error = cpystr(_("Search strings too long"));
 		
