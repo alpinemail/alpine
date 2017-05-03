@@ -4,8 +4,8 @@ Version: 2.21.1
 Release: 1
 License: Apache License
 Group: Applications/Mail
-Source: http://patches.freeiz.com/alpine/release/src/%{name}-%{version}.tar.xz
-URL: http://patches.freeiz.com/alpine/
+Source: http://alpine.freeiz.com/alpine/release/src/%{name}-%{version}.tar.xz
+URL: http://alpine.freeiz.com/alpine/
 Vendor: Patches for Pine and Alpine
 Packager: Eduardo Chappa <alpine.chappa@gmx.com>
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot

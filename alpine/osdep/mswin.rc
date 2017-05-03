@@ -260,7 +260,7 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "see http://patches.freeiz.com/alpine/\0"
+            VALUE "Comments", "see http://alpine.freeiz.com/alpine/\0"
             VALUE "CompanyName", "Patches for Alpine\0"
 #ifdef _PCP_W2K
             VALUE "FileDescription", "Alpine with krb5 for Windows\0"

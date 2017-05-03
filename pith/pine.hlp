@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 209 2017-03-23 16:14:06
+Alpine Commit 210 2017-05-03 00:58:42
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -1073,7 +1073,7 @@ Changes included:
 Details on changes in previous (prerelease) versions of Alpine
 may be found at the following URL:
 <P>
-<CENTER><SAMP><A HREF="http://patches.freeiz.com/alpine/release/">http://patches.freeiz.com/alpine/release/</A></SAMP></CENTER>
+<CENTER><SAMP><A HREF="http://alpine.freeiz.com/alpine/release/">http://alpine.freeiz.com/alpine/release/</A></SAMP></CENTER>
 <P>
 
 <HR WIDTH="75%"><P>
@@ -1091,7 +1091,7 @@ accessible via the &quot;?&quot; key (or Ctrl-G in text-input contexts).
 The most current source of information about Alpine,
 including new version availability, is the web page at
 <P>
-<CENTER><SAMP><A HREF="http://patches.freeiz.com/alpine/">http://patches.freeiz.com/alpine/</A></SAMP></CENTER>
+<CENTER><SAMP><A HREF="http://alpine.freeiz.com/alpine/">http://alpine.freeiz.com/alpine/</A></SAMP></CENTER>
 </DD>
 </DL>
 
@@ -1938,7 +1938,7 @@ on Alpine configuration.<P>
   <LI> The main site for Alpine contains information on configuring and solving problems
        with Alpine, it can be found at
 
-<CENTER><A HREF="http://patches.freeiz.com/alpine/">http://patches.freeiz.com/alpine/</A></CENTER>  
+<CENTER><A HREF="http://alpine.freeiz.com/alpine/">http://alpine.freeiz.com/alpine/</A></CENTER>  
 
   <LI> The Alpine Information Center (maintained by the University of
 	   Washington) World Wide Web site contains, among other things
@@ -2310,7 +2310,7 @@ project, credits, and legal notices.
 Alpine releases are available via the world wide web at
 <P>
 <CENTER><SAMP><A 
-HREF="http://patches.freeiz.com/alpine/release/">http://patches.freeiz.com/alpine/release/</A></SAMP
+HREF="http://alpine.freeiz.com/alpine/release/">http://alpine.freeiz.com/alpine/release/</A></SAMP
 ></CENTER>
 <P>
 
