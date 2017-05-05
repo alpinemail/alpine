@@ -98,11 +98,13 @@ create_master_password(char *pass, size_t passlen, int first_time)
 		_("Create master password \(attempt %d of %d): "), trial+1, MAXTRIAL);
     prompt[sizeof(prompt)- 1] = '\0';
     pass[0] = '\0';
-    do { 
+    do {
+      /* rv == 1 means cancel */
       rv = (pith_smime_enter_password)(prompt, pass, passlen);
-      if(password_policy_check(pass) == 0)
+      if(rv == 1 || password_policy_check(pass) == 0)
 	 pass[0] = '\0';
-    } while ((rv !=0 && rv !=1 && rv > 0) || pass[0] == '\0');
+      if(rv == 1) return 0;
+    } while ((rv != 0  && rv != 1) || (rv == 0 && pass[0] == '\0'));
 
     snprintf(prompt, sizeof(prompt), 
 		_("Confirm master password \(attempt %d of %d): "), trial+1, MAXTRIAL);

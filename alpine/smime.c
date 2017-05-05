@@ -1286,7 +1286,7 @@ manage_certs_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
 					pathdir, MASTERNAME);
 		filename[sizeof(filename)-1] = '\0';
 		rv = import_certificate(ctype, pc, filename);
-		if(our_stat(pathdir, &sbuf) == 0){
+		if(rv == 1 && our_stat(pathdir, &sbuf) == 0){
 		  if(unlink(filename) < 0)
 		   q_status_message1(SM_ORDER, 0, 2, 
 			_("Could not remove private key %s.key"), MASTERNAME);
@@ -1294,7 +1294,7 @@ manage_certs_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
 		  strcat(filename, ".crt");
 		  if(unlink(filename) < 0)
 		   q_status_message1(SM_ORDER, 0, 2, 
-			_("Could not remove public certifica %s.crt"), MASTERNAME);
+			_("Could not remove public certificate %s.crt"), MASTERNAME);
 		  if(rmdir(pathdir) < 0)
 		    q_status_message1(SM_ORDER, 0, 2, 
 		      _("Could not remove temporary directory %s"), pathdir);
