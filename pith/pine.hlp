@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 211 2017-05-04 22:18:31
+Alpine Commit 212 2017-07-14 08:25:45
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -181,6 +181,9 @@ Bugs that have been addressed include:
 <UL>
    <LI> Crash when attempting to bounce a message due to lack of space in
         allocated space for key menu array. Reported by David Sewell.
+
+   <LI> Crash when a CA certificate failed to load, and user attempted to
+        view certificate information of other certificate authorities.
 </UL>
 
 <P>

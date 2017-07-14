@@ -643,7 +643,7 @@ import_certificate(WhichCerts ctype, PERSONAL_CERT *p_cert, char *fname)
    } else {
      char *s;
      strncpy(full_filename, fname, sizeof(full_filename));
-     if((s = strrchr(full_filename, '/')) != '\0')
+     if((s = strrchr(full_filename, '/')) != NULL)
        strncpy(filename, s+1, sizeof(filename));
    }
 
@@ -1295,7 +1295,7 @@ int smime_validate_cert(X509 *cert, long *error)
 
    ERR_clear_error();
    *error = 0;
-   if((csc = X509_STORE_CTX_new()) != NULL){
+   if((s_cert_store != NULL) && (csc = X509_STORE_CTX_new()) != NULL){
      X509_STORE_set_flags(s_cert_store, 0);
      if(X509_STORE_CTX_init(csc,s_cert_store,cert,NULL)
 	&& X509_verify_cert(csc) <= 0)
@@ -3605,7 +3605,7 @@ get_chain_for_cert(X509 *cert, int *error, int *level)
   *level = -1;
   *error = 0;
   ERR_clear_error();
-  if((ctx = X509_STORE_CTX_new()) != NULL){
+  if((s_cert_store != NULL) && (ctx = X509_STORE_CTX_new()) != NULL){
       X509_STORE_set_flags(s_cert_store, 0);
       if(!X509_STORE_CTX_init(ctx, s_cert_store, cert, NULL))
 	*error   = X509_STORE_CTX_get_error(ctx);

@@ -673,16 +673,17 @@ add_certs_in_dir(X509_LOOKUP *lookup, char *path, char *ext, CertList **cdata)
     struct direct *d;
     DIR	*dirp;
     CertList *cert, *cl;
-    int  ret = 0;
+    int  ret = 0, nfiles = 0, nerr = 0;
 
     if((dirp = opendir(path)) != NULL){
         while(!ret && (d=readdir(dirp)) != NULL){
             if(srchrstr(d->d_name, ext)){
+		nfiles++;
     	    	build_path(buf, path, d->d_name, sizeof(buf));
 
     	    	if(!X509_LOOKUP_load_file(lookup, buf, X509_FILETYPE_PEM)){
 		    q_status_message1(SM_ORDER, 3, 3, _("Error loading file %s"), buf);
-		    ret = -1;
+		    nerr++;
 		} else {
 		  if(cdata){
 		     BIO *in;
@@ -719,6 +720,8 @@ add_certs_in_dir(X509_LOOKUP *lookup, char *path, char *ext, CertList **cdata)
         closedir(dirp);
     }
 
+    /* if all certificates fail to load */
+    if(nerr == nfiles) ret = -1;
     return ret;
 }
 
