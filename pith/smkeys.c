@@ -721,7 +721,7 @@ add_certs_in_dir(X509_LOOKUP *lookup, char *path, char *ext, CertList **cdata)
     }
 
     /* if all certificates fail to load */
-    if(nerr == nfiles) ret = -1;
+    if(nerr > 0 && nerr == nfiles) ret = -1;
     return ret;
 }
 

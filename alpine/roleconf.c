@@ -6429,7 +6429,7 @@ check_role_folders(char **lst, unsigned int action)
 	  }
 	}
 	else{ /* blank item in list of folders */
-	  if(action && lst[i+1] == '\0')
+	  if(action && lst[i+1] == NULL)
 	    q_status_message(SM_ORDER,3,5,_("Set a valid Filter Action before Exiting"));
 	  else /* !action && lst[i+1] == '\0' */
 	    q_status_message(SM_ORDER,3,5,_("Set a valid Specific Folder before Exiting"));

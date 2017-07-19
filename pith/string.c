@@ -1930,7 +1930,7 @@ get_pair(char *string, char **label, char **value, int firstws, int strip_intern
 
 	*p = '\0';				/* tie off label */
 	fs_give((void **)&tmp);
-	if(*label == '\0')
+	if(*label == NULL)
 	  fs_give((void **)label);
     }
     else

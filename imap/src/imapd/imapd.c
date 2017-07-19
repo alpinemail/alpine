@@ -2333,7 +2333,7 @@ STRINGLIST *parse_stringlist (unsigned char **s,int *list)
 				/* must be end of list */
     if (c != ')') mail_free_stringlist (&ret);
   }
-  if ((t = *s) != '\0') {	/* need to reload strtok state? */
+  if ((t = *s) != NULL) {	/* need to reload strtok state? */
 				/* end of a list? */
     if (*list && (*t == ')') && !t[1]) *list = NIL;
     else sstate = t;		/* otherwise reset strtok state to s */
