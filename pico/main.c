@@ -79,9 +79,10 @@ char *pico_args(int, char **, int *, int *, int *);
 void  pico_args_help(void);
 void  pico_vers_help(void);
 void  pico_display_args_err(char *, char **, int);
+#ifndef _WINDOWS
 PCOLORS *pico_set_global_colors(int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int);
 void  display_color_codes(void);
-
+#endif /* ! _WINDOWS */
 
 /* TRANSLATORS: An error message about an unknown flag (option)
    on the command line */
@@ -483,6 +484,7 @@ main(int argc, char *argv[])
     }
 }
 
+#ifndef _WINDOWS
 void
 display_color_codes(void)
 {
@@ -613,6 +615,7 @@ display_color_codes(void)
     }
     pico_set_colorp(lastc, PSC_NONE);
 }
+#endif /* ! _WINDOWS */
 
 
 /*
@@ -634,6 +637,7 @@ pico_args(int ac, char **av, int *starton, int *viewflag, int *setlocale_collate
     int   c, usage = 0;
     char *str;
     char  tmp_1k_buf[1000];     /* tmp buf to contain err msgs  */ 
+#ifndef _WINDOWS
     int ncolors, ntfc, ntbc, rtfc, rtbc;
     int tbfc, tbbc, klfc, klbc, knfc, knbc, stfc, stbc, prfc, prbc;
     int q1fc, q1bc, q2fc, q2bc, q3fc, q3bc, sbfc, sbbc;
@@ -642,6 +646,8 @@ pico_args(int ac, char **av, int *starton, int *viewflag, int *setlocale_collate
     ntfc = ntbc = rtfc = rtbc = tbfc = tbbc = klfc = klbc = knfc = 
     knbc = stfc = stbc = prfc = prbc = q1fc = q1bc = q2fc = q2bc = 
     q3fc = q3bc = sbfc = sbbc = -1;
+#endif /* ! _WINDOWS */
+
 Loop:
     /* while more arguments with leading - or + */
     while(--ac > 0 && (**++av == '-' || **av == '+')){
@@ -675,6 +681,7 @@ Loop:
 	if(strcmp(*av, "version") == 0){
 	    pico_vers_help();
 	}
+#ifndef	_WINDOWS     /* color configuration disabled in Windows  at this time */
 	else if(strcmp(*av, "ntfc") == 0
 		|| strcmp(*av, "ntbc") == 0
 		|| strcmp(*av, "rtfc") == 0
@@ -753,6 +760,7 @@ Loop:
 	   display_color_codes();
 	   exit(0);
 	}
+#endif /* ! _WINDOWS */
 	else if(strcmp(*av, "no_setlocale_collate") == 0){
 	    *setlocale_collate = 0;
 	    goto Loop;
@@ -974,12 +982,14 @@ Loop:
     if(usage)
       pico_args_help();
 
+#ifndef _WINDOWS
     Pcolors = pico_set_global_colors(ncolors, ntfc, ntbc, rtfc, rtbc,
 		tbfc, tbbc, klfc, klbc, knfc, knbc, stfc, stbc, prfc, prbc,
 		q1fc, q1bc, q2fc, q2bc, q3fc, q3bc, sbfc, sbbc);
 
     if(Pcolors)
        pico_toggle_color(1);
+#endif /* ! _WINDOWS */
 
     /* return the first filename for editing */
     if(ac > 0)
@@ -989,6 +999,7 @@ Loop:
 }
 
 
+#ifndef _WINDOWS
 PCOLORS *
 pico_set_global_colors(int nc, int ntfg, int ntbg, int rtfg, int rtbg,
 	int tbfg, int tbbg, int klfg, int klbg,
@@ -1109,6 +1120,7 @@ pico_set_global_colors(int nc, int ntfg, int ntbg, int rtfg, int rtbg,
 
   return pcolors;
 }
+#endif /* ! _WINDOWS */
 
 #ifdef	_WINDOWS
 /*
