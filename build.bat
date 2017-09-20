@@ -28,7 +28,7 @@ echo         clean      -- to remove obj, lib, and exe files from source
 goto fini
 
 :wnt
-echo PC-Aline for Windows/Winsock (Win32) build sequence
+echo PC-Alpine for Windows/Winsock (Win32) build sequence
 set cclntmake=makefile.nt
 set alpinemake=makefile.wnt
 if not defined ALPINE_LDAP set ALPINE_LDAP=%cd%\ldap
@@ -42,7 +42,7 @@ echo including LDAP functionality
 set ldapflags=-I\"%ALPINE_LDAP%\"\inckit -DENABLE_LDAP
 set ldaplibes=\"%ALPINE_LDAP%\"\binaries\release\ldap32.lib
 :noldapwnt
-set extracflagsnq=/Zi -Od %ldapflags% -D_USE_32BIT_TIME_T -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -DSPCL_REMARKS=\"\\\"\\\"\"
+set extracflagsnq=/DWINVER=0x0501 /Zi -Od %ldapflags% -D_USE_32BIT_TIME_T -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -DSPCL_REMARKS=\"\\\"\\\"\"
 set extralibes=
 set extralibesalpine=%ldaplibes%
 set extrarcflags="/D_PCP_WNT"
@@ -64,7 +64,7 @@ echo including LDAP functionality
 set ldapflags=-I\"%ALPINE_LDAP%\"\inckit -DENABLE_LDAP
 set ldaplibes=\"%ALPINE_LDAP%\"\binaries\release\ldap32.lib
 :noldapw2k
-set extracflagsnq=/Zi -Od %ldapflags% -D_USE_32BIT_TIME_T -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -DSPCFC_WINVER=\"\\\" 2000\\\"\" -DSPCL_REMARKS=\"\\\" with krb5\\\"\"
+set extracflagsnq=/DWINVER=0x0501 /Zi -Od %ldapflags% -D_USE_32BIT_TIME_T -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -DSPCFC_WINVER=\"\\\" 2000\\\"\" -DSPCL_REMARKS=\"\\\" with krb5\\\"\"
 set extralibes="secur32.lib"
 set extralibesalpine="secur32.lib %ldaplibes%"
 set extrarcflags="/D_PCP_W2K"
