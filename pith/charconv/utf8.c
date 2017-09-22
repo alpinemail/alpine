@@ -92,7 +92,7 @@ wcellwidth(UCS ucs)
 	    return((w & U4W_ERROR) ? -1 : w);
 	}
     }
-#ifndef _WINDOWS
+#if !defined(_WINDOWS) && HAVE_WCWIDTH
     else
       return(wcwidth((wchar_t) ucs));
 #else
@@ -104,7 +104,7 @@ wcellwidth(UCS ucs)
 int
 pith_ucs4width(UCS ucs)
 {
-#ifndef _WINDOWS
+#if !defined(_WINDOWS) && HAVE_WCWIDTH
   return wcwidth((wchar_t) ucs);
 #else
   return (ucs >= 0x2100) ? 2 : 1; 
