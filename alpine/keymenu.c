@@ -822,8 +822,8 @@ struct key att_view_keys[] =
 	NULL_MENU,
 	NULL_MENU,
 #ifdef SMIME
-	{"^D","Decrypt", {MC_DECRYPT,1,{ctrl('d')},KS_NONE}},
-	{"^E","Security", {MC_SECURITY,1,{ctrl('e')},KS_NONE}},
+	{"^D","Decrypt", {MC_DECRYPT,1,{ctrl('d')}},KS_NONE},
+	{"^E","Security", {MC_SECURITY,1,{ctrl('e')}},KS_NONE},
 #else
 	NULL_MENU,
 	NULL_MENU,
@@ -889,8 +889,8 @@ struct key view_keys[] =
 	RCOMPOSE_MENU,
 	{"A",N_("TogglePreferPlain"),{MC_TOGGLE,1,{'a'}},KS_NONE},
 #ifdef SMIME
-	{"^D","Decrypt", {MC_DECRYPT,1,{ctrl('d')},KS_NONE}},
-	{"^E","Security", {MC_SECURITY,1,{ctrl('e')},KS_NONE}},
+	{"^D","Decrypt", {MC_DECRYPT,1,{ctrl('d')}},KS_NONE},
+	{"^E","Security", {MC_SECURITY,1,{ctrl('e')}},KS_NONE},
 #else
 	NULL_MENU,
 	NULL_MENU,
