@@ -89,6 +89,7 @@ void  display_color_codes(void);
 char  args_pico_missing_flag[]  = N_("unknown flag \"%c\"");
 /* TRANSLATORS: error message about command line */
 char  args_pico_missing_arg[]   = N_("missing or empty argument to \"%c\" flag");
+char  args_pico_missing_arg_s[] = N_("missing or empty argument to \"%s\" flag");
 char  args_pico_missing_num[]   = N_("non numeric argument for \"%c\" flag");
 char  args_pico_missing_color[] = N_("missing color for \"%s\" flag");
 char  args_pico_missing_charset[] = N_("missing character set for \"%s\" flag");
@@ -129,11 +130,13 @@ N_("\t -kcs <keyboard_character_set> \tdefaults to display_character_set"),
 N_("\t -syscs\t\tuse system-supplied translation routines"),
 #endif	/* ! _WINDOWS */
 #ifdef	_WINDOWS
+N_("\t -dict \"dict1,dict2\" a comma separated list of dictionaries, e.g. en_US, de_DE, es_ES, etc."),
 N_("\t -cnf color \tforeground color"),
 N_("\t -cnb color \tbackground color"),
 N_("\t -crf color \treverse foreground color"),
 N_("\t -crb color \treverse background color"),
 #endif	/* _WINDOWS */
+#ifndef _WINDOWS
 N_("\t -color_code  \tdisplay number codes for different colors"),
 N_("\t -ncolors number \tnumber of colors for screen (8, 16, or 256)"),
 N_("\t -ntfc number \tnumber of color of foreground text"),
@@ -158,6 +161,7 @@ N_("\t -q3fc number \tnumber of color of foreground (text) of level three of quo
 N_("\t -q3bc number \tnumber of color of background of level three of quoted text"),
 N_("\t -sbfc number \tnumber of color of foreground of signature block text"),
 N_("\t -sbbc number \tnumber of color of background of signature block text"),
+#endif /* !_WINDOWS */
 N_("\t +[line#] \tLine - start on line# line, default=1"),
 N_("\t -v \t\tView - view file"),
 N_("\t -no_setlocale_collate\tdo not do setlocale(LC_COLLATE)"),
@@ -196,6 +200,8 @@ main(int argc, char *argv[])
 
 #ifndef _WINDOWS
     utf8_parameters(SET_UCS4WIDTH, (void *) pith_ucs4width);
+#else  /* _WINDOWS */
+    chosen_dict = -1;			/* do not commit any dictionary when starting */
 #endif /* _WINDOWS */
 
     set_input_timeout(600);
@@ -772,6 +778,42 @@ Loop:
 	}
 #endif	/* ! _WINDOWS */
 #ifdef	_WINDOWS
+        else if(strcmp(*av, "dict") == 0){
+	   char *cmd = *av; /* save it to use below */
+	   str = *++av;
+	   if(--ac){
+	     int i = 0;
+	     char *s;
+#define MAX_DICTIONARY	10
+	     while(str && *str){
+	        if(dictionary == NULL){
+		   dictionary = fs_get((MAX_DICTIONARY + 1)*sizeof(char *));
+		   memset((void *) dictionary, 0, (MAX_DICTIONARY+1)*sizeof(char *));
+		   if(dictionary == NULL)
+		     goto Loop;		/* get out of here */
+		}
+		if((s = strpbrk(str, " ,")) != NULL)
+		   *s++ = '\0';
+		dictionary[i] = fs_get(strlen(str) + 1);
+		strcpy(dictionary[i++], str);
+		if(s != NULL)
+		   for(; *s && (*s == ' ' || *s == ','); s++);
+		else
+		   goto Loop;
+		if(i == MAX_DICTIONARY + 1)
+		  goto Loop;
+		else
+		  str = s;
+	     }
+	   }
+	   else{
+		snprintf(tmp_1k_buf, sizeof(tmp_1k_buf), _(args_pico_missing_arg_s), cmd);
+		pico_display_args_err(tmp_1k_buf, NULL, 1);
+	        usage++;
+	   }
+
+	   goto Loop;
+	}
 	else if(strcmp(*av, "cnf") == 0
 	   || strcmp(*av, "cnb") == 0
 	   || strcmp(*av, "crf") == 0

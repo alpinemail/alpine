@@ -804,8 +804,17 @@ wquit(int f, int n)
         }
 
 	if(s == TRUE){
-	    if(filewrite(0,1) == TRUE)
+	    if(filewrite(0,1) == TRUE){
+#ifdef _WINDOWS
+	      if(dictionary != NULL){
+	        int i;
+		for(i = 0; dictionary[i] != NULL; i++)
+		   fs_give((void **)&dictionary[i]);
+		fs_give((void **)dictionary);
+	      }
+#endif /* _WINDOWS */
 	      wquit(1, 0);
+	    }
 	}
 	else if(s == ABORT){
 	    emlwrite(_("Exit cancelled"), NULL);
