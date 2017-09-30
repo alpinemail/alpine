@@ -15,7 +15,7 @@ dnl  */
 
 AC_PREREQ([2.69])
 
-AC_REVISION([Rev:21 by chappa@washington.edu])
+AC_REVISION([Rev:23 by chappa@washington.edu])
 
 dnl Alpine Version Number is in $srcdir/VERSION
 AC_INIT([alpine],[m4_normalize(m4_include(VERSION))],[chappa@washington.edu])
@@ -31,7 +31,7 @@ AC_CANONICAL_HOST
 
 AC_LANG(C)
 
-AC_MSG_NOTICE([Configuring for $PACKAGE_STRING ($host))])
+AC_MSG_NOTICE([Configuring for $PACKAGE_STRING ($host)])
 
 # start out with intent to build Web Alpine
 WEB_BUILD=web/src/alpined.d
@@ -1584,6 +1584,38 @@ if test "x$alpine_GSSTYPE" != "xnone" ; then
   fi
 fi
 
+dnl Include NTLM?
+AC_ARG_WITH(ntlm,
+  AC_HELP_STRING([--without-ntlm],[Disable NTLM client support]),
+  [with_ntlm=$withval])
+
+dnl provide NTLM support?
+if test "x$with_ntlm" = "xno" ; then
+  alpine_NTLM="none"
+else
+  alpine_NTLM=
+
+  AC_SEARCH_LIBS(buildSmbNtlmAuthRequest, ntlm, 
+     [
+        AC_CHECK_HEADER([ntlm.h],
+	[
+	    extra_auth_ntlm=ntl
+	    AC_MSG_NOTICE([including NTLM support])
+	],
+	[
+	    alpine_NTLM="none"
+	    alpine_ntlm_none_reason="header file ntlm.h not found"
+	])
+     ],
+     [
+	alpine_NTLM="none"
+	alpine_ntlm_none_reason="ntlm library not found"
+     ])
+  if test -n "$alpine_ntlm_none_reason" ; then
+     AC_MSG_NOTICE([NOT including NTLM Support: $alpine_ntlm_none_reason])
+  fi
+fi
+
 dnl check for tcl libraries for Web Alpine (HACKY)
 if test -n "$WEB_BUILD" ; then
 TCL_VERSIONS_DOT="tcl8.6 tcl8.5 tcl8.4 tcl8.3"
@@ -1985,9 +2017,16 @@ else
   fi
 fi
 
+extra_auth_gss=
 if test "x$alpine_GSSTYPE" != "xnone" ; then
-  c_client_specials="${c_client_specials}EXTRAAUTHENTICATORS=gss "
+  extra_auth_gss=gss
   AC_MSG_NOTICE([* * * Including Kerberos5 functionality])
+fi
+
+extra_auth_ntlm=
+if test "x$alpine_NTLM" != "xnone" ; then
+  extra_auth_ntlm=ntl
+  AC_MSG_NOTICE([* * * Including NTLM Authenticator])
 fi
 
 if test -n "$CPPFLAGS" ; then
@@ -2015,6 +2054,9 @@ fi
 if test -n "$alpine_c_client_gccoptlevel" ; then
   AC_SUBST(C_CLIENT_GCCOPTLEVEL, GCCOPTLEVEL=\"$alpine_c_client_gccoptlevel\")
 fi
+
+c_client_auths="$extra_auth_gss $extra_auth_ntlm"
+AC_SUBST([C_CLIENT_AUTHS], $c_client_auths)
 
 AC_SUBST([C_CLIENT_SPECIALS], $c_client_specials)
 

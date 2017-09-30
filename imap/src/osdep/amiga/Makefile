@@ -187,7 +187,7 @@ osdep.o:mail.h misc.h env.h fs.h ftl.h nl.h tcp.h \
 	osdep.c env_ami.c fs_ami.c ftl_ami.c nl_ami.c tcp_ami.c \
 	auths.c gethstid.c \
 	gr_waitp.c \
-	auth_log.c auth_md5.c auth_pla.c \
+	auth_log.c auth_md5.c auth_ntl.c auth_pla.c \
 	pmatch.c scandir.c \
 	tz_bsd.c \
 	write.c \

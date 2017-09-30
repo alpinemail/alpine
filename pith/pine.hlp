@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 221 2017-09-29 22:01:56
+Alpine Commit 222 2017-09-29 23:39:51
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -175,6 +175,14 @@ Apache web server.
 
 Version <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)
 addresses bugs found in previous releases and has a few additions as well.
+
+<P>
+Additions include:
+
+<UL>
+<LI> NTLM authentication support with the ntlm library, in Unix systems.
+Based on code provided by Maciej W. Rozycki.
+</UL>
 
 <P>
 Bugs that have been addressed include:

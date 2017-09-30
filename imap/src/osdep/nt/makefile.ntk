@@ -84,7 +84,8 @@ smtp.obj: mail.h smtp.h rfc822.h misc.h osdep.h smtp.c
 os_ntk.obj: mail.h osdep.h env_nt.h fs.h ftl.h nl.h tcp.h tcp_nt.h yunchan.h \
 	os_ntk.c fs_nt.c ftl_nt.c nl_nt.c env_nt.c ssl_nt.c ssl_none.c \
 	ip_nt.c tcp_nt.c yunchan.c pmatch.c write.c \
-	mailfile.h auth_gss.c auth_md5.c auth_pla.c auth_log.c kerb_mit.c
+	mailfile.h auth_gss.c auth_md5.c auth_ntl.c auth_pla.c auth_log.c \
+	kerb_mit.c
 
 mbxnt.obj: mail.h misc.h osdep.h mbxnt.c
 

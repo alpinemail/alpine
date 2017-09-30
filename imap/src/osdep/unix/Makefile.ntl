@@ -1,0 +1,27 @@
+# ========================================================================
+# Copyright 1988-2007 University of Washington
+# Copyright 2015      Imagination Technologies
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+#
+# ========================================================================
+
+# Program:	NTLM makefile
+#
+# Author:	Maciej W. Rozycki
+#
+# Date:		25 January 2015
+# Last Edited:	25 January 2015
+
+
+# Extended flags needed for additional authenticators.  You may need to modify.
+
+NTLMLDFLAGS= -lntlm
+
+ntl:	# NTLM flags
+	echo $(NTLMLDFLAGS) >> LDFLAGS

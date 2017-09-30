@@ -27,7 +27,7 @@ c-client.d:
 
 c-client:
 	$(C_CLIENT_WITH_IPV6)
-	cd imap && $(MAKE) $(C_CLIENT_TARGET) $(C_CLIENT_CFLAGS) $(C_CLIENT_LDFLAGS) $(C_CLIENT_GCCOPTLEVEL) EXTRASPECIALS="$(C_CLIENT_SPECIALS)"
+	cd imap && $(MAKE) $(C_CLIENT_TARGET) $(C_CLIENT_CFLAGS) $(C_CLIENT_LDFLAGS) $(C_CLIENT_GCCOPTLEVEL) EXTRAAUTHENTICATORS="$(C_CLIENT_AUTHS)" EXTRASPECIALS="$(C_CLIENT_SPECIALS)"
 
 gssapi_proxy.l:
 	if test ! -L c-client/auth_gss_proxy.c ; then $(LN_S) @abs_top_srcdir@/web/src/pubcookie/auth_gss_proxy.c c-client/auth_gss_proxy.c ; fi
