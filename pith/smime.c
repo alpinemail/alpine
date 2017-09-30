@@ -2980,6 +2980,7 @@ smime_validate_extra_test(char *mimetext, unsigned long mimelen, char *bodytext,
 
   mtext = mimelen ? fs_get(mimelen+1) : NULL;
   btext = fs_get(bodylen+1);
+  result = 0;
 
   flag = 1;	/* silence all failures */
   for(i = 1; result == 0 && i < TOTAL_SIGFLTR; i++){

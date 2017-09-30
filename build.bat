@@ -76,6 +76,24 @@ echo Sure you want to delete object, library and executable files?!?!
 echo If NOT, type Ctrl-C to terminate build script NOW.  Type ENTER if you do.
 pause
 echo Cleaning alpine, pico, mailutil, mapi, and c-client directories
+echo del *.pdb
+del /Q alpine\*.pdb
+del /Q c-client\*.pdb
+del /Q c-client-dll\*.pdb
+rem del /Q mailutil\*.pdb
+rem del /Q mapi\*.pdb
+del /Q pico\*.pdb
+del /Q pith\*.pdb
+del /Q regex\*.pdb
+del /Q alpine\osdep\*.pdb
+del /Q pico\osdep\*.pdb
+del /Q pith\charconv\*.pdb
+del /Q pith\osdep\*.pdb
+echo del *.ilk
+del /Q alpine\*.ilk
+rem del /Q mapi\*.ilk
+del /Q pico\*.ilk
+del /Q pith\*.ilk
 set alpinemake=makefile.wnt
 set extramakecommand=clean
 if NOT exist c-client goto nocclient
