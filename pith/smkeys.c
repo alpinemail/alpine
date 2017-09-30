@@ -95,7 +95,7 @@ create_master_password(char *pass, size_t passlen, int first_time)
 
   for(trial = 0; trial < MAXTRIAL; trial++){
     snprintf(prompt, sizeof(prompt), 
-		_("Create master password \(attempt %d of %d): "), trial+1, MAXTRIAL);
+		_("Create master password (attempt %d of %d): "), trial+1, MAXTRIAL);
     prompt[sizeof(prompt)- 1] = '\0';
     pass[0] = '\0';
     do {
@@ -107,7 +107,7 @@ create_master_password(char *pass, size_t passlen, int first_time)
     } while ((rv != 0  && rv != 1) || (rv == 0 && pass[0] == '\0'));
 
     snprintf(prompt, sizeof(prompt), 
-		_("Confirm master password \(attempt %d of %d): "), trial+1, MAXTRIAL);
+		_("Confirm master password (attempt %d of %d): "), trial+1, MAXTRIAL);
     prompt[sizeof(prompt)- 1] = '\0';
     passbackup[0] = '\0';
     do { 
