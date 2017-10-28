@@ -312,9 +312,14 @@ main(int argc, char **argv)
      * in the screen, so this is not necessary to do in Window, and
      * using pith_ucs4width does not produce the correct result
      */
-#ifndef _WINDOWS
-    mail_parameters(NULL, SET_UCS4WIDTH, (void *) pith_ucs4width);
-#endif /* _WINDOWS */
+#if  !defined(_WINDOWS) && defined(LC_CTYPE)
+    { char *s;
+      if((s = setlocale(LC_CTYPE, "")) != NULL
+	&& strlen(s) >= 5
+	&& !strucmp(s+strlen(s)-5, "UTF-8"))
+        mail_parameters(NULL, SET_UCS4WIDTH, (void *) pith_ucs4width);
+    }
+#endif /* !_WINDOWS && LC_CTYPE */
     mail_parameters(NULL, SET_QUOTA, (void *) pine_parse_quota);
     /* set some default timeouts in case pinerc is remote */
     mail_parameters(NULL, SET_OPENTIMEOUT, (void *)(long)30);

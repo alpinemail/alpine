@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 223 2017-09-30 11:55:59
+Alpine Commit 224 2017-10-27 19:58:37
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -206,6 +206,9 @@ Bugs that have been addressed include:
    <LI> Update build.bat file to add /DWINVER=0x0501 so that Alpine can 
         build when using Visual Studio 2017. Fix contributed by 
         Ulf-Dietrich Braunmann.
+
+   <LI> When the locale is not set up to UTF-8, alpine might determine the 
+        width of a character incorrectly. Reported by Alexandre Fedotov.
 </UL>
 
 <P>
