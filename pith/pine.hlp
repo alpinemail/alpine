@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 224 2017-10-27 19:58:37
+Alpine Commit 225 2017-11-08 14:18:33
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -209,6 +209,10 @@ Bugs that have been addressed include:
 
    <LI> When the locale is not set up to UTF-8, alpine might determine the 
         width of a character incorrectly. Reported by Alexandre Fedotov.
+
+   <LI> When colors are edited from the main setup configuration screen, some
+        color settings are not updated until Alpine is restarted. Reported by
+        Andrew Hill.
 </UL>
 
 <P>
@@ -17320,9 +17324,12 @@ folder is one of your incoming folders, it may be the nickname you've given
 the folder.
 Here are a couple samples of specific folder names:
 <P>
-<CENTER><SAMP>{monet.art.example.com}mail/art-class</SAMP></CENTER>
+<CENTER><SAMP>{monet.art.example.com/user=vincent}mail/art-class</SAMP></CENTER>
 <P>
-<CENTER><SAMP>{news.example.com/nntp}#news.comp.mail.pine</SAMP></CENTER>
+<CENTER><SAMP>{news.example.com/nntp/user=peter}#news.comp.mail.pine</SAMP></CENTER>
+<P>
+Observe that in order for an external folder (IMAP, POP, News) to be a match,
+you must also add the /user= option in the definition of the incoming folder.
 <P>
 The easiest way to fill in the &quot;Folder List&quot; field is to use
 the &quot;T&quot; command that is available when the &quot;Folder List&quot; line is

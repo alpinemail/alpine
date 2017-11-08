@@ -5662,6 +5662,24 @@ fix_side_effects(struct pine *ps, struct variable *var, int revert)
 			        pretty_var_name(var->name));
 	}
     }
+    else if(var == &ps->vars[V_NORM_FORE_COLOR] ||
+	    var == &ps->vars[V_NORM_BACK_COLOR] ||
+	    var == &ps->vars[V_REV_FORE_COLOR] ||
+	    var == &ps->vars[V_REV_BACK_COLOR] ||
+	    var == &ps->vars[V_TITLE_FORE_COLOR] ||
+	    var == &ps->vars[V_TITLE_BACK_COLOR] ||
+	    var == &ps->vars[V_TITLECLOSED_FORE_COLOR] ||
+	    var == &ps->vars[V_TITLECLOSED_BACK_COLOR] ||
+	    var == &ps->vars[V_STATUS_FORE_COLOR] ||
+	    var == &ps->vars[V_STATUS_BACK_COLOR] ||
+	    var == &ps->vars[V_KEYLABEL_FORE_COLOR] ||
+	    var == &ps->vars[V_KEYLABEL_BACK_COLOR] ||
+	    var == &ps->vars[V_KEYNAME_FORE_COLOR] ||
+	    var == &ps->vars[V_KEYNAME_BACK_COLOR]){
+	set_current_color_vals(ps);
+	ClearScreen();
+	ps->mangled_screen = 1;
+    }
     else if(var == &ps->vars[V_KW_COLORS] ||
 	    var == &ps->vars[V_INDEX_TOKEN_COLORS] ||
 	    var == &ps->vars[V_IND_PLUS_FORE_COLOR] ||
