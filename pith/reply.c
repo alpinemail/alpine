@@ -1296,6 +1296,10 @@ reply_body_text(struct mail_bodystruct *body, struct mail_bodystruct **new_body)
 		PART *part;
 		int got_one = 0;
 
+	        if((part = body->nested.part) != NULL 
+		   && part->body.type == TYPEMULTIPART)
+		      return reply_body_text(&body->nested.part->body, new_body);
+
 		if(ps_global->force_prefer_plain
 		   || (!ps_global->force_no_prefer_plain
 		       && F_ON(F_PREFER_PLAIN_TEXT, ps_global))){

@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 225 2017-11-08 14:18:33
+Alpine Commit 226 2017-11-10 19:55:39
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -213,6 +213,11 @@ Bugs that have been addressed include:
    <LI> When colors are edited from the main setup configuration screen, some
         color settings are not updated until Alpine is restarted. Reported by
         Andrew Hill.
+
+   <LI> If the first part of a message is multipart/alternative, and the 
+        first part of this is also a multipart type, then Alpine might 
+        fail to select the first text part when replying to a message. 
+        Reported by Lucio Chiappetti.
 </UL>
 
 <P>
