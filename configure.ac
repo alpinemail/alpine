@@ -1481,6 +1481,7 @@ if test "x$alpine_SSLTYPE" != "xnone" ; then
         AC_SEARCH_LIBS(TLS_client_method,ssl,, [ alpine_SSLTYPE="none"])
         AC_SEARCH_LIBS(DTLS_client_method,ssl,,[ alpine_SSLTYPE="none"])
 	if test "x$alpine_SSLTYPE" != "xnone" ; then
+	  alpine_c_client_cflags="$alpine_c_client_cflags -DTLSV1_2"
 	  AC_DEFINE([SSL_SUPPORTS_TLSV1_2], [1], [SSL Supports TLSV1.2])
 	fi
     fi

@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 226 2017-11-10 19:55:39
+Alpine Commit 227 2017-11-13 00:00:45
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -218,6 +218,9 @@ Bugs that have been addressed include:
         first part of this is also a multipart type, then Alpine might 
         fail to select the first text part when replying to a message. 
         Reported by Lucio Chiappetti.
+
+   <LI> TLS 1.2 works does not work if Alpine is compiled with openssl &gt;= 1.1.0.
+        Reported and patched by Kyle George.
 </UL>
 
 <P>
