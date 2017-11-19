@@ -18,7 +18,7 @@ AC_PREREQ([2.69])
 AC_REVISION([Rev:23 by chappa@washington.edu])
 
 dnl Alpine Version Number is in $srcdir/VERSION
-AC_INIT([alpine],[m4_normalize(m4_include(VERSION))],[chappa@washington.edu])
+AC_INIT([alpine],[m4_esyscmd(tr -d \\n < VERSION)],[chappa@washington.edu])
 
 AC_CONFIG_SRCDIR([include/system.h])
 AC_CONFIG_HEADERS([include/config.h])
@@ -44,7 +44,6 @@ AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_LN_S
 AC_PROG_AWK
-AC_PROG_RANLIB
 LT_INIT
 AC_SUBST([LIBTOOL_DEPS])
 
@@ -1365,22 +1364,18 @@ fi
 dnl Check if openssl = LibreSSL
 if test "x$alpine_SSLTYPE" != "xnone" ; then
   AC_MSG_CHECKING([if OpenSSL is LibreSSL])
-  AC_RUN_IFELSE(
-	[AC_LANG_SOURCE([[
+  AC_TRY_COMPILE([
 #include <stdio.h>
 #include <stdlib.h>
 #if HAVE_STDINT_H
 #include <stdint.h>
 #endif /* HAVE_STDINT_H */
 #include <openssl/ssl.h>
-int main(void) {
-
-	if (LIBRESSL_VERSION_NUMBER >= 0x20000000L)
-		exit(0);
-
-	exit(2);
-}
-	]])],
+	],[
+#if OPENSSL_VERSION_NUMBER < 0x20000000L
+#error
+#endif
+	],
 	[ AC_MSG_RESULT(yes)
 	  alpine_SSLPROVIDER="libressl"
 	],
@@ -1392,22 +1387,18 @@ fi
 dnl Check Openssl/LibreSSL version first
 if test "x$alpine_SSLTYPE" != "xnone" -a "x$alpine_SSLPROVIDER" != "xlibressl" ; then
   AC_MSG_CHECKING([Openssl library version >= 1.0.0c])
-  AC_RUN_IFELSE(
-	[AC_LANG_SOURCE([[
+  AC_TRY_COMPILE([
 #include <stdio.h>
 #include <stdlib.h>
 #if HAVE_STDINT_H
 #include <stdint.h>
 #endif /* HAVE_STDINT_H */
 #include <openssl/ssl.h>
-int main(void) {
-
-	if (OPENSSL_VERSION_NUMBER >= 0x1000003fL)
-		exit(0);
-
-	exit(2);
-}
-	]])],
+	],[
+#if OPENSSL_VERSION_NUMBER < 0x1000003fL
+#error
+#endif
+	],
 	[ AC_MSG_RESULT(yes) 
 	  alpine_SSLPROVIDER="openssl"
 	],
@@ -1423,22 +1414,18 @@ fi
 dnl Now check if we are working with version 1.1.0 of openssl
 if test "x$alpine_SSLTYPE" != "xnone" -a "x$alpine_SSLPROVIDER" != "xlibressl" ; then
   AC_MSG_CHECKING([Openssl library version >= 1.1.0])
-  AC_RUN_IFELSE(
-	[AC_LANG_SOURCE([[
+  AC_TRY_COMPILE([
 #include <stdio.h>
 #include <stdlib.h>
 #if HAVE_STDINT_H
 #include <stdint.h>
 #endif /* HAVE_STDINT_H */
 #include <openssl/ssl.h>
-int main(void) {
-
-	if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
-		exit(0);
-
-	exit(2);
-}
-	]])],
+	],[
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#error
+#endif
+	],
 	[ AC_MSG_RESULT(yes)
 	  alpine_SSLVERSION="new"
 	  CFLAGS="$CFLAGS -DOPENSSL_1_1_0 -DOPENSSL_API_COMPAT=0x10100000L"
@@ -1641,16 +1628,13 @@ TCL_VERSIONS="${TCL_VERSIONS_DOT} ${TCL_VERSIONS_NODOT} tcl"
       [
 	for base in /usr /usr/local ; do
 	 for dir in ${TCL_VERSIONS} ; do
-	  AC_CHECK_FILE([$base/include/$dir/tcl.h],
-	    [
-	      found=yes
-	    ])
-	  if test "$found" = "yes" ; then
+	  if test -f $base/include/$dir/tcl.h ; then
 	    CPPFLAGS="$CPPFLAGS -I$base/include/$dir"
+	    found=yes
 	    break
 	  fi
 	 done
-	 if test "$found" = "yes" ; then
+	 if test "x$found" = "xyes" ; then
 	    break
 	 fi
 	done

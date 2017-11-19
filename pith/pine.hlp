@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 227 2017-11-13 00:00:45
+Alpine Commit 228 2017-11-19 11:37:59
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -185,6 +185,10 @@ Based on code provided by Maciej W. Rozycki.
 
 <LI> Add -dict option to PC-Pico, which allows users to choose a dictionary
 when spelling. Sample usage: -dict "en_US, de_DE, fr_FR".
+
+<LI> Improvements to the configure stage of compilation. Some of
+these contributed by Helmut Grohne. See
+<A href="https://bugs.debian.org/876164">Bug 876164</A> in Debian.
 </UL>
 
 <P>
