@@ -219,7 +219,7 @@ AskAttach(char *cmnt, size_t cmntlen, LMLIST **lm)
 		if((new=(LMLIST *)malloc(sizeof(*new))) == NULL
 		   || (new->fname=malloc((len1+1) * sizeof(char))) == NULL
 		   || (new->dir=malloc((len2+1) * sizeof(char))) == NULL){
-		    emlwrite("\007Can't malloc space for filename", NULL);
+		    emlwwrite(_("Can't malloc space for filename"), NULL);
 		    return(-1);
 		}
 
@@ -257,7 +257,7 @@ AskAttach(char *cmnt, size_t cmntlen, LMLIST **lm)
 		AttachCancel(fn);
 		pico_refresh(FALSE,1);
 		update();
-		emlwrite("\007File name too BIG, cannot select!", NULL);
+		emlwwrite(_("File name too BIG, cannot select!"), NULL);
 	        sleep(3);
 	      }
 	    }
@@ -268,7 +268,7 @@ AskAttach(char *cmnt, size_t cmntlen, LMLIST **lm)
 	      AttachCancel(fn);
 	      pico_refresh(FALSE, 1);
 	      update();
-	      emlwrite("\007File name too big, cannot select!", NULL);         
+	      emlwwrite(_("File name too big, cannot select!"), NULL);
 	      sleep(3);
 	    }
 
@@ -329,8 +329,8 @@ AskAttach(char *cmnt, size_t cmntlen, LMLIST **lm)
 			    fixpath(fn, sizeof(fn));	/* names relative to ~ */
 			    if((gmode&MDTREE) && !in_oper_tree(fn)){
 				eml.s = (gmode&MDSCUR) ? _("home directory") : opertree;
-				emlwrite(
-			_("\007Restricted mode allows attachments from %s only"), &eml);
+				emlwwrite(
+			_("Restricted mode allows attachments from %s only"), &eml);
 				return(0);
 			    }
 			}
@@ -343,7 +343,7 @@ AskAttach(char *cmnt, size_t cmntlen, LMLIST **lm)
 			len = strlen(fn);
 			if((new=(LMLIST *)malloc(sizeof(*new))) == NULL
 			   || (new->fname=malloc((len+1)*sizeof(char))) == NULL){
-			    emlwrite("\007Can't malloc space for filename", NULL);
+			    emlwwrite(_("Can't malloc space for filename"), NULL);
 			    return(-1);
 			}
 
@@ -383,7 +383,7 @@ AttachUpload(char *fn, size_t fnlen, char *sz, size_t szlen)
     long l;
 
     if(gmode&MDSCUR){
-	emlwrite("\007Restricted mode disallows uploaded command", NULL);
+	emlwwrite(_("Restricted mode disallows uploaded command"), NULL);
 	return(0);
     }
 
@@ -452,7 +452,7 @@ SyncAttach(void)
     if(ki){
 	if((knwn = (PATMT **)malloc((ki+1) * (sizeof(PATMT *)))) == NULL){
 	    eml.s = comatose(ki + 1);
-	    emlwrite("\007Can't allocate space for %s known attachment array entries", 
+	    emlwwrite(_("Can't allocate space for %s known attachment array entries"), 
 		     &eml);
 	    rv = -1;
 	    goto exit_early;
@@ -475,7 +475,7 @@ SyncAttach(void)
 
     if((bld = (PATMT **)malloc(nbld * (sizeof(PATMT *)))) == NULL){
 	eml.s = comatose(nbld);
-	emlwrite("\007Can't allocate space for %s build array entries", &eml);
+	emlwwrite(_("Can't allocate space for %s build array entries"), &eml);
 	rv = -1;
 	goto exit_early;
     }
@@ -488,7 +488,7 @@ SyncAttach(void)
 	if(bi == nbld){		                /* need to grow build array? */
 	    if((bld = (PATMT **)realloc(bld, ++nbld * sizeof(PATMT *))) == NULL){
 		eml.s = comatose(nbld);
-		emlwrite("\007Can't resize build array to %s entries ", &eml);
+		emlwwrite(_("Can't resize build array to %s entries"), &eml);
 		rv = -1;
 		goto exit_early;
 	    }
@@ -536,7 +536,7 @@ SyncAttach(void)
 		    if((j=strlen(file)) > strlen(tp->filename)){
 			if((tp->filename = (char *)realloc(tp->filename,
 					        sizeof(char)*(j+1))) == NULL){
-			    emlwrite("\007Can't realloc filename space",NULL);
+			    emlwwrite(_("Can't realloc filename space"),NULL);
 			    rv = -1;
 			    goto exit_early;
 			}
@@ -550,7 +550,7 @@ SyncAttach(void)
 		    if((j=strlen(size)) > strlen(tp->size)){
 			if((tp->size=(char *)realloc(tp->size,
 					        sizeof(char)*(j+1))) == NULL){
-			    emlwrite("\007Can't realloc space for size", NULL);
+			    emlwwrite(_("Can't realloc space for size"), NULL);
 			    rv = -1;
 			    goto exit_early;
 			}
@@ -565,7 +565,7 @@ SyncAttach(void)
 		    if((j=strlen(comment)) > strlen(tp->description)){
 			if((tp->description=(char *)realloc(tp->description,
 						sizeof(char)*(j+1))) == NULL){
-			    emlwrite("\007Can't realloc description", NULL);
+			    emlwwrite(_("Can't realloc description"), NULL);
 			    rv = -1;
 			    goto exit_early;
 			}
@@ -848,7 +848,7 @@ ParseAttach(struct hdr_line **lp,		/* current header line      */
 		   the %s is replaced with the character that is not
 		   allowed in the name. */
 		eml.s = (c == ',') ? "," : "space";
-		emlwrite(_("\007Attchmnt: '%s' not allowed in file name"), &eml);
+		emlwwrite(_("Attchmnt: '%s' not allowed in file name"), &eml);
 		rv = -1;
 		level = TG;			/* eat rest of garbage */
 		break;
@@ -902,7 +902,7 @@ process_tag:					/* enclosed in []         */
 			      
 			    if((gmode & MDTREE) && !in_oper_tree(fn)){
 				eml.s = (gmode&MDSCUR) ? _("home directory") : opertree;
-				emlwrite(_("\007Attachments allowed only from %s"), &eml);
+				emlwwrite(_("Attachments allowed only from %s"), &eml);
 				rv = -1;
 				level = TG;
 				break;
@@ -948,7 +948,7 @@ process_tag:					/* enclosed in []         */
 				rv = 1;
 			    }
 			    else{
-				emlwrite("\007Attchmnt: Problem displaying real file path", NULL);
+				emlwwrite(_("Attchmnt: Problem displaying real file path"), NULL);
 			    }
 			}
 
@@ -972,7 +972,7 @@ process_tag:					/* enclosed in []         */
 
 			if(c != ']'){		/* legit label? */
 			    eml.s = fn;
-			    emlwrite(_("\007Attchmnt: Expected ']' after \"%s\""),
+			    emlwwrite(_("Attchmnt: Expected ']' after \"%s\""),
 				     &eml);
 			    rv = -1;
 			    level = TG;
@@ -1001,7 +1001,7 @@ process_tag:					/* enclosed in []         */
 
 			if(tp == NULL){
 			    eml.s = fn;
-			    emlwrite("\007Attchmnt: Unknown reference: %s", &eml);
+			    emlwwrite(_("Attchmnt: Unknown reference: %s"), &eml);
 			    lblsz =  "XXX";
 			}
 		    }
@@ -1050,7 +1050,7 @@ process_tag:					/* enclosed in []         */
 	        eml.s =   c == ',' ? ","
 			    : c == ' ' ? "space"
 			      : c == '[' ? "[" : "]";
-		emlwrite(_("\007Attchmnt: '%s' not allowed in file name"), &eml);
+		emlwwrite(_("Attchmnt: '%s' not allowed in file name"), &eml);
 		rv = -1;			/* bad char in file name */
 		level = TG;			/* gobble garbage */
 	    }
@@ -1093,7 +1093,7 @@ process_tag:					/* enclosed in []         */
 		}
 		else{
 		    eml.s = fn;
-		    emlwrite(_("\007Attchmnt: Expected '(' or '\"' after %s"), &eml);
+		    emlwwrite(_("Attchmnt: Expected '(' or '\"' after %s"), &eml);
 		    rv = -1;			/* bag it all */
 		    level = TG;
 		}
@@ -1152,7 +1152,7 @@ process_tag:					/* enclosed in []         */
 		*p = '\0';
 		utf8 = ucs4_to_utf8_cpystr(tmp);
 		eml.s = utf8;
-		emlwrite(_("\007Attchmnt: Size field missing ')': \"%s\""), &eml);
+		emlwwrite(_("Attchmnt: Size field missing ')': \"%s\""), &eml);
 		if(utf8)
 		  fs_give((void **) &utf8);
 
@@ -1171,7 +1171,7 @@ process_tag:					/* enclosed in []         */
 		    lbln = 0;			/* reset flag */
 		}
 		else if(c != '\"' && c != '\0'){
-		    emlwrite(_("\007Attchmnt: Malformed comment, quotes required"), NULL);
+		    emlwwrite(_("Attchmnt: Malformed comment, quotes required"), NULL);
 		    rv = -1;
 		    level = TG;
 		}
@@ -1193,7 +1193,7 @@ process_tag:					/* enclosed in []         */
 		    cmnt[cmntlen-1] = '\0';
 		    fs_give((void **) &utf8);
 		    if(c == '\0'){
-			emlwrite(_("\007Attchmnt: Closing quote required at end of comment"), NULL);
+			emlwwrite(_("Attchmnt: Closing quote required at end of comment"), NULL);
 			rv = -1;
 		    }
 		}
@@ -1237,14 +1237,14 @@ process_tag:					/* enclosed in []         */
 		    break;
 		  default:
 		    if(rv != -1)
-		      emlwrite(_("\007Attchmnt: Comma must separate attachments"), NULL);
+		      emlwwrite(_("Attchmnt: Comma must separate attachments"), NULL);
 		    rv = -1;
 		}
 	    }
 	    break;
 
 	  default:				/* something's very wrong */
-	    emlwrite("\007Attchmnt: Weirdness in ParseAttach", NULL);
+	    emlwwrite(_("Attchmnt: Weirdness in ParseAttach"), NULL);
 	    return(-1);				/* just give up */
 	}
 
@@ -1497,7 +1497,7 @@ sinserts(UCS *ds,				/* dest string */
 	       *ds++ = *ss++;
 	}
 	else
-	  emlwrite("\007No end of line???", NULL);	/* can this happen? */
+	  emlwwrite(_("No end of line???"), NULL);	/* can this happen? */
     }
     else{					/* dest is longer, shrink it */
 	j = dl - sl;				/* difference in lengths */

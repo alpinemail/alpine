@@ -134,6 +134,7 @@ extern	int mlreplyd_utf8(char *, char *, int, int, EXTRAKEYS *);
 extern	int mlreplyd(UCS *, UCS *, int, int, EXTRAKEYS *);
 extern	int mlwrite_utf8(char *, void *);
 extern	int mlwrite(UCS *, void *);
+extern	void emlwwrite(char *, EML *);
 extern	void emlwrite(char *, EML *);
 extern	void emlwrite_ucs4(UCS *, EML *);
 extern	void unknown_command(UCS);

@@ -705,7 +705,7 @@ abort_composer(int f, int n)
 	return(TRUE);
 
       case ABORT:
-	emlwrite(_("\007Cancel Cancelled"), NULL);
+	emlwwrite(_("Cancel Cancelled"), NULL);
 	break;
 
       default:
@@ -746,7 +746,7 @@ wquit(int f, int n)
 
 	/* First, make sure there are no outstanding problems */ 
 	if(AttachError()){
-	    emlwrite(_("\007Problem with attachments!  Fix errors or delete attachments."), NULL);
+	    emlwwrite(_("Problem with attachments!  Fix errors or delete attachments."), NULL);
 	    return(FALSE);
 	}
 

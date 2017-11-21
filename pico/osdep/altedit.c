@@ -74,7 +74,7 @@ alt_editor(int f, int n)
     char   *fn;					/* tmp holder for file name */
     char   result[128];				/* result string */
     char   prmpt[128];
-    int	   i, done = 0, ret = 0, rv, trv;
+    int	   i, done = 0, ret = 0, rv, trv, beep;
     pid_t  child, pid;
     RETSIGTYPE (*ohup)(int);
     RETSIGTYPE (*oint)(int);
@@ -82,6 +82,7 @@ alt_editor(int f, int n)
     int status;
     EML eml;
 
+    beep = 0;
     eml.s = f ? "speller" : "editor";
 
     if(gmode&MDSCUR){
@@ -288,7 +289,8 @@ alt_editor(int f, int n)
 	  exit(-1);
     }
     else {				/* error! */
-	snprintf(result, sizeof(result), "\007Can't fork %%s: %s", errstr(errno));
+	snprintf(result, sizeof(result), _("Can't fork %%s: %s"), errstr(errno));
+	beep = 1;
 	ret = -1;
     }
 
@@ -334,7 +336,10 @@ alt_editor(int f, int n)
     ttopen();				/* reset the signals */
     pico_refresh(0, 1);			/* redraw */
     update();
-    emlwrite(result, &eml);
+    if(beep)
+      emlwwrite(result, &eml);
+    else
+      emlwrite(result, &eml);
     return(ret);
 #else /* _WINDOWS */
     char   eb[2 * PATH_MAX];			/* buf holding edit command */

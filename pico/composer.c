@@ -265,7 +265,7 @@ InitMailHeader(PICO *mp)
 		     if(strlen(addrbuf) + strlen(buf) >= addrbuflen){
 			 addrbuflen += NLINE * 4;
 			 if(!(addrbuf = (char *)realloc(addrbuf, addrbuflen))){
-			     emlwrite("\007Can't realloc addrbuf to %d bytes",
+			     emlwwrite(_("Can't realloc addrbuf to %d bytes"),
 				      (void *) addrbuflen);
 			     return(ABORT);
 			 }
@@ -756,7 +756,7 @@ HeaderEditor(int f, int n)
 			if(FormatLines(headents[ods.cur_e].hd_text, "",
 				       term.t_ncol - headents[ods.cur_e].prwid,
 				       headents[ods.cur_e].break_on_comma, 0) == -1)
-			  emlwrite("\007Format lines failed!", NULL);
+			  emlwwrite(_("Format lines failed!"), NULL);
 			UpdateHeader(0);
 			PaintHeader(COMPOSER_TOP_LINE, FALSE);
 			PaintBody(1);
@@ -808,7 +808,7 @@ HeaderEditor(int f, int n)
 			space = len+3;
 			bfp = malloc(space*sizeof(char));
 			if(bfp == NULL){
-			    emlwrite("\007Can't malloc space for filename",
+			    emlwwrite(_("Can't malloc space for filename"),
 				     NULL);
 			    continue;
 			}
@@ -1004,7 +1004,7 @@ HeaderEditor(int f, int n)
 			    if(insert && FormatLines(ods.cur_l, insert,
 					 term.t_ncol - headents[ods.cur_e].prwid,
 					 headents[ods.cur_e].break_on_comma,0)==-1){
-				emlwrite("\007Format lines failed!", NULL);
+				emlwwrite(_("Format lines failed!"), NULL);
 			    }
 
 			    if(insert)
@@ -1293,7 +1293,7 @@ nomore_to_complete:
 			    space = len+3;
 			    bfp = malloc(space*sizeof(char));
 			    if(bfp == NULL){
-				emlwrite("\007Can't malloc space for filename",
+				emlwwrite(_("Can't malloc space for filename"),
 					 NULL);
 				continue;
 			    }
@@ -1317,7 +1317,7 @@ nomore_to_complete:
 			if(FormatLines(headents[ods.cur_e].hd_text, bfp,
 				     term.t_ncol - headents[ods.cur_e].prwid,
 				     headents[ods.cur_e].break_on_comma,0)==-1){
-			    emlwrite("\007Format lines failed!", NULL);
+			    emlwwrite(_("Format lines failed!"), NULL);
 			}
 
 			if(bfp != buf)
@@ -1651,7 +1651,7 @@ header_downline(int beyond, int gripe)
 		if(FormatLines(headents[ods.cur_e].hd_text, "",
 			       term.t_ncol-headents[new_e].prwid,
 			       headents[ods.cur_e].break_on_comma, 0) == -1)
-		  emlwrite("\007Format lines failed!", NULL);
+		  emlwwrite(_("Format lines failed!"), NULL);
 	    }
 	} else if(headents[ods.cur_e].builder) { /* expand addresses	    */
 	    int mangled = 0;
@@ -1753,7 +1753,7 @@ header_upline(int gripe)
 		if(FormatLines(headents[ods.cur_e].hd_text, "",
 			       term.t_ncol - headents[ods.cur_e].prwid,
 			       headents[ods.cur_e].break_on_comma,0) == -1)
-		  emlwrite("\007Format lines failed!", NULL);
+		  emlwwrite(_("Format lines failed!"), NULL);
 	    }
 	}
 	else if(headents[ods.cur_e].builder){
@@ -1837,7 +1837,7 @@ AppendAttachment(char *fn, char *sz, char *cmt)
 	    lp = lp->next;
 	}
 	else{
-	    emlwrite("\007Can't allocate line for new attachment!", NULL);
+	    emlwwrite(_("Can't allocate line for new attachment!"), NULL);
 	    return(0);
 	}
     }
@@ -1860,13 +1860,13 @@ AppendAttachment(char *fn, char *sz, char *cmt)
 
 	if(status < 0){
 	    eml.s = fn;
-	    emlwrite("\007Problem attaching: %s", &eml);
+	    emlwwrite(_("Problem attaching: %s"), &eml);
 	}
 
 	if(FormatLines(headents[a_e].hd_text, "",
 		       term.t_ncol - headents[a_e].prwid,
 		       headents[a_e].break_on_comma, 0) == -1){
-	    emlwrite("\007Format lines failed!", NULL);
+	    emlwwrite(_("Format lines failed!"), NULL);
 	    return(0);
 	}
     }
@@ -2023,7 +2023,7 @@ LineEdit(int allowedit, UCS *lastch)
              */
             if(allowedit){
 		if(headents[ods.cur_e].is_attach && intag(strng,ods.p_ind)){
-		    emlwrite(_("\007Can't edit attachment number!"), NULL);
+		    emlwwrite(_("Can't edit attachment number!"), NULL);
 		    continue;
 		}
 
@@ -2245,7 +2245,7 @@ LineEdit(int allowedit, UCS *lastch)
 		  continue;
 
 		if(headents[ods.cur_e].is_attach && intag(strng, ods.p_ind)){
-		    emlwrite(_("\007Can't edit attachment number!"), NULL);
+		    emlwwrite(_("Can't edit attachment number!"), NULL);
 		    continue;
 		}
 
@@ -2259,7 +2259,7 @@ LineEdit(int allowedit, UCS *lastch)
 		}
 
 		if(headents[ods.cur_e].is_attach && intag(strng, ods.p_ind-1)){
-		    emlwrite(_("\007Can't edit attachment number!"), NULL);
+		    emlwwrite(_("Can't edit attachment number!"), NULL);
 		    continue;
 		}
 

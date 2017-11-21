@@ -109,7 +109,7 @@ ReadyForKey(int timeout)
 
       case BAIL_OUT:
       case PANIC_NOW:
-	emlwrite("\007Problem reading from keyboard!", NULL);
+	emlwwrite(_("Problem reading from keyboard!"), NULL);
 	kill(getpid(), SIGHUP);	/* Bomb out (saving our work)! */
 	/* no return */
     }

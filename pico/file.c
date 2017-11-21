@@ -304,8 +304,8 @@ insfile(int f, int n)
 		    char tfname[NLINE];
 
 		    if(gmode&MDSCUR){
-			emlwrite(
-			      _("\007Restricted mode disallows uploaded command"),
+			emlwwrite(
+			      _("Restricted mode disallows uploaded command"),
 			      NULL);
 			return(0);
 		    }

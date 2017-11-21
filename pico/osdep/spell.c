@@ -142,7 +142,7 @@ spell(int f, int n)
 
     if(ret != FIOSUC){
 	eml.s = sp;
-        emlwrite(_("\007Spell-checking file \"%s\" not found"), &eml);
+        emlwwrite(_("Spell-checking file \"%s\" not found"), &eml);
 	return(-1);
     }
 

@@ -299,19 +299,19 @@ getfnames(char *dn, char *pat, int *n, char *e, size_t elen)
 	switch(errno){
 	  case ENOENT :				/* File not found */
 	    if(e)
-	      snprintf(e, elen, "\007File not found: \"%s\"", dn);
+	      snprintf(e, elen, _("File not found: \"%s\""), dn);
 
 	    break;
 #ifdef	ENAMETOOLONG
 	  case ENAMETOOLONG :			/* Name is too long */
 	    if(e)
-	      snprintf(e, elen, "\007File name too long: \"%s\"", dn);
+	      snprintf(e, elen, _("File name too long: \"%s\""), dn);
 
 	    break;
 #endif
 	  default:				/* Some other error */
 	    if(e)
-	      snprintf(e, elen, "\007Error getting file info: \"%s\"", dn);
+	      snprintf(e, elen, _("Error getting file info: \"%s\""), dn);
 
 	    break;
 	}
@@ -325,7 +325,7 @@ getfnames(char *dn, char *pat, int *n, char *e, size_t elen)
 	avail = alloced = MAX(sbuf.st_size, incr);
 	if((sbuf.st_mode&S_IFMT) != S_IFDIR){
 	    if(e)
-	      snprintf(e, elen, "\007Not a directory: \"%s\"", dn);
+	      snprintf(e, elen, _("Not a directory: \"%s\""), dn);
 
 	    return(NULL);
 	}
@@ -333,7 +333,7 @@ getfnames(char *dn, char *pat, int *n, char *e, size_t elen)
 
     if((names=(char *)malloc(alloced * sizeof(char))) == NULL){
 	if(e)
-	  snprintf(e, elen, "\007Can't malloc space for file names");
+	  snprintf(e, elen, _("Can't malloc space for file names"));
 
 	return(NULL);
     }
@@ -342,7 +342,7 @@ getfnames(char *dn, char *pat, int *n, char *e, size_t elen)
     errno = 0;
     if((dirp=opendir(fname_to_locale(dn))) == NULL){
 	if(e)
-	  snprintf(e, elen, "\007Can't open \"%s\": %s", dn, errstr(errno));
+	  snprintf(e, elen, _("Can't open \"%s\": %s"), dn, errstr(errno));
 
 	free((char *)names);
 	return(NULL);
@@ -398,7 +398,7 @@ getfnames(char *dn, char *pat, int *n, char *e, size_t elen)
 	      if((names=(char *)realloc((void *)names, alloced * sizeof(char)))
 		  == NULL){
 		if(e)
-		  snprintf(e, elen, "\007Can't malloc enough space for file names");
+		  snprintf(e, elen, _("Can't malloc enough space for file names"));
 
 		return(NULL);
 	      }
@@ -440,31 +440,31 @@ fioperr(int e, char *f)
 
     switch(e){
       case FIOFNF:				/* File not found */
-	emlwrite("\007File \"%s\" not found", &eml);
+	emlwwrite(_("File \"%s\" not found"), &eml);
 	break;
       case FIOEOF:				/* end of file */
-	emlwrite("\007End of file \"%s\" reached", &eml);
+	emlwwrite(_("End of file \"%s\" reached"), &eml);
 	break;
       case FIOLNG:				/* name too long */
-	emlwrite("\007File name \"%s\" too long", &eml);
+	emlwwrite(_("File name \"%s\" too long"), &eml);
 	break;
       case FIODIR:				/* file is a directory */
-	emlwrite("\007File \"%s\" is a directory", &eml);
+	emlwwrite(_("File \"%s\" is a directory"), &eml);
 	break;
       case FIONWT:
-	emlwrite("\007Write permission denied: %s", &eml);
+	emlwwrite(_("Write permission denied: %s"), &eml);
 	break;
       case FIONRD:
-	emlwrite("\007Read permission denied: %s", &eml);
+	emlwwrite(_("Read permission denied: %s"), &eml);
 	break;
       case FIOPER:
-	emlwrite("\007Permission denied: %s", &eml);
+	emlwwrite(_("Permission denied: %s"), &eml);
 	break;
       case FIONEX:
-	emlwrite("\007Execute permission denied: %s", &eml);
+	emlwwrite(_("Execute permission denied: %s"), &eml);
 	break;
       default:
-	emlwrite("\007File I/O error: %s", &eml);
+	emlwwrite(_("File I/O error: %s"), &eml);
     }
 }
 
@@ -787,13 +787,13 @@ copy(char *a, char *b)
 
     if(!(fsb.st_mode&S_IREAD)){		/* can we read it? */
 	eml.s = a;
-	emlwrite("\007Read permission denied: %s", &eml);
+	emlwwrite(_("Read permission denied: %s"), &eml);
 	return(-1);
     }
 
     if((fsb.st_mode&S_IFMT) == S_IFDIR){ /* is it a directory? */
 	eml.s = a;
-	emlwrite("\007Can't copy: %s is a directory", &eml);
+	emlwwrite(_("Can't copy: %s is a directory"), &eml);
 	return(-1);
     }
 
@@ -803,25 +803,25 @@ copy(char *a, char *b)
 	    break;			/* these are OK */
 	  default:
 	    eml.s = errstr(errno);
-	    emlwrite("\007Can't Copy: %s", &eml);
+	    emlwwrite(_("Can't Copy: %s"), &eml);
 	    return(-1);
 	}
     }
     else{
 	if(!(tsb.st_mode&S_IWRITE)){	/* can we write it? */
 	    eml.s = b;
-	    emlwrite("\007Write permission denied: %s", &eml);
+	    emlwwrite(_("Write permission denied: %s"), &eml);
 	    return(-1);
 	}
 
 	if((tsb.st_mode&S_IFMT) == S_IFDIR){	/* is it directory? */
 	    eml.s = b;
-	    emlwrite("\007Can't copy: %s is a directory", &eml);
+	    emlwwrite(_("Can't copy: %s is a directory"), &eml);
 	    return(-1);
 	}
 
 	if(fsb.st_dev == tsb.st_dev && fsb.st_ino == tsb.st_ino){
-	    emlwrite("\007Identical files.  File not copied", NULL);
+	    emlwwrite(_("Identical files.  File not copied"), NULL);
 	    return(-1);
 	}
     }
@@ -939,13 +939,13 @@ ffclose(void)
 	   || ftruncate(fileno(g_pico_fio.fp),
 			(off_t) ftell(g_pico_fio.fp)) < 0)){
 	eml.s = errstr(errno);
-	emlwrite("\007Error preparing to close file: %s", &eml);
+	emlwwrite(_("Error preparing to close file: %s"), &eml);
 	sleep(5);
     }
 
     if (fclose(g_pico_fio.fp) == EOF) {
 	eml.s = errstr(errno);
-        emlwrite("\007Error closing file: %s", &eml);
+        emlwwrite(_("Error closing file: %s"), &eml);
         return(FIOERR);
     }
 #else /* _WINDOWS */

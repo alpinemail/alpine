@@ -331,7 +331,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 
     if((gmode&MDTREE) && !in_oper_tree(dir)){
 	eml.s = opertree;
-	emlwrite(_("\007Can't read outside of %s in restricted mode"), &eml);
+	emlwwrite(_("Can't read outside of %s in restricted mode"), &eml);
 	sleep(2);
 	return(0);
     }
@@ -748,7 +748,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 	  case 'X':
 	    if(!(gmp->flags & FB_LMODE)){
 		if(gmp->flags & FB_LMODEPOS)
-		  emlwrite(_("\007Type L command to use ListMode"), NULL);
+		  emlwwrite(_("Type L command to use ListMode"), NULL);
 		else
 		  unknown_command(c);
 		
@@ -756,7 +756,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 	    }
 
 	    if(gmp->current->mode == FIODIR){
-		emlwrite(_("\007Can't Set directories"), NULL);
+		emlwwrite(_("Can't Set directories"), NULL);
 		break;
 	    }
 
@@ -777,7 +777,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		     * Unless we make it so you can get out of ListMode
 		     * once you're in ListMode, this must be an error.
 		     */
-		    emlwrite(_("\007Already in ListMode"), NULL);
+		    emlwwrite(_("Already in ListMode"), NULL);
 		    break;
 		}
 		else{
@@ -818,7 +818,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 				 tmp, NLINE, QNORML, opts);
 		switch(status){
 		  case HELPCH:
-		    emlwrite(_("\007No help yet!"), NULL);
+		    emlwwrite(_("No help yet!"), NULL);
 /* remove break and sleep after help text is installed */
 		    sleep(3);
 		    break;
@@ -857,7 +857,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 	  case 'D':
 	    if(gmp->current->mode == FIODIR){
 /* BUG: if dir is empty it should be deleted */
-		emlwrite(_("\007Can't delete a directory"), NULL);
+		emlwwrite(_("Can't delete a directory"), NULL);
 		break;
 	    }
 
@@ -984,7 +984,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
  
 		switch(status){
 		  case HELPCH:
-		    emlwrite(_("\007No help yet!"), NULL);
+		    emlwwrite(_("No help yet!"), NULL);
 		    /* remove break and sleep after help text is installed */
 		    sleep(3);
 		    break;
@@ -1017,7 +1017,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
  
 		    if((gmode&MDTREE) && !in_oper_tree(child)){
 		      eml.s = opertree;
-		      emlwrite(_("\007 Can't go outside of %s in restricted mode"),
+		      emlwwrite(_("Can't go outside of %s in restricted mode"),
 			       &eml);
 			break;
 		    }
@@ -1035,7 +1035,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		    }
 		    else{
 		      eml.s = child;
-		      emlwrite(_("\007Not a directory: \"%s\""), &eml);
+		      emlwwrite(_("Not a directory: \"%s\""), &eml);
 		    }
  
 		    break;
@@ -1074,7 +1074,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		switch(status=mlreply_utf8(add_file ? _("Name of file to add: ") : _("Name of directory to add: "), child, NLINE,
 				      QFFILE, opts)){
 		  case HELPCH:
-		    emlwrite(_("\007No help yet!"), NULL);
+		    emlwwrite(_("No help yet!"), NULL);
 /* remove break and sleep after help text is installed */
 		    sleep(3);
 		    break;
@@ -1111,7 +1111,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 
 		    if((gmode&MDTREE) && !in_oper_tree(child)){
 		       eml.s = opertree;
-		       emlwrite(_("\007Restricted mode allows Add in %s only"),
+		       emlwwrite(_("Restricted mode allows Add in %s only"),
 				&eml);
 			break;
 		    }
@@ -1196,7 +1196,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 	  case 'c':					/* copy */
 	  case 'C':
 	    if(gmp->current->mode == FIODIR){
-		emlwrite(_("\007Can't copy a directory"), NULL);
+		emlwwrite(_("Can't copy a directory"), NULL);
 		break;
 	    }
 
@@ -1213,7 +1213,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		switch(status=mlreply_utf8(_("Name of new copy: "), child, NLINE,
 				      QFFILE, NULL)){
 		  case HELPCH:
-		    emlwrite(_("\007No help yet!"), NULL);
+		    emlwwrite(_("No help yet!"), NULL);
 /* remove break and sleep after help text is installed */
 		    sleep(3);
 		    break;
@@ -1237,7 +1237,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		    }
 
 		    if(!strcmp(gmp->current->fname, child)){
-			emlwrite(_("\007Can't copy file on to itself!"), NULL);
+			emlwwrite(_("Can't copy file on to itself!"), NULL);
 			break;
 		    }
 
@@ -1248,7 +1248,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 
 		    if((gmode&MDTREE) && !in_oper_tree(child)){
 		       eml.s = opertree;
-		       emlwrite(_("\007Restricted mode allows Copy in %s only"),
+		       emlwwrite(_("Restricted mode allows Copy in %s only"),
 				&eml);
 			break;
 		    }
@@ -1324,7 +1324,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 	    i = 0;
 
 	    if(!strcmp(gmp->current->fname, "..")){
-		emlwrite(_("\007Can't rename \"..\""), NULL);
+		emlwwrite(_("Can't rename \"..\""), NULL);
 		break;
 	    }
 
@@ -1341,7 +1341,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		switch(status=mlreply_utf8(_("Rename file to: "), child, NLINE, QFFILE,
 				      NULL)){
 		  case HELPCH:
-		    emlwrite(_("\007No help yet!"), NULL);
+		    emlwwrite(_("No help yet!"), NULL);
 /* remove break and sleep after help text is installed */
 		    sleep(3);
 		    break;
@@ -1368,7 +1368,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 
 		    if((gmode&MDTREE) && !in_oper_tree(child)){
 		       eml.s = opertree;
-		       emlwrite(_("\007Restricted mode allows Rename in %s only"),
+		       emlwwrite(_("Restricted mode allows Rename in %s only"),
 				&eml);
 			break;
 		    }
@@ -1454,8 +1454,8 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 
 			if((gmode&MDTREE) && !in_oper_tree(tmp)){
 			    eml.s = PARENTDIR;
-			    emlwrite(
-				   _("\007Can't visit %s in restricted mode"),
+			    emlwwrite(
+				   _("Can't visit %s in restricted mode"),
 				   &eml);
 			    break;
 			}
@@ -1482,7 +1482,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 			      }
 #endif
 			      else{
-				  emlwrite(_("\007Can't move up a directory"),
+				  emlwwrite(_("Can't move up a directory"),
 					   NULL);
 				  break;
 			      }
@@ -1530,7 +1530,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		    }
 		    else{
 			eml.s = child;
-			emlwrite(_("\007Problem finding dir \"%s\""), &eml);
+			emlwwrite(_("Problem finding dir \"%s\""), &eml);
 		    }
 		}
 
@@ -1585,7 +1585,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		      if((new=(LMLIST *)malloc(sizeof(*new))) == NULL
 			 || (new->fname=malloc(gmp->current->fname ? (flen=strlen(gmp->current->fname))+1 : 1)) == NULL
 			 || (new->dir=malloc((dlen=strlen(gmp->dname))+1)) == NULL){
-			emlwrite("\007Can't malloc space for filename", NULL);
+			emlwwrite(_("Can't malloc space for filename"), NULL);
 			return(-1);
 		      }
 
@@ -1634,7 +1634,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 	    while(!i){
 		switch(readpattern(_("File name to find"), FALSE, flags)){
 		  case HELPCH:
-		    emlwrite(_("\007No help yet!"), NULL);
+		    emlwwrite(_("No help yet!"), NULL);
 /* remove break and sleep after help text is installed */
 		    sleep(3);
 		    break;
@@ -1793,7 +1793,7 @@ getfcells(char *dname, int fb_flags)
 
     errbuf[0] = '\0';
     if((mp=(struct bmaster *)malloc(sizeof(struct bmaster))) == NULL){
-	emlwrite("\007Can't malloc space for master filename cell", NULL);
+	emlwwrite(_("Can't malloc space for master filename cell"), NULL);
 	return(NULL);
     }
 
@@ -1828,7 +1828,7 @@ getfcells(char *dname, int fb_flags)
     if((mp->names = getfnames(mp->dname, NULL, &nentries, errbuf, sizeof(errbuf))) == NULL){
 	free((char *) mp);
 	if(*errbuf)
-	  emlwrite(errbuf, NULL);
+	  emlwwrite(errbuf, NULL);
 
 	return(NULL);
     }
@@ -1842,7 +1842,7 @@ getfcells(char *dname, int fb_flags)
      * easily be made a user option later on...
      */
     if((filtnames=(char **)malloc((nentries+1) * sizeof(char *))) == NULL){
-	emlwrite("\007Can't malloc space for name array", NULL);
+	emlwwrite(_("Can't malloc space for name array"), NULL);
 	zotmaster(&mp);
 	return(NULL);
     }
@@ -1897,7 +1897,7 @@ getfcells(char *dname, int fb_flags)
     while(nentries--){				/* stat filtered files */
 	/* get a new cell */
 	if((ncp=(struct fcell *)malloc(sizeof(struct fcell))) == NULL){
-	    emlwrite("\007Can't malloc cells for browser!", NULL);
+	    emlwwrite(_("Can't malloc cells for browser!"), NULL);
 	    zotfcells(mp->head);		/* clean up cells */
 	    free((char *) filtnames);
 	    free((char *) mp);
@@ -1928,7 +1928,7 @@ getfcells(char *dname, int fb_flags)
 	}
 	else{
 	  if((tmpstr = (char *)malloc((flength+1)*sizeof(char))) == NULL){
-	    emlwrite("\007Can't malloc cells for temp buffer!", NULL);
+	    emlwwrite(_("Can't malloc cells for temp buffer!"), NULL);
             zotfcells(mp->head);                /* clean up cells */
             free((char *) filtnames);
             free((char *) mp);
@@ -2026,7 +2026,7 @@ add_cell_to_lmlist(struct fcell *cell, struct bmaster *mp)
 	if((new=(LMLIST *)malloc(sizeof(*new))) == NULL ||
 	   (new->fname=malloc(sizeof(char)*((flen=strlen(cell->fname))+1))) == NULL ||
 	   (new->dir=malloc(sizeof(char)*((dlen=strlen(mp->dname))+1))) == NULL){
-	    emlwrite("\007Can't malloc space for filename", NULL);
+	    emlwwrite(_("Can't malloc space for filename"), NULL);
 	    return;
 	}
 
@@ -2377,7 +2377,7 @@ PlaceCell(struct bmaster *mp, struct fcell *cp, int *x, int *y)
 
 	if((tp = tp->next) == NULL){		/* above top? */
 	    if(secondtry++){
-		emlwrite("\007Internal error: can't find fname cell", NULL);
+		emlwwrite(_("Internal error: can't find fname cell"), NULL);
 		return(-1);
 	    }
 	    else{

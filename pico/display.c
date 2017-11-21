@@ -2380,6 +2380,13 @@ ret:
 
 
 void
+emlwwrite(char *utf8message, EML *eml)
+{
+  (*term.t_beep)();
+   emlwrite(utf8message, eml);
+}
+
+void
 emlwrite(char *utf8message, EML *eml)
 {
     UCS *message;

@@ -73,7 +73,7 @@ ffputline(CELL buf[], int nbuf)
 
     if(ferror(g_pico_fio.fp)){
 	eml.s = errstr(errno);
-        emlwrite("\007Write error: %s", &eml);
+        emlwwrite(_("Write error: %s"), &eml);
 	sleep(5);
         return FIOERR;
     }
