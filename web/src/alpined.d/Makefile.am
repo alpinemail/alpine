@@ -52,5 +52,5 @@ CLEANFILES = local.c
 
 local.c: alpineldap.c color.c imap.c ldap.c remote.c signal.c \
 	 debug.c status.c stubs.c alpined.h color.h ldap.h
-	echo "char datestamp[]="\"`date`\"";" > local.c
-	echo "char hoststamp[]="\"`hostname`\"";" >> local.c
+	echo "char datestamp[]="\"$(ALPINE_DATESTAMP)\"";" > local.c
+	echo "char hoststamp[]="\"$(ALPINE_HOSTSTAMP)\"";" >> local.c

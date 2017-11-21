@@ -49,5 +49,5 @@ AM_LDFLAGS = `cat @top_srcdir@/c-client/LDFLAGS`
 CLEANFILES = date.c
 
 date.c:
-	echo "char datestamp[]="\"`date`\"";" > date.c
-	echo "char hoststamp[]="\"`hostname`\"";" >> date.c
+	echo "char datestamp[]="\"$(ALPINE_DATESTAMP)\"";" > date.c
+	echo "char hoststamp[]="\"$(ALPINE_HOSTSTAMP)\"";" >> date.c

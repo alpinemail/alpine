@@ -84,6 +84,27 @@ if test x$enable_dmalloc = "xyes" ; then
   AC_DEFINE(ENABLE_DMALLOC, 1, [Define enable dmalloc debugging])
 fi
 
+dnl set date and hostname
+ALPINE_datestamp=`date`
+AC_ARG_WITH(date-stamp,
+  AS_HELP_STRING([--with-date-stamp=DATE],[Set this as the date this program was built. Default: output of `date`]),
+  [ 
+    if test "x$withval" != "xno" ; then
+     ALPINE_datestamp=$withval
+    fi
+  ])
+AC_SUBST([ALPINE_DATESTAMP], $ALPINE_datestamp)
+
+ALPINE_hoststamp=`hostname`
+AC_ARG_WITH(host-stamp,
+  AS_HELP_STRING([--with-host-stamp=HOST],[Set name of computer for compilation. Default: output of `hostname`]),
+  [ 
+    if test "x$withval" != "xno" ; then
+      ALPINE_hoststamp="$withval"
+    fi
+  ])
+AC_SUBST([ALPINE_HOSTSTAMP], $ALPINE_hoststamp)
+
 dnl set ps command, this test is fragile, but it should mostly work
 ALPINE_psefcmd="/bin/ps auxww"
 ALPINE_psfailed="0"

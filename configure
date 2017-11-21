@@ -664,6 +664,8 @@ SPELLPROG
 PWPROG
 NPA_PROG
 SENDMAIL
+ALPINE_HOSTSTAMP
+ALPINE_DATESTAMP
 POSUB
 LTLIBINTL
 LIBINTL
@@ -819,6 +821,8 @@ with_libiconv_prefix
 with_libintl_prefix
 enable_dmalloc
 with_dmalloc_dir
+with_date_stamp
+with_host_stamp
 with_ps_cmd
 with_localedir
 enable_osx_universal_binaries
@@ -1589,6 +1593,10 @@ Optional Packages:
   --with-libintl-prefix[=DIR]  search for libintl in DIR/include and DIR/lib
   --without-libintl-prefix     don't search for libintl in includedir and libdir
   --with-dmalloc-dir=DIR  Root of dmalloc lib/include path
+  --with-date-stamp=DATE  Set this as the date this program was built.
+                          Default: output of `date`
+  --with-host-stamp=HOST  Set name of computer for compilation. Default:
+                          output of `hostname`
   --with-ps-cmd="CMD"     Use this command to check running commands. Default:
                           /bin/ps auxww
   --with-localedir=DIR    Name of gettext locale directory
@@ -14371,6 +14379,34 @@ if test x$enable_dmalloc = "xyes" ; then
 $as_echo "#define ENABLE_DMALLOC 1" >>confdefs.h
 
 fi
+
+ALPINE_datestamp=`date`
+
+# Check whether --with-date-stamp was given.
+if test "${with_date_stamp+set}" = set; then :
+  withval=$with_date_stamp;
+    if test "x$withval" != "xno" ; then
+     ALPINE_datestamp=$withval
+    fi
+
+fi
+
+ALPINE_DATESTAMP=$ALPINE_datestamp
+
+
+ALPINE_hoststamp=`hostname`
+
+# Check whether --with-host-stamp was given.
+if test "${with_host_stamp+set}" = set; then :
+  withval=$with_host_stamp;
+    if test "x$withval" != "xno" ; then
+      ALPINE_hoststamp="$withval"
+    fi
+
+fi
+
+ALPINE_HOSTSTAMP=$ALPINE_hoststamp
+
 
 ALPINE_psefcmd="/bin/ps auxww"
 ALPINE_psfailed="0"
