@@ -15,7 +15,7 @@ dnl  */
 
 AC_PREREQ([2.69])
 
-AC_REVISION([Rev:23 by chappa@washington.edu])
+AC_REVISION([Rev:25 by chappa@washington.edu])
 
 dnl Alpine Version Number is in $srcdir/VERSION
 AC_INIT([alpine],[m4_esyscmd(tr -d \\n < VERSION)],[chappa@washington.edu])
@@ -39,6 +39,7 @@ WEB_BUILD=web/src/alpined.d
 dnl CHECK PROGRAMS
 
 AC_PROG_CC
+AX_PROG_CC_FOR_BUILD
 AC_PROG_CC_STDC
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET

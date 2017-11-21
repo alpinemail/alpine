@@ -30,12 +30,12 @@ libpith_a_SOURCES = ablookup.c abdlc.c addrbook.c addrstring.c adrbklib.c bldadd
 	state.c status.c store.c stream.c string.c strlst.c takeaddr.c tempfile.c text.c \
 	thread.c adjtime.c url.c util.c helptext.c smkeys.c smime.c
 
-help_c_gen$(EXEEXT): $(help_c_gen_OBJECTS) $(help_c_gen_DEPENDENCIES) 
-	@rm -f help_c_gen$(EXEEXT)
-	$(LINK) $(help_c_gen_OBJECTS) $(help_c_gen_LDADD)
-help_h_gen$(EXEEXT): $(help_h_gen_OBJECTS) $(help_h_gen_DEPENDENCIES) 
-	@rm -f help_h_gen$(EXEEXT)
-	$(LINK) $(help_h_gen_OBJECTS) $(help_h_gen_LDADD)
+help_c_gen$(BUILD_EXEEXT): help_c_gen.c
+	@rm -f help_c_gen$(BUILD_EXEEXT)
+	$(CC_FOR_BUILD) help_c_gen.c -o help_c_gen$(BUILD_EXEEXT)
+help_h_gen$(BUILD_EXEEXT):
+	@rm -f help_h_gen$(BUILD_EXEEXT)
+	$(CC_FOR_BUILD) help_h_gen.c -o help_h_gen$(BUILD_EXEEXT)
 
 helptext.c: help_c_gen pine.hlp
 	./help_c_gen < pine.hlp > $@
