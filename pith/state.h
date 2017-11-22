@@ -362,6 +362,7 @@ struct pine {
     PRINT_S	*print;
 
 #ifdef SMIME
+    int   keyemptypwd;	  /* can we load the key without a password? */
     char  *smimedir;
     SMIME_STUFF_S *smime;
     char *pwdcertdir;	  /* path to location of certificates for password file */

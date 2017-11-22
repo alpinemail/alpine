@@ -2710,7 +2710,22 @@ INST_KEY_MENU(config_smime_manage_certs_work_keymenu, config_smime_manage_certs_
 
 struct key config_smime_view_cert[] = 
        {HELP_MENU,
-	OTHER_MENU,
+	NULL_MENU,
+	EXIT_SETUP_MENU,
+	{"V", "[" N_("View Info") "]", {MC_CHOICE,3,{'v',ctrl('M'),ctrl('J')}}, KS_NONE},
+	{"D", N_("Delete pwd"), {MC_DELETE,1,{'d'}},KS_NONE},
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU};
+INST_KEY_MENU(config_smime_manage_view_cert_keymenu, config_smime_view_cert);
+
+struct key config_smime_view_cert_no_delete[] = 
+       {HELP_MENU,
+	NULL_MENU,
 	EXIT_SETUP_MENU,
 	{"V", "[" N_("View Info") "]", {MC_CHOICE,3,{'v',ctrl('M'),ctrl('J')}}, KS_NONE},
 	NULL_MENU,
@@ -2721,7 +2736,7 @@ struct key config_smime_view_cert[] =
 	NULL_MENU,
 	NULL_MENU,
 	NULL_MENU};
-INST_KEY_MENU(config_smime_manage_view_cert_keymenu, config_smime_view_cert);
+INST_KEY_MENU(config_smime_manage_view_cert_keymenu_no_delete, config_smime_view_cert_no_delete);
 
 struct key smime_certificate_info_keys[] =
        {HELP_MENU,

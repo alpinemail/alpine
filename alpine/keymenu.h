@@ -666,7 +666,8 @@ extern struct key_menu	cancel_keymenu,
 			config_smime_manage_password_file_menu_keymenu,
 			smime_certificate_info_keymenu,
 			config_smime_add_new_key_keymenu,
-			config_smime_manage_view_cert_keymenu;
+			config_smime_manage_view_cert_keymenu,
+			config_smime_manage_view_cert_keymenu_no_delete;
 
 extern struct key rev_msg_keys[];
 

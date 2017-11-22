@@ -38,6 +38,7 @@ static char rcsid[] = "$Id: smime.c 1074 2008-06-04 00:08:43Z hubert@u.washingto
 #include "../pith/tempfile.h"
 #include "radio.h"
 #include "keymenu.h"
+#include "mailcmd.h"
 #include "mailview.h"
 #include "conftype.h"
 #include "confscroll.h"
@@ -1286,18 +1287,21 @@ manage_certs_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
 					pathdir, MASTERNAME);
 		filename[sizeof(filename)-1] = '\0';
 		rv = import_certificate(ctype, pc, filename);
-		if(rv == 1 && our_stat(pathdir, &sbuf) == 0){
-		  if(unlink(filename) < 0)
-		   q_status_message1(SM_ORDER, 0, 2, 
+		if(rv == 1){
+		  ps->keyemptypwd = 0;
+		  if(our_stat(pathdir, &sbuf) == 0){
+		    if(unlink(filename) < 0)
+		      q_status_message1(SM_ORDER, 0, 2, 
 			_("Could not remove private key %s.key"), MASTERNAME);
-		  filename[strlen(filename)-4] = '\0';
-		  strcat(filename, ".crt");
-		  if(unlink(filename) < 0)
-		   q_status_message1(SM_ORDER, 0, 2, 
+		    filename[strlen(filename)-4] = '\0';
+		    strcat(filename, ".crt");
+		    if(unlink(filename) < 0)
+		      q_status_message1(SM_ORDER, 0, 2, 
 			_("Could not remove public certificate %s.crt"), MASTERNAME);
-		  if(rmdir(pathdir) < 0)
-		    q_status_message1(SM_ORDER, 0, 2, 
+		    if(rmdir(pathdir) < 0)
+		      q_status_message1(SM_ORDER, 0, 2, 
 		      _("Could not remove temporary directory %s"), pathdir);
+		  }
 		}
 	      }
 	      rv = 10;		/* forces redraw */
@@ -1319,13 +1323,71 @@ manage_certs_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
 	   break;
 
       case MC_DELETE:
-	   if ((*cl)->d.s.deleted != 0)
-	      q_status_message(SM_ORDER, 1, 3, _("Certificate already deleted"));
-	   else{
-	      (*cl)->d.s.deleted = 1;
-	      rv = 10 + (*cl)->varmem;		/* forces redraw */
-	      mark_cert_deleted(ctype, (*cl)->varmem, 1);
-	      q_status_message(SM_ORDER, 1, 3, _("Certificate marked deleted"));
+	   if(ctype == Password){
+	      EVP_PKEY *key = NULL;
+	      PERSONAL_CERT *pc =  (PERSONAL_CERT *) ps->pwdcert;
+	      RSA *rsa = NULL;
+	      const EVP_CIPHER *enc = NULL;
+	      BIO *out = NULL;
+	      BIO *in = NULL;
+	      char filename[MAXPATH+1];
+	      char passwd[MAILTMPLEN];
+	      char prompt[MAILTMPLEN];
+
+	      if (pc != NULL && pc->key != NULL){
+		  strncpy(prompt, _("Enter password to unlock key: "), sizeof(prompt));
+		  prompt[sizeof(prompt)-1] = '\0';
+		  passwd[0] = '\0';
+
+		  rv = alpine_get_password(prompt, passwd, sizeof(passwd));
+
+		  if(rv == 1)
+		     q_status_message(SM_ORDER, 1, 3, _("Password deletion cancelled"));
+		  else if(rv == 0){
+		     snprintf(filename, sizeof(filename), "%s/%s.key", ps->pwdcertdir, pc->name);
+		     filename[sizeof(filename)-1] = '\0';
+		     if((in = BIO_new_file(filename, "r")) != NULL){
+			key = PEM_read_bio_PrivateKey(in, NULL, NULL, passwd);
+			if(key != NULL){
+			  if((rsa = EVP_PKEY_get1_RSA(key)) != NULL
+			     && (out = BIO_new(BIO_s_file())) != NULL
+			     && BIO_write_filename(out, filename) > 0
+			     && PEM_write_bio_RSAPrivateKey(out, rsa, enc, NULL, 0, NULL, passwd) > 0){
+			     q_status_message(SM_ORDER, 1, 3, _("Password Removed from private key"));
+			     ps->keyemptypwd = 1;
+			  }
+			  else
+			     rv = 1;
+			}
+			else{
+			  rv = 1;
+			  q_status_message(SM_ORDER, 1, 3, _("Failed to unlock private key"));
+			}
+			BIO_free(in);
+		     }
+		     else
+			rv = 1;
+		  }
+		  if(rv == 1)
+		     q_status_message(SM_ORDER, 1, 3, _("Failed to remove password from private key"));
+		  rv += 10;		/* forces redraw */
+		  if(out != NULL)
+		    BIO_free_all(out);
+		  if(rsa != NULL)
+		    RSA_free(rsa);
+		  if(key != NULL)
+		    EVP_PKEY_free(key);
+	      }
+	   }
+	   else {
+	      if ((*cl)->d.s.deleted != 0)
+	         q_status_message(SM_ORDER, 1, 3, _("Certificate already deleted"));
+	      else{
+	         (*cl)->d.s.deleted = 1;
+	         rv = 10 + (*cl)->varmem;		/* forces redraw */
+	         mark_cert_deleted(ctype, (*cl)->varmem, 1);
+	         q_status_message(SM_ORDER, 1, 3, _("Certificate marked deleted"));
+	      }
 	   }
 	   break;
 
@@ -1406,6 +1468,7 @@ void manage_password_file_certificates(struct pine *ps)
 
     dprint((9, "manage_password_file_certificates"));
     ps->next_screen = SCREEN_FUN_NULL;
+    ps->keyemptypwd = 0;	/* just in case */
 
     do {
       CONF_S *ctmp = NULL, *first_line = NULL;
@@ -1422,6 +1485,7 @@ void manage_password_file_certificates(struct pine *ps)
 
       memset(&screen, 0, sizeof(screen));
       screen.deferred_ro_warning = readonly_warning;
+
       rv = conf_scroll_screen(ps, &screen, first_line,
 			       _("MANAGE PASSWORD FILE CERTS"),
 			      /* TRANSLATORS: Print something1 using something2.
@@ -1430,6 +1494,7 @@ void manage_password_file_certificates(struct pine *ps)
     } while (rv != 0);
 
     ps->mangled_screen = 1;
+    ps->keyemptypwd = 0;	/* reset this so it will not confuse other routines */
     smime_reinit();
 }
 
@@ -1444,9 +1509,12 @@ smime_manage_password_file_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **f
     CertList *cl;
     int	  i;
     void  *pwdcert = NULL;	/* this is our current password file */
-    PERSONAL_CERT *pc;
     X509_LOOKUP *lookup = NULL;
     X509_STORE  *store  = NULL;
+    char filename[MAXPATH+1];
+    BIO *in = NULL;
+    EVP_PKEY *key = NULL;
+    PERSONAL_CERT *pc;
 
     if(*state == 0){		/* first time around? */
       setup_pwdcert(&pwdcert);
@@ -1459,6 +1527,16 @@ smime_manage_password_file_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **f
     }
 
     pc = (PERSONAL_CERT *) ps_global->pwdcert;
+    snprintf(filename, sizeof(filename), "%s/%s.key", ps->pwdcertdir, pc->name);
+    filename[sizeof(filename)-1] = '\0';
+    if((in = BIO_new_file(filename, "r")) != NULL
+	&& (key = PEM_read_bio_PrivateKey(in, NULL, NULL, "")) != NULL)
+	ps->keyemptypwd = 1;
+    if(in != NULL)
+	BIO_free(in);
+    if(key != NULL)
+	EVP_PKEY_free(key);
+
     ps->pwdcertlist = cl = smime_X509_to_cert_info(X509_dup(pc->cert), pc->name);
 
     for(i = 0; i < sizeof(tmp) && i < (ps->ttyo ? ps->ttyo->screen_cols : sizeof(tmp)); i++)
@@ -1531,9 +1609,10 @@ smime_manage_password_file_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **f
       (*ctmp)->d.s.deleted = 0;
       (*ctmp)->help	   = h_config_smime_password_file_certificates;
       (*ctmp)->tool        = manage_certs_tool;
-      (*ctmp)->keymenu     = &config_smime_manage_view_cert_keymenu;
+      (*ctmp)->keymenu     = ps->keyemptypwd == 0
+			     ? &config_smime_manage_view_cert_keymenu
+			     : &config_smime_manage_view_cert_keymenu_no_delete;
       (*ctmp)->varmem      = 0;
-      (*ctmp)->help	   = h_config_smime_manage_public_menu;
       strncpy((*ctmp)->d.s.address, cl->name, sizeof((*ctmp)->d.s.address));
       (*ctmp)->d.s.address[sizeof((*ctmp)->d.s.address) - 1] = '\0';
       snprintf(tmp, sizeof(tmp), u,
@@ -1541,8 +1620,7 @@ smime_manage_password_file_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **f
 			cl->name, 
 			DATEFROMCERT(cl), DATETOCERT(cl), MD5CERT(cl));
       (*ctmp)->value      = cpystr(tmp);
-
-   }
+    }
 }
 #endif /* PASSFILE */
 

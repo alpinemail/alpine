@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 232 2017-11-21 12:33:12
+Alpine Commit 233 2017-11-22 11:29:36
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -189,6 +189,11 @@ when spelling. Sample usage: -dict "en_US, de_DE, fr_FR".
 <LI> Improvements to the configure stage of compilation. Some of
 these contributed by Helmut Grohne. See
 <A href="https://bugs.debian.org/876164">Bug 876164</A> in Debian.
+
+<LI> Add &quot;remove password&quot; command to the management screen for the 
+password file encryption key. This allows users to use their password file
+without entering a master password.
+
 </UL>
 
 <P>
@@ -35901,13 +35906,30 @@ This option allows you to manage the certificates that are used to
 encrypt and decrypt your password file. This is useful in case you
 want to change the certificates used to encrypt your password file.
 <P>
-In order to avoid unauthorized use of this option, you are asked to
-enter the password of the current private key used to encrypt your
-password file.
+Depending on the version of Alpine that you used for the first time
+to set this up, you might have had to enter a password to enter this
+screen. In the case that you did not enter a password to enter this
+screen, you should know two things that are important:
+<UL>
+<LI> If anyone takes control of your computer (for example, if you 
+left it unattended) then that person can add a password to your
+password file and make it unreadable to you in the future.
+<LI> If anyone can access your computer (this includes remote access)
+then that person can steal your password file and decrypt it without
+your help. This gives access to that person to the same services you
+have access and such person can use your name to access that service.
+In particular, that person can try to hack into your service provider
+with your name on it, or that person could try to send spam with
+your name.
+</UL>
+<P> Needless to say, this is not advisable. You should keep your
+password file protected. In order to do so, all you need to do is use
+the &quot;Create Key&quot; command to create a key. Once you do this,
+Alpine will use that key, encrypted with the password used to create that
+key, to protect your password file.
 <P>
-Once you have entered your password for the current key, you enter a
-screen where you can import your new key, and see the information on your
-current key.
+In this screen you can import a new key to encrypt your password file, 
+and read cryptographic information on your current key.
 <P>
 To import a new key press &quot;RETURN&quot; and enter the location of
 the new key. You will be asked to enter the password of the new key. If
@@ -35927,6 +35949,12 @@ certificates are saved, and the old keys are permanently deleted.
 Alpine does not create a backup of your password file, or your old keys
 that will be replaced. If you need to keep old copies, you will have to do
 this operation outside Alpine.
+<P>
+Observe that you can use this screen to remove the password for the key.
+As explained earlier, this is not advisable, but you can always restore the
+password to encrypt your password file by creating a new key.
+<P>
+Be safe and keep your password file encrypted with a password.
 <UL>   
 <LI><A HREF="h_mainhelp_smime">General S/MIME help</A>
 </UL><P>
