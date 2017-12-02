@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 233 2017-11-22 11:29:36
+Alpine Commit 234 2017-12-01 23:09:54
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -180,6 +180,8 @@ addresses bugs found in previous releases and has a few additions as well.
 Additions include:
 
 <UL>
+<LI> PC-Alpine builds with LibreSSL and supports S/MIME.
+
 <LI> NTLM authentication support with the ntlm library, in Unix systems.
 Based on code provided by Maciej W. Rozycki.
 
@@ -34940,14 +34942,16 @@ message to you and on how the list works.)
 
 S/MIME is a standard for the public key encryption and signing of email.
 UNIX Alpine contains a basic implementation of S/MIME based on
-the <A HREF="http://www.openssl.org/">OpenSSL</A> libraries.
+the <A HREF="http://www.openssl.org/">OpenSSL</A> libraries. The
+same support can be provided using the 
+<A HREF="http://www.libressl.org/">LibreSSL</A> libraries. The
+support for S/MIME in PC-Alpine is fully based on the LibreSSL libraries.
 To check if this version of Alpine supports S/MIME look at
 <A HREF="X-Alpine-Config:">Supported Options in this Alpine</A> and look
 for &quot;S/MIME&quot; under the &quot;Encryption&quot; heading.
 <P>
 Some limitations:
 <UL>
-   <LI> There is no PC-Alpine implementation.
    <LI> There is no provision for checking for CRLs
 	(Certificate Revocation Lists) in Alpine.
    <LI> This built-in S/MIME implementation is not compatible with and does not help with PGP.
@@ -34996,6 +35000,10 @@ home directory.
 The directory name is
 <P>
 <CENTER><SAMP>.alpine-smime</SAMP></CENTER>
+<P>
+For PC-Alpine, the equivalent directory is called 
+<CENTER><SAMP>alpine-smime</SAMP></CENTER>
+and is also located under your home directory.
 <P>
 Within that directory are three subdirectories.
 Each of the three subdirectories contains files with PEM-encoded contents,
@@ -35105,7 +35113,6 @@ as soon as you import them.
 <BODY>
 <H1>S/MIME OPTION: <!--#echo var="VAR_smime-public-cert-directory"--></H1>
 
-UNIX Alpine only.
 <P>
 If the option
 <A HREF="h_config_smime_pubcertcon"><!--#echo var="VAR_smime-public-cert-container"--></A>
@@ -35164,7 +35171,6 @@ D6sOwOLJZkLY8FRsfk63K+2EMzA2+qAzMKupgeTLqXIf
 <BODY>
 <H1>OPTION: <!--#echo var="VAR_smime-public-cert-container"--></H1>
 
-UNIX Alpine only.
 <P>
 If this option is set it will be used instead of
 <A HREF="h_config_smime_pubcertdir"><!--#echo var="VAR_smime-public-cert-directory"--></A>.
@@ -35202,7 +35208,6 @@ Use the Setup/SMIME screen to modify this variable.
 <BODY>
 <H1>OPTION: <!--#echo var="VAR_smime-private-key-directory"--></H1>
 
-UNIX Alpine only.
 <P>
 In order to sign outgoing S/MIME messages you will need a
 personal digital ID certificate.
@@ -35269,7 +35274,6 @@ m+4TJybNGNfAgOctSkEyY/OCb49fRRQTCBZVIhzLGGmpYmkO55HbIA==
 <BODY>
 <H1>OPTION: <!--#echo var="VAR_smime-private-key-container"--></H1>
 
-UNIX Alpine only.
 <P>
 If this option is set it will be used instead of
 <A HREF="h_config_smime_privkeydir"><!--#echo var="VAR_smime-private-key-directory"--></A>.
@@ -35307,7 +35311,6 @@ Use the Setup/SMIME screen to modify this variable.
 <BODY>
 <H1>S/MIME OPTION: <!--#echo var="VAR_smime-cacert-directory"--></H1>
 
-UNIX Alpine only.
 <P>
 If the option
 <A HREF="h_config_smime_cacertcon"><!--#echo var="VAR_smime-cacert-container"--></A>
@@ -35349,7 +35352,6 @@ certificates for particular email addresses
 <BODY>
 <H1>S/MIME OPTION: <!--#echo var="VAR_smime-cacert-container"--></H1>
 
-UNIX Alpine only.
 <P>
 If this option is set it will be used instead of
 <A HREF="h_config_smime_cacertdir"><!--#echo var="VAR_smime-cacert-directory"--></A>.
@@ -35387,7 +35389,6 @@ Use the Setup/SMIME screen to modify this variable.
 <BODY>
 <H1>S/MIME FEATURE: <!--#echo var="FEAT_smime-sign-by-default"--></H1>
 
-UNIX Alpine only.
 <P>
 This feature only has an effect if your version of Alpine includes
 support for S/MIME.
@@ -35418,7 +35419,6 @@ certificate).
 <BODY>
 <H1>S/MIME FEATURE: <!--#echo var="FEAT_smime-use-store-only"--></H1>
 
-UNIX Alpine only.
 <P>
 This feature only has an effect if your version of Alpine includes
 support for S/MIME.
@@ -35464,7 +35464,6 @@ might not trust those that came with the message that you are validating.
 <BODY>
 <H1>S/MIME FEATURE: <!--#echo var="FEAT_publiccerts-in-keychain"--></H1>
 
-UNIX Alpine only.
 <P>
 If this feature is set the Mac OS X default keychain will be used as the place
 to store public certificates instead of a
@@ -35490,7 +35489,6 @@ or a
 <BODY>
 <H1>S/MIME FEATURE: <!--#echo var="FEAT_smime-dont-do-smime"--></H1>
 
-UNIX Alpine only.
 <P>
 Setting this feature turns off all of Alpine's S/MIME support.
 You might want to set this if you are having trouble due to the S/MIME support.
@@ -35514,7 +35512,6 @@ You might want to set this if you are having trouble due to the S/MIME support.
 <BODY>
 <H1>S/MIME FEATURE: <!--#echo var="FEAT_smime-encrypt-by-default"--></H1>
 
-UNIX Alpine only.
 <P>
 This feature only has an effect if your version of Alpine includes
 support for S/MIME.
@@ -35545,7 +35542,6 @@ for the recipient).
 <BODY>
 <H1>S/MIME FEATURE: <!--#echo var="FEAT_smime-remember-passphrase"--></H1>
 
-UNIX Alpine only.
 <P>
 This feature only has an effect if your version of Alpine includes
 support for S/MIME.
@@ -35571,7 +35567,6 @@ once during an Alpine session.
 <BODY>
 <H1>S/MIME: Transfer Public Certs to Container</H1>
 
-UNIX Alpine only.
 <P>
 The Transfer command will copy the public certificates in your configured
 <A HREF="h_config_smime_pubcertdir"><!--#echo var="VAR_smime-public-cert-directory"--></A>
@@ -35600,7 +35595,6 @@ Warning: Any previous contents in the container will be lost.
 <BODY>
 <H1>S/MIME: Transfer Public Certs to Directory</H1>
 
-UNIX Alpine only.
 <P>
 The Transfer command will copy the public certificates in your configured
 <A HREF="h_config_smime_pubcertcon"><!--#echo var="VAR_smime-public-cert-container"--></A>
@@ -35627,7 +35621,6 @@ directory.
 <BODY>
 <H1>S/MIME: Transfer Private Keys to Container</H1>
 
-UNIX Alpine only.
 <P>
 The Transfer command will copy the private keys in your configured
 <A HREF="h_config_smime_privkeydir"><!--#echo var="VAR_smime-private-key-directory"--></A>.
@@ -35656,7 +35649,6 @@ Warning: Any previous contents in the container will be lost.
 <BODY>
 <H1>S/MIME: Transfer Private Keys to Directory</H1>
 
-UNIX Alpine only.
 <P>
 The Transfer command will copy the private keys in your configured
 <A HREF="h_config_smime_privkeydir"><!--#echo var="VAR_smime-private-key-container"--></A>.
@@ -35683,7 +35675,6 @@ directory.
 <BODY>
 <H1>S/MIME: Transfer CA Certs to Container</H1>
 
-UNIX Alpine only.
 <P>
 The Transfer command will copy the CA certificates in your configured
 <A HREF="h_config_smime_cacertdir"><!--#echo var="VAR_smime-cacert-directory"--></A>
@@ -35712,7 +35703,6 @@ Warning: Any previous contents in the container will be lost.
 <BODY>
 <H1>S/MIME: Transfer CA Certs to Directory</H1>
 
-UNIX Alpine only.
 <P>
 The Transfer command will copy the CA certificates in your configured
 <A HREF="h_config_smime_cacertcon"><!--#echo var="VAR_smime-cacert-container"--></A>.
@@ -35767,7 +35757,6 @@ feature
 <BODY>
 <H1>S/MIME: Transfer Public Certs to Keychain</H1>
 
-UNIX Alpine only.
 <P>
 The Transfer command will copy the public certificates in your configured
 <A HREF="h_config_smime_pubcertcon"><!--#echo var="VAR_smime-public-cert-container"--></A>
@@ -35793,7 +35782,6 @@ the Keychain to store your public certs.
 <BODY>
 <H1>S/MIME: Manage Public Certificates</H1>
 
-UNIX Alpine only.
 <P>
 This menu item allows you to manage your public certificates, this
 may include your own public certificate, but it normally includes
@@ -35832,7 +35820,6 @@ import a command to this collection.
 <BODY>
 <H1>S/MIME: Manage Private Keys</H1>
 
-UNIX Alpine only.
 <P>
 This option allows you to manage your private key. Normally a person has only
 one key, in the same way that a person only has one valid passport, or ID card,
@@ -35869,7 +35856,6 @@ import a command to this collection.
 <BODY>
 <H1>S/MIME: Manage Certificate Authorities</H1>
 
-UNIX Alpine only.
 <P>
 This collection contains certificates that are needed to validate the 
 certificate of another person, and therefore contains certificates that 
@@ -35900,7 +35886,6 @@ import a command to this collection.
 <BODY>
 <H1>S/MIME: Manage Password File Certificates</H1>
 
-UNIX Alpine only.
 <P>
 This option allows you to manage the certificates that are used to
 encrypt and decrypt your password file. This is useful in case you
@@ -35973,7 +35958,6 @@ Be safe and keep your password file encrypted with a password.
 <BODY>
 <H1>S/MIME: Certificate Information Screen</H1>
 
-UNIX Alpine only.
 <P>
 The CERTIFICATE INFORMATION screen shows you information contained in a certificate
 such as its owner, e-mail address, issuer, and interval of validity, 
@@ -36010,7 +35994,6 @@ and private information about your key, with the <B>B</B> and
 <BODY>
 <H1>S/MIME: Commands that Manage Public Certificates</H1>
 
-UNIX Alpine only.
 <P>
 This screen allows you to manage your public certificates. 
 <P>
@@ -36061,7 +36044,6 @@ All commands provide feedback to let you know about their success or failure.
 <BODY>
 <H1>S/MIME: Commands that Manage Private Keys</H1>
 
-UNIX Alpine only.
 <P>
 This screen allows you to manage your private key.
 <P>
@@ -36108,7 +36090,6 @@ All commands provide feedback to let you know about their success or failure.
 <BODY>
 <H1>S/MIME: Commands that Manage Certificate Authorities</H1>
 
-UNIX Alpine only.
 <P>
 This screen allows you to manage your collection of certificates that you
 trust. 

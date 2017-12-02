@@ -531,6 +531,28 @@
 /* File name separator as string constant */
 #define S_FILESEP "\\"
 
+/* Enable S/MIME if LibreSSL */
+#ifdef ENABLE_WINDOWS_LIBRESSL
+#define SMIME
+/* Default configuration value */
+#define DF_PRIVATEKEY_DIR "alpine-smime\\private"
+
+/* Default configuration value */
+#define DF_PUBLICCERT_DIR "alpine-smime\\public"
+
+/* Name of default public container */
+#define DF_CACERT_DIR "alpine-smime\\ca"
+
+/* Name of default public container */
+#define DF_PUBLIC_CONTAINER "PublicContainer"
+
+/* Name of default private container */
+#define DF_PRIVATE_CONTAINER "PrivateContainer"
+
+/* Name of default certificate authority container */
+#define DF_CA_CONTAINER "CAContainer"
+#endif /* ENABLE_WINDOWS_LIBRESSL */
+
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 /* #define TIME_WITH_SYS_TIME */
 

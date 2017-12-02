@@ -120,6 +120,11 @@ get_smime_sparep_data(void *s)
 
 #ifdef PASSFILE
 /* 
+ * This code does not work in Windows, because of the PASSFILE thing, so
+ * I did not try to fix it. If you think it does need to be applied to
+ * the Windows version of alpine, there are more changes that are needed
+ * than fixing this function in this module. E. Chappa 09/28/17.
+ *
  * load key from pathkeydir and cert from pathcertdir. It chooses the first 
  * key/certificate pair that matches. Delete pairs that you do not want used, 
  * if you do not want them selected. All parameters must be non-null. 
@@ -312,11 +317,11 @@ setup_pwdcert(void **pwdcert)
 		if((t = strstr(s+strlen(tmp), EMAILADDRLEADER)) != NULL){
 		   c = *t;
 		   *t = '\0';
-		   pc->keytext = cpystr(s + strlen(tmp) + 1); /* 1 = strlen("\n") */
+		   pc->keytext = cpystr(s + strlen(tmp) + strlen(NEWLINE));
 		   *t = c;
 	        }
 		else
-		   pc->keytext = cpystr(s + strlen(tmp) + 1); /* 1 = strlen("\n") */
+		   pc->keytext = cpystr(s + strlen(tmp) + strlen(NEWLINE));
 	     }
 	   }
 	 }
@@ -1309,21 +1314,38 @@ PERSONAL_CERT *
 get_personal_certs(char *path)
 {
     PERSONAL_CERT *result = NULL;
-    char buf2[MAXPATH];
+    char buf2[MAXPATH], *fname;
+    X509 *cert;
+    size_t ll;
+#ifndef _WINDOWS
     struct dirent *d;
     DIR *dirp;
+#else /* _WINDOWS */
+    struct _finddata_t dbuf;
+    char buf[_MAX_PATH + 4];
+    long findrv;
+#endif /* _WINDOWS */
 
     ps_global->smime->privatepath = cpystr(path);
+
+#ifndef _WINDOWS
     dirp = opendir(path);
     if(dirp){
 	while((d=readdir(dirp)) != NULL){
-	    X509 *cert;
-	    size_t ll;
-
-	    if((ll=strlen(d->d_name)) && ll > 4 && !strcmp(d->d_name+ll-4, ".key")){
+	   fname = d->d_name;
+#else /* _WINDOWS */
+    snprintf(buf, sizeof(buf), "%s%s*.*", path, (path[strlen(path)-1] == '\\') ? "" : "\\");
+    buf[sizeof(buf)-1] = '\0';
+    if((findrv = _findfirst(buf, &dbuf)) < 0)
+        return(NULL);
+            
+    do {
+            fname = fname_to_utf8(dbuf.name);
+#endif
+	    if((ll=strlen(fname)) && ll > 4 && !strcmp(fname+ll-4, ".key")){
 
 		/* copy file name to temp buffer */
-		strncpy(buf2, d->d_name, sizeof(buf2)-1);
+		strncpy(buf2, fname, sizeof(buf2)-1);
 		buf2[sizeof(buf2)-1] = '\0';
 		/* chop off ".key" trailier */
 		buf2[strlen(buf2)-4] = '\0';
@@ -1348,9 +1370,14 @@ get_personal_certs(char *path)
 		    result = pc;
 		}
 	    }
+#ifndef _WINDOWS
 	}
 	closedir(dirp);
     }
+#else /* _WINDOWS */
+    } while(_findnext(findrv, &dbuf) == 0);
+    _findclose(findrv);
+#endif /* !_WINDOWS */
     return result;
 }
 
@@ -1637,17 +1664,20 @@ add_file_to_container(WhichCerts ctype, char *fpath, char *altname)
       goto endadd;
 
     if(content){
-      fs_resize((void **)&content, strlen(content) + strlen(sep) + strlen(name) + sbuf.st_size + 3); /* 2 = \n + \n + \0*/
+      fs_resize((void **)&content, strlen(content) + strlen(sep) + strlen(name) + sbuf.st_size + 2*strlen(NEWLINE) + 1); /* 1 = \0*/
       s = content;
       content += strlen(content);
     }
     else{
-      s = content = fs_get(strlen(sep) + strlen(name) + sbuf.st_size + 1); /* 2 = \n + \0 */
+      s = content = fs_get(strlen(sep) + strlen(name) + sbuf.st_size + strlen(NEWLINE) + 1); /* 1 = \0 */
       *content = '\0';
     }
     strncat(content, sep, strlen(sep));
     strncat(content, name, strlen(name));
     content += strlen(content);
+#ifdef _WINDOWS
+    *content++ = '\r';
+#endif /* _WINDOWS */
     *content++ = '\n';
 
     while(so_readc(&c, in))
@@ -1683,9 +1713,16 @@ copy_dir_to_container(WhichCerts which, char *contents)
     int ret = 0, container = 0;
     BIO *bio_out = NULL, *bio_in = NULL;
     char srcpath[MAXPATH+1], dstpath[MAXPATH+1], emailaddr[MAXPATH], file[MAXPATH], line[4096];
-    char *tempfile = NULL, fpath[MAXPATH+1];
+    char *tempfile = NULL, fpath[MAXPATH+1], *fname;
+    size_t ll;
+#ifndef _WINDOWS
     DIR *dirp;
     struct dirent *d;
+#else /* _WINDOWS */
+    struct _finddata_t dbuf;
+    char buf[_MAX_PATH + 4];
+    long findrv;
+#endif /* _WINDOWS */
     REMDATA_S *rd = NULL;
     char *configdir = NULL;
     char *configpath = NULL;
@@ -1827,15 +1864,24 @@ copy_dir_to_container(WhichCerts which, char *contents)
 	     ret = -1;
 	}
 	else {
+#ifndef _WINDOWS
 	  if((dirp = opendir(srcpath)) != NULL){
 
 	    while((d=readdir(dirp)) && !ret){
-		size_t ll;
-
-		if((ll=strlen(d->d_name)) && ll > 4 && !strcmp(d->d_name+ll-4, filesuffix)){
+		fname = d->d_name;
+#else /* _WINDOWS */
+    	  snprintf(buf, sizeof(buf), "%s%s*.*", srcpath, (srcpath[strlen(srcpath)-1] == '\\') ? "" : "\\");
+	  buf[sizeof(buf)-1] = '\0';
+	  if((findrv = _findfirst(buf, &dbuf)) < 0)
+	        return -1;
+            
+	  do{
+                fname = fname_to_utf8(dbuf.name);
+#endif /* ! _WINDOWS */
+		if((ll=strlen(fname)) && ll > 4 && !strcmp(fname+ll-4, filesuffix)){
 
 		    /* copy file name to temp buffer */
-		    strncpy(emailaddr, d->d_name, sizeof(emailaddr)-1);
+		    strncpy(emailaddr, fname, sizeof(emailaddr)-1);
 		    emailaddr[sizeof(emailaddr)-1] = '\0';
 		    /* chop off suffix trailier */
 		    emailaddr[strlen(emailaddr)-4] = 0;
@@ -1847,18 +1893,18 @@ copy_dir_to_container(WhichCerts which, char *contents)
 		    if(which == CACert){
 			if(!((BIO_puts(bio_out, CACERTSTORELEADER) > 0)
 			     && (BIO_puts(bio_out, emailaddr) > 0)
-			     && (BIO_puts(bio_out, "\n") > 0)))
+			     && (BIO_puts(bio_out, NEWLINE) > 0)))
 			  ret = -1;
 		    }
 		    else{
 			if(!((BIO_puts(bio_out, EMAILADDRLEADER) > 0)
 			     && (BIO_puts(bio_out, emailaddr) > 0)
-			     && (BIO_puts(bio_out, "\n") > 0)))
+			     && (BIO_puts(bio_out, NEWLINE) > 0)))
 			  ret = -1;
 		    }
 
 		    /* read then write contents of file */
-		    build_path(file, srcpath, d->d_name, sizeof(file));
+		    build_path(file, srcpath, fname, sizeof(file));
 		    if(!(bio_in = BIO_new_file(file, "r")))
 		      ret = -1;
 
@@ -1879,10 +1925,14 @@ copy_dir_to_container(WhichCerts which, char *contents)
 
 		    BIO_free(bio_in);
 		}
+#ifndef _WINDOWS
 	    }
-
 	    closedir(dirp);
 	  }
+#else /* _WINDOWS */
+	    } while (_findnext(findrv, &dbuf) == 0);
+		_findclose(findrv);
+#endif /* ! _WINDOWS */
 	}
 
 	BIO_free(bio_out);

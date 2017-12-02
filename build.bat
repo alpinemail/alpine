@@ -31,6 +31,18 @@ goto fini
 echo PC-Alpine for Windows/Winsock (Win32) build sequence
 set cclntmake=makefile.nt
 set alpinemake=makefile.wnt
+if not defined ALPINE_LIBRESSL set ALPINE_LIBRESSL=%cd%\libressl
+if exist "%ALPINE_LIBRESSL%" goto yeslibresslwnt
+echo NOT including LIBRESSL functionality
+set libresslflags=
+set libressllibes=
+set libresslextralibes="crypt32.lib"
+goto ldapincludewnt
+:yeslibresslwnt
+set libresslflags=-I\"%ALPINE_LIBRESSL%\"\include -DENABLE_WINDOWS_LIBRESSL -DLIBRESSL_INTERNAL
+set libressllibes=\"%ALPINE_LIBRESSL%\"\x86\libcrypto-41.lib \"%ALPINE_LIBRESSL%\"\x86\libssl-43.lib \"%ALPINE_LIBRESSL%\"\x86\libtls-15.lib
+set libresslextralibes=
+:ldapincludewnt
 if not defined ALPINE_LDAP set ALPINE_LDAP=%cd%\ldap
 if exist "%ALPINE_LDAP%" goto yesldapwnt
 echo NOT including LDAP functionality
@@ -42,17 +54,29 @@ echo including LDAP functionality
 set ldapflags=-I\"%ALPINE_LDAP%\"\inckit -DENABLE_LDAP
 set ldaplibes=\"%ALPINE_LDAP%\"\binaries\release\ldap32.lib
 :noldapwnt
-set extracflagsnq=/DWINVER=0x0501 /Zi -Od %ldapflags% -D_USE_32BIT_TIME_T -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -DSPCL_REMARKS=\"\\\"\\\"\"
-set extralibes=
-set extralibesalpine=%ldaplibes%
+set extracflagsnq=/DWINVER=0x0501 /Zi -Od %ldapflags% %libresslflags% -D_USE_32BIT_TIME_T -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -DSPCL_REMARKS=\"\\\"\\\"\"
+set extralibes="%libresslextralibes%"
+set extralibesalpine="%ldaplibes% %libressllibes%"
 set extrarcflags="/D_PCP_WNT"
 set extramakecommand=
 goto buildsetup
 
 :w2k
-echo Krb5ized PC-Pine for Windows/Winsock (Win32) build sequence
+echo Krb5ized PC-Alpine for Windows/Winsock (Win32) build sequence
 set cclntmake=makefile.w2k
 set alpinemake=makefile.wnt
+if not defined ALPINE_LIBRESSL set ALPINE_LIBRESSL=%cd%\libressl
+if exist "%ALPINE_LIBRESSL%" goto yeslibresslw2k
+echo NOT including LIBRESSL functionality
+set libresslflags=
+set libressllibes=
+set libresslextralibes="crypt32.lib"
+goto ldapincludew2k
+:yeslibresslw2k
+set libresslflags=-I\"%ALPINE_LIBRESSL%\"\include -DENABLE_WINDOWS_LIBRESSL  -DLIBRESSL_INTERNAL
+set libressllibes=\"%ALPINE_LIBRESSL%\"\x86\libcrypto-41.lib \"%ALPINE_LIBRESSL%\"\x86\libssl-43.lib \"%ALPINE_LIBRESSL%\"\x86\libtls-15.lib
+set libresslextralibes=
+:ldapincludew2k
 if not defined ALPINE_LDAP set ALPINE_LDAP=%cd%\ldap
 if exist "%ALPINE_LDAP%" goto yesldapw2k
 echo NOT including LDAP functionality
@@ -65,8 +89,8 @@ set ldapflags=-I\"%ALPINE_LDAP%\"\inckit -DENABLE_LDAP
 set ldaplibes=\"%ALPINE_LDAP%\"\binaries\release\ldap32.lib
 :noldapw2k
 set extracflagsnq=/DWINVER=0x0501 /Zi -Od %ldapflags% -D_USE_32BIT_TIME_T -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -DSPCFC_WINVER=\"\\\" 2000\\\"\" -DSPCL_REMARKS=\"\\\" with krb5\\\"\"
-set extralibes="secur32.lib"
-set extralibesalpine="secur32.lib %ldaplibes%"
+set extralibes="secur32.lib %libresslextralibes%"
+set extralibesalpine="secur32.lib crypt32.lib %ldaplibes% %libressllibes%"
 set extrarcflags="/D_PCP_W2K"
 set extramakecommand=
 goto buildsetup
@@ -115,11 +139,11 @@ copy /Y "%ALPINE_IMAP%"\src\c-client\* c-client\ > garbageout.txt
 copy /Y "%ALPINE_IMAP%"\src\charset\* c-client\ > garbageout.txt
 copy /Y "%ALPINE_IMAP%"\src\osdep\nt\* c-client\ > garbageout.txt
 del garbageout.txt
-if not exist c-client-dll mkdir c-client-dll
-copy /Y "%ALPINE_IMAP%"\src\c-client\* c-client-dll\ > garbageout.txt
-copy /Y "%ALPINE_IMAP%"\src\charset\* c-client-dll\ > garbageout.txt
-copy /Y "%ALPINE_IMAP%"\src\osdep\nt\* c-client-dll\ > garbageout.txt
-del garbageout.txt
+rem if not exist c-client-dll mkdir c-client-dll
+rem copy /Y "%ALPINE_IMAP%"\src\c-client\* c-client-dll\ > garbageout.txt
+rem copy /Y "%ALPINE_IMAP%"\src\charset\* c-client-dll\ > garbageout.txt
+rem copy /Y "%ALPINE_IMAP%"\src\osdep\nt\* c-client-dll\ > garbageout.txt
+rem del garbageout.txt
 if not exist mailutil mkdir mailutil
 copy /Y "%ALPINE_IMAP%"\src\mailutil\* mailutil\ > garbageout.txt
 del garbageout.txt
@@ -213,7 +237,7 @@ cd alpine
 nmake -nologo -f %alpinemake% wnt=1 EXTRACFLAGS=%extracflags% EXTRALDFLAGS=%extraldflags% EXTRALIBES=%extralibesalpine% EXTRARCFLAGS=%extrarcflags% %extramakecommand%
 if errorlevel 1 goto bogus
 cd ..
-goto buildcclntdll
+goto nobuildmapi
 
 :buildcclntdll
 if NOT exist c-client-dll goto buildmapi

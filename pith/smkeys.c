@@ -297,13 +297,19 @@ setup_certs_backup_by_type(WhichCerts ctype)
    int rv = 0; 	/* assume success */
    int len;
    int i, done;
-   char *d;
+   char *d, *fname;
    char p[MAXPATH+1];	/* path to where the backup is */
    char buf[MAXPATH+1], buf2[MAXPATH+1];
    struct stat sbuf;
    CertList *data, *cl;
+#ifndef _WINDOWS
    DIR *dirp;   
    struct dirent *df;	/* file in the directory */
+#else /* _WINDOWS */
+    struct _finddata_t dbuf;
+    char bufn[_MAX_PATH + 4];
+    long findrv;
+#endif /* !_WINDOWS */
    CertList *cert, *cl2;
    X509 *x;
    BIO *in;
@@ -407,64 +413,76 @@ setup_certs_backup_by_type(WhichCerts ctype)
 	/* Here is the plan: read the backup directory (in the variable "p")
 	 * and attempt to add it. If already there, skip it; otherwise continue
 	 */
+#ifndef _WINDOWS
+	if ((dirp = opendir(p)) != NULL) {
+		while ((df = readdir(dirp)) != NULL) {
+			fname = df->d_name;
 
-	if((dirp = opendir(p)) != NULL){
-	   while((df=readdir(dirp)) != NULL){
-	      if(df->d_name && *df->d_name == '.')	/* no hidden files here */
-		continue;
+			if (fname && *fname == '.')	/* no hidden files here */
+				continue;
+#else
+	snprintf(bufn, sizeof(bufn), "%s%s*.*", p, (p[strlen(p) - 1] == '\\') ? "" : "\\");
+	bufn[sizeof(bufn) - 1] = '\0';
+	if ((findrv = _findfirst(bufn, &dbuf)) >= 0) {
+		do {
+			fname = fname_to_utf8(dbuf.name);
+#endif /* ! _WINDOWS */
+			/* make sure that we have a file */
+			snprintf(buf2, sizeof(buf2), "%s%s%s", p, S_FILESEP, fname);
+			buf2[sizeof(buf2) - 1] = '\0';
+			if (our_stat(buf2, &sbuf) == 0
+				&& (sbuf.st_mode & S_IFMT) != S_IFREG)
+				continue;
 
-	      /* make sure that we have a file */
-	      snprintf(buf2, sizeof(buf2), "%s%s%s", p, S_FILESEP, df->d_name);
-	      buf2[sizeof(buf2)-1] = '\0';
-	      if(our_stat(buf2, &sbuf) == 0 
-		  && (sbuf.st_mode & S_IFMT) != S_IFREG)
-	        continue;
+			/* make sure it is not already in the list */
+			for (cl = data; cl; cl = cl->next)
+				if (strcmp(cl->name, fname) == 0)
+					break;
+			if (cl != NULL)
+				continue;
 
-	      /* make sure it is not already in the list */
-	      for(cl = data; cl; cl = cl->next)
-		if(strcmp(cl->name, df->d_name) == 0)
-		   break;
-	      if(cl != NULL)
-		continue;
+			/* ok, if it is not in the list, and it is a certificate. Add it */
+			switch (ctype) {
+			case Public:
+			case CACert:
+				if ((in = BIO_new_file(buf2, "r")) != 0) {
+					x = PEM_read_bio_X509(in, NULL, NULL, NULL);
+					if (x) { /* for now copy this information */
+						cert = smime_X509_to_cert_info(x, fname);
+						/* we will use the cert->data.md5 variable to find a backup
+						   certificate, not the name */
+						cert->next = data;
+						data = cert;
+					}
+					BIO_free(in);
+				}
+				break;
 
-	      /* ok, if it is not in the list, and it is a certificate. Add it */
-	      switch(ctype){
-		case Public:
-		case CACert:
-			if((in = BIO_new_file(buf2, "r"))!=0){
-			  x = PEM_read_bio_X509(in, NULL, NULL, NULL);
-			  if(x){ /* for now copy this information */
-			    cert = smime_X509_to_cert_info(x, df->d_name);
-			    /* we will use the cert->data.md5 variable to find a backup 
-			       certificate, not the name */
-			    cert->next = data;
-			    data = cert;
-			  }
-			  BIO_free(in);
-			}
-			break;
+			case Private:
+				/* here we must check it is a key of some cert....*/
+				break;
 
-		case Private:
-			/* here we must check it is a key of some cert....*/
-			break;
-
-		default: alpine_panic("Bad ctype (1)");
-	      } /* end switch */
-	   }
-	   closedir(dirp);
-	}
-
+			default: alpine_panic("Bad ctype (1)");
+			} /* end switch */
+#ifndef _WINDOWS
+		}
+		closedir(dirp);
+#else /* _WINDOWS */
+	} while (_findnext(findrv, &dbuf) == 0);
+	_findclose(findrv);
+#endif /* ! _WINDOWS */
+		}
 	/* Now that we are here, we have all the information in the backup
 	 * directory
 	 */
 
-	switch(ctype){
-	   case Public : ps_global->smime->backuppubliccertlist = data; break;
-	   case Private: ps_global->smime->backupprivatecertlist = data; break;
-	   case CACert : ps_global->smime->backupcacertlist = data; break;
-	   default : alpine_panic("Bad ctype (n)");
+	switch (ctype) {
+	case Public: ps_global->smime->backuppubliccertlist = data; break;
+	case Private: ps_global->smime->backupprivatecertlist = data; break;
+	case CACert: ps_global->smime->backupcacertlist = data; break;
+	default: alpine_panic("Bad ctype (n)");
 	}
-     }
+	}
    } else if(SMHOLDERTYPE(ctype) == Container){
     
    } /* else APPLEKEYCHAIN */
@@ -669,17 +687,32 @@ smime_get_date(const ASN1_TIME *tm)
 int
 add_certs_in_dir(X509_LOOKUP *lookup, char *path, char *ext, CertList **cdata)
 {
-    char buf[MAXPATH];
+    char buf[MAXPATH], *fname;
+#ifndef _WINDOWS
     struct direct *d;
-    DIR	*dirp;
+    DIR       *dirp;  
+#else /* _WINDOWS */
+    struct _finddata_t dbuf;
+    char bufn[_MAX_PATH + 4];
+    long findrv;
+#endif /* !_WINDOWS */
     CertList *cert, *cl;
     int  ret = 0, nfiles = 0, nerr = 0;
 
+#ifndef _WINDOWS
     if((dirp = opendir(path)) != NULL){
-        while(!ret && (d=readdir(dirp)) != NULL){
-            if(srchrstr(d->d_name, ext)){
-		nfiles++;
-    	    	build_path(buf, path, d->d_name, sizeof(buf));
+      while(!ret && (d=readdir(dirp)) != NULL){
+            fname = d->d_name;
+#else /* _WINDOWS */
+    snprintf(bufn, sizeof(bufn), "%s%s*.*", path, (path[strlen(path)-1] == '\\') ? "" : "\\");
+    bufn[sizeof(bufn)-1] = '\0';
+    if((findrv = _findfirst(bufn, &dbuf)) >= 0){
+      do{
+          fname = fname_to_utf8(dbuf.name);
+#endif /* ! _WINDOWS */
+            if(srchrstr(fname, ext)){
+              nfiles++;
+              build_path(buf, path, fname, sizeof(buf));
 
     	    	if(!X509_LOOKUP_load_file(lookup, buf, X509_FILETYPE_PEM)){
 		    q_status_message1(SM_ORDER, 3, 3, _("Error loading file %s"), buf);
@@ -691,7 +724,7 @@ add_certs_in_dir(X509_LOOKUP *lookup, char *path, char *ext, CertList **cdata)
 
 		     cert = fs_get(sizeof(CertList));
 		     memset((void *)cert, 0, sizeof(CertList));
-		     cert->name = cpystr(d->d_name);
+		     cert->name = cpystr(fname);
 		     /* read buf into a bio and fill the CertData structure */
 		     if((in = BIO_new_file(buf, "r"))!=0){
 			if((x = PEM_read_bio_X509(in, NULL, NULL, NULL)) != NULL){
@@ -715,9 +748,13 @@ add_certs_in_dir(X509_LOOKUP *lookup, char *path, char *ext, CertList **cdata)
 		}
             }
 
-        }
-
-        closedir(dirp);
+#ifndef _WINDOWS
+      }
+      closedir(dirp);
+#else  /* _WINDOWS */
+      } while(_findnext(findrv, &dbuf) == 0);
+      _findclose(findrv);
+#endif /* ! _WINDOWS */
     }
 
     /* if all certificates fail to load */
@@ -1210,7 +1247,7 @@ get_cert_for(char *email, WhichCerts ctype, int tolower)
 	build_path(certfilename, PATHCERTDIR(ctype), emailaddr, sizeof(certfilename));
 	strncat(certfilename, EXTCERT(ctype), sizeof(certfilename)-1-strlen(certfilename));
 	certfilename[sizeof(certfilename)-1] = 0;
-	    
+
 	if((in = BIO_new_file(certfilename, "r"))!=0){
 
 	    cert = PEM_read_bio_X509(in, NULL, NULL, NULL);
@@ -1221,6 +1258,7 @@ get_cert_for(char *email, WhichCerts ctype, int tolower)
 
 	    BIO_free(in);
 	}
+
     }
 
     return cert;
@@ -1236,26 +1274,40 @@ get_cert_for(char *email, WhichCerts ctype, int tolower)
 int
 load_cert_for_key(char *pathdir, EVP_PKEY *pkey, char **certfile, X509 **pcert)
 {
+#ifndef _WINDOWS
    DIR *dirp;
    struct dirent *d;
+#else /* _WINDOWS */
+    struct _finddata_t dbuf;
+    char bufn[_MAX_PATH + 4];
+    long findrv;
+#endif /* ! _WINDOWS */
+   size_t ll;
    int rv = 0;
    BIO *in;
    X509 *x;
-   char buf[MAXPATH+1], pathcert[MAXPATH+1];
+   char buf[MAXPATH+1], pathcert[MAXPATH+1], *fname;
 
    if(pathdir == NULL || pkey == NULL)
     return 0;
 
    if(certfile) *certfile = NULL;
    if(pcert)    *pcert = NULL;
-           
+ 
+#ifndef _WINDOWS
    if((dirp = opendir(pathdir)) != NULL){
       while(rv == 0 && (d=readdir(dirp)) != NULL){
-        size_t ll;
-    
-	if((ll=strlen(d->d_name)) && ll > 4){
-	   if(!strcmp(d->d_name+ll-4, ".crt")){
-	     strncpy(buf, d->d_name, sizeof(buf));
+	fname = d->d_name;
+#else
+   snprintf(bufn, sizeof(bufn), "%s%s*.*", pathdir, (pathdir[strlen(pathdir)-1] == '\\') ? "" : "\\");
+   bufn[sizeof(bufn)-1] = '\0';   
+   if((findrv = _findfirst(bufn, &dbuf)) >= 0){
+      do{
+        fname = fname_to_utf8(dbuf.name);
+#endif /* ! _WINDOWS */
+	if((ll=strlen(fname)) && ll > 4){
+	   if(!strcmp(fname+ll-4, ".crt")){
+	     strncpy(buf, fname, sizeof(buf));
 	     buf[sizeof(buf)-1] = '\0';
 	     build_path(pathcert, pathdir, buf, sizeof(pathcert));
 	     if((in = BIO_new_file(pathcert, "r")) != NULL){
@@ -1272,8 +1324,13 @@ load_cert_for_key(char *pathdir, EVP_PKEY *pkey, char **certfile, X509 **pcert)
 	     }
 	   }
         }
+#ifndef _WINDOWS
       }
       closedir(dirp);
+#else /* _WINDOWS */
+      } while(_findnext(findrv, &dbuf) == 0);
+	  _findclose(findrv);
+#endif
    }
    return rv;
 }
