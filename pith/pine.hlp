@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 235 2017-12-02 10:03:11
+Alpine Commit 236 2017-12-02 10:37:44
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -1124,7 +1124,7 @@ Changes included:
 Details on changes in previous (prerelease) versions of Alpine
 may be found at the following URL:
 <P>
-<CENTER><SAMP><A HREF="http://alpine.freeiz.com/alpine/release/">http://alpine.freeiz.com/alpine/release/</A></SAMP></CENTER>
+<CENTER><SAMP><A HREF="http://repo.or.cz/alpine.git">http://repo.or.cz/alpine.git</A></SAMP></CENTER>
 <P>
 
 <HR WIDTH="75%"><P>
@@ -1142,7 +1142,7 @@ accessible via the &quot;?&quot; key (or Ctrl-G in text-input contexts).
 The most current source of information about Alpine,
 including new version availability, is the web page at
 <P>
-<CENTER><SAMP><A HREF="http://alpine.freeiz.com/alpine/">http://alpine.freeiz.com/alpine/</A></SAMP></CENTER>
+<CENTER><SAMP><A HREF="http://repo.or.cz/alpine.git">http://repo.or.cz/alpine.git</A></SAMP></CENTER>
 </DD>
 </DL>
 
@@ -1985,12 +1985,12 @@ listing of changes in Alpine <!--#echo var="ALPINE_VERSION"-->
 <B>especially</B> if a &quot;problem&quot; you are encountering is actually 
 a change in the way an aspect of Alpine works.  There, you will also find notes 
 on Alpine configuration.<P>
-
+<!--
   <LI> The main site for Alpine contains information on configuring and solving problems
        with Alpine, it can be found at
 
 <CENTER><A HREF="http://alpine.freeiz.com/alpine/">http://alpine.freeiz.com/alpine/</A></CENTER>  
-
+-->
   <LI> The Alpine Information Center (maintained by the University of
 	   Washington) World Wide Web site contains, among other things
 	   <UL>
@@ -2361,7 +2361,7 @@ project, credits, and legal notices.
 Alpine releases are available via the world wide web at
 <P>
 <CENTER><SAMP><A 
-HREF="http://alpine.freeiz.com/alpine/release/">http://alpine.freeiz.com/alpine/release/</A></SAMP
+HREF="http://repo.or.cz/alpine.git">http://repo.or.cz/alpine.git</A></SAMP
 ></CENTER>
 <P>
 
@@ -30177,11 +30177,11 @@ When this feature is set (the default) Alpine will select possible web hostnames
 from the displayed text and display them in boldface for selection.  
 This can be useful when you receive messages referencing World Wide Web 
 sites without the use of complete URLs; for example, specifying only 
-&quot;www.patches.freeiz.com/alpine/&quot; (which will <B>not</B> become a 
+&quot;www.some.site.com&quot; (which will <B>not</B> become a 
 selectable 
 item by setting <A HREF="h_config_enable_view_url">&quot;<!--#echo var="FEAT_enable-msg-view-urls"-->&quot;</A>) 
 rather than explicitly
-&quot;http://www.patches.freeiz.com/alpine/&quot;.  
+&quot;http://www.some.site.com&quot;.  
 <P>
 The first available hostname is displayed in inverse.  This is the
 &quot;selected&quot; hostname.  Pressing RETURN will cause Alpine to display
