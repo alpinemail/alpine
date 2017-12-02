@@ -15,7 +15,7 @@ dnl  */
 
 AC_PREREQ([2.69])
 
-AC_REVISION([Rev:25 by chappa@washington.edu])
+AC_REVISION([Rev:26 by chappa@washington.edu])
 
 dnl Alpine Version Number is in $srcdir/VERSION
 AC_INIT([alpine],[m4_esyscmd(tr -d \\n < VERSION)],[chappa@washington.edu])
@@ -1000,13 +1000,23 @@ if test "x$with_ldap" = "xno" ; then
 else
   dnl Do stuff to figure out where OpenLDAP is
 
+  case $host in
+    *-*-freebsd*)
+	alpine_LDAPDIR="/usr/local"
+	alpine_LDAPINCLUDE="${LDAPDIR}/include"
+	alpine_LDAPLIB="${LDAPDIR}/lib"
+        ;;
+  esac;
+
   alpine_with_ldap=yes
+
   AC_ARG_WITH(ldap-dir,
     AS_HELP_STRING([--with-ldap-dir=DIR],[Root of LDAP lib/include path]),
     [
       if test "x$withval" != "xno" ; then 
-	CPPFLAGS="$CPPFLAGS -I${withval}/include"
-	LDFLAGS="$LDFLAGS -L${withval}/lib"
+	alpine_LDAPDIR="${withval}"
+	alpine_LDAPINCLUDE="${LDAPDIR}/include"
+	alpine_LDAPLIB="${LDAPDIR}/lib"
       fi
     ])
 
@@ -1014,7 +1024,7 @@ else
     AS_HELP_STRING([--with-ldap-include-dir=DIR],[Directory containing LDAP include files]),
     [
       if test "x$withval" != "xno" ; then
-	CPPFLAGS="$CPPFLAGS -I$withval"
+	alpine_LDAPINCLUDE="$withval"
       fi
     ])
 
@@ -1022,9 +1032,16 @@ else
     AS_HELP_STRING([--with-ldap-lib-dir=DIR],[LDAP library path]),
     [
       if test "x$withval" != "xno" ; then
-	LDFLAGS="$LDFLAGS -L$withval"
+	alpine_LDAPLIB="${withval}"
       fi
     ])
+
+   if test -n "$alpine_LDAPINCLUDE" ; then
+	CPPFLAGS="$CPPFLAGS -I${alpine_LDAPINCLUDE}/include"
+   fi
+   if test -n "$alpine_LDAPLIB" ; then
+	LDFLAGS="$LDFLAGS -L${alpine_LDAPLIB}/lib"
+   fi
 fi
 
 dnl Include SMIME?
