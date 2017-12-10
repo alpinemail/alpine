@@ -36,6 +36,7 @@ static char rcsid[] = "$Id: smime.c 1074 2008-06-04 00:08:43Z hubert@u.washingto
 #include "../pith/list.h"
 #include "../pith/mailcmd.h"
 #include "../pith/tempfile.h"
+#include "../pith/body.h"
 #include "radio.h"
 #include "keymenu.h"
 #include "mailcmd.h"
@@ -116,8 +117,8 @@ smime_check(BODY *body)
   }
   if(rv > 0) return rv;
   if(body->sparep)
-	p7 = get_smime_sparep_type(body->sparep) == P7Type
-		? (PKCS7 *)get_smime_sparep_data(body->sparep)
+	p7 = get_body_sparep_type(body->sparep) == P7Type
+		? (PKCS7 *)get_body_sparep_data(body->sparep)
 		: NULL;
   if(p7 && (PKCS7_type_is_signed(p7) || PKCS7_type_is_enveloped(p7)))
     rv += 1;
@@ -237,8 +238,8 @@ format_smime_info(int pass, BODY *body, long msgno, gf_io_t pc)
           format_smime_info(pass, &p->body, msgno, pc);
     }
     if(body->sparep)
-       p7 = get_smime_sparep_type(body->sparep) == P7Type 
-		? (PKCS7 *)get_smime_sparep_data(body->sparep)
+       p7 = get_body_sparep_type(body->sparep) == P7Type 
+		? (PKCS7 *)get_body_sparep_data(body->sparep)
 		: NULL;
     if(p7){
 

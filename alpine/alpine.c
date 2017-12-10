@@ -24,6 +24,7 @@ static char rcsid[] = "$Id: alpine.c 1266 2009-07-14 18:39:12Z hubert@u.washingt
 #include "../pith/options.h"
 #include "../pith/list.h"
 #include "../pith/conf.h"
+#include "../pith/body.h"
 
 #include "osdep/debuging.h"
 #include "osdep/termout.gen.h"
@@ -331,9 +332,7 @@ main(int argc, char **argv)
     mail_parameters(NULL, SET_SENDCOMMAND, (void *) pine_imap_cmd_happened);
     mail_parameters(NULL, SET_FREESTREAMSPAREP, (void *) sp_free_callback);
     mail_parameters(NULL, SET_FREEELTSPAREP,    (void *) free_pine_elt);
-#ifdef	SMIME
-    mail_parameters(NULL, SET_FREEBODYSPAREP,   (void *) free_smime_body_sparep);
-#endif
+    mail_parameters(NULL, SET_FREEBODYSPAREP,   (void *) free_body_sparep);
 
     init_pinerc(pine_state, &init_pinerc_debugging);
 

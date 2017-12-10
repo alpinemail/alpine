@@ -32,6 +32,9 @@
 			 || ((t) == TYPETEXT                          \
  		   && (s) && !strucmp((s),"X-VCARD")))
 
+/* Is this a VCalendar type? */
+#define	MIME_VCALENDAR(t,s)  ((t) == TYPETEXT && (s) && !strucmp((s),"CALENDAR"))
+
 /* Is this a multipart signed? */
 #define	MIME_MULT_SIGNED(t,s)	((t) == TYPEMULTIPART && (s) && !strucmp((s),"signed"))
 
@@ -43,6 +46,9 @@
 
 /* Is this a vCard attachment? */
 #define	MIME_VCARD_A(a)	MIME_VCARD((a)->body->type, (a)->body->subtype)
+
+/* Is this a VCalendar attachment? */
+#define	MIME_VCALENDAR_A(a)	MIME_VCALENDAR((a)->body->type, (a)->body->subtype)
 
 
 /* exported protoypes */

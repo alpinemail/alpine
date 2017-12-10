@@ -25,6 +25,9 @@ static char rcsid[] = "$Id: mailview.c 1266 2009-07-14 18:39:12Z hubert@u.washin
 
 
 #include "headers.h"
+#include "../pith/ical.h"
+#include "../pith/body.h"
+#include "../pith/mailpart.h"
 #include "../pith/mailview.h"
 #include "../pith/conf.h"
 #include "../pith/msgno.h"
@@ -123,7 +126,7 @@ int	    find_field(char **, char *, size_t);
 int	    embed_color(COLOR_PAIR *, gf_io_t);
 COLOR_PAIR *get_cur_embedded_color(void);
 void        clear_cur_embedded_color(void);
-
+void	    format_calendar_vevent(VCALENDAR_S *, ATTACH_S *, HANDLE_S **, int, int, gf_io_t, int);
 
 
 
@@ -192,8 +195,10 @@ format_message(long int msgno, ENVELOPE *env, struct mail_bodystruct *body,
 
     if(!(body == NULL 
 	 || (ps_global->full_header == 2
-	     && F_ON(F_ENABLE_FULL_HDR_AND_TEXT, ps_global))))
+	     && F_ON(F_ENABLE_FULL_HDR_AND_TEXT, ps_global)))){
       format_attachment_list(msgno, body, handlesp, flgs, width, pc);
+      format_calendar(msgno, body, handlesp, flgs, width, pc);
+    }
 
     /* write delimiter and body */
     if(gf_puts(NEWLINE, pc)
@@ -208,6 +213,294 @@ format_message(long int msgno, ENVELOPE *env, struct mail_bodystruct *body,
 			decode_err ? decode_err : error_description(errno));
 
     return(0);
+}
+
+void
+format_calendar_vevent(VCALENDAR_S *vcal, ATTACH_S *a, HANDLE_S **handlesp, int flgs, int width, gf_io_t pc, int cflags)
+{
+  int avail, m1, m2, hwid, i, partwid, padwid;
+  int s1, s2, dwid;
+  int *margin;
+  char padding[1024];
+  VEVENT_SUMMARY_S *vesy; /* vevent summary */
+
+  vesy = ical_vevent_summary(vcal);
+
+  if(vesy == NULL) return;
+
+  if((cflags & FC_SUMMARY) && (cflags & FC_FULL))
+     cflags |= ~FC_FULL;
+
+  avail = width;
+  margin = (cflags & FC_FULL) ? NULL
+		: (flgs & FM_NOINDENT) ? NULL : format_view_margin();
+
+  m1 = MAX(MIN(margin ? margin[0] : 0, avail), 0);
+  avail -= m1;
+
+  m2 = MAX(MIN(margin ? margin[1] : 0, avail), 0);
+  avail -= m2;
+
+  hwid = MAX(avail, 0);
+  padwid = 0;
+
+  if(cflags & FC_SUMMARY){
+    i = utf8_width(_("Calendar Entry:"));
+    partwid = MIN(i, hwid);
+    if(m1 > 0){
+       snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%*.*s", m1, m1, "");
+       if(!gf_puts(tmp_20k_buf, pc))
+         return;
+    }
+
+    utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%-*.*w%*.*s",
+       partwid, partwid, _("Calendar Entry:"),
+       padwid, padwid, "");
+
+     if(!gf_puts(tmp_20k_buf, pc) || !gf_puts(NEWLINE, pc))
+       return;
+  }
+  else 
+     partwid = 0;
+
+  if(m1 > 0){
+    snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%*.*s", m1, m1, "");
+    if(!gf_puts(tmp_20k_buf, pc))
+      return;
+  }
+
+  avail = width - m1 - m2;
+
+  s1 = MAX(MIN(1, avail), 0);
+  avail -= s1;
+
+  dwid = MAX(MIN(1, avail), 0);
+  avail -= dwid;
+
+  s2 = MAX(MIN(1, avail), 0);
+  avail -= s2;
+
+  if(cflags & FC_SUMMARY)
+    utf8_snprintf(padding, sizeof(padding), "%*.*s%*.*w%*.*s", 
+		s1, s1, "", dwid, dwid, "", s2, s2, "");
+  else
+    padding[0] = '\0';
+
+  if(vesy->cancel){
+     utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s",
+			 padding, _("This event was cancelled!"));
+     if((*pc)(TAG_EMBED) && (*pc)(TAG_BOLDON)){
+	gf_puts(tmp_20k_buf, pc);
+	gf_puts(NEWLINE, pc);
+	(*pc)(TAG_EMBED);
+	(*pc)(TAG_BOLDOFF);
+     }
+  }
+
+  if(vesy->organizer){
+     if(vesy->sender != NULL){
+	utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s%s",
+		padding, _("Sent-by: "), vesy->sender);
+	gf_puts(tmp_20k_buf, pc);
+	gf_puts(NEWLINE, pc);
+     }
+
+     utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s%s",
+	padding, _("Organizer: "), vesy->organizer);
+     gf_puts(tmp_20k_buf, pc);
+     gf_puts(NEWLINE, pc);
+  } /* end of if(organizer) */
+
+  if(vesy->location){
+     utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s%s",
+		padding, _("Location: "), vesy->location);
+     gf_puts(tmp_20k_buf, pc);
+     gf_puts(NEWLINE, pc);
+  } /* end of if location */
+
+  if(vesy->evstart){
+     utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s%s",
+		padding, _("Start Date: "), vesy->evstart);
+     gf_puts(tmp_20k_buf, pc);
+     gf_puts(NEWLINE, pc);
+  } /* end of if dtstart */
+
+  if(vesy->duration){
+     int i;
+
+     for(i = 0; vesy->duration[i] != NULL; i++){
+	utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s%s",
+		padding, _("Duration: "), vesy->duration[i]);
+	gf_puts(tmp_20k_buf, pc);
+	gf_puts(NEWLINE, pc);
+     }
+  } /* end of DURATION */
+  else if(vesy->evend){
+      utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s%s",
+		padding, _("End Date: "), vesy->evend);
+      gf_puts(tmp_20k_buf, pc);
+      gf_puts(NEWLINE, pc);
+  } else {	/* end of if dtend */
+      utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s",
+		padding, _("No duration nor end time found for this event"));
+      gf_puts(tmp_20k_buf, pc);
+      gf_puts(NEWLINE, pc);
+  } /* end of else for if (duration) and if (dtend) */
+
+  if(vesy->attendee){
+#define MAX_DISPLAYED  3
+	int i;
+
+	for(i = 0; vesy->attendee[i] != NULL; i++){
+	   if((cflags & FC_SUMMARY) && i >= MAX_DISPLAYED)
+	      break;
+
+	   utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s%s",
+		padding, 
+		_("Attendee: "), vesy->attendee[i]);
+	   gf_puts(tmp_20k_buf, pc);
+	   gf_puts(NEWLINE, pc);
+	}
+	if(cflags & FC_SUMMARY){
+	    COLOR_PAIR *lastc = NULL;
+	    char numbuf[50];
+	    int thisdescwid;
+	    COLOR_PAIR *hdrcolor = NULL;
+
+	    if((flgs & FM_DISPLAY)
+		&& !(flgs & FM_NOCOLOR)
+		&& pico_usingcolor()
+		&& ps_global->VAR_HEADER_GENERAL_FORE_COLOR
+		&& ps_global->VAR_HEADER_GENERAL_BACK_COLOR
+		&& ps_global->VAR_NORM_FORE_COLOR
+		&& ps_global->VAR_NORM_BACK_COLOR
+		&& (colorcmp(ps_global->VAR_HEADER_GENERAL_FORE_COLOR,
+		        ps_global->VAR_NORM_FORE_COLOR)
+		       || colorcmp(ps_global->VAR_HEADER_GENERAL_BACK_COLOR,
+		    ps_global->VAR_NORM_BACK_COLOR))){
+
+		if((hdrcolor = new_color_pair(ps_global->VAR_HEADER_GENERAL_FORE_COLOR,
+					  ps_global->VAR_HEADER_GENERAL_BACK_COLOR)) != NULL){
+		   if(!pico_is_good_colorpair(hdrcolor))
+		     free_color_pair(&hdrcolor);
+	        }
+	    }
+
+	    if(!(!hdrcolor || embed_color(hdrcolor, pc)))
+	      return;
+
+	    gf_puts(padding, pc);
+	    utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s", _("[More Details]"));
+
+	    if(F_ON(F_VIEW_SEL_ATTACH, ps_global) && handlesp){
+		char      buf[16], color[64];
+		int	  l;
+		HANDLE_S *h; 
+
+		h	    = new_handle(handlesp);
+		h->type	    = Attach;
+		h->h.attach = a;
+
+		snprintf(buf, sizeof(buf), "%d", h->key);
+		buf[sizeof(buf)-1] = '\0';
+
+		if(!(flgs & FM_NOCOLOR)
+		   && handle_start_color(color, sizeof(color), &l, 1)){
+		    lastc = get_cur_embedded_color();
+		    if(!gf_nputs(color, (long) l, pc))
+		      return;
+		}
+		else if(F_OFF(F_SLCTBL_ITEM_NOBOLD, ps_global)
+			&& (!((*pc)(TAG_EMBED) && (*pc)(TAG_BOLDON))))
+		  return;
+
+		if(!((*pc)(TAG_EMBED) && (*pc)(TAG_HANDLE)
+		     && (*pc)(strlen(buf)) && gf_puts(buf, pc)))
+		  return;
+	    } else
+	      tmp_20k_buf[0] = '\0';
+
+	    if(!format_env_puts(tmp_20k_buf, pc))
+	      return;
+
+	    if(F_ON(F_VIEW_SEL_ATTACH, ps_global) && handlesp){
+		if(lastc){
+		    if(F_OFF(F_SLCTBL_ITEM_NOBOLD, ps_global)){
+			if(!((*pc)(TAG_EMBED) && (*pc)(TAG_BOLDOFF)))
+			  return;
+		    }
+
+		    if(!embed_color(lastc, pc))
+		      return;
+
+		    free_color_pair(&lastc);
+		}
+		else if(!((*pc)(TAG_EMBED) && (*pc)(TAG_BOLDOFF)))
+		  return;
+
+		if(!((*pc)(TAG_EMBED) && (*pc)(TAG_INVOFF)))
+		  return;
+	    }
+
+	    if(padwid > 0){
+		snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%*.*s", padwid, padwid, "");
+		if(!gf_puts(tmp_20k_buf, pc))
+		  return;
+	    }
+
+	    if(!gf_puts(NEWLINE, pc))
+	      return;
+	}
+    } /* end of ATTENDEES */
+
+    free_vevent_summary(&vesy);
+
+    avail = width - m1 -2;
+
+    dwid = MAX(MIN(40, avail), 0);
+    avail -= dwid;
+
+    snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%*.*s%s", m1, m1, "",
+		repeat_char(dwid, '-'));
+    gf_puts(tmp_20k_buf, pc);
+    gf_puts(NEWLINE, pc);
+}
+
+int
+format_calendar(long int msgno, BODY *body, HANDLE_S **handlesp, int flgs, int width, gf_io_t pc)
+{
+  char *b64text, *caltext;
+  unsigned long callen;
+  VCALENDAR_S *vcal = NULL;
+  ATTACH_S *a;
+  BODY *b;
+
+  if(flgs & FM_NEW_MESS) {
+     zero_atmts(ps_global->atmts);
+     describe_mime(body, "", 1, 1, 0, flgs);
+  }
+
+  for(a = ps_global->atmts; a->description != NULL; a++){
+     if(MIME_VCALENDAR(a->body->type, a->body->subtype)){
+	b = mail_body (ps_global->mail_stream, msgno, a->number);
+	if(b->sparep == NULL){
+	  b64text = mail_fetch_body(ps_global->mail_stream, msgno, a->number, &callen, 0);
+	  b64text[callen] = '\0';	/* chop off cookie */
+	  caltext = rfc822_base64(b64text, strlen(b64text), &callen);
+	  vcal = ical_parse_text(caltext);
+	  b->sparep = create_body_sparep(iCalType, (void *) vcal);
+	}
+	else if(get_body_sparep_type(b->sparep) == iCalType)
+	   vcal = (VCALENDAR_S *) get_body_sparep_data(b->sparep);
+        if(vcal != NULL && vcal->comp != NULL){
+	   if(vcal->comp[VEvent] != NULL){
+	      format_calendar_vevent(vcal, a,  handlesp, flgs, width, pc, FC_SUMMARY);
+	   } /* else  another type of entry in the calendar */
+	}
+	gf_puts(NEWLINE, pc);
+     }
+  }
+  return 0;
 }
 
 
@@ -336,6 +629,8 @@ format_body(long int msgno, BODY *body, HANDLE_S **handlesp, HEADER_S *hp, int f
 
 	/*======== Now loop through formatting all the parts =======*/
 	for(a = ps_global->atmts; a->description != NULL; a++) {
+	    if(MIME_VCALENDAR(a->body->type, a->body->subtype))
+		continue;
 
 	    if(a->body->type == TYPEMULTIPART){
 #ifdef SMIME
@@ -424,8 +719,11 @@ format_body(long int msgno, BODY *body, HANDLE_S **handlesp, HEADER_S *hp, int f
 #endif /* SMIME */
 		       )
 		   && !(flgs & FM_NOEDITORIAL)){
-		    tmp1 = a->body->description ? a->body->description
-		      : "Attached Text";
+		    if(MIME_VCALENDAR(a->body->type, a->body->subtype))
+			tmp1 = "Calendar entry";
+		    else
+			tmp1 = a->body->description ? a->body->description
+			      : "Attached Text";
 		    description = iutf8ncpy((char *)(tmp_20k_buf+10000),
 					    (char *)rfc1522_decode_to_utf8((unsigned char *)(tmp_20k_buf+15000), 5000, tmp1), 5000);
 		
@@ -437,8 +735,9 @@ format_body(long int msgno, BODY *body, HANDLE_S **handlesp, HEADER_S *hp, int f
 			 && gf_puts(NEWLINE, pc) && gf_puts(NEWLINE, pc)))
 		      return("Write Error");
 		}
-
-		error_found += decode_text(a, msgno, pc, handlesp,
+		/* skip calendar */
+		if(!MIME_VCALENDAR(a->body->type, a->body->subtype))
+		  error_found += decode_text(a, msgno, pc, handlesp,
 					   (flgs & FM_DISPLAY) ? InLine : QStatus,
 					   flgs);
 		break;
@@ -604,6 +903,9 @@ format_attachment_list(long int msgno, BODY *body, HANDLE_S **handlesp, int flgs
 
 	/*----- Figure max display widths -----*/
         for(a = ps_global->atmts; a->description != NULL; a++){
+	    if(MIME_VCALENDAR(a->body->type, a->body->subtype))
+		continue;
+
 	    if((n = utf8_width(a->number)) > maxnumwid)
 	      maxnumwid = n;
 
@@ -656,6 +958,8 @@ format_attachment_list(long int msgno, BODY *body, HANDLE_S **handlesp, int flgs
 	    char numbuf[50];
 	    int thisdescwid, padwid;
 
+	    if(MIME_VCALENDAR(a->body->type, a->body->subtype))
+		continue;
 #ifdef SMIME
 	    if(a->body->type == TYPEMULTIPART
 	       && (strucmp(a->body->subtype, OUR_PKCS7_ENCLOSURE_SUBTYPE)==0))

@@ -36,14 +36,6 @@
 #define OUR_PKCS7_ENCLOSURE_SUBTYPE "x-pkcs7-enclosure"
 
 
-typedef enum {P7Type, CharType, SizedText} SpareType;
-
-typedef struct smime_sparep_t {
-   SpareType sptype;
-   void *data;
-} SMIME_SPARE_S;
-
-
 /* exported protoypes */
 int	       smime_validate_cert(X509 *cert, long *error);
 int	       encrypt_file(char *fp, char *text, PERSONAL_CERT *pc);
@@ -51,7 +43,6 @@ char 	      *decrypt_file(char *fp, int *rv, PERSONAL_CERT *pc);
 int            is_pkcs7_body(BODY *b);
 int            fiddle_smime_message(BODY *b, long msgno);
 int            encrypt_outgoing_message(METAENV *header, BODY **bodyP);
-void           free_smime_body_sparep(void **sparep);
 int            sign_outgoing_message(METAENV *header, BODY **bodyP, int dont_detach, BODY **bp);
 void           gf_puts_uline(char *txt, gf_io_t pc);
 PERSONAL_CERT *find_certificate_matching_recip_info(PKCS7_RECIP_INFO *ri);
@@ -83,9 +74,6 @@ void	       mark_cert_deleted(WhichCerts ctype, int num, unsigned state);
 unsigned       get_cert_deleted(WhichCerts ctype, int num);
 int	       smime_expunge_cert(WhichCerts ctype);
 int	       add_file_to_container(WhichCerts ctype, char *fpath, char *altname);
-void 	      *create_smime_sparep(SpareType stype, void *s);
-SpareType      get_smime_sparep_type(void *s);
-void	      *get_smime_sparep_data(void *s);
 STACK_OF(X509)       *get_chain_for_cert(X509 *cert, int *error, int *level);
 CertList      *certlist_from_personal_certs(PERSONAL_CERT *pc);
 int 	smime_path(char *rpath, char *fpath, size_t len);
