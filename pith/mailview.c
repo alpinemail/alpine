@@ -390,7 +390,7 @@ format_calendar_vevent(VCALENDAR_S *vcal, ATTACH_S *a, HANDLE_S **handlesp, int 
 	      return;
 
 	    gf_puts(padding, pc);
-	    utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s", _("[More Details]"));
+	    utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "[%s]", _("More Details"));
 
 	    if(F_ON(F_VIEW_SEL_ATTACH, ps_global) && handlesp){
 		char      buf[16], color[64];

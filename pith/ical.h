@@ -1,5 +1,5 @@
-#ifndef ICAL_INCLUDED
-#define ICAL_INCLUDED
+#ifndef PITH_ICAL_INCLUDED
+#define PITH_ICAL_INCLUDED
 
 #include "../pith/icaltype.h"
 
@@ -14,4 +14,4 @@ void free_vevent_summary(VEVENT_SUMMARY_S **);
 
 VCALENDAR_S *ical_parse_text(char *);           /* this is the entry point */
 
-#endif /* ifndef ICAL_INCLUDED */
+#endif /* ifndef PITH_ICAL_INCLUDED */
