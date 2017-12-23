@@ -2167,7 +2167,7 @@ url_local_fragment(char *fragment)
 int
 ical_send_reply(char *url)
 {
-   ical_compose_reply(url + strlen("x-alpine-ical:"));
+//   ical_compose_reply(url + strlen("x-alpine-ical:"));
    return 2;
 }
 

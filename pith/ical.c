@@ -231,6 +231,57 @@ ICAL_PROP_S alarm_prop[] = {
 
 /* Finally, here begins the code. */
 
+/* Return code:
+    0 - if no errors
+   -1 - if an error occured
+   Args: a pointer to the text. If there is an error, the text is not modified.
+ */
+int
+ical_remove_escapes(char **textp)
+{
+   char *text, *s, *t;
+   int rv = 0;
+   int escaped;
+
+   if(textp == NULL) return 0;
+
+   t = cpystr(*textp); /* work on a copy of the text */
+   /* the variable text below points to the beginning of the filtered text */
+   for (text = s = t, escaped = 0; rv == 0 && *s != '\0'; s++){
+       if(*s == '\\' && escaped == 0){ 
+	  escaped = 1;
+	  continue;
+       }
+       if(escaped){
+	  switch(*s){
+	      case '\\':
+	      case ',':
+	      case ';':
+		 *t++ = *s;
+		 break;
+
+	      case 'n':
+	      case 'N':
+		 *t++ = '\n';
+		 break;
+	      default: rv = -1;
+		 break;
+	  }
+	  escaped = 0;
+       }
+       else *t++ = *s;
+    }
+    *t = '\0';	/* tie off filtered text */
+    t = text;   /* reset t to the beginning */
+    if(rv == -1)
+      fs_give((void **) &t);
+    else{
+      strncpy(*textp, t, strlen(t));	/* overwrite given text with filtered text */
+      (*textp)[strlen(t)] = '\0';
+    }
+    return rv;
+}
+
 void ical_debug(char *fcn, char *text)
 {
    char piece[50];
@@ -1602,31 +1653,43 @@ ical_parse_duration(char *value, ICAL_DURATION_S *ic_d)
    return rv;
 }
 
-/* return -1 if any error, 0 if no error */
+/* return -1 if any error,
+           0 if value has the DATE-TIME form
+           1 if value has the DATE form only
+ */
 int
 ical_parse_date(char *value, struct tm *t)
 {
-   int i;
+   int i, rv;
    struct tm Tm;
 
-   if(t == NULL) return -1;
+   rv = -1;
+   if(t == NULL) return rv;
    memset((void *)&Tm, 0, sizeof(struct tm));
 
-   if(value == NULL) return -1;
+   if(value == NULL) return rv;
 
+   rv = 0;	/* assume DATE-TIME format */
    /* a simple check for the format of the string */
    for(i = 0; isdigit(value[i]); i++);
-   if (i != 8 || value[i++] != 'T') return -1;
-   for(; isdigit(value[i]); i++);
-   if(i != 15 || (value[i] != '\0' && (value[i] != 'Z' || value[i+1] != '\0')))
-      return -1;
+   if (i == 8 && value[i] == '\0')
+       rv = 1;	
+   else
+      if (i != 8 || value[i++] != 'T') return -1;
+   if(rv == 0) {
+     for(; isdigit(value[i]); i++);
+     if(i != 15 || (value[i] != '\0' && (value[i] != 'Z' || value[i+1] != '\0')))
+        return -1;
+   }
 
    Tm.tm_year = ical_get_number_value(value, 0, 4) - 1900;
    Tm.tm_mon  = ical_get_number_value(value, 4, 6) - 1;
    Tm.tm_mday = ical_get_number_value(value, 6, 8);
-   Tm.tm_hour = ical_get_number_value(value, 9, 11);
-   Tm.tm_min  = ical_get_number_value(value, 11, 13);
-   Tm.tm_sec  = ical_get_number_value(value, 13, 15);
+   if(rv == 0){
+     Tm.tm_hour = ical_get_number_value(value, 9, 11);
+     Tm.tm_min  = ical_get_number_value(value, 11, 13);
+     Tm.tm_sec  = ical_get_number_value(value, 13, 15);
+   }
    *t = Tm;
 
    return (t->tm_mon > 11 || t->tm_mon < 0 
@@ -1634,7 +1697,7 @@ ical_parse_date(char *value, struct tm *t)
 	   || t->tm_hour > 23 || t->tm_hour < 0
 	   || t->tm_min > 59 || t->tm_min < 0 
 	   || t->tm_sec > 60 || t->tm_sec < 0) 
-	    ? - 1 : 0;
+	    ? - 1 : rv;
 }
 
 void
@@ -1962,10 +2025,27 @@ ical_vevent_summary(VCALENDAR_S *vcal)
     if((icl = (ICLINE_S *) vevent->prop[EvDtstart]) != NULL){
       struct tm ic_date;
       char tmp[200];
+      int icd;	/* ical date return value */
+
       memset((void *)&ic_date, 0, sizeof(struct tm));
-      ical_parse_date(icl->value, &ic_date);
-      ic_date.tm_wday = ical_day_of_week(ic_date);
-      our_strftime(tmp, sizeof(tmp), "%a %x %I:%M %p", &ic_date);
+      icd = ical_parse_date(icl->value, &ic_date);
+      if(icd >= 0){
+         ic_date.tm_wday = ical_day_of_week(ic_date);
+	 switch(icd){
+	    case 0: /* DATE-TIME */
+		    our_strftime(tmp, sizeof(tmp), "%a %x %I:%M %p", &ic_date);
+		    break;
+	    case 1: /* DATE */
+		    our_strftime(tmp, sizeof(tmp), "%a %x", &ic_date);
+		    break;
+	    default: alpine_panic("Unhandled ical date format");
+		    break;
+	 }
+      }
+      else{
+	strncpy(tmp, _("Error while parsing event date"), sizeof(tmp));
+	tmp[sizeof(tmp) - 1] = '\0';
+      }
       rv->evstart = cpystr(icl->value ? tmp : _("Unknown Start Date"));
     } 	/* end of if dtstart */
 
@@ -2012,11 +2092,27 @@ ical_vevent_summary(VCALENDAR_S *vcal)
     else if((icl = (ICLINE_S *) vevent->prop[EvDtend]) != NULL){
       struct tm ic_date;
       char tmp[200];
+      int icd;
 
       memset((void *)&ic_date, 0, sizeof(struct tm));
-      ical_parse_date(icl->value, &ic_date);
-      ic_date.tm_wday = ical_day_of_week(ic_date);
-      our_strftime(tmp, sizeof(tmp), "%a %x %I:%M %p", &ic_date);
+      icd = ical_parse_date(icl->value, &ic_date);
+      if(icd >= 0){
+         ic_date.tm_wday = ical_day_of_week(ic_date);
+	 switch(icd){
+	    case 0: /* DATE-TIME */
+		    our_strftime(tmp, sizeof(tmp), "%a %x %I:%M %p", &ic_date);
+		    break;
+	    case 1: /* DATE */
+		    our_strftime(tmp, sizeof(tmp), "%a %x", &ic_date);
+		    break;
+	    default: alpine_panic("Unhandled ical date format");
+		    break;
+	 }
+      }
+      else{
+	strncpy(tmp, _("Error while parsing event date"), sizeof(tmp));
+	tmp[sizeof(tmp) - 1] = '\0';
+      }
       rv->evend = cpystr(icl->value ? tmp : _("Unknown End Date"));
     }	/* end of if dtend */
 
@@ -2095,7 +2191,7 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 	v = cpystr(icl->value);	/* process a copy of icl->value */
 
 	for(i = 1, escaped = 0, s = v; s && *s; s++){
-	   if(*s == '\\'){ escaped = 1; continue; }
+	   if(*s == '\\' && escaped == 0){ escaped = 1; continue; }
 	   if(escaped){
 		if(!(*s == '\\' || *s == ',' || *s == 'n' || *s == 'N' || *s == ';')){
 		   free_vevent_summary(&rv);
@@ -2111,7 +2207,7 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 	rv->description = fs_get((i+1)*sizeof(char *));
 	i = 0;
 	for (s = t = u = v, escaped = 0; *t != '\0'; t++){
-	   if(*t == '\\'){ escaped = 1; continue; }
+	   if(*t == '\\' && escaped == 0){ escaped = 1; continue; }
 	   if(escaped){
 		switch(*t){
 		   case '\\':

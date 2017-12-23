@@ -2962,6 +2962,7 @@ display_vcalendar_att(long int msgno, ATTACH_S *a, int flags)
     }
 
     if(vesy->location){
+      ical_remove_escapes(&vesy->location);
       utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s", 
 	_("Location: "), vesy->location);
       so_puts(in_store, tmp_20k_buf);

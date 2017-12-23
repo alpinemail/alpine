@@ -9,6 +9,7 @@ int  ical_first_of_month(int, int);      /* args: month, year - in that order */
 int  ical_day_of_week(struct tm);        /* args: a time structure */
 int  ical_parse_date(char *, struct tm *);
 int  ical_parse_duration(char *, ICAL_DURATION_S *);
+int  ical_remove_escapes(char **);
 VEVENT_SUMMARY_S *ical_vevent_summary(VCALENDAR_S *);
 void free_vevent_summary(VEVENT_SUMMARY_S **);
 

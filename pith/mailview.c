@@ -312,6 +312,7 @@ format_calendar_vevent(VCALENDAR_S *vcal, ATTACH_S *a, HANDLE_S **handlesp, int 
   } /* end of if(organizer) */
 
   if(vesy->location){
+     ical_remove_escapes(&vesy->location);
      utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s%s",
 		padding, _("Location: "), vesy->location);
      gf_puts(tmp_20k_buf, pc);
@@ -483,10 +484,25 @@ format_calendar(long int msgno, BODY *body, HANDLE_S **handlesp, int flgs, int w
   for(a = ps_global->atmts; a->description != NULL; a++){
      if(MIME_VCALENDAR(a->body->type, a->body->subtype)){
 	b = mail_body (ps_global->mail_stream, msgno, a->number);
+	if(b == NULL){
+	   gf_puts(_("Error fetching calendar body part"), pc);
+	   gf_puts(NEWLINE, pc);
+	   continue;
+	}
 	if(b->sparep == NULL){
 	  b64text = mail_fetch_body(ps_global->mail_stream, msgno, a->number, &callen, 0);
+	  if(b64text == NULL){
+	     gf_puts(_("Error fetching calendar text"), pc);
+	     gf_puts(NEWLINE, pc);
+	     continue;
+	  }
 	  b64text[callen] = '\0';	/* chop off cookie */
 	  caltext = rfc822_base64(b64text, strlen(b64text), &callen);
+	  if(caltext == NULL){
+	     gf_puts(_("Error in calendar base64 encoding"), pc);
+	     gf_puts(NEWLINE, pc);
+	     continue;
+	  }
 	  vcal = ical_parse_text(caltext);
 	  b->sparep = create_body_sparep(iCalType, (void *) vcal);
 	}
