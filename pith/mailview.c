@@ -515,10 +515,15 @@ format_calendar(long int msgno, BODY *body, HANDLE_S **handlesp, int flgs, int w
 		  continue;
 		}
 		break;
+
+	     default: caltext = cpystr(rawtext);
 	  }
-	  vcal = ical_parse_text(caltext);
-	  if(vcal != NULL) vcal->encoding = b->encoding;
-	  b->sparep = create_body_sparep(iCalType, (void *) vcal);
+	  if(caltext != NULL){
+	     vcal = ical_parse_text(caltext);
+	     if(vcal != NULL) vcal->encoding = b->encoding;
+	     b->sparep = create_body_sparep(iCalType, (void *) vcal);
+	     fs_give((void **) &caltext);
+	  }
 	}
 	else if(get_body_sparep_type(b->sparep) == iCalType)
 	   vcal = (VCALENDAR_S *) get_body_sparep_data(b->sparep);

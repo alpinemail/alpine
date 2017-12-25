@@ -239,7 +239,10 @@ ical_decode(char *text, unsigned short encoding)
   unsigned long callen;
   if(encoding == ENCQUOTEDPRINTABLE){
      t = rfc822_qprint ((unsigned char *) text,strlen(text),&callen);
-     strncpy(text, t, strlen(t));
+     if(t != NULL){
+       strncpy(text, t, strlen(t));
+       fs_give((void **) &t);
+     }
   }
   return text;
 }
