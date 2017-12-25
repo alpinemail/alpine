@@ -464,13 +464,13 @@ format_calendar_vevent(VCALENDAR_S *vcal, ATTACH_S *a, HANDLE_S **handlesp, int 
     snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%*.*s%s", m1, m1, "",
 		repeat_char(dwid, '-'));
     gf_puts(tmp_20k_buf, pc);
-    gf_puts(NEWLINE, pc);
+//    gf_puts(NEWLINE, pc);
 }
 
 int
 format_calendar(long int msgno, BODY *body, HANDLE_S **handlesp, int flgs, int width, gf_io_t pc)
 {
-  char *b64text, *caltext;
+  char *rawtext, *caltext;
   unsigned long callen;
   VCALENDAR_S *vcal = NULL;
   ATTACH_S *a;
@@ -490,20 +490,34 @@ format_calendar(long int msgno, BODY *body, HANDLE_S **handlesp, int flgs, int w
 	   continue;
 	}
 	if(b->sparep == NULL){
-	  b64text = mail_fetch_body(ps_global->mail_stream, msgno, a->number, &callen, 0);
-	  if(b64text == NULL){
-	     gf_puts(_("Error fetching calendar text"), pc);
-	     gf_puts(NEWLINE, pc);
-	     continue;
+	  rawtext = mail_fetch_body(ps_global->mail_stream, msgno, a->number, &callen, 0);
+	  if(rawtext == NULL){
+	    gf_puts(_("Error fetching calendar text"), pc);
+	    gf_puts(NEWLINE, pc);
+	    continue;
 	  }
-	  b64text[callen] = '\0';	/* chop off cookie */
-	  caltext = rfc822_base64(b64text, strlen(b64text), &callen);
-	  if(caltext == NULL){
-	     gf_puts(_("Error in calendar base64 encoding"), pc);
-	     gf_puts(NEWLINE, pc);
-	     continue;
+	  rawtext[callen] = '\0';	/* chop off cookie */
+	  switch(b->encoding){
+	     case ENCBASE64:
+		caltext = rfc822_base64(rawtext, strlen(rawtext), &callen);
+		if(caltext == NULL){
+		  gf_puts(_("Error in calendar base64 encoding"), pc);
+		  gf_puts(NEWLINE, pc);
+		  continue;
+		}
+		break;
+
+	     case ENCQUOTEDPRINTABLE:
+		caltext = rfc822_qprint ((unsigned char *) rawtext,strlen(rawtext),&callen);
+		if(caltext == NULL){
+		  gf_puts(_("Error in calendar quoted printable encoding"), pc);
+		  gf_puts(NEWLINE, pc);
+		  continue;
+		}
+		break;
 	  }
 	  vcal = ical_parse_text(caltext);
+	  if(vcal != NULL) vcal->encoding = b->encoding;
 	  b->sparep = create_body_sparep(iCalType, (void *) vcal);
 	}
 	else if(get_body_sparep_type(b->sparep) == iCalType)

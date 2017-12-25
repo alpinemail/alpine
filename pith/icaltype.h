@@ -248,6 +248,7 @@ typedef struct vcalendar_s {
   GEN_ICLINE_S *uk_prop;/* in case there is an unknown property */
   void   **comp;	/* an array with the components of a calendar */
   ICAL_S *uk_comp;	/* in case there is an unknown component */
+  unsigned short encoding;	/* save the original encoding. */
 } VCALENDAR_S;
 
 

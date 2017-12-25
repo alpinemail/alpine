@@ -37,6 +37,7 @@ ICLINE_S *ical_cline_cpy(ICLINE_S *);
 ICAL_PARAMETER_S *ical_parameter_cpy(ICAL_PARAMETER_S *param);
 
 char *ical_get_value(char **);
+char *ical_decode(char *, unsigned short);
 
 /* pase component */
 void	*ical_parse_vcalendar(char **);
@@ -230,6 +231,19 @@ ICAL_PROP_S alarm_prop[] = {
 	 || ((X) >= 0x21 && (X) <= 0x7E))
 
 /* Finally, here begins the code. */
+
+char *
+ical_decode(char *text, unsigned short encoding)
+{
+  char *t;
+  unsigned long callen;
+  if(encoding == ENCQUOTEDPRINTABLE){
+     t = rfc822_qprint ((unsigned char *) text,strlen(text),&callen);
+     strncpy(text, t, strlen(t));
+  }
+  return text;
+}
+
 
 /* Return code:
     0 - if no errors
@@ -1965,6 +1979,7 @@ ical_vevent_summary(VCALENDAR_S *vcal)
   VEVENT_S *vevent;
   GEN_ICLINE_S *gicl;
   ICLINE_S *icl;
+  char *k;
 
   if(vcal == NULL) return NULL;
 
@@ -2170,7 +2185,7 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 		role && *role ? role : "",
 		role && *role ? " " : "",
 		partstat ? partstat : _("[Unknown Reply]"),
-		partstat ? " " : "",
+		" ",
 		cn && *cn ? cn  : "",
 		cn && *cn ? " " : "",
 		mailto ? mailto : _("Unknown address"));
@@ -2228,13 +2243,13 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 	   }
 	   if(*t == ','){
 		*u = '\0';
-		rv->description[i++] = cpystr(s);
+		rv->description[i++] = cpystr(ical_decode(s, vcal->encoding));
 		s = u = t+1;
 	   } else
 		*u++ = *t;  
 	}
 	*u = '\0';
-	rv->description[i++] = cpystr(s);
+	rv->description[i++] = cpystr(ical_decode(s, vcal->encoding));
 	rv->description[i] = NULL;
 	fs_give((void **)&v);
     } /* end of if(description) */
