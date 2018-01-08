@@ -36,6 +36,14 @@
 #ifdef OPENSSL_1_1_0
 #include <rsa.h>
 #include <bn.h>
+#ifdef TLSv1_1_client_method
+#undef TLSv1_1_client_method
+#endif /* TLSv1_1_client_method */
+#ifdef TLSv1_2_client_method
+#undef TLSv1_2_client_method
+#endif /* TLSv1_2_client_method */
+#define TLSv1_1_client_method TLS_client_method
+#define TLSv1_2_client_method TLS_client_method
 #endif /* OPENSSL_1_1_0 */
 #undef STRING
 #undef crypt
