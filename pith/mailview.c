@@ -393,7 +393,7 @@ format_calendar_vevent(VCALENDAR_S *vcal, ATTACH_S *a, HANDLE_S **handlesp, int 
 	    gf_puts(padding, pc);
 	    utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "[%s]", _("More Details"));
 
-	    if(F_ON(F_VIEW_SEL_ATTACH, ps_global) && handlesp){
+	    if(handlesp){
 		char      buf[16], color[64];
 		int	  l;
 		HANDLE_S *h; 
@@ -424,7 +424,7 @@ format_calendar_vevent(VCALENDAR_S *vcal, ATTACH_S *a, HANDLE_S **handlesp, int 
 	    if(!format_env_puts(tmp_20k_buf, pc))
 	      return;
 
-	    if(F_ON(F_VIEW_SEL_ATTACH, ps_global) && handlesp){
+	    if(handlesp){
 		if(lastc){
 		    if(F_OFF(F_SLCTBL_ITEM_NOBOLD, ps_global)){
 			if(!((*pc)(TAG_EMBED) && (*pc)(TAG_BOLDOFF)))
@@ -464,7 +464,6 @@ format_calendar_vevent(VCALENDAR_S *vcal, ATTACH_S *a, HANDLE_S **handlesp, int 
     snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%*.*s%s", m1, m1, "",
 		repeat_char(dwid, '-'));
     gf_puts(tmp_20k_buf, pc);
-//    gf_puts(NEWLINE, pc);
 }
 
 int
