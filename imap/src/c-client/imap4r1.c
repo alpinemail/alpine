@@ -4072,7 +4072,7 @@ void imap_parse_unsolicited (MAILSTREAM *stream,IMAPPARSEDREPLY *reply)
     unsigned char *txt = reply->text;
     if ((t = imap_parse_astring (stream,&txt,reply,&j)) && txt &&
 	(*txt++ == ' ') && (*txt++ == '(') && (s = strchr (txt,')')) &&
-	(s - txt) && !s[1]) {
+	(s - txt)) {
       *s = '\0';		/* tie off status data */
 				/* initialize data block */
       status.flags = status.messages = status.recent = status.unseen =
