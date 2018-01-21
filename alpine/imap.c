@@ -2636,7 +2636,7 @@ write_passfile(pinerc, l)
        if(ps_global->pwdcert == NULL){
 	  q_status_message(SM_ORDER, 3, 3, "Attempting to encrypt password file");
 	  i = setup_pwdcert(&ps_global->pwdcert);
-	  if(i == 0 && ps_global->pwdcert == NULL)
+	  if((i == 0 || i == -5) && ps_global->pwdcert == NULL)
 	    ps_global->pwdcert = (void *) ALPINE_self_signed_certificate(NULL, 0, ps_global->pwdcertdir, MASTERNAME);
        }
        if(ps_global->pwdcert == NULL){	/* we tried but failed	*/
