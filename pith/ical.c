@@ -573,6 +573,12 @@ char *ical_get_value(char **line)
     *s = '\r';
     *line = s+2;
   }
+  else{
+    t = NULL;
+    s = strchr(*line, '\r');
+    if(s != NULL)
+      *line = s + 2;
+  }
   return t;
 }
 
