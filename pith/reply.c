@@ -2237,7 +2237,7 @@ forward_subject(ENVELOPE *env, int flags)
 	    snprintf(tmp_20k_buf+2000, SIZEOF_20KBUF-2000, "%s (fwd)", tmp_20k_buf);
 	    tmp_20k_buf[SIZEOF_20KBUF-2000-1] = '\0';
 	    memmove(tmp_20k_buf, tmp_20k_buf+2000, strlen(tmp_20k_buf+2000));
-	    tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+	    tmp_20k_buf[strlen(tmp_20k_buf+2000)] = '\0';
 	}
 
 	/*
