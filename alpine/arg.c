@@ -978,7 +978,8 @@ process_debug_str(char *debug_str)
 		else if(struncmp(*p, "flush", 5) == 0){
 		    ps_global->debug_flush = 1;
 		}
-		else if(struncmp(*p, "tcp", 3) == 0){
+		else if(struncmp(*p, "tcp", 3) == 0 
+			|| struncmp(*p, "tcpdebug", 8) == 0){
 		    ps_global->debug_tcp = 1;
 		}
 		else if(struncmp(*p, "verbose", 7) == 0){
