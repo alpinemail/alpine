@@ -1534,7 +1534,7 @@ ical_parse_rrule(RRULE_S **rrulep, char **text)
 int
 ical_non_ascii_valid(unsigned char c)
 {
-  static char icu[6];
+  static unsigned char icu[6];
   static int utf8_len = 0;
   static int utf8_type = 0;
   int rv;
