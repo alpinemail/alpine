@@ -490,7 +490,7 @@ format_calendar(long int msgno, BODY *body, HANDLE_S **handlesp, int flgs, int w
 	}
 	if(b->sparep == NULL){
 	  rawtext = mail_fetch_body(ps_global->mail_stream, msgno, a->number, &callen, 0);
-	  if(rawtext == NULL){
+	  if(rawtext == NULL || *rawtext == '\0'){
 	    gf_puts(_("Error fetching calendar text"), pc);
 	    gf_puts(NEWLINE, pc);
 	    continue;
