@@ -21,9 +21,9 @@ BUILT_SOURCES = helptext.h helptext.c
 
 noinst_PROGRAMS = help_h_gen help_c_gen
 
-libpith_a_SOURCES = ablookup.c abdlc.c addrbook.c addrstring.c adrbklib.c bldaddr.c charset.c \
+libpith_a_SOURCES = ablookup.c abdlc.c addrbook.c addrstring.c adrbklib.c bldaddr.c body.c charset.c \
 	color.c conf.c context.c copyaddr.c detoken.c detach.c editorial.c escapes.c \
-	filter.c flag.c folder.c handle.c help.c helpindx.c hist.c icache.c imap.c init.c \
+	filter.c flag.c folder.c handle.c help.c helpindx.c hist.c icache.c ical.c imap.c init.c \
 	keyword.c ldap.c list.c mailcap.c mailcmd.c mailindx.c maillist.c mailview.c \
 	margin.c mimedesc.c mimetype.c msgno.c newmail.c news.c pattern.c pipe.c \
 	readfile.c remote.c reply.c rfc2231.c save.c search.c sequence.c send.c sort.c \

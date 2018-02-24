@@ -121,21 +121,22 @@ libpith_a_AR = $(AR) $(ARFLAGS)
 libpith_a_LIBADD =
 am_libpith_a_OBJECTS = ablookup.$(OBJEXT) abdlc.$(OBJEXT) \
 	addrbook.$(OBJEXT) addrstring.$(OBJEXT) adrbklib.$(OBJEXT) \
-	bldaddr.$(OBJEXT) charset.$(OBJEXT) color.$(OBJEXT) \
-	conf.$(OBJEXT) context.$(OBJEXT) copyaddr.$(OBJEXT) \
-	detoken.$(OBJEXT) detach.$(OBJEXT) editorial.$(OBJEXT) \
-	escapes.$(OBJEXT) filter.$(OBJEXT) flag.$(OBJEXT) \
-	folder.$(OBJEXT) handle.$(OBJEXT) help.$(OBJEXT) \
-	helpindx.$(OBJEXT) hist.$(OBJEXT) icache.$(OBJEXT) \
-	imap.$(OBJEXT) init.$(OBJEXT) keyword.$(OBJEXT) ldap.$(OBJEXT) \
-	list.$(OBJEXT) mailcap.$(OBJEXT) mailcmd.$(OBJEXT) \
-	mailindx.$(OBJEXT) maillist.$(OBJEXT) mailview.$(OBJEXT) \
-	margin.$(OBJEXT) mimedesc.$(OBJEXT) mimetype.$(OBJEXT) \
-	msgno.$(OBJEXT) newmail.$(OBJEXT) news.$(OBJEXT) \
-	pattern.$(OBJEXT) pipe.$(OBJEXT) readfile.$(OBJEXT) \
-	remote.$(OBJEXT) reply.$(OBJEXT) rfc2231.$(OBJEXT) \
-	save.$(OBJEXT) search.$(OBJEXT) sequence.$(OBJEXT) \
-	send.$(OBJEXT) sort.$(OBJEXT) state.$(OBJEXT) status.$(OBJEXT) \
+	bldaddr.$(OBJEXT) body.$(OBJEXT) charset.$(OBJEXT) \
+	color.$(OBJEXT) conf.$(OBJEXT) context.$(OBJEXT) \
+	copyaddr.$(OBJEXT) detoken.$(OBJEXT) detach.$(OBJEXT) \
+	editorial.$(OBJEXT) escapes.$(OBJEXT) filter.$(OBJEXT) \
+	flag.$(OBJEXT) folder.$(OBJEXT) handle.$(OBJEXT) \
+	help.$(OBJEXT) helpindx.$(OBJEXT) hist.$(OBJEXT) \
+	icache.$(OBJEXT) ical.$(OBJEXT) imap.$(OBJEXT) init.$(OBJEXT) \
+	keyword.$(OBJEXT) ldap.$(OBJEXT) list.$(OBJEXT) \
+	mailcap.$(OBJEXT) mailcmd.$(OBJEXT) mailindx.$(OBJEXT) \
+	maillist.$(OBJEXT) mailview.$(OBJEXT) margin.$(OBJEXT) \
+	mimedesc.$(OBJEXT) mimetype.$(OBJEXT) msgno.$(OBJEXT) \
+	newmail.$(OBJEXT) news.$(OBJEXT) pattern.$(OBJEXT) \
+	pipe.$(OBJEXT) readfile.$(OBJEXT) remote.$(OBJEXT) \
+	reply.$(OBJEXT) rfc2231.$(OBJEXT) save.$(OBJEXT) \
+	search.$(OBJEXT) sequence.$(OBJEXT) send.$(OBJEXT) \
+	sort.$(OBJEXT) state.$(OBJEXT) status.$(OBJEXT) \
 	store.$(OBJEXT) stream.$(OBJEXT) string.$(OBJEXT) \
 	strlst.$(OBJEXT) takeaddr.$(OBJEXT) tempfile.$(OBJEXT) \
 	text.$(OBJEXT) thread.$(OBJEXT) adjtime.$(OBJEXT) \
@@ -431,9 +432,9 @@ top_srcdir = ..
 SUBDIRS = osdep charconv
 noinst_LIBRARIES = libpith.a
 BUILT_SOURCES = helptext.h helptext.c
-libpith_a_SOURCES = ablookup.c abdlc.c addrbook.c addrstring.c adrbklib.c bldaddr.c charset.c \
+libpith_a_SOURCES = ablookup.c abdlc.c addrbook.c addrstring.c adrbklib.c bldaddr.c body.c charset.c \
 	color.c conf.c context.c copyaddr.c detoken.c detach.c editorial.c escapes.c \
-	filter.c flag.c folder.c handle.c help.c helpindx.c hist.c icache.c imap.c init.c \
+	filter.c flag.c folder.c handle.c help.c helpindx.c hist.c icache.c ical.c imap.c init.c \
 	keyword.c ldap.c list.c mailcap.c mailcmd.c mailindx.c maillist.c mailview.c \
 	margin.c mimedesc.c mimetype.c msgno.c newmail.c news.c pattern.c pipe.c \
 	readfile.c remote.c reply.c rfc2231.c save.c search.c sequence.c send.c sort.c \

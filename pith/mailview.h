@@ -45,6 +45,9 @@
 #define	FM_HTML		  0x4000	/* filter/preserve HTML markup		*/
 #define	FM_HTMLIMAGES	  0x8000	/* filter/preserve HTML IMG tags	*/
 
+/* Format Calendar Flags */
+#define FC_SUMMARY	  0x0001	/* Display only a summary event */
+#define FC_FULL		  0x0002	/* Display full details of event */
 
 #define SIGDASHES	"-- "
 #define START_SIG_BLOCK	2
@@ -123,6 +126,7 @@ typedef struct header_s {
 int	 format_message(long, ENVELOPE *, BODY *, HANDLE_S **, int, gf_io_t);
 int	 format_attachment_list(long int, BODY *, HANDLE_S **, int, int, gf_io_t);
 char	*format_body(long int, BODY *, HANDLE_S **, HEADER_S *, int, int, gf_io_t);
+int	 format_calendar(long int, BODY *, HANDLE_S **, int, int, gf_io_t);
 int	 url_hilite(long, char *, LT_INS_S **, void *);
 int	 handle_start_color(char *, size_t, int *, int);
 int	 handle_end_color(char *, size_t, int *);

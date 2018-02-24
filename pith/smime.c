@@ -42,6 +42,7 @@ static char rcsid[] = "$Id: smime.c 1176 2008-09-29 21:16:42Z hubert@u.washingto
 #include "../pith/tempfile.h"
 #include "../pith/readfile.h"
 #include "../pith/remote.h"
+#include "../pith/body.h"
 #ifdef PASSFILE
 #include "../pith/imap.h"
 #endif /* PASSFILE */
@@ -93,30 +94,6 @@ static X509_STORE   *s_cert_store;
 
 /* State management for randomness functions below */
 static int seeded = 0;
-
-void *
-create_smime_sparep(SpareType stype, void *s)
-{
-  SMIME_SPARE_S *rv;
-
-  rv = fs_get(sizeof(SMIME_SPARE_S));
-  rv->sptype = stype;
-  rv->data   = s;
-  return (void *) rv;
-}
-
-SpareType
-get_smime_sparep_type(void *s)
-{
-  return ((SMIME_SPARE_S *)s)->sptype;
-}
-
-void *
-get_smime_sparep_data(void *s)
-{
-  return ((SMIME_SPARE_S *)s)->data;
-}
-
 
 #ifdef PASSFILE
 /* 
@@ -2877,30 +2854,6 @@ do_signature_verify(PKCS7 *p7, BIO *in, BIO *out, int silent)
     return result;
 }
 
-
-void
-free_smime_body_sparep(void **sparep)
-{
-    char *s;
-    SIZEDTEXT *st;
-    if(sparep && *sparep){
-        switch(get_smime_sparep_type(*sparep)){
-	  case P7Type: 	PKCS7_free((PKCS7 *) get_smime_sparep_data(*sparep));
-			break;
-	  case CharType: s = (char *)get_smime_sparep_data(*sparep);
-			 fs_give((void **)  &s);
-			 break;
-	  case SizedText : st = (SIZEDTEXT *)get_smime_sparep_data(*sparep);
-			 fs_give((void **) &st->data);
-			 fs_give((void **) &st);
-			 break;
-	  default : break;
-	}
-	((SMIME_SPARE_S *)(*sparep))->data = NULL;
-	fs_give(sparep);
-    }
-}
-
 /* Big comment, explaining the mess that exists out there, and how we deal
    with it, and also how we solve the problems that are created this way.
 
@@ -3085,9 +3038,9 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
      * to check the validity of the signature
      */
     if(b->sparep){
-	if(get_smime_sparep_type(b->sparep) == SizedText){
+	if(get_body_sparep_type(b->sparep) == SizedText){
 	   /* bodytext includes mimetext */
-	   st = (SIZEDTEXT *) get_smime_sparep_data(b->sparep);
+	   st = (SIZEDTEXT *) get_body_sparep_data(b->sparep);
 	   bodytext = (char *) st->data;
 	   bodylen  = st->size;
 	   mimetext = NULL;
@@ -3205,7 +3158,7 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
 
     b->description = cpystr(what_we_did);
 
-    b->sparep = create_smime_sparep(P7Type, p7);
+    b->sparep = create_body_sparep(P7Type, p7);
 
     p = b->nested.part;
 	
@@ -3342,8 +3295,8 @@ do_decoding(BODY *b, long msgno, const char *section)
      */
 
     if(b->sparep){
-        if(get_smime_sparep_type(b->sparep) == P7Type)
-	  p7 = (PKCS7*) get_smime_sparep_data(b->sparep);
+        if(get_body_sparep_type(b->sparep) == P7Type)
+	  p7 = (PKCS7*) get_body_sparep_data(b->sparep);
     }
     else{
 	p7 = get_pkcs7_from_part(msgno, section && *section ? section : "1");
@@ -3357,7 +3310,7 @@ do_decoding(BODY *b, long msgno, const char *section)
     	 * Save the PKCS7 object for later dealings by the user interface.
 	 * It will be cleaned up when the body is garbage collected.
 	 */
-	b->sparep = create_smime_sparep(P7Type, p7);
+	b->sparep = create_body_sparep(P7Type, p7);
     }
 
     dprint((1, "type_is_signed = %d, type_is_enveloped = %d", PKCS7_type_is_signed(p7), PKCS7_type_is_enveloped(p7)));
@@ -3470,7 +3423,7 @@ do_decoding(BODY *b, long msgno, const char *section)
 	        st = fs_get(sizeof(SIZEDTEXT));
 	        st->data = (void *) cpystr(bstart + strlen(cookie)+4); /* 4 = strlen("--\r\n") */
 	        st->size = body->nested.part->next->body.mime.offset - 2*(strlen(cookie) + 4);
-	        body->sparep = create_smime_sparep(SizedText, (void *)st);
+	        body->sparep = create_body_sparep(SizedText, (void *)st);
 	      }
 	      else
 		q_status_message(SM_ORDER, 3, 3, _("Couldn't find cookie in attachment list."));
