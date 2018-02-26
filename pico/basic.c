@@ -5,7 +5,7 @@ static char rcsid[] = "$Id: basic.c 831 2007-11-27 01:04:19Z hubert@u.washington
 /*
  * ========================================================================
  * Copyright 2006-2007 University of Washington
- * Copyright 2013-2017 Eduardo Chappa
+ * Copyright 2013-2018 Eduardo Chappa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

@@ -4,7 +4,7 @@ static char rcsid[] = "$Id: titlebar.c 1075 2008-06-04 00:19:39Z hubert@u.washin
 
 /*
  * ========================================================================
- * Copyright 2013-2017 Eduardo Chappa
+ * Copyright 2013-2018 Eduardo Chappa
  * Copyright 2006-2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

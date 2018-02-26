@@ -1,22 +1,19 @@
 #ifndef ICALTYPE_INCLUDED
 #define ICALTYPE_INCLUDED
 
-#ifdef STANDALONE
-#define ADDRESS struct mail_address
-
-ADDRESS {
-  char *personal;               /* personal name phrase */
-  char *adl;                    /* at-domain-list source route */
-  char *mailbox;                /* mailbox name */
-  char *host;                   /* domain name of mailbox's host */
-  char *error;                  /* error in address from SMTP module */
-  struct {
-    char *type;                 /* address type (default "rfc822") */
-    char *addr;                 /* address as xtext */
-  } orcpt;
-  ADDRESS *next;                /* pointer to next address in list */
-};
-#endif /* STANDALONE */
+/* Due to the line by line processing algorithm, not all informatio
+ * is available when process some lines. In particular, when we
+ * process anything that has to do with time, we do not know if
+ * we are processing a date in daylight savings time or not. We
+ * solve this by creating a new value for tm_isdst, called
+ * ICAL_DST_UNKNOWN, which is a positive integer. We set this
+ * when the date comes in GMT. Once we process it, we either
+ * change it to 0, which means it is not dst, or change it
+ * to a different value, ICAL_DST_SET which means we know the date
+ * is DST
+ */
+#define ICAL_DST_UNKNOWN  (1)
+#define ICAL_DST_SET 	  (ICAL_DST_UNKNOWN + 1)
 
 /* this is the PARAMETER struct from mail.h, but with possibility of
  * extension */

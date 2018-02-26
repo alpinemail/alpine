@@ -517,7 +517,7 @@
 #define PACKAGE_NAME "alpine"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "alpine 2.21.9"
+#define PACKAGE_STRING "alpine 2.21.999"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "alpine"
@@ -526,7 +526,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "2.21.9"
+#define PACKAGE_VERSION "2.21.999"
 
 /* Password cache file (recommended if S/MIME is enabled and configured) */
 #define PASSFILE "ALPINE.PWD"
@@ -638,7 +638,7 @@
 /* #undef USE_QUOTAS */
 
 /* Version number of package */
-#define VERSION "2.21.9"
+#define VERSION "2.21.999"
 
 /* Windows is just too different */
 /* #undef _WINDOWS */

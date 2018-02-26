@@ -5,7 +5,7 @@ static char rcsid[] = "$Id: mailview.c 1266 2009-07-14 18:39:12Z hubert@u.washin
 /*
  * ========================================================================
  * Copyright 2006-2009 University of Washington
- * Copyright 2013-2017 Eduardo Chappa
+ * Copyright 2013-2018 Eduardo Chappa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -244,6 +244,21 @@ format_calendar_vevent(VCALENDAR_S *vcal, ATTACH_S *a, HANDLE_S **handlesp, int 
   hwid = MAX(avail, 0);
   padwid = 0;
 
+  if(ps_global->atmts[1].description == NULL){
+//	   && (!ps_global->atmts[0].body
+//	       || (ps_global->atmts[0].body->type == TYPETEXT))){
+     avail = width - m1 -2;
+
+     dwid = MAX(MIN(40, avail), 0);
+
+     snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%*.*s%s", m1, m1, "",
+		repeat_char(dwid, '-'));
+
+     if(!gf_puts(tmp_20k_buf, pc) || !gf_puts(NEWLINE, pc))
+       return;
+  }
+
+
   if(cflags & FC_SUMMARY){
     i = utf8_width(_("Calendar Entry:"));
     partwid = MIN(i, hwid);
@@ -279,6 +294,7 @@ format_calendar_vevent(VCALENDAR_S *vcal, ATTACH_S *a, HANDLE_S **handlesp, int 
 
   s2 = MAX(MIN(1, avail), 0);
   avail -= s2;
+
 
   if(cflags & FC_SUMMARY)
     utf8_snprintf(padding, sizeof(padding), "%*.*s%*.*w%*.*s", 
@@ -463,6 +479,7 @@ format_calendar_vevent(VCALENDAR_S *vcal, ATTACH_S *a, HANDLE_S **handlesp, int 
 
     snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%*.*s%s", m1, m1, "",
 		repeat_char(dwid, '-'));
+
     gf_puts(tmp_20k_buf, pc);
 }
 

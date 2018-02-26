@@ -11,7 +11,7 @@
 # Origin: gettext-0.16
 
 PACKAGE = alpine
-VERSION = 2.21.9
+VERSION = 2.21.999
 PACKAGE_BUGREPORT = chappa@washington.edu
 
 SHELL = /bin/sh
@@ -34,12 +34,12 @@ INSTALL_DATA = ${INSTALL} -m 644
 # We use $(mkdir_p).
 # In automake <= 1.9.x, $(mkdir_p) is defined either as "mkdir -p --" or as
 # "$(mkinstalldirs)" or as "$(install_sh) -d". For these automake versions,
-# ${SHELL} /run/media/chappa/Work/alpine/alpinegit/install-sh does not start with $(SHELL), so we add it.
+# ${SHELL} /run/media/echappa/Alpine/alpine/alpinegit/install-sh does not start with $(SHELL), so we add it.
 # In automake >= 1.10, $(MKDIR_P) is derived from ${MKDIR_P}, which is defined
 # either as "/path/to/mkdir -p" or ".../install-sh -c -d". For these automake
 # versions, $(mkinstalldirs) and $(install_sh) are unused.
-mkinstalldirs = $(SHELL) ${SHELL} /run/media/chappa/Work/alpine/alpinegit/install-sh -d
-install_sh = $(SHELL) ${SHELL} /run/media/chappa/Work/alpine/alpinegit/install-sh
+mkinstalldirs = $(SHELL) ${SHELL} /run/media/echappa/Alpine/alpine/alpinegit/install-sh -d
+install_sh = $(SHELL) ${SHELL} /run/media/echappa/Alpine/alpine/alpinegit/install-sh
 MKDIR_P = /usr/bin/mkdir -p
 mkdir_p = $(MKDIR_P)
 

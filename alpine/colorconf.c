@@ -4,7 +4,7 @@ static char rcsid[] = "$Id: colorconf.c 934 2008-02-23 00:44:29Z hubert@u.washin
 
 /*
  * ========================================================================
- * Copyright 2013-2017 Eduardo Chappa
+ * Copyright 2013-2018 Eduardo Chappa
  * Copyright 2006-2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

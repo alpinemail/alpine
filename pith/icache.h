@@ -2,7 +2,7 @@
  * $Id: icache.h 874 2007-12-15 02:51:06Z hubert@u.washington.edu $
  *
  * ========================================================================
- * Copyright 2013-2017 Eduardo Chappa
+ * Copyright 2013-2018 Eduardo Chappa
  * Copyright 2006-2007 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

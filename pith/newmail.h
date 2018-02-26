@@ -2,7 +2,7 @@
  * $Id: newmail.h 807 2007-11-09 01:21:33Z hubert@u.washington.edu $
  *
  * ========================================================================
- * Copyright 2013-2017 Eduardo Chappa
+ * Copyright 2013-2018 Eduardo Chappa
  * Copyright 2006 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

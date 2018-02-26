@@ -5,7 +5,7 @@ static char rcsid[] = "$Id: termin.gen.c 1025 2008-04-08 22:59:38Z hubert@u.wash
 /*
  * ========================================================================
  * Copyright 2006-2008 University of Washington
- * Copyright 2013-2017 Eduardo Chappa
+ * Copyright 2013-2018 Eduardo Chappa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

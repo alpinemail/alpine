@@ -3,7 +3,7 @@
 #        T H E   A L P I N E    M E S S A G E   S Y S T E M
 #
 #/* ========================================================================
-# * Copyright 2013-2017 Eduardo Chappa
+# * Copyright 2013-2018 Eduardo Chappa
 # * Copyright 2006-2008 University of Washington
 # *
 # * Licensed under the Apache License, Version 2.0 (the "License");
@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 249 2018-02-24 16:53:18
+Alpine Commit 260 2018-02-26 01:38:04
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -156,7 +156,7 @@ Version <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)
 <!--chtml endif-->
 
 <BR>
-<BR>Copyright 2013-2017 Eduardo Chappa
+<BR>Copyright 2013-2018 Eduardo Chappa
 <BR>Copyright 2006-2008 University of Washington
 </DIV>
 
@@ -1174,7 +1174,7 @@ Since then, the effort of developing Alpine has been continued by
 a community of volunteers who make good software even better!
 
 <P>
-Alpine Copyright 2013-2017 Eduardo Chappa, 
+Alpine Copyright 2013-2018 Eduardo Chappa, 
 <BR> Copyright 2006-2008 University of Washington.
 
 <P>
@@ -2203,7 +2203,7 @@ Version <!--#echo var="ALPINE_VERSION"-->
 <BR>(built <!--#echo var=ALPINE_COMPILE_DATE-->)
 <!--chtml endif-->
 </DIV>
-<CENTER>Copyright 2013-2017 Eduardo Chappa,
+<CENTER>Copyright 2013-2018 Eduardo Chappa,
 <BR>Copyright 2006-2008 University of Washington.
 </CENTER>
 

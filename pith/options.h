@@ -2,7 +2,7 @@
  * $Id: options.h 101 2006-08-10 22:53:04Z mikes@u.washington.edu $
  *
  * ========================================================================
- * Copyright 2013-2017 Eduardo Chappa
+ * Copyright 2013-2018 Eduardo Chappa
  * Copyright 2006-2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

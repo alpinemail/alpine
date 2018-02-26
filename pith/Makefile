@@ -15,7 +15,7 @@
 
 
 # ========================================================================
-# Copyright 2013-2017 Eduardo Chappa
+# Copyright 2013-2018 Eduardo Chappa
 # Copyright 2006-2008 University of Washington
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -257,17 +257,17 @@ am__relativize = \
     dir1=`echo "$$dir1" | sed -e "$$sed_rest"`; \
   done; \
   reldir="$$dir2"
-ACLOCAL = ${SHELL} /run/media/chappa/Work/alpine/alpinegit/missing aclocal-1.13
-ALPINE_DATESTAMP = Mon Dec  4 16:02:35 MST 2017
-ALPINE_HOSTSTAMP = jctgjb2
+ACLOCAL = ${SHELL} /run/media/echappa/Alpine/alpine/alpinegit/missing aclocal-1.13
+ALPINE_DATESTAMP = Sun Feb 25 12:46:50 MST 2018
+ALPINE_HOSTSTAMP = linux.suse
 AMTAR = $${TAR-tar}
 AM_CFLAGS =  -g -pthread
 AM_DEFAULT_VERBOSITY = 1
 AM_LDFLAGS = 
 AR = /usr/bin/ar
-AUTOCONF = ${SHELL} /run/media/chappa/Work/alpine/alpinegit/missing autoconf
-AUTOHEADER = ${SHELL} /run/media/chappa/Work/alpine/alpinegit/missing autoheader
-AUTOMAKE = ${SHELL} /run/media/chappa/Work/alpine/alpinegit/missing automake-1.13
+AUTOCONF = ${SHELL} /run/media/echappa/Alpine/alpine/alpinegit/missing autoconf
+AUTOHEADER = ${SHELL} /run/media/echappa/Alpine/alpine/alpinegit/missing autoheader
+AUTOMAKE = ${SHELL} /run/media/echappa/Alpine/alpine/alpinegit/missing automake-1.13
 AWK = gawk
 BUILD_EXEEXT = 
 BUILD_OBJEXT = 
@@ -282,10 +282,10 @@ CPPFLAGS = -I/usr/include/openssl
 CPPFLAGS_FOR_BUILD = 
 CPP_FOR_BUILD = gcc -E
 CYGPATH_W = echo
-C_CLIENT_AUTHS = gss 
+C_CLIENT_AUTHS = gss ntl
 C_CLIENT_CFLAGS = EXTRACFLAGS=" -DTLSV1_2 -I/usr/include/openssl  -g"
 C_CLIENT_GCCOPTLEVEL = GCCOPTLEVEL="-O0"
-C_CLIENT_LDFLAGS = EXTRALDFLAGS=" -L/usr/lib   -ltcl8.6 -lgssapi_krb5 -lpam -lldap -lssl -lcrypto -ldl  -ltinfo -llber -lpam -lkrb5"
+C_CLIENT_LDFLAGS = EXTRALDFLAGS=" -L/usr/lib   -ltcl8.6 -lntlm -lgssapi_krb5 -lpam -lldap -lssl -lcrypto -ldl  -ltinfo -llber -lpam -lkrb5"
 C_CLIENT_SPECIALS = SSLINCLUDE=/usr/include/openssl SSLLIB=/usr/lib SSLDIR=/etc/ssl SSLCERTS=/etc/ssl/certs SSLKEYS=/etc/ssl/private 
 C_CLIENT_TARGET = lsu
 C_CLIENT_WITH_IPV6 = touch imap/ip6
@@ -317,7 +317,7 @@ LDFLAGS_FOR_BUILD =
 LIBICONV = -liconv
 LIBINTL = 
 LIBOBJS = 
-LIBS =  -ltcl8.6 -lgssapi_krb5 -lpam -lldap -lssl -lcrypto -ldl  -ltinfo -llber -lpam -lkrb5
+LIBS =  -ltcl8.6 -lntlm -lgssapi_krb5 -lpam -lldap -lssl -lcrypto -ldl  -ltinfo -llber -lpam -lkrb5
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LIBTOOL_DEPS = ./ltmain.sh
 LIPO = 
@@ -329,7 +329,7 @@ LTLIBINTL =
 LTLIBOBJS = 
 MAINT = #
 MAKE = /usr/bin/make
-MAKEINFO = ${SHELL} /run/media/chappa/Work/alpine/alpinegit/missing makeinfo
+MAKEINFO = ${SHELL} /run/media/echappa/Alpine/alpine/alpinegit/missing makeinfo
 MANIFEST_TOOL = :
 MKDIR_P = /usr/bin/mkdir -p
 MSGFMT = /usr/bin/msgfmt
@@ -345,10 +345,10 @@ OTOOL64 =
 PACKAGE = alpine
 PACKAGE_BUGREPORT = chappa@washington.edu
 PACKAGE_NAME = alpine
-PACKAGE_STRING = alpine 2.21.9
+PACKAGE_STRING = alpine 2.21.999
 PACKAGE_TARNAME = alpine
 PACKAGE_URL = 
-PACKAGE_VERSION = 2.21.9
+PACKAGE_VERSION = 2.21.999
 PATH_SEPARATOR = :
 POSUB = po
 PTHREAD_CC = gcc -std=gnu99
@@ -365,7 +365,7 @@ SHELL = /bin/sh
 SPELLPROG = hunspell
 STRIP = strip
 USE_NLS = yes
-VERSION = 2.21.9
+VERSION = 2.21.999
 WEB_BINDIR = 
 WEB_BUILD = 
 WEB_PUBCOOKIE_BUILD = 
@@ -373,10 +373,10 @@ WEB_PUBCOOKIE_LIB =
 WEB_PUBCOOKIE_LINK = 
 XGETTEXT = /usr/bin/xgettext
 XGETTEXT_015 = /usr/bin/xgettext
-abs_builddir = /run/media/chappa/Work/alpine/alpinegit/pith
-abs_srcdir = /run/media/chappa/Work/alpine/alpinegit/pith
-abs_top_builddir = /run/media/chappa/Work/alpine/alpinegit
-abs_top_srcdir = /run/media/chappa/Work/alpine/alpinegit
+abs_builddir = /run/media/echappa/Alpine/alpine/alpinegit/pith
+abs_srcdir = /run/media/echappa/Alpine/alpine/alpinegit/pith
+abs_top_builddir = /run/media/echappa/Alpine/alpine/alpinegit
+abs_top_srcdir = /run/media/echappa/Alpine/alpine/alpinegit
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_CC_FOR_BUILD = gcc
@@ -409,7 +409,7 @@ host_vendor = suse
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /run/media/chappa/Work/alpine/alpinegit/install-sh
+install_sh = ${SHELL} /run/media/echappa/Alpine/alpine/alpinegit/install-sh
 libdir = ${exec_prefix}/lib64
 libexecdir = ${exec_prefix}/lib
 localedir = ${datadir}/locale
@@ -517,6 +517,7 @@ include ./$(DEPDIR)/addrstring.Po
 include ./$(DEPDIR)/adjtime.Po
 include ./$(DEPDIR)/adrbklib.Po
 include ./$(DEPDIR)/bldaddr.Po
+include ./$(DEPDIR)/body.Po
 include ./$(DEPDIR)/charset.Po
 include ./$(DEPDIR)/color.Po
 include ./$(DEPDIR)/conf.Po
@@ -537,6 +538,7 @@ include ./$(DEPDIR)/helpindx.Po
 include ./$(DEPDIR)/helptext.Po
 include ./$(DEPDIR)/hist.Po
 include ./$(DEPDIR)/icache.Po
+include ./$(DEPDIR)/ical.Po
 include ./$(DEPDIR)/imap.Po
 include ./$(DEPDIR)/init.Po
 include ./$(DEPDIR)/keyword.Po

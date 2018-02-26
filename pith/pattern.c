@@ -3,7 +3,7 @@ static char rcsid[] = "$Id: pattern.c 1204 2009-02-02 19:54:23Z hubert@u.washing
 #endif
 /*
  * ========================================================================
- * Copyright 2013-2017 Eduardo Chappa
+ * Copyright 2013-2018 Eduardo Chappa
  * Copyright 2006-2009 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
