@@ -12,7 +12,7 @@ typedef struct ical_iana_comp_s {
 } ICAL_COMP_S;
 
 typedef struct ical_iana_prop_s {
-  char *prop;			/* component name */
+  char *prop;			/* component PROPerty name */
   size_t len;			/* size of component name (strlen(x->prop)) */
   int pos;			/* location of this component in the prop array */
   void *(*parse)();		/* parser */
@@ -32,7 +32,7 @@ ICLINE_S *ical_cline_cpy(ICLINE_S *);
 ICAL_PARAMETER_S *ical_parameter_cpy(ICAL_PARAMETER_S *param);
 
 char *ical_get_value(char **);
-char *ical_decode(char *, unsigned short);
+unsigned char *ical_decode(char *, unsigned short);
 
 /* pase component */
 void	*ical_parse_vcalendar(char **);
@@ -229,10 +229,10 @@ ICAL_PROP_S alarm_prop[] = {
 
 /* Finally, here begins the code. */
 
-char *
+unsigned char *
 ical_decode(char *text, unsigned short encoding)
 {
-  char *t;
+  unsigned char *t;
   unsigned long callen;
   if(encoding == ENCQUOTEDPRINTABLE){
      t = rfc822_qprint ((unsigned char *) text,strlen(text),&callen);
@@ -241,7 +241,7 @@ ical_decode(char *text, unsigned short encoding)
        fs_give((void **) &t);
      }
   }
-  return text;
+  return (unsigned char *) text;
 }
 
 
@@ -1858,8 +1858,11 @@ ICAL_TZPROP_S *
 ical_std_or_daylight(struct tm *date, VTIMEZONE_S *vtz)
 {
   struct tm standard, daylight;
+  ICLINE_S *tzid = (ICLINE_S *) vtz->prop[TZCid];
 
+  standard = daylight;
 
+  return NULL;
 }
 
 
@@ -1880,7 +1883,7 @@ ical_adjust_date(struct tm *date, VTIMEZONE_S *vtz)
 	tzname = cpystr(icl->value);
   }
 
-//+++  cur_std_day = ical_std_or_daylight(date, vtz);
+  cur_std_day = ical_std_or_daylight(date, vtz);
 }
 
 void
@@ -1942,7 +1945,7 @@ ical_day_from_week(int month, Weekday day, int year)
      for(nday = 1, wday = (Weekday) fday; wday != day; wday = (wday+1) % 7, nday++)
 	;
      rv = fs_get(6*sizeof(int));
-     memset((void *)&rv, 0, 6*sizeof(int));
+     memset((void *) rv, 0, 6*sizeof(int));
      for(i = 0; nday <= month_len[month]; i++){
 	rv[i] = nday;
 	nday += 7;
@@ -2332,7 +2335,7 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 	   if(*s == ',') i++;	/* a non-scaped comma is a new value for text */
 	}
 
-	rv->description = fs_get((i+1)*sizeof(char *));
+	rv->description = fs_get((i+1)*sizeof(unsigned char *));
 	i = 0;
 	for (s = t = u = v, escaped = 0; *t != '\0'; t++){
 	   if(*t == '\\' && escaped == 0){ escaped = 1; continue; }

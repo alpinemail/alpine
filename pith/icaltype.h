@@ -260,7 +260,7 @@ typedef enum  {RelBegin, RelEnd, RelUnknown} Related;
 typedef enum  {Parent, Child, Sibling} RelType;
 typedef enum  {ReqPart, Chair, OptPart, NonPart, RoleUnknown} Role;
 typedef enum  {RSVPFalse, RSVPTrue, RSVPUnknown} RSVP;
-typedef enum  {Binary, Boolean, CalAddress, Date, DateTime, Duration,
+typedef enum  {Binary, _Boolean, CalAddress, Date, DateTime, _Duration,
 	       Float, Integer, Period, Recur, _Text, Time, Uri, 
 	       UtcOffset, ValueUnknown} Value;
 
@@ -441,7 +441,7 @@ typedef struct vevent_summary_s {
   char *evend;
   char **duration;
   char **attendee;
-  char **description;
+  unsigned char **description;
 } VEVENT_SUMMARY_S;
 
 typedef enum {VCalendar = 0, VTimeZone, VEvent, VTodo, VJournal,
