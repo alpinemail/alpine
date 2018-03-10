@@ -2990,6 +2990,14 @@ display_vcalendar_att(long int msgno, ATTACH_S *a, int flags)
       so_puts(in_store, "\015\012");
     }
 
+    if(vesy->dtstamp){
+      utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s", 
+	vcal->method ? _("Created on: ") : _("Last Revised on; "), 
+	vesy->dtstamp);
+      so_puts(in_store, tmp_20k_buf);
+      so_puts(in_store, "\015\012");
+    }
+
     if(vesy->description){
       char c;
       int j, empty;

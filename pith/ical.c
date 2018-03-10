@@ -84,6 +84,10 @@ void ical_free_gencline(void **);
 void ical_free_rrule(void **);
 void ical_free_weekday_list(void **);
 
+/* utility functions */
+void ical_date_time (char *, size_t, struct tm *);
+char *ical_get_tzid(ICAL_PARAMETER_S *);
+
 /* globals */
 struct tm day_zero;	/* date for january 1, 1601 */
 int month_len[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
@@ -2078,6 +2082,41 @@ ical_initialize(void)
    day_zero.tm_wday = 4;
 }
 
+/* At this time, we are going to print the date in 24 hour format
+ * if there is no string for AM or PM, but we use AM or PM when available.
+ * We plan to make this user configurable, but not today...
+ */
+void
+ical_date_time (char *tmp, size_t len, struct tm *ic_datep)
+{
+  /* test of the AM/PM string is available */
+  our_strftime(tmp, len, "%p", ic_datep);
+
+  if(tmp[0])
+    our_strftime(tmp, len, "%a %x %I:%M %p", ic_datep);
+  else
+    our_strftime(tmp, len, "%a %x %H:%M", ic_datep);
+}
+
+/* If the icline has a TZID parameter, return its value, otherwise, return 
+ * NULL. Returned value freed by caller.
+ */
+char *
+ical_get_tzid(ICAL_PARAMETER_S *param)
+{
+  char *tzid = NULL;
+
+  if(param == NULL)
+    return tzid;
+
+  if(strucmp(param->name, "TZID") == 0)
+    tzid = cpystr(param->value);
+  else
+    tzid = ical_get_tzid(param->next);
+
+  return tzid;
+}
+
 /* we create a summary of the event, and pass that back as
    an ical parameter
  */
@@ -2149,16 +2188,17 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 
     if((icl = (ICLINE_S *) vevent->prop[EvDtstart]) != NULL){
       struct tm ic_date;
-      char tmp[200];
+      char tmp[200], *tzid;
       int icd;	/* ical date return value */
 
       memset((void *)&ic_date, 0, sizeof(struct tm));
       icd = ical_parse_date(icl->value, &ic_date);
+      tzid = ical_get_tzid(icl->param);
       if(icd >= 0){
          ic_date.tm_wday = ical_day_of_week(ic_date);
 	 switch(icd){
 	    case 0: /* DATE-TIME */
-		    our_strftime(tmp, sizeof(tmp), "%a %x %I:%M %p", &ic_date);
+		    ical_date_time(tmp, sizeof(tmp), &ic_date);
 		    break;
 	    case 1: /* DATE */
 		    our_strftime(tmp, sizeof(tmp), "%a %x", &ic_date);
@@ -2174,7 +2214,22 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 	strncpy(tmp, _("Error while parsing event date"), sizeof(tmp));
 	tmp[sizeof(tmp) - 1] = '\0';
       }
-      rv->evstart = cpystr(icl->value ? tmp : _("Unknown Start Date"));
+
+      if(icl->value == NULL)
+	rv->evstart = cpystr(_("Unknown Start Date"));
+      else{
+	size_t len = strlen(tmp) + 1;
+
+	if(tzid != NULL)
+	  len += strlen(tzid) + 3; 	/* 3 = strlen(" ()") */
+
+	rv->evstart = fs_get(len*sizeof(char));
+	snprintf(rv->evstart, len, "%s%s%s%s", tmp, 
+			tzid != NULL ? " (" : "",
+			tzid != NULL ? tzid : "",
+			tzid != NULL ? ")" : "");
+	rv->evstart[len-1] = '\0';
+      }
     } 	/* end of if dtstart */
 
     if((icl = (ICLINE_S *) vevent->prop[EvDuration]) != NULL){
@@ -2219,16 +2274,17 @@ ical_vevent_summary(VCALENDAR_S *vcal)
     } /* end of DURATION */
     else if((icl = (ICLINE_S *) vevent->prop[EvDtend]) != NULL){
       struct tm ic_date;
-      char tmp[200];
+      char tmp[200], *tzid;
       int icd;
 
       memset((void *)&ic_date, 0, sizeof(struct tm));
       icd = ical_parse_date(icl->value, &ic_date);
+      tzid = ical_get_tzid(icl->param);
       if(icd >= 0){
          ic_date.tm_wday = ical_day_of_week(ic_date);
 	 switch(icd){
 	    case 0: /* DATE-TIME */
-		    our_strftime(tmp, sizeof(tmp), "%a %x %I:%M %p", &ic_date);
+		    ical_date_time(tmp, sizeof(tmp), &ic_date);
 		    break;
 	    case 1: /* DATE */
 		    our_strftime(tmp, sizeof(tmp), "%a %x", &ic_date);
@@ -2244,8 +2300,68 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 	strncpy(tmp, _("Error while parsing event date"), sizeof(tmp));
 	tmp[sizeof(tmp) - 1] = '\0';
       }
-      rv->evend = cpystr(icl->value ? tmp : _("Unknown End Date"));
+
+      if(icl->value == NULL)
+	rv->evend = cpystr(_("Unknown End Date"));
+      else{
+	size_t len = strlen(tmp) + 1;
+
+	if(tzid != NULL)
+	  len += strlen(tzid) + 3; 	/* 3 = strlen(" ()") */
+
+	rv->evend = fs_get(len*sizeof(char));
+	snprintf(rv->evend, len, "%s%s%s%s", tmp, 
+			tzid != NULL ? " (" : "",
+			tzid != NULL ? tzid : "",
+			tzid != NULL ? ")" : "");
+	rv->evend[len-1] = '\0';
+      }
     }	/* end of if dtend */
+
+    if((icl = (ICLINE_S *) vevent->prop[EvDtstamp]) != NULL){
+      struct tm ic_date;
+      char tmp[200], *tzid;
+      int icd;
+
+      memset((void *)&ic_date, 0, sizeof(struct tm));
+      icd = ical_parse_date(icl->value, &ic_date);
+      tzid = ical_get_tzid(icl->param);
+      if(icd >= 0){
+         ic_date.tm_wday = ical_day_of_week(ic_date);
+	 switch(icd){
+	    case 0: /* DATE-TIME */
+		    ical_date_time(tmp, sizeof(tmp), &ic_date);
+		    break;
+	    case 1: /* DATE */
+		    our_strftime(tmp, sizeof(tmp), "%a %x", &ic_date);
+		    break;
+	    case 2: /* DATE-TIME in GMT, Bug: add adjust to time zone */
+		    our_strftime(tmp, sizeof(tmp), "%a %x %I:%M %p", &ic_date);
+		    break;
+	    default: alpine_panic("Unhandled ical date format");
+		    break;
+	 }
+      }
+      else{
+	strncpy(tmp, _("Error while parsing event date"), sizeof(tmp));
+	tmp[sizeof(tmp) - 1] = '\0';
+      }
+      if(icl->value == NULL)
+	rv->dtstamp = cpystr(_("Unknown when event was scheduled"));
+      else{
+	size_t len = strlen(tmp) + 1;
+
+	if(tzid != NULL)
+	  len += strlen(tzid) + 3; 	/* 3 = strlen(" ()") */
+
+	rv->dtstamp = fs_get(len*sizeof(char));
+	snprintf(rv->dtstamp, len, "%s%s%s%s", tmp, 
+			tzid != NULL ? " (" : "",
+			tzid != NULL ? tzid : "",
+			tzid != NULL ? ")" : "");
+	rv->dtstamp[len-1] = '\0';
+      }
+    } /* end of if dtstamp */
 
     if((gicl = (GEN_ICLINE_S *) vevent->prop[EvAttendee]) != NULL){
 	int nattendees, i;
@@ -2386,6 +2502,7 @@ free_vevent_summary(VEVENT_SUMMARY_S **vesy)
   if((*vesy)->location) fs_give((void **)&(*vesy)->location);
   if((*vesy)->evstart) fs_give((void **)&(*vesy)->evstart);
   if((*vesy)->evend) fs_give((void **)&(*vesy)->evend);
+  if((*vesy)->dtstamp) fs_give((void **)&(*vesy)->dtstamp);
   if((*vesy)->duration){
      for(i = 0; (*vesy)->duration[i] != NULL; i++)
 	fs_give((void **) &(*vesy)->duration[i]);

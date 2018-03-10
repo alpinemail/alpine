@@ -439,6 +439,7 @@ typedef struct vevent_summary_s {
   char *location;
   char *evstart;
   char *evend;
+  char *dtstamp;
   char **duration;
   char **attendee;
   unsigned char **description;
