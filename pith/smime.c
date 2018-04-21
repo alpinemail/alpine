@@ -2832,8 +2832,6 @@ do_signature_verify(PKCS7 *p7, BIO *in, BIO *out, int silent)
 
     result = PKCS7_verify(p7, otherCerts, s_cert_store, in, out, flags);
 
-    sk_X509_pop_free(otherCerts, X509_free);
-
     if(result){
 	q_status_message(SM_ORDER, 1, 1, _("S/MIME signature verified ok"));
     }
@@ -2850,6 +2848,8 @@ do_signature_verify(PKCS7 *p7, BIO *in, BIO *out, int silent)
 	if (!silent) q_status_message1(SM_ORDER | SM_DING, 3, 3,
 		_("Couldn't verify S/MIME signature: %s"), (char*) openssl_error_string());
     }
+
+    sk_X509_pop_free(otherCerts, X509_free);
 
     return result;
 }
