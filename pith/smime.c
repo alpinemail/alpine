@@ -2840,13 +2840,18 @@ do_signature_verify(PKCS7 *p7, BIO *in, BIO *out, int silent)
 
 	if(out && err==ERR_PACK(ERR_LIB_PKCS7,PKCS7_F_PKCS7_VERIFY,PKCS7_R_CERTIFICATE_VERIFY_ERROR)){
 
-	    /* Retry verification so we can get the plain text */
-	    /* Might be better to reimplement PKCS7_verify here? */
-	    
-	    PKCS7_verify(p7, otherCerts, s_cert_store, in, out, PKCS7_NOVERIFY);
+	    /* 
+	     * verification failed due to an error in verifying a certificate.
+	     * Just write the "out" BIO, and leave. Of course let the user
+	     * know about this. Make two more attempts to get the data out. The
+	     * last one should succeed. In any case, let the user know why it
+	     * failed.
+	     */
+	    if(PKCS7_verify(p7, otherCerts, s_cert_store, in, out, PKCS7_NOVERIFY) == 0)
+		PKCS7_verify(p7, otherCerts, s_cert_store, in, out, PKCS7_NOVERIFY|PKCS7_NOSIGS);
 	}
 	if (!silent) q_status_message1(SM_ORDER | SM_DING, 3, 3,
-		_("Couldn't verify S/MIME signature: %s"), (char*) openssl_error_string());
+		_("Couldn't verify S/MIME signature: %s"), (char *) openssl_error_string());
     }
 
     sk_X509_pop_free(otherCerts, X509_free);
