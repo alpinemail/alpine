@@ -2002,7 +2002,7 @@ else
   SSL_CERT_LINK="no"
   if test -z "`ls ${certdir} | $EGREP '^@<:@0-9A-Fa-f@:>@{8}\.@<:@0-9@:>@'`" ; then
      SSL_BUNDLE_EXISTS="no"
-     SSL_PEM="factory.pem ca-bundle.pem"
+     SSL_PEM="factory.pem ca-bundle.pem ca-bundle.crt"
      for SSL_BUNDLE in $SSL_PEM
      do
        if test -f ${certdir}/${SSL_BUNDLE} ; then
