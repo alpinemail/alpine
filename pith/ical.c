@@ -1135,8 +1135,9 @@ ical_parse_timezone(char **text)
      if(s){	/* figure out the token */
 	int ukn = 0;	/* unknown token */
 	if(!struncmp(s, "BEGIN", 5)){
+	  ICAL_S *uk_comp;
 	  s += 6;		/* 6 = strlen("BEGIN:") */
-	  ICAL_S *uk_comp = ical_parse_unknown_comp(&s, 0);
+	  uk_comp = ical_parse_unknown_comp(&s, 0);
 	  ical_free_unknown_comp(&uk_comp);
 	} else if(!struncmp(s, "END", t-s-1)){
 		s += 4;	  /* 4 = strlen("END:") */
@@ -1216,8 +1217,9 @@ ical_parse_valarm(char **text)
      if(s){	/* figure out the token */
 	int ukn = 0;	/* unknown token */
 	if(!struncmp(s, "BEGIN", 5)){
+	  ICAL_S *uk_comp;
 	  s += 6;		/* 6 = strlen("BEGIN:") */
-	  ICAL_S *uk_comp = ical_parse_unknown_comp(&s, 0);
+	  uk_comp = ical_parse_unknown_comp(&s, 0);
 	  ical_free_unknown_comp(&uk_comp);
 	} else if(!struncmp(s, "END", t-s-1)){
 		s += 4;	  /* 4 = strlen("END:") */
@@ -1496,6 +1498,7 @@ ical_parse_weekday_list(void *bywkdyp, char *wklist)
 
   if(wklist == NULL) return bywkdyp;
 
+  done = 0;
   for(t = s = wklist; done == 0; s++){
     if(*s != ',' && *s != '\0')
       continue;
@@ -2068,6 +2071,7 @@ adjust_date_rrule(struct tm *dtstart, RRULE_S *rrule)
   }
   if (rrule->prop[RRWkst]){
   }
+  return t;
 }
 
 void
