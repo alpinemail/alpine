@@ -1188,11 +1188,8 @@ renew_cert_data(CertList **data, WhichCerts ctype)
     X509_STORE     *store = NULL;
 
     if((store = X509_STORE_new()) != NULL){
-       if((lookup = X509_STORE_add_lookup(store, X509_LOOKUP_file())) == NULL){
-          X509_STORE_free(store);
-          store = NULL;
-       } else{
-	  free_certlist(data);
+       if((lookup = X509_STORE_add_lookup(store, X509_LOOKUP_file())) != NULL){
+ 	  free_certlist(data);
 	  if(SMHOLDERTYPE(ctype) == Directory)
 	    add_certs_in_dir(lookup, PATHCERTDIR(ctype), EXTCERT(ctype), data);
 	  else /* if(SMHOLDERTYPE(ctype) == Container) */
@@ -1205,7 +1202,9 @@ renew_cert_data(CertList **data, WhichCerts ctype)
 	    ps_global->smime->publiccertlist = *data;
 	  else
 	    ps_global->smime->cacertlist = *data;
-      }
+       }
+       X509_STORE_free(store);
+       store = NULL;
     }
   }
   setup_certs_backup_by_type(ctype);
@@ -1224,6 +1223,9 @@ smime_deinit(void)
 {
     dprint((9, "smime_deinit()"));
     app_RAND_write_file(NULL);
+    if (s_cert_store != NULL) X509_STORE_free(s_cert_store);
+    ERR_free_strings();
+    EVP_cleanup();
     free_smime_struct(&ps_global->smime);
 }
 
@@ -3242,11 +3244,9 @@ decrypt_file(char *fp, int *rv, PERSONAL_CERT *pc)
   if(pc == NULL || (text = read_file(fp, 0)) == NULL || *text == '\0')
     return NULL;
 
-  tmp = fs_get(strlen(text) + (strlen(text) << 6) + 1);
-  for(j = 0, i = strlen("-----BEGIN PKCS7-----") + 1; text[i] != '\0'
-                && text[i] != '-'; j++, i++)
-     tmp[j] = text[i];
-  tmp[j] = '\0';
+  tmp = strchr(text + strlen("-----BEGIN PKCS7-----") + strlen(NEWLINE), '-');
+  if(tmp != NULL) *tmp = '\0';
+  tmp = text + strlen("-----BEGIN PKCS7-----") + strlen(NEWLINE);
 
   ret = rfc822_base64((unsigned char *)tmp, strlen(tmp), &len);
 
@@ -3264,8 +3264,10 @@ decrypt_file(char *fp, int *rv, PERSONAL_CERT *pc)
   (void) BIO_reset(out);
 
   if(PKCS7_decrypt(p7, pc->key, pc->cert, out, 0) != 0){
-    BIO_get_mem_data(out, &tmp);   
-    text = cpystr(tmp);
+    len = BIO_get_mem_data(out, &tmp);
+    text = fs_get((len+1)*sizeof(char));
+    strncpy(text, tmp, len);
+    text[len-1] = '\0';
     BIO_free(out);
   } else
     q_status_message1(SM_ORDER, 1, 1, _("Error decrypting: %s"),

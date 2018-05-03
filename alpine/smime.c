@@ -900,6 +900,7 @@ smime_config_init_display(struct pine *ps, CONF_S **ctmp, CONF_S **first_line)
 
     for(i = 0; i < sizeof(tmp) && i < (ps->ttyo ? ps->ttyo->screen_cols : sizeof(tmp)); i++)
 	tmp[i] = '-';
+    tmp[i] = '\0';
     new_confline(ctmp);
     (*ctmp)->flags |= CF_NOSELECT;
     (*ctmp)->value = cpystr(tmp);
@@ -1458,6 +1459,7 @@ smime_setup_size(char **s, size_t buflen, size_t n)
    snprintf(t, buflen-3, "%zu.%zu", n, n);
    t += strlen(t);
    *t++ = 's';
+   *t = '\0';
    *s = t;
 }
 
@@ -1542,6 +1544,7 @@ smime_manage_password_file_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **f
 
     for(i = 0; i < sizeof(tmp) && i < (ps->ttyo ? ps->ttyo->screen_cols : sizeof(tmp)); i++)
 	tmp[i] = '-';
+    tmp[i] = '\0';
 
     new_confline(ctmp);
     (*ctmp)->flags |= CF_NOSELECT;
@@ -1574,8 +1577,10 @@ smime_manage_password_file_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **f
       smime_setup_size(&t, sizeof(u) - strlen(t), e);
       smime_setup_size(&t, sizeof(u) - strlen(t), df);
       *t++ = ' ';	/* leave an extra space between dates */
+      *t = '\0';	/* make valgrind happy */
       smime_setup_size(&t, sizeof(u) - strlen(t), dt);
       *t++ = ' ';	/* and another space between date and md5 sum */
+      *t = '\0';	/* make valgrind happy again */
       smime_setup_size(&t, sizeof(u) - strlen(t), md5);
       *t = '\0';	/* tie off */
 
@@ -1643,6 +1648,8 @@ void smime_manage_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line
 
     for(i = 0; i < sizeof(tmp) && i < (ps->ttyo ? ps->ttyo->screen_cols : sizeof(tmp)); i++)
 	tmp[i] = '-';
+    tmp[i] = '\0';
+
     new_confline(ctmp);
     (*ctmp)->flags |= CF_NOSELECT;
     (*ctmp)->value = cpystr(tmp);
@@ -1657,7 +1664,9 @@ void smime_manage_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line
     (*ctmp)->value = cpystr(tmp);
 
     for(i = 0; i < sizeof(tmp) && i < (ps->ttyo ? ps->ttyo->screen_cols : sizeof(tmp)); i++)
-    tmp[i] = '-';
+       tmp[i] = '-';
+    tmp[i] = '\0';
+
     new_confline(ctmp);
     (*ctmp)->flags |= CF_NOSELECT;
     (*ctmp)->value = cpystr(tmp);
@@ -1688,8 +1697,10 @@ void smime_manage_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line
       smime_setup_size(&t, sizeof(u) - strlen(t), e);
       smime_setup_size(&t, sizeof(u) - strlen(t), df);
       *t++ = ' ';	/* leave an extra space between dates */
+      *t = '\0';	/* make valgrind happy */
       smime_setup_size(&t, sizeof(u) - strlen(t), dt);
       *t++ = ' ';	/* and another space between date and md5 sum */
+      *t = '\0';	/* make valgrind happy again */
       smime_setup_size(&t, sizeof(u) - strlen(t), md5);
       *t = '\0';	/* tie off */
 
@@ -2001,8 +2012,7 @@ save_smime_config_vars(struct pine *ps)
 
     vsave = (SAVED_CONFIG_S *)fs_get((V_LAST_VAR+1)*sizeof(SAVED_CONFIG_S));
     memset((void *)vsave, 0, (V_LAST_VAR+1)*sizeof(SAVED_CONFIG_S));
-    v = vsave;
-    for(vreal = ps->vars; vreal->name; vreal++,v++){
+    for(v = vsave, vreal = ps->vars; vreal->name; vreal++,v++){
 	if(!(smime_related_var(ps, vreal) || vreal==&ps->vars[V_FEATURE_LIST]))
 	  continue;
 	
@@ -2017,7 +2027,7 @@ save_smime_config_vars(struct pine *ps)
 		while(list[n])
 		  n++;
 
-		v->saved_user_val.l = (char **)fs_get((n+1) * sizeof(char *));
+		v->saved_user_val.l = (char **)fs_get((n+1)*sizeof(char *));
 		memset((void *)v->saved_user_val.l, 0, (n+1)*sizeof(char *));
 		for(i = 0; i < n; i++)
 		  v->saved_user_val.l[i] = cpystr(list[i]);
@@ -2043,7 +2053,7 @@ free_saved_smime_config(struct pine *ps, SAVED_CONFIG_S **vsavep)
 
     if(vsavep && *vsavep){
 	for(v = *vsavep, vreal = ps->vars; vreal->name; vreal++,v++){
-	    if(!(smime_related_var(ps, vreal)))
+	    if(!(smime_related_var(ps, vreal) || vreal==&ps->vars[V_FEATURE_LIST]))
 	      continue;
 	    
 	    if(vreal->is_list){  /* free saved_user_val.l */

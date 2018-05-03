@@ -637,7 +637,8 @@ smime_get_date(const ASN1_TIME *tm)
    char date[MAILTMPLEN];
    char buf[MAILTMPLEN];
    char *m, *d, *t, *y, *z;
-   struct      date smd;
+   int len;
+   struct date smd;
    struct tm smtm;
 
    (void) BIO_reset(mb);
@@ -645,7 +646,8 @@ smime_get_date(const ASN1_TIME *tm)
      return cpystr(_("Invalid"));
 
    (void) BIO_flush(mb);
-   BIO_read(mb, iobuf, sizeof(iobuf));
+   len = BIO_read(mb, iobuf, sizeof(iobuf));
+   iobuf[len-1] = '\0';
 
   /* openssl returns the date in the format:
    *	"MONTH (as name) DAY (as number) TIME(hh:mm:ss) YEAR GMT"
@@ -678,6 +680,7 @@ smime_get_date(const ASN1_TIME *tm)
       snprintf(buf, sizeof(buf), "%s/%s/%s", m, d, y + strlen(y) - 2);
    buf[sizeof(buf)-1] = '\0';
 
+   BIO_free(mb);
    return cpystr(buf);
 }
 
