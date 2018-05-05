@@ -77,11 +77,11 @@ void ical_set_date_vevent(void *, void *);
 
 /* free properties */
 void ical_free_prop(void **, ICAL_PROP_S *);
-void ical_free_null(void **);
 void ical_free_cline(void **);
 void ical_free_param(ICAL_PARAMETER_S **);
 void ical_free_gencline(void **);
 void ical_free_rrule(void **);
+void ical_fs_give(void **);
 void ical_free_weekday_list(void **);
 
 /* utility functions */
@@ -115,10 +115,10 @@ ICAL_COMP_S ical_comp[] = {
 
 /* array for properties */
 ICAL_PROP_S rrule_prop[] = {
-  {"FREQ",	4,	RRFreq,		ical_parse_freq,	ical_free_null},
-  {"UNTIL",	5,	RRUntil,	ical_parse_until,	ical_free_null},
-  {"COUNT",	5,	RRCount,	ical_parse_count,	ical_free_null},
-  {"INTERVAL",	8,	RRInterval,	ical_parse_interval,	ical_free_null},
+  {"FREQ",	4,	RRFreq,		ical_parse_freq,	ical_fs_give},
+  {"UNTIL",	5,	RRUntil,	ical_parse_until,	ical_fs_give},
+  {"COUNT",	5,	RRCount,	ical_parse_count,	ical_fs_give},
+  {"INTERVAL",	8,	RRInterval,	ical_parse_interval,	ical_fs_give},
   {"BYSECOND",	8,	RRBysecond,	ical_parse_number_list,	ical_free_weekday_list},
   {"BYMINUTE",	8,	RRByminute,	ical_parse_number_list,	ical_free_weekday_list},
   {"BYHOUR",	6,	RRByhour,	ical_parse_number_list,	ical_free_weekday_list},
@@ -175,9 +175,9 @@ ICAL_PROP_S tz_comp[] = {
 };
 
 ICAL_PROP_S tz_prop[] = {
-  {"DTSTART",		7,	TZPDtstart,	ical_parse_time,	ical_free_null},
-  {"TZOFFSETTO",	10,	TZPOffsetto,	ical_parse_offset,	ical_free_null},
-  {"TZOFFSETFROM",	12,	TZPOffsetfrom,	ical_parse_offset,	ical_free_null},
+  {"DTSTART",		7,	TZPDtstart,	ical_parse_time,	ical_fs_give},
+  {"TZOFFSETTO",	10,	TZPOffsetto,	ical_parse_offset,	ical_fs_give},
+  {"TZOFFSETFROM",	12,	TZPOffsetfrom,	ical_parse_offset,	ical_fs_give},
   {"RRULE",		5,	TZPRrule,	ical_parse_rrule,	ical_free_rrule},
   {"COMMENT",		7,	TZPComment,	ical_gencline_from_token,	ical_free_gencline},
   {"RDATE",		5,	TZPRdate,	ical_gencline_from_token,	ical_free_gencline},
@@ -323,12 +323,6 @@ ical_free_param(ICAL_PARAMETER_S **param)
   fs_give((void **)param);
 }
 
-void
-ical_free_null(void **n)
-{
-  if(n != NULL) *n = NULL;
-}
-
 void 
 ical_free_cline(void **icv)
 {
@@ -387,6 +381,13 @@ ical_free_vevent(void **veventpv)
   if((*veventp)->uk_prop) ical_free_gencline((void **) &(*veventp)->uk_prop);
   if((*veventp)->valarm) ical_free_valarm((void **) &(*veventp)->valarm);
   fs_give(veventpv);
+}
+
+void
+ical_fs_give(void **x)
+{
+  if(x != NULL && *x != NULL)
+    fs_give(x);
 }
 
 void
@@ -674,13 +675,14 @@ ical_parse_text(char *text)
 void *
 ical_parse_time(void *ic_datep, char **text, char *token)
 {
-  struct tm ic_date;
+  struct tm *datep;
   ICLINE_S *icl; 
 
+  datep = fs_get(sizeof(struct tm));
   icl = ical_parse_line(text, token);
-  ical_parse_date(icl->value, &ic_date);
+  ical_parse_date(icl->value, datep);
   ical_free_cline((void **) &icl);
-  ic_datep = (void *) &ic_date;
+  ic_datep = (void *) datep;
 
   return ic_datep;
 }
@@ -689,10 +691,11 @@ void *
 ical_parse_interval(void *longvp, char *value)
 
 {
-  unsigned long longv;
+  unsigned long *longp;
 
-  longv = atoi(value);
-  longvp = (void *) &longv;
+  longp  = fs_get(sizeof(unsigned long));
+  *longp = atoi(value);
+  longvp = (void *) longp;
 
   return longvp;
 }
@@ -703,7 +706,9 @@ ical_parse_offset(void *offsetv, char **text, char *token)
 {
   ICLINE_S *icl;
   char *value;
-  int h, m, offset;
+  int h, m, *offset;
+
+  offset = fs_get(sizeof(int));
 
   icl = ical_parse_line(text, token);
 
@@ -715,12 +720,12 @@ ical_parse_offset(void *offsetv, char **text, char *token)
   h = ical_get_number_value(value, 0, 2);
   m = ical_get_number_value(value, 2, 4);
 
-  offset = 60*(60*h + m);
+  *offset = 60*(60*h + m);
   if(*icl->value == '-')
-     offset *= -1;
+     *offset *= -1;
 
   ical_free_cline((void **) &icl);
-  offsetv = (void *) &offset;
+  offsetv = (void *) offset;
 
   return offsetv;
 }
@@ -1440,21 +1445,23 @@ ical_parse_line(char **text, char *name)
 void *
 ical_parse_freq(void *fvalp, char *text)
 {
-  Freq_value fval;
+  Freq_value *fval;
 
-  fval = FUnknown;
+  fval = fs_get(sizeof(Freq_value));
+
+  *fval = FUnknown;
 
   if(text == NULL) return fvalp;
 
-  if(!strucmp(text, "SECONDLY")) fval = FSecondly;
-  else if(!strucmp(text, "MINUTELY")) fval = FMinutely;
-  else if(!strucmp(text, "HOURLY")) fval = FHourly;
-  else if(!strucmp(text, "DAILY")) fval = FDaily;
-  else if(!strucmp(text, "WEEKLY")) fval = FWeekly;
-  else if(!strucmp(text, "MONTHLY")) fval = FMonthly;
-  else if(!strucmp(text, "YEARLY")) fval = FYearly;
+  if(!strucmp(text, "SECONDLY")) *fval = FSecondly;
+  else if(!strucmp(text, "MINUTELY")) *fval = FMinutely;
+  else if(!strucmp(text, "HOURLY")) *fval = FHourly;
+  else if(!strucmp(text, "DAILY")) *fval = FDaily;
+  else if(!strucmp(text, "WEEKLY")) *fval = FWeekly;
+  else if(!strucmp(text, "MONTHLY")) *fval = FMonthly;
+  else if(!strucmp(text, "YEARLY")) *fval = FYearly;
 
-  fvalp = (void *) &fval;
+  fvalp = (void *) fval;
 
   return fvalp;
 }
@@ -1462,11 +1469,12 @@ ical_parse_freq(void *fvalp, char *text)
 void *
 ical_parse_until(void *Tmp, char *text)
 {
-   struct tm Tm;
+   struct tm *Tm;
 
    if(text != NULL){
-     ical_parse_date(text, &Tm);
-     Tmp = (void *) &Tm;
+     Tm = fs_get(sizeof(struct tm));
+     ical_parse_date(text, Tm);
+     Tmp = (void *) Tm;
    }
 
    return Tmp;
@@ -1475,11 +1483,12 @@ ical_parse_until(void *Tmp, char *text)
 void *
 ical_parse_count(void *countp, char *text)
 {
-  int count;
+  int *count;
 
   if(text != NULL){
-    count = atoi(text);
-    countp = (void *) &count;
+    count = fs_get(sizeof(int));
+    *count = atoi(text);
+    countp = (void *) count;
   }
 
   return countp;
@@ -1604,8 +1613,8 @@ ical_parse_rrule(void *rrulep, char **text, char *token)
   param = ical_get_parameter(&s);
 
   /* now we check which values were given, and fill the prop array */
-  rrule->prop = fs_get(RRUnknown*sizeof(void *));
-  memset((void *) rrule->prop, 0, RRUnknown*sizeof(void *));
+  rrule->prop = fs_get((RRUnknown+1)*sizeof(void *));
+  memset((void *) rrule->prop, 0, (RRUnknown+1)*sizeof(void *));
 
   for(p = param; p != NULL; p = p->next){
      for(i = 0; rrule_prop[i].prop != NULL && strucmp(p->name, rrule_prop[i].prop); i++);
@@ -1867,7 +1876,7 @@ ical_std_or_daylight(struct tm *date, VTIMEZONE_S *vtz)
   struct tm standard, daylight;
   ICLINE_S *tzid = (ICLINE_S *) vtz->prop[TZCid];
 
-  standard = daylight;
+// standard = daylight;
 
   return NULL;
 }
