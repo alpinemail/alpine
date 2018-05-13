@@ -106,6 +106,7 @@ int   read_passfile(char *, MMLOGIN_S **);
 void  write_passfile(char *, MMLOGIN_S *);
 int   preserve_prompt(char *);
 void  update_passfile_hostlist(char *, char *, STRLIST_S *, int);
+void  free_passfile_cache_work(MMLOGIN_S **);
 
 static	MMLOGIN_S	*passfile_cache = NULL;
 static  int             using_passfile = -1;
@@ -2713,8 +2714,29 @@ get_passfile_passwd(pinerc, passwd, user, hostlist, altflag)
 	     : 0);
 }
 
+void
+free_passfile_cache_work(MMLOGIN_S **pwdcache)
+{
+  if(pwdcache == NULL || *pwdcache == NULL)
+    return;
+
+  if((*pwdcache)->user) fs_give((void **)&(*pwdcache)->user);
+//  if((*pwdcache)->passwd) fs_give((void **)&(*pwdcache)->passwd);
+  if((*pwdcache)->hosts) free_strlist(&(*pwdcache)->hosts);
+  free_passfile_cache_work(&(*pwdcache)->next);
+  fs_give((void **)pwdcache);
+}
+
+
+void
+free_passfile_cache(void)
+{
+  if(passfile_cache)
+    free_passfile_cache_work(&passfile_cache);
+}
+
 int
-is_using_passfile()
+is_using_passfile(void)
 {
     return(using_passfile == 1);
 }

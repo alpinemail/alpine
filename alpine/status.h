@@ -28,6 +28,7 @@ void	    flush_ordered_messages(void);
 int	    status_message_write(char *, int);
 void	    mark_status_dirty(void);
 void	    mark_status_unknown(void);
+void	    free_message_queue(void);
 
 
 #endif /* PINE_STATUS_INCLUDED */

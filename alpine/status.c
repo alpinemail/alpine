@@ -1280,3 +1280,23 @@ modal_bogus_input(UCS ch)
     Writechar(BELL, 0);
     return(0);
 }
+
+void
+free_message_queue(void)
+{
+   SMQ_T *m, *mnext;
+
+   if(message_queue == NULL)
+     return;
+
+    m = message_queue;
+    do{
+      if(m->text)
+        fs_give((void **) &m->text);
+     
+      mnext = m->next;
+      fs_give((void **) &m);
+      m = mnext;
+    } while(m != message_queue);
+    message_queue = NULL;
+}

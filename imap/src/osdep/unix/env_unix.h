@@ -90,3 +90,4 @@ long loginpw (struct passwd *pw,int argc,char *argv[]);
 long pw_login (struct passwd *pw,char *auser,char *user,char *home,int argc,
 	       char *argv[]);
 void *mm_blocknotify (int reason,void *data);
+void env_end(void);

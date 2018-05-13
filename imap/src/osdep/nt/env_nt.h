@@ -66,6 +66,7 @@ void unlockfd (int fd,char *lock);
 long safe_write (int fd,char *buf,long nbytes);
 void *mm_blocknotify (int reason,void *data);
 long random (void);
+void env_end(void);
 #if _MSC_VER < 700
 #define getpid random
 #endif

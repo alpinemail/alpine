@@ -394,6 +394,6 @@ void	      free_vars(struct pine *);
 void	      free_variable_values(struct variable *);
 PINERC_S     *new_pinerc_s(char *);
 void          free_pinerc_s(PINERC_S **);
-
+void	      free_pith_module_globals(void);
 
 #endif /* PITH_STATE_INCLUDED */

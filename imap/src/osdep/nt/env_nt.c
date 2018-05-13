@@ -769,3 +769,12 @@ void *mm_blocknotify (int reason,void *data)
   }
   return ret;
 }
+
+void env_end(void)
+{
+  if(myUserName)  fs_give((void **) &myUserName);
+  if(myLocalHost) fs_give((void **) &myLocalHost);
+  if(myHomeDir)	  fs_give((void **) &myHomeDir);
+  if(myNewsrc)	  fs_give((void **) &myNewsrc);
+  if(sysInbox)	  fs_give((void **) &sysInbox);
+}

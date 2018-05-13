@@ -14,5 +14,6 @@ VEVENT_SUMMARY_S *ical_vevent_summary(VCALENDAR_S *);
 void free_vevent_summary(VEVENT_SUMMARY_S **);
 
 VCALENDAR_S *ical_parse_text(char *);           /* this is the entry point */
+void ical_free_all(void);
 
 #endif /* ifndef PITH_ICAL_INCLUDED */

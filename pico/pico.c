@@ -1927,6 +1927,23 @@ breplace(void *w)
     curwp->w_flag |= WFHARD;
 }
 
+void
+free_pico_module_globals(void)
+{
+  int i;
+
+  for(i = 0; i < 12; i++){
+    if(menuitems[i].kncp)
+        free_color_pair(&menuitems[i].kncp);
+    if(menuitems[i].klcp)
+        free_color_pair(&menuitems[i].klcp);
+    if(menuitems[i].label){
+	free((void *) menuitems[i].label);
+	menuitems[i].label = NULL;
+    }
+  }
+}
+
 
 #ifdef	_WINDOWS
 /*

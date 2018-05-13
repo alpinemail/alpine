@@ -33,6 +33,7 @@ static char rcsid[] = "$Id: state.c 1074 2008-06-04 00:08:43Z hubert@u.washingto
 #include "../pith/remote.h"
 #include "../pith/list.h"
 #include "../pith/smime.h"
+#include "../pith/ical.h"
 
 
 /*
@@ -351,4 +352,11 @@ free_pinerc_s(PINERC_S **prc)
 
 	fs_give((void **)prc);
     }
+}
+
+void
+free_pith_module_globals(void)
+{
+    free_filter_module_globals();
+    ical_free_all();
 }

@@ -76,7 +76,7 @@ void ical_set_date(ICLINE_S *, VTIMEZONE_S *);
 void ical_set_date_vevent(void *, void *);
 
 /* free properties */
-void ical_free_prop(void **, ICAL_PROP_S *);
+void ical_free_prop(void ***, ICAL_PROP_S *, int);
 void ical_free_cline(void **);
 void ical_free_param(ICAL_PARAMETER_S **);
 void ical_free_gencline(void **);
@@ -291,12 +291,11 @@ ical_remove_escapes(char **textp)
     }
     *t = '\0';	/* tie off filtered text */
     t = text;   /* reset t to the beginning */
-    if(rv == -1)
-      fs_give((void **) &t);
-    else{
+    if(rv == 0){
       strncpy(*textp, t, strlen(t));	/* overwrite given text with filtered text */
       (*textp)[strlen(t)] = '\0';
     }
+    fs_give((void **) &t);
     return rv;
 }
 
@@ -304,7 +303,8 @@ void ical_debug(char *fcn, char *text)
 {
    char piece[50];
    strncpy(piece, text, 49);
-   dprint((9, "%s: %s", fcn, piece));
+   piece[sizeof(piece)-1] = '\0';
+   dprint((2, "%s: %s\n", fcn, piece));
 }
 
 /***
@@ -346,6 +346,7 @@ ical_free_gencline(void **giclpv)
 
   if((*giclp)->cline) ical_free_cline((void **) &(*giclp)->cline);
   if((*giclp)->next) ical_free_gencline((void **)  &(*giclp)->next);
+  fs_give((void **)giclp);
 }
 
 void
@@ -364,7 +365,7 @@ ical_free_vcalendar(void **vcalpv)
      Cal_comp i;
      for(i = 0; i < VUnknown; i++)
 	if((*vcalp)->comp[i]) (ical_comp[i].give)(&(*vcalp)->comp[i]);
-     fs_give((*vcalp)->comp);
+     fs_give((void **) &(*vcalp)->comp);
   }
   if((*vcalp)->uk_comp) ical_free_unknown_comp(&(*vcalp)->uk_comp);
   fs_give(vcalpv);
@@ -377,7 +378,7 @@ ical_free_vevent(void **veventpv)
 
   if(veventp == NULL || *veventp == NULL) return;
 
-  ical_free_prop((*veventp)->prop, event_prop);
+  ical_free_prop(&(*veventp)->prop, event_prop, EvUnknown);
   if((*veventp)->uk_prop) ical_free_gencline((void **) &(*veventp)->uk_prop);
   if((*veventp)->valarm) ical_free_valarm((void **) &(*veventp)->valarm);
   fs_give(veventpv);
@@ -396,7 +397,7 @@ ical_free_rrule(void **rrulepv)
   RRULE_S **rrulep = (RRULE_S **) rrulepv;
 
   if(rrulep && *rrulep){
-    ical_free_prop((*rrulep)->prop, rrule_prop);
+    ical_free_prop(&(*rrulep)->prop, rrule_prop, RRUnknown);
     ical_free_param(&(*rrulep)->param);
     fs_give(rrulepv);
   }
@@ -432,18 +433,18 @@ ical_free_vfreebusy(void **vfbpv)
 }
 
 void
-ical_free_prop(void **propv, ICAL_PROP_S *aux_comp)
+ical_free_prop(void ***propv, ICAL_PROP_S *aux_comp, int max)
 {
   int i, j;
 
-  if(propv == NULL) return;
+  if(propv == NULL || *propv == NULL) return;
 
-  for(i = 0; aux_comp[i].prop != NULL; i++)
-     if(propv[i]){
+  for(i = 0; i < max; i++)
+     if((*propv)[i]){
 	for(j = 0; aux_comp[j].prop != NULL && aux_comp[j].pos != i; j++);
-	if(aux_comp[j].give) (aux_comp[j].give)(&propv[i]);
+	if(aux_comp[j].give) (aux_comp[j].give)(&(*propv)[i]);
      }
-  fs_give(propv);
+  fs_give((void **) propv);
 }
 
 
@@ -455,8 +456,7 @@ ical_free_vtimezone(void **vtzpv)
 
   if(vtzp == NULL || *vtzp == NULL) return;
 
-  ical_free_prop((*vtzp)->prop, tz_comp);
-
+  ical_free_prop(&(*vtzp)->prop, tz_comp, TZCUnknown);
   if((*vtzp)->uk_prop) ical_free_gencline((void **) &(*vtzp)->uk_prop);
   if((*vtzp)->standardc) ical_free_timezone((void **) &(*vtzp)->standardc);
   if((*vtzp)->daylightc) ical_free_timezone((void **) &(*vtzp)->daylightc);
@@ -470,7 +470,7 @@ ical_free_timezone(void **tzpv)
 
   if(tzp == NULL || *tzp == NULL) return;
 
-  ical_free_prop((*tzp)->prop, tz_prop);
+  ical_free_prop(&(*tzp)->prop, tz_prop, TZPUnknown);
   if((*tzp)->uk_prop) ical_free_gencline((void **) &(*tzp)->uk_prop);
   if((*tzp)->next) ical_free_timezone((void **) &(*tzp)->next);
   fs_give(tzpv);
@@ -478,6 +478,15 @@ ical_free_timezone(void **tzpv)
 
 void ical_free_valarm(void **valarmpv)
 {
+  VALARM_S **valarmp = (VALARM_S **) valarmpv;
+  int i, j;
+
+  if(valarmp == NULL || *valarmp == NULL) return;
+
+  ical_free_prop(&(*valarmp)->prop, alarm_prop, AlUnknown);
+  if((*valarmp)->uk_prop) ical_free_gencline((void **) &(*valarmp)->uk_prop);
+  if((*valarmp)->next) ical_free_timezone((void **) &(*valarmp)->next);
+  fs_give(valarmpv);
 }
 
 void
@@ -742,6 +751,8 @@ ical_cline_from_token(void *iclp, char **text, char *token)
 {
    ICLINE_S *icl;
 
+   ical_debug("ical_cline_from_token", *text);
+
    icl = ical_parse_line(text, token);
 
    if(iclp != NULL)
@@ -817,8 +828,8 @@ ical_parse_vcalendar(char **text)
 			   s += ical_comp[i].len + 2;
 		           v = (ical_comp[i].parse)(&s);
 			   if(vcal->comp == NULL){
-			     vcal->comp = fs_get(VUnknown*sizeof(void *));
-			     memset((void *) vcal->comp, 0, VUnknown*sizeof(void *));
+			     vcal->comp = fs_get((VUnknown+1)*sizeof(void *));
+			     memset((void *) vcal->comp, 0, (VUnknown+1)*sizeof(void *));
 			   }
 
 			   if(vcal->comp[ical_comp[i].pos] == NULL)
@@ -973,8 +984,8 @@ ical_parse_vevent(char **text)
 		if(event_prop[i].parse){
 		   void *v;
 		   if(vevent->prop == NULL){
-		     vevent->prop = fs_get(EvUnknown*sizeof(void *));
-		     memset((void *)vevent->prop, 0, EvUnknown*sizeof(void *));
+		     vevent->prop = fs_get((EvUnknown+1)*sizeof(void *));
+		     memset((void *)vevent->prop, 0, (EvUnknown+1)*sizeof(void *));
 		   }
 		   v = vevent->prop[event_prop[i].pos];
 		   v = (event_prop[i].parse)(v , &s, event_prop[i].prop);
@@ -1228,8 +1239,8 @@ ical_parse_valarm(char **text)
 	  ical_free_unknown_comp(&uk_comp);
 	} else if(!struncmp(s, "END", t-s-1)){
 		s += 4;	  /* 4 = strlen("END:") */
-		if(!struncmp(s, "ALARM\r\n", 7)){
-		   *text = s + 7; /* 7 = strlen("ALARM\r\n") */
+		if(!struncmp(s, "VALARM\r\n", 8)){
+		   *text = s + 8; /* 8 = strlen("VALARM\r\n") */
 		   return (void *) valarm;
 		}
 	} else{ Alarm_prop i;
@@ -1239,8 +1250,8 @@ ical_parse_valarm(char **text)
 		if(alarm_prop[i].parse){
 		   void *v;
 		   if(valarm->prop == NULL){
-		     valarm->prop = fs_get(AlUnknown*sizeof(void *));
-		     memset((void *)valarm->prop, 0, AlUnknown*sizeof(void *));
+		     valarm->prop = fs_get((AlUnknown+1)*sizeof(void *));
+		     memset((void *)valarm->prop, 0, (AlUnknown+1)*sizeof(void *));
 		   }
 		   v = valarm->prop[alarm_prop[i].pos];
 		   v = (alarm_prop[i].parse)(v, &s, alarm_prop[i].prop);
@@ -2086,6 +2097,11 @@ adjust_date_rrule(struct tm *dtstart, RRULE_S *rrule)
 void
 ical_initialize(void)
 {
+   static int inited = 0;
+
+   if(inited != 0)
+     return;
+
    ical_buf_len = 1024;
    ical_buf = fs_get(ical_buf_len+1);
 
@@ -2093,6 +2109,8 @@ ical_initialize(void)
    day_zero.tm_year = 1601 - 1900;
    day_zero.tm_mday = 1;
    day_zero.tm_wday = 4;
+
+   inited++;
 }
 
 /* At this time, we are going to print the date in 24 hour format
@@ -2243,6 +2261,8 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 			tzid != NULL ? ")" : "");
 	rv->evstart[len-1] = '\0';
       }
+      if(tzid)
+	fs_give((void **)&tzid);
     } 	/* end of if dtstart */
 
     if((icl = (ICLINE_S *) vevent->prop[EvDuration]) != NULL){
@@ -2329,6 +2349,8 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 			tzid != NULL ? ")" : "");
 	rv->evend[len-1] = '\0';
       }
+      if(tzid)
+	fs_give((void **)&tzid);
     }	/* end of if dtend */
 
     if((icl = (ICLINE_S *) vevent->prop[EvDtstamp]) != NULL){
@@ -2524,12 +2546,19 @@ free_vevent_summary(VEVENT_SUMMARY_S **vesy)
   if((*vesy)->attendee){
      for(i = 0; (*vesy)->attendee[i] != NULL; i++)
 	fs_give((void **) &(*vesy)->attendee[i]);
-     fs_give((void **) (*vesy)->attendee);
+     fs_give((void **) &(*vesy)->attendee);
   }
   if((*vesy)->description){
      for(i = 0; (*vesy)->description[i] != NULL; i++)
 	fs_give((void **) &(*vesy)->description[i]);
-     fs_give((void **) (*vesy)->description);
+     fs_give((void **) &(*vesy)->description);
   }
   fs_give((void **) vesy);
+}
+
+void
+ical_free_all(void)
+{
+  if(ical_buf)
+    fs_give((void **)&ical_buf);
 }

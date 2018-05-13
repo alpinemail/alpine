@@ -2917,8 +2917,8 @@ free_strlist(STRLIST_S **strp)
 void
 convert_decimal_to_roman (char *rn, size_t len, long n, char l)
 {
-  char symbols[7];
-  int amo[7];
+  char symbols[8];
+  int amo[8];
   int i, j, k;
 
   rn[0] = '\0';
@@ -2932,6 +2932,7 @@ convert_decimal_to_roman (char *rn, size_t len, long n, char l)
   symbols[4] = l + 'x' - 'i';
   symbols[5] = l + 'v' - 'i';
   symbols[6] = l;
+  symbols[7] = '\0';
   
   amo[0] = n/1000; n -= amo[0]*1000;
   amo[1] = n/500;  n -= amo[1]*500;
@@ -2940,6 +2941,7 @@ convert_decimal_to_roman (char *rn, size_t len, long n, char l)
   amo[4] = n/10;   n -= amo[4]*10;
   amo[5] = n/5;    n -= amo[5]*5;
   amo[6] = n;
+  amo[7] = 0;		/* make valgrind happy */
 
   for(i = 0, j = 0; i < len && j < strlen(symbols); j++){
      if(amo[j] < 4){

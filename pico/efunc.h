@@ -209,6 +209,7 @@ extern	int ctrlg(int, int);
 extern	int rdonly(void);
 extern	int pico_help(char **, char *, int);
 extern	void zotedit(void);
+extern  void free_pico_module_globals(void);
 #ifdef	_WINDOWS
 int	composer_file_drop(int, int, char *);
 int	pico_cursor(int, long);

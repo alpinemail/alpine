@@ -1854,3 +1854,26 @@ void *mm_blocknotify (int reason,void *data)
   }
   return ret;
 }
+
+void env_end(void)
+{
+  if(myUserName) fs_give((void **)&myUserName);
+  if(myHomeDir)	 fs_give((void **)&myHomeDir);
+  if(ftpHome)	 fs_give((void **)&ftpHome);
+  if(myServerName) fs_give((void **)&myServerName);
+  if(myLocalHost)  fs_give((void **)&myLocalHost);
+  if(myNewsrc)	   fs_give((void **)&myNewsrc);
+  if(mailsubdir)   fs_give((void **)&mailsubdir);
+  if(sysInbox)	   fs_give((void **)&sysInbox);
+  if(newsActive)   fs_give((void **)&newsActive);
+  if(newsSpool)	   fs_give((void **)&newsSpool);
+  if(blackBoxDir)  fs_give((void **)&blackBoxDir);
+  if(blackBoxDefaultHome)
+		   fs_give((void **)&blackBoxDefaultHome);
+  if(sslCApath)	   fs_give((void **)&sslCApath);
+  if(userFlags){
+    int i;
+    for(i = 0; i < NUSERFLAGS; i++)
+	if(userFlags[i]) fs_give((void **)&userFlags[i]);
+  }
+}

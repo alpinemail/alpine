@@ -156,7 +156,7 @@ format_message(long int msgno, ENVELOPE *env, struct mail_bodystruct *body,
 {
     char     *decode_err = NULL;
     HEADER_S  h;
-    int       width;
+    int       width, rv;
 
     clear_cur_embedded_color();
 
@@ -201,9 +201,14 @@ format_message(long int msgno, ENVELOPE *env, struct mail_bodystruct *body,
     }
 
     /* write delimiter and body */
-    if(gf_puts(NEWLINE, pc)
-       && (decode_err = format_body(msgno, body, handlesp, &h, flgs, width, pc)) == NULL)
-      return(1);
+    if(gf_puts(NEWLINE, pc)){
+       if((decode_err = format_body(msgno, body, handlesp, &h, flgs, width, pc)) == NULL)
+	  rv = 1;
+       else
+	  rv = 0;
+    }
+    clear_cur_embedded_color();
+    return(rv);
 
 
   write_error:
@@ -211,7 +216,7 @@ format_message(long int msgno, ENVELOPE *env, struct mail_bodystruct *body,
     if(!(flgs & FM_DISPLAY))
       q_status_message1(SM_ORDER, 3, 4, _("Error writing message: %s"),
 			decode_err ? decode_err : error_description(errno));
-
+    clear_cur_embedded_color();
     return(0);
 }
 
@@ -521,6 +526,7 @@ format_calendar(long int msgno, BODY *body, HANDLE_S **handlesp, int flgs, int w
 		  gf_puts(NEWLINE, pc);
 		  continue;
 		}
+		caltext[callen] = '\0';
 		break;
 
 	     case ENCQUOTEDPRINTABLE:
@@ -530,6 +536,7 @@ format_calendar(long int msgno, BODY *body, HANDLE_S **handlesp, int flgs, int w
 		  gf_puts(NEWLINE, pc);
 		  continue;
 		}
+		caltext[callen] = '\0';
 		break;
 
 	     default: caltext = cpystr(rawtext);

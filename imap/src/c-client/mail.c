@@ -6402,3 +6402,8 @@ char *net_localhost (NETSTREAM *stream)
 {
   return (*stream->dtb->localhost) (stream->stream);
 }
+
+void free_c_client_module_globals(void)
+{
+   env_end();
+}

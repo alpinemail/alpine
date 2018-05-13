@@ -4279,6 +4279,7 @@ pine_rfc822_output_body(struct mail_bodystruct *body, soutr_t f, void *s)
     int                add_trailing_crlf;
     LOC_2022_JP ljp;
     gf_io_t            gc;
+    void *table = NULL;
 
     dprint((4, "-- pine_rfc822_output_body: %d\n",
 	       body ? body->type : 0));
@@ -4363,7 +4364,7 @@ pine_rfc822_output_body(struct mail_bodystruct *body, soutr_t f, void *s)
 				   gf_line_test_opt(translate_utf8_to_2022_jp,&ljp));
 		}
 		else{
-		    void *table = utf8_rmap(charset);
+		    table = utf8_rmap(charset);
 
 		    if(table){
 			gf_link_filter(gf_convert_utf8_charset,
@@ -4409,6 +4410,9 @@ pine_rfc822_output_body(struct mail_bodystruct *body, soutr_t f, void *s)
 			  _("Encoding Error \"%s\""), encode_error);
 	display_message('x');
     }
+
+    if(table)
+      fs_give((void **)&table);
 
     gf_clear_so_readc(bodyso);
 

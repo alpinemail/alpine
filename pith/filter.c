@@ -5346,6 +5346,10 @@ html_a_output_info(HANDLER_S *hd)
     if(risky && ((HTML_OPT_S *) hd->html_data->opt)->warnrisk_f)
       (*((HTML_OPT_S *) hd->html_data->opt)->warnrisk_f)();
 
+    if(hd->dp)
+       so_give((STORE_S **) &hd->dp);
+
+
     fs_give((void **) &url);
 }
 
@@ -11405,4 +11409,15 @@ gf_local_nvtnl(FILTER_S *f, int flg)
 	/* no op */
     }
 
+}
+
+void
+free_filter_module_globals(void)
+{
+    FILTER_S *flt, *fltn = gf_master;
+
+    while((flt = fltn) != NULL){	/* free list of old filters */
+	fltn = flt->next;
+	fs_give((void **)&flt);
+    }
 }

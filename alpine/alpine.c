@@ -97,6 +97,7 @@ void	 pine_read_progress(GETS_DATA *, unsigned long);
 int	 remote_pinerc_failure(void);
 void	 dump_supported_options(void);
 int      prune_folders_ok(void);
+void     free_alpine_module_globals(void);
 #ifdef	WIN32
 char	*pine_user_callback(void);
 #endif
@@ -3293,6 +3294,11 @@ goodnight_gracey(struct pine *pine_state, int exit_val)
 
     free_histlist();
 
+    free_alpine_module_globals();	/* should we have module globals? */
+    free_pith_module_globals();
+    free_pico_module_globals();
+    free_c_client_module_globals();
+
 #ifdef DEBUG
     if(debugfile){
 	if(debug >= 2)
@@ -3538,6 +3544,14 @@ prune_folders_ok(void)
     return(1);
 }
 
+void  
+free_alpine_module_globals(void)
+{   
+#ifdef  LOCAL_PASSWD_CACHE
+    free_passfile_cache();
+#endif
+    free_message_queue();
+}
 
 #ifdef	WIN32
 char *

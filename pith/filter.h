@@ -217,6 +217,6 @@ void	   *gf_prepend_editorial_opt(prepedtest_t, char *);
 void	    gf_nvtnl_local(FILTER_S *, int);
 void	    gf_local_nvtnl(FILTER_S *, int);
 void	   *gf_url_hilite_opt(URL_HILITE_S *, HANDLE_S **, int);
-
+void	    free_filter_module_globals(void);
 
 #endif /* PITH_FILTER_INCLUDED */

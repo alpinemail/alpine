@@ -34,9 +34,10 @@ void	mm_expunged_current(long unsigned int);
 
 #ifdef	LOCAL_PASSWD_CACHE
 int     get_passfile_passwd(char *, char *, char *, STRLIST_S *, int);
-int     is_using_passfile();
+int     is_using_passfile(void);
 void    set_passfile_passwd(char *, char *, char *, STRLIST_S *, int, int);
 char   *get_passfile_user(char *, STRLIST_S *);
+void	free_passfile_cache(void);
 #endif	/* LOCAL_PASSWD_CACHE */
 
 #if	(WINCRED > 0)
