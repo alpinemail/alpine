@@ -978,6 +978,12 @@ scroll_handle_launch(HANDLE_S *handle, int force)
       case Folder :
 	break;
 
+      case iCal: 
+	  display_vevent_summary(mn_m2raw(ps_global->msgmap, mn_get_cur(ps_global->msgmap)),
+			     handle->h.ical.attach, 
+			     DA_FROM_VIEW | DA_DIDPROMPT, handle->h.ical.depth);
+	break;
+
       case Function :
 	(*handle->h.func.f)(handle->h.func.args.stream,
 			    handle->h.func.args.msgmap,

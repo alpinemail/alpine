@@ -22,7 +22,7 @@
 #include "../pith/msgno.h"
 #include "../pith/atttype.h"
 #include "../pith/util.h"
-
+#include "../pith/icaltype.h"
 
 typedef struct screen_position_list {
     Pos				  where;
@@ -35,7 +35,7 @@ typedef struct screen_position_list {
  */
 typedef	struct handle_s {
     int		     key;		/* tag number embedded in text */
-    enum	     {URL, Attach, Folder, Function, IMG} type;
+    enum	     {URL, iCal, Attach, Folder, Function, IMG} type;
     unsigned	     force_display:1;	/* Don't ask before launching */
     unsigned	     using_is_used:1;	/* bit below is being used     */
     unsigned	     is_used:1;		/* if not, remove it from list */
@@ -53,6 +53,10 @@ typedef	struct handle_s {
 		 *alt;			/* image alternate text */
 	} img;				/* stuff to describe img */
 	ATTACH_S    *attach;		/* Attachment struct for this handle */
+	struct {
+	    ATTACH_S *attach;		/* full Calendar entry */
+	    int depth;			/* which event to display */
+	} ical;
 	struct {
 	    int	       index;		/* folder's place in context's list */
 	    CONTEXT_S *context;		/* description of folders */

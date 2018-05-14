@@ -2168,9 +2168,12 @@ pine_send(ENVELOPE *outgoing, struct mail_bodystruct **body,
 	*he             = he_template[index];
 
 	pf->name        = cpystr(pf_template[index].name);
-	if(index == N_SENDER && F_ON(F_USE_SENDER_NOT_X, ps_global))
+	if(index == N_SENDER && F_ON(F_USE_SENDER_NOT_X, ps_global)){
 	  /* slide string over so it is Sender instead of X-X-Sender */
-	  memmove(pf->name, pf->name+4, strlen(pf->name)-4+1);
+	  for(p = pf->name+4; *p != '\0'; p++)
+	     *(p-4)  = *p;
+	  *(p-4) = '\0';
+	}
 	pf->type        = pf_template[index].type;
 	pf->canedit     = pf_template[index].canedit;
 	pf->rcptto      = pf_template[index].rcptto;

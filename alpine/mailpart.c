@@ -2886,21 +2886,21 @@ display_vcard_att(long int msgno, ATTACH_S *a, int flags)
 }
 
 void
-display_vcalendar_att(long int msgno, ATTACH_S *a, int flags)
+display_vevent_summary(long int msgno, ATTACH_S *a, int flags, int depth)
 {
     BODY *b;
     VCALENDAR_S *vcal = NULL;
     char *b64text, *caltext;
     unsigned long callen;
+    VEVENT_SUMMARY_S *vesy, *vsummary; /* vevent summary */
     STORE_S   *in_store, *out_store = NULL;
     HANDLE_S  *handles = NULL;
     URL_HILITE_S uh;
     gf_io_t    gc, pc;
     char   *errstr = NULL, tmp[MAILTMPLEN], *p;
-    int	   cmd, i;
-    VEVENT_SUMMARY_S *vesy; /* vevent summary */
- 
-    b = mail_body (ps_global->mail_stream, msgno, a->number);
+    int	   cmd, i, k;
+
+    b = mail_body(ps_global->mail_stream, msgno, a->number);
     if(b->sparep == NULL){
        b64text = mail_fetch_body(ps_global->mail_stream, msgno, a->number, &callen, 0);
        b64text[callen] = '\0';       /* chop off cookie */
@@ -2911,9 +2911,9 @@ display_vcalendar_att(long int msgno, ATTACH_S *a, int flags)
     else if(get_body_sparep_type(b->sparep) == iCalType)
        vcal = (VCALENDAR_S *) get_body_sparep_data(b->sparep);
 
-    vesy = ical_vevent_summary(vcal);
+    vsummary = ical_vevent_summary(vcal);
 
-    if(vesy == NULL){
+    if(vsummary == NULL){
 	q_status_message(SM_ORDER | SM_DING, 3, 3,
 			 _("Error parsing event")); 
 	return;
@@ -2921,180 +2921,204 @@ display_vcalendar_att(long int msgno, ATTACH_S *a, int flags)
 
     if(!(in_store = so_get(CharStar, NULL, EDIT_ACCESS))){
 	q_status_message(SM_ORDER | SM_DING, 3, 3,
-			 _("Error allocating space for Calendar")); 
+			 _("Error allocating space to process Calendar")); 
 	return;
     }
 
-    if(vesy->cancel){
-      so_puts(in_store, _("This event was cancelled"));
-      so_puts(in_store, "\015\012");
+    if((out_store = so_get(CharStar, NULL, EDIT_ACCESS)) == NULL){
+	q_status_message(SM_ORDER | SM_DING, 3, 3,
+			 _("Error allocating space to write Calendar")); 
+	return;
     }
 
-    if(vesy->priority){
-      utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%d %s",
-	_("Priority: "), vesy->priority, 
-	vesy->priority == 5 ? _("(Normal)") 
+    gf_set_so_readc(&gc, in_store);
+    gf_set_so_writec(&pc, out_store);
+
+    for(vesy = vsummary, k = 0; vesy; vesy = vesy->next, k++){
+       if(depth >= 0 && k !=  depth)
+	 continue;
+
+       if(vesy->cancel){
+         so_puts(in_store, _("This event was cancelled"));
+         so_puts(in_store, "\015\012");
+       }
+
+       if(vesy->priority){
+         utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%d %s",
+	   _("Priority: "), vesy->priority, 
+	 vesy->priority == 5 ? _("(Normal)") 
 			    : (vesy->priority < 5 ? _("(High)")
 						  : _("(Low)")));
-      so_puts(in_store, tmp_20k_buf);
-      so_puts(in_store, "\015\012");
-    }
-
-    if(vesy->summary){
-      utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s", 
-	_("Summary: "), vesy->summary);
-      so_puts(in_store, tmp_20k_buf);
-      so_puts(in_store, "\015\012");
-    }
-
-    if(vesy->sender){
-      utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s", 
-	_("Sender: "), vesy->sender);
-      so_puts(in_store, tmp_20k_buf);
-      so_puts(in_store, "\015\012");
-    }
-
-    if(vesy->organizer){
-      utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s", 
-	_("Organizer: "), vesy->organizer);
-      so_puts(in_store, tmp_20k_buf);
-      so_puts(in_store, "\015\012");
-    }
-
-    if(vesy->location){
-      ical_remove_escapes(&vesy->location);
-      utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s", 
-	_("Location: "), vesy->location);
-      so_puts(in_store, tmp_20k_buf);
-      so_puts(in_store, "\015\012");
-    }
-
-    if(vesy->evstart){
-      utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s", 
-	_("Start Date: "), vesy->evstart);
-      so_puts(in_store, tmp_20k_buf);
-      so_puts(in_store, "\015\012");
-    }
-
-    if(vesy->duration){
-      for(i = 0; vesy->duration[i] != NULL; i++){
-         utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s", 
-	   _("Duration: "), vesy->duration[i]);
          so_puts(in_store, tmp_20k_buf);
          so_puts(in_store, "\015\012");
-      }
-    } else if(vesy->evend){
-      utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s", 
-	_("End Date: "), vesy->evend);
-      so_puts(in_store, tmp_20k_buf);
-      so_puts(in_store, "\015\012");
-    }
+       }
 
-    if(vesy->dtstamp){
-      utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s", 
-	vcal->method ? _("Created on: ") : _("Last Revised on; "), 
-	vesy->dtstamp);
-      so_puts(in_store, tmp_20k_buf);
-      so_puts(in_store, "\015\012");
-    }
-
-    if(vesy->description){
-      char c;
-      int j, empty;
-
-      so_puts(in_store, "\015\012");
-
-      for(i = 0; vesy->description[i] != NULL; i++){
-	so_puts(in_store, _("Description: "));
-	/* Check if empty description */
-	empty = 1;
-	for(j =0; empty == 1 && vesy->description[i][j] != '\0'; j++){
-	   c = vesy->description[i][j];
-	   if(c != '\n' && c != ' ' && c != '\t')
-	     empty = 0;	   
-	}
-	if(empty){
-	  so_puts(in_store, _("[ No description provided ]"));
-	  so_puts(in_store, "\015\012");
-	}
-	else {
-	  for(j =0; vesy->description[i][j] != '\0'; j++){
-	     c = vesy->description[i][j];
-	     if(c == '\n'){
-	       so_puts(in_store, "\015\012");
-	       continue;
-	     }
-	     so_writec(c, in_store);
-	  }
-	}
-        so_puts(in_store, "\015\012");
-      }
-    }
-
-    if(vesy->attendee){
-      so_puts(in_store, "\015\012");
-      so_puts(in_store, _("List of Attendees:"));
-      so_puts(in_store, "\015\012");
-      for(i = 0; vesy->attendee[i] != NULL; i++){
-         so_puts(in_store, vesy->attendee[i]);
+       if(vesy->summary){
+         utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s", 
+	   _("Summary: "), vesy->summary);
+         so_puts(in_store, tmp_20k_buf);
          so_puts(in_store, "\015\012");
-      }
-    }
+       }
 
-    so_puts(in_store, "\015\012\015\012");
+       if(vesy->sender){
+         utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s", 
+	   _("Sender: "), vesy->sender);
+         so_puts(in_store, tmp_20k_buf);
+         so_puts(in_store, "\015\012");
+       }
+
+       if(vesy->organizer){
+         utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s", 
+	   _("Organizer: "), vesy->organizer);
+         so_puts(in_store, tmp_20k_buf);
+         so_puts(in_store, "\015\012");
+       }
+
+       if(vesy->location){
+         ical_remove_escapes(&vesy->location);
+         utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s", 
+	   _("Location: "), vesy->location);
+         so_puts(in_store, tmp_20k_buf);
+         so_puts(in_store, "\015\012");
+       }
+
+       if(vesy->evstart){
+         utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s", 
+	   _("Start Date: "), vesy->evstart);
+         so_puts(in_store, tmp_20k_buf);
+         so_puts(in_store, "\015\012");
+       }
+
+       if(vesy->duration){
+         for(i = 0; vesy->duration[i] != NULL; i++){
+            utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s", 
+	      _("Duration: "), vesy->duration[i]);
+            so_puts(in_store, tmp_20k_buf);
+            so_puts(in_store, "\015\012");
+         }
+       } else if(vesy->evend){
+         utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s", 
+	   _("End Date: "), vesy->evend);
+         so_puts(in_store, tmp_20k_buf);
+         so_puts(in_store, "\015\012");
+       }
+
+       if(vesy->dtstamp){
+         utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s", 
+	   vcal->method ? _("Created on: ") : _("Last Revised on; "), 
+	   vesy->dtstamp);
+         so_puts(in_store, tmp_20k_buf);
+         so_puts(in_store, "\015\012");
+       }
+
+       if(vesy->description){
+         char c;
+         int j, empty;
+
+         so_puts(in_store, "\015\012");
+
+         for(i = 0; vesy->description[i] != NULL; i++){
+	    so_puts(in_store, _("Description: "));
+	   /* Check if empty description */
+	   empty = 1;
+	   for(j =0; empty == 1 && vesy->description[i][j] != '\0'; j++){
+	      c = vesy->description[i][j];
+	      if(c != '\n' && c != ' ' && c != '\t')
+	        empty = 0;	   
+	   }
+	   if(empty){
+	     so_puts(in_store, _("[ No description provided ]"));
+	     so_puts(in_store, "\015\012");
+	   }
+	   else {
+	     for(j =0; vesy->description[i][j] != '\0'; j++){
+	        c = vesy->description[i][j];
+	        if(c == '\n'){
+	          so_puts(in_store, "\015\012");
+	          continue;
+	        }
+	        so_writec(c, in_store);
+	     }
+	   }
+           so_puts(in_store, "\015\012");
+         }
+       }
+
+       if(vesy->attendee){
+         so_puts(in_store, "\015\012");
+         so_puts(in_store, _("List of Attendees:"));
+         so_puts(in_store, "\015\012");
+         for(i = 0; vesy->attendee[i] != NULL; i++){
+            so_puts(in_store, vesy->attendee[i]);
+            so_puts(in_store, "\015\012");
+         }
+         so_puts(in_store, "\015\012");
+       }
+
+       utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF,
+		_("This event was tagged as a %s entry by the sender"), vesy->class);
+       so_puts(in_store, tmp_20k_buf);
+       so_puts(in_store, "\015\012\015\012");
+
+       if(depth < 0 && vesy->next){
+	 for(i = 0; i < ps_global->ttyo->screen_cols && i < 40; i++)
+	    tmp_20k_buf[i] = '-';
+         tmp_20k_buf[i]= '\0';
+         so_puts(in_store, tmp_20k_buf);
+        so_puts(in_store, "\015\012");
+       }
+    } /* end "for" loop */
 
     do{
-	if((out_store = so_get(CharStar, NULL, EDIT_ACCESS)) != NULL){
-	    so_seek(in_store, 0L, 0);
+	so_seek(in_store, 0L, 0);
 
-	    init_handles(&handles);
-	    gf_filter_init();
+	init_handles(&handles);
+	gf_filter_init();
 
-	    if(F_ON(F_VIEW_SEL_URL, ps_global)
+	if(F_ON(F_VIEW_SEL_URL, ps_global)
 	       || F_ON(F_VIEW_SEL_URL_HOST, ps_global)
 	       || F_ON(F_SCAN_ADDR, ps_global))
 	      gf_link_filter(gf_line_test,
 			     gf_line_test_opt(url_hilite,
 					      gf_url_hilite_opt(&uh,&handles,0)));
 
-	    gf_link_filter(gf_wrap,
+	gf_link_filter(gf_wrap,
 			   gf_wrap_filter_opt(ps_global->ttyo->screen_cols - 4,
 					      ps_global->ttyo->screen_cols,
 					      NULL, 0, GFW_HANDLES));
-	    gf_link_filter(gf_nvtnl_local, NULL);
+	gf_link_filter(gf_nvtnl_local, NULL);
 
-	    gf_set_so_readc(&gc, in_store);
-	    gf_set_so_writec(&pc, out_store);
+	gf_set_so_readc(&gc, in_store);
+	gf_set_so_writec(&pc, out_store);
 
-	    errstr = gf_pipe(gc, pc);
+	errstr = gf_pipe(gc, pc);
 
-	    gf_clear_so_readc(in_store);
+	gf_clear_so_readc(in_store);
 
-	    if(!errstr){
-	       utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF,
-		_("This event was tagged as a %s entry by the sender"), vesy->class);
-		errstr = format_editorial(tmp_20k_buf, ps_global->ttyo->screen_cols, 0, NULL, pc);
-	    }
+	gf_clear_so_writec(out_store);
 
-	    gf_clear_so_writec(out_store);
-
-	    if(!errstr)
-	      cmd = scroll_attachment(_("CALENDAR EVENT ATTACHMENT"), out_store,
+	if(!errstr)
+	   cmd = scroll_attachment(_("CALENDAR EVENT ATTACHMENT"), out_store,
 				      CharStar, handles, a, flags | DA_RESIZE);
 
-	    free_handles(&handles);
-	    so_give(&out_store);
-	}
-	else
-	  errstr = _("Error allocating space");
+	free_handles(&handles);
+	so_give(&out_store);
     }
     while(!errstr && (cmd == MC_RESIZE || cmd == MC_FULLHDR));
 
     if(errstr)
       q_status_message1(SM_ORDER | SM_DING, 3, 3,
 			_("Can't format entry : %s"), errstr);
-
     so_give(&in_store);
+    free_vevent_summary(&vsummary);
+    ps_global->mangled_screen = 1;
+}
+
+
+void
+display_vcalendar_att(long int msgno, ATTACH_S *a, int flags)
+{
+    display_vevent_summary(msgno, a, flags, -1);
 }
 
 

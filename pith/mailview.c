@@ -224,90 +224,90 @@ void
 format_calendar_vevent(VCALENDAR_S *vcal, ATTACH_S *a, HANDLE_S **handlesp, int flgs, int width, gf_io_t pc, int cflags)
 {
   int avail, m1, m2, hwid, i, partwid, padwid;
-  int s1, s2, dwid;
+  int s1, s2, dwid, minkey;
   int *margin;
   char padding[1024];
-  VEVENT_SUMMARY_S *vesy; /* vevent summary */
+  VEVENT_SUMMARY_S *vesy, *vesummary; /* vevent summary */
 
-  vesy = ical_vevent_summary(vcal);
+  vesummary = vesy = ical_vevent_summary(vcal);
 
   if(vesy == NULL) return;
 
   if((cflags & FC_SUMMARY) && (cflags & FC_FULL))
      cflags |= ~FC_FULL;
 
-  avail = width;
-  margin = (cflags & FC_FULL) ? NULL
+  minkey = -1;	/* initialize to something negative */
+
+  for(; vesy != NULL ; vesy = vesy->next){
+    avail = width;
+    margin = (cflags & FC_FULL) ? NULL
 		: (flgs & FM_NOINDENT) ? NULL : format_view_margin();
 
-  m1 = MAX(MIN(margin ? margin[0] : 0, avail), 0);
-  avail -= m1;
+    m1 = MAX(MIN(margin ? margin[0] : 0, avail), 0);
+    avail -= m1;
 
-  m2 = MAX(MIN(margin ? margin[1] : 0, avail), 0);
-  avail -= m2;
+    m2 = MAX(MIN(margin ? margin[1] : 0, avail), 0);
+    avail -= m2;
 
-  hwid = MAX(avail, 0);
-  padwid = 0;
+    hwid = MAX(avail, 0);
+    padwid = 0;
 
-  if(ps_global->atmts[1].description == NULL){
-//	   && (!ps_global->atmts[0].body
-//	       || (ps_global->atmts[0].body->type == TYPETEXT))){
-     avail = width - m1 -2;
+    if(ps_global->atmts[1].description == NULL){
+      avail = width - m1 -2;
 
-     dwid = MAX(MIN(40, avail), 0);
+      dwid = MAX(MIN(40, avail), 0);
 
-     snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%*.*s%s", m1, m1, "",
+      snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%*.*s%s", m1, m1, "",
 		repeat_char(dwid, '-'));
 
-     if(!gf_puts(tmp_20k_buf, pc) || !gf_puts(NEWLINE, pc))
+      if(!gf_puts(tmp_20k_buf, pc) || !gf_puts(NEWLINE, pc))
        return;
-  }
+    }
 
 
-  if(cflags & FC_SUMMARY){
-    i = utf8_width(_("Calendar Entry:"));
-    partwid = MIN(i, hwid);
-    if(m1 > 0){
+    if(cflags & FC_SUMMARY){
+      i = utf8_width(_("Calendar Entry:"));
+      partwid = MIN(i, hwid);
+      if(m1 > 0){
        snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%*.*s", m1, m1, "");
        if(!gf_puts(tmp_20k_buf, pc))
          return;
-    }
+      }
 
-    utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%-*.*w%*.*s",
+      utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%-*.*w%*.*s",
        partwid, partwid, _("Calendar Entry:"),
        padwid, padwid, "");
 
      if(!gf_puts(tmp_20k_buf, pc) || !gf_puts(NEWLINE, pc))
        return;
-  }
-  else 
-     partwid = 0;
+    }
+    else 
+      partwid = 0;
 
-  if(m1 > 0){
-    snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%*.*s", m1, m1, "");
-    if(!gf_puts(tmp_20k_buf, pc))
-      return;
-  }
+    if(m1 > 0){
+      snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%*.*s", m1, m1, "");
+      if(!gf_puts(tmp_20k_buf, pc))
+        return;
+    }
 
-  avail = width - m1 - m2;
+    avail = width - m1 - m2;
 
-  s1 = MAX(MIN(1, avail), 0);
-  avail -= s1;
+    s1 = MAX(MIN(1, avail), 0);
+    avail -= s1;
 
-  dwid = MAX(MIN(1, avail), 0);
-  avail -= dwid;
+    dwid = MAX(MIN(1, avail), 0);
+    avail -= dwid;
 
-  s2 = MAX(MIN(1, avail), 0);
-  avail -= s2;
+    s2 = MAX(MIN(1, avail), 0);
+    avail -= s2;
 
-
-  if(cflags & FC_SUMMARY)
-    utf8_snprintf(padding, sizeof(padding), "%*.*s%*.*w%*.*s", 
+    if(cflags & FC_SUMMARY)
+      utf8_snprintf(padding, sizeof(padding), "%*.*s%*.*w%*.*s", 
 		s1, s1, "", dwid, dwid, "", s2, s2, "");
-  else
-    padding[0] = '\0';
+    else
+      padding[0] = '\0';
 
-  if(vesy->cancel){
+    if(vesy->cancel){
      utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s",
 			 padding, _("This event was cancelled!"));
      if((*pc)(TAG_EMBED) && (*pc)(TAG_BOLDON)){
@@ -316,60 +316,60 @@ format_calendar_vevent(VCALENDAR_S *vcal, ATTACH_S *a, HANDLE_S **handlesp, int 
 	(*pc)(TAG_EMBED);
 	(*pc)(TAG_BOLDOFF);
      }
-  }
+    }
 
-  if(vesy->organizer){
-     if(vesy->sender != NULL){
-	utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s%s",
+    if(vesy->organizer){
+       if(vesy->sender != NULL){
+	 utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s%s",
 		padding, _("Sent-by: "), vesy->sender);
-	gf_puts(tmp_20k_buf, pc);
-	gf_puts(NEWLINE, pc);
-     }
+	 gf_puts(tmp_20k_buf, pc);
+	 gf_puts(NEWLINE, pc);
+       }
 
-     utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s%s",
-	padding, _("Organizer: "), vesy->organizer);
-     gf_puts(tmp_20k_buf, pc);
-     gf_puts(NEWLINE, pc);
-  } /* end of if(organizer) */
+       utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s%s",
+	  padding, _("Organizer: "), vesy->organizer);
+       gf_puts(tmp_20k_buf, pc);
+       gf_puts(NEWLINE, pc);
+    } /* end of if(organizer) */
 
-  if(vesy->location){
-     ical_remove_escapes(&vesy->location);
-     utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s%s",
+    if(vesy->location){
+      ical_remove_escapes(&vesy->location);
+      utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s%s",
 		padding, _("Location: "), vesy->location);
-     gf_puts(tmp_20k_buf, pc);
-     gf_puts(NEWLINE, pc);
-  } /* end of if location */
+      gf_puts(tmp_20k_buf, pc);
+      gf_puts(NEWLINE, pc);
+    } /* end of if location */
 
-  if(vesy->evstart){
-     utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s%s",
+    if(vesy->evstart){
+      utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s%s",
 		padding, _("Start Date: "), vesy->evstart);
-     gf_puts(tmp_20k_buf, pc);
-     gf_puts(NEWLINE, pc);
-  } /* end of if dtstart */
+      gf_puts(tmp_20k_buf, pc);
+      gf_puts(NEWLINE, pc);
+    } /* end of if dtstart */
 
-  if(vesy->duration){
-     int i;
+    if(vesy->duration){
+      int i;
 
-     for(i = 0; vesy->duration[i] != NULL; i++){
+      for(i = 0; vesy->duration[i] != NULL; i++){
 	utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s%s",
 		padding, _("Duration: "), vesy->duration[i]);
 	gf_puts(tmp_20k_buf, pc);
 	gf_puts(NEWLINE, pc);
-     }
-  } /* end of DURATION */
-  else if(vesy->evend){
+      }
+    } /* end of DURATION */
+    else if(vesy->evend){
       utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s%s",
 		padding, _("End Date: "), vesy->evend);
       gf_puts(tmp_20k_buf, pc);
       gf_puts(NEWLINE, pc);
-  } else {	/* end of if dtend */
+    } else {	/* end of if dtend */
       utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s",
 		padding, _("No duration nor end time found for this event"));
       gf_puts(tmp_20k_buf, pc);
       gf_puts(NEWLINE, pc);
-  } /* end of else for if (duration) and if (dtend) */
+    } /* end of else for if (duration) and if (dtend) */
 
-  if(vesy->attendee){
+    if(vesy->attendee){
 #define MAX_DISPLAYED  3
 	int i;
 
@@ -383,109 +383,114 @@ format_calendar_vevent(VCALENDAR_S *vcal, ATTACH_S *a, HANDLE_S **handlesp, int 
 	   gf_puts(tmp_20k_buf, pc);
 	   gf_puts(NEWLINE, pc);
 	}
-	if(cflags & FC_SUMMARY){
-	    COLOR_PAIR *lastc = NULL;
-	    char numbuf[50];
-	    int thisdescwid;
-	    COLOR_PAIR *hdrcolor = NULL;
+      } /* end of ATTENDEES */
 
-	    if((flgs & FM_DISPLAY)
-		&& !(flgs & FM_NOCOLOR)
-		&& pico_usingcolor()
-		&& ps_global->VAR_HEADER_GENERAL_FORE_COLOR
-		&& ps_global->VAR_HEADER_GENERAL_BACK_COLOR
-		&& ps_global->VAR_NORM_FORE_COLOR
-		&& ps_global->VAR_NORM_BACK_COLOR
-		&& (colorcmp(ps_global->VAR_HEADER_GENERAL_FORE_COLOR,
+
+      if(cflags & FC_SUMMARY){
+	COLOR_PAIR *lastc = NULL;
+	char numbuf[50];
+	int thisdescwid;
+	COLOR_PAIR *hdrcolor = NULL;
+
+	if((flgs & FM_DISPLAY)
+	   && !(flgs & FM_NOCOLOR)
+	   && pico_usingcolor()
+	   && ps_global->VAR_HEADER_GENERAL_FORE_COLOR
+	   && ps_global->VAR_HEADER_GENERAL_BACK_COLOR
+	   && ps_global->VAR_NORM_FORE_COLOR
+	   && ps_global->VAR_NORM_BACK_COLOR
+	   && (colorcmp(ps_global->VAR_HEADER_GENERAL_FORE_COLOR,
 		        ps_global->VAR_NORM_FORE_COLOR)
 		       || colorcmp(ps_global->VAR_HEADER_GENERAL_BACK_COLOR,
-		    ps_global->VAR_NORM_BACK_COLOR))){
+	    ps_global->VAR_NORM_BACK_COLOR))){
 
-		if((hdrcolor = new_color_pair(ps_global->VAR_HEADER_GENERAL_FORE_COLOR,
+	    if((hdrcolor = new_color_pair(ps_global->VAR_HEADER_GENERAL_FORE_COLOR,
 					  ps_global->VAR_HEADER_GENERAL_BACK_COLOR)) != NULL){
-		   if(!pico_is_good_colorpair(hdrcolor))
-		     free_color_pair(&hdrcolor);
-	        }
+		if(!pico_is_good_colorpair(hdrcolor))
+		  free_color_pair(&hdrcolor);
 	    }
+	}
 
-	    if(!(!hdrcolor || embed_color(hdrcolor, pc)))
-	      return;
+	if(!(!hdrcolor || embed_color(hdrcolor, pc)))
+	   return;
 
-	    gf_puts(padding, pc);
-	    utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "[%s]", _("More Details"));
+	gf_puts(padding, pc);
+	utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "[%s]", _("More Details"));
 
-	    if(handlesp){
-		char      buf[16], color[64];
-		int	  l;
-		HANDLE_S *h; 
+	if(handlesp){
+	   char buf[16], color[64];
+	   int	  l;
+	   HANDLE_S *h; 
 
-		h	    = new_handle(handlesp);
-		h->type	    = Attach;
-		h->h.attach = a;
+	   h	            = new_handle(handlesp);
+	   if(minkey < 0)   minkey = h->key;
+	   h->type          = iCal;
+	   h->h.ical.attach = a;
+	   h->h.ical.depth  = h->key - minkey;
 
-		snprintf(buf, sizeof(buf), "%d", h->key);
-		buf[sizeof(buf)-1] = '\0';
+	   snprintf(buf, sizeof(buf), "%d", h->key);
+	   buf[sizeof(buf)-1] = '\0';
 
-		if(!(flgs & FM_NOCOLOR)
-		   && handle_start_color(color, sizeof(color), &l, 1)){
-		    lastc = get_cur_embedded_color();
-		    if(!gf_nputs(color, (long) l, pc))
-		      return;
-		}
-		else if(F_OFF(F_SLCTBL_ITEM_NOBOLD, ps_global)
+	   if(!(flgs & FM_NOCOLOR)
+	      && handle_start_color(color, sizeof(color), &l, 1)){
+	      lastc = get_cur_embedded_color();
+	      if(!gf_nputs(color, (long) l, pc))
+		 return;
+	   }
+	   else if(F_OFF(F_SLCTBL_ITEM_NOBOLD, ps_global)
 			&& (!((*pc)(TAG_EMBED) && (*pc)(TAG_BOLDON))))
 		  return;
 
-		if(!((*pc)(TAG_EMBED) && (*pc)(TAG_HANDLE)
+	   if(!((*pc)(TAG_EMBED) && (*pc)(TAG_HANDLE)
 		     && (*pc)(strlen(buf)) && gf_puts(buf, pc)))
 		  return;
-	    } else
-	      tmp_20k_buf[0] = '\0';
+	} else
+	    tmp_20k_buf[0] = '\0';
 
-	    if(!format_env_puts(tmp_20k_buf, pc))
-	      return;
+	if(!format_env_puts(tmp_20k_buf, pc))
+	   return;
 
-	    if(handlesp){
-		if(lastc){
-		    if(F_OFF(F_SLCTBL_ITEM_NOBOLD, ps_global)){
-			if(!((*pc)(TAG_EMBED) && (*pc)(TAG_BOLDOFF)))
-			  return;
-		    }
+	if(handlesp){
+	   if(lastc){
+	      if(F_OFF(F_SLCTBL_ITEM_NOBOLD, ps_global)){
+		if(!((*pc)(TAG_EMBED) && (*pc)(TAG_BOLDOFF)))
+		   return;
+	      }
 
-		    if(!embed_color(lastc, pc))
-		      return;
+	      if(!embed_color(lastc, pc))
+		 return;
 
-		    free_color_pair(&lastc);
-		}
-		else if(!((*pc)(TAG_EMBED) && (*pc)(TAG_BOLDOFF)))
+	      free_color_pair(&lastc);
+	   }
+	   else if(!((*pc)(TAG_EMBED) && (*pc)(TAG_BOLDOFF)))
 		  return;
 
-		if(!((*pc)(TAG_EMBED) && (*pc)(TAG_INVOFF)))
-		  return;
-	    }
-
-	    if(padwid > 0){
-		snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%*.*s", padwid, padwid, "");
-		if(!gf_puts(tmp_20k_buf, pc))
-		  return;
-	    }
-
-	    if(!gf_puts(NEWLINE, pc))
+	   if(!((*pc)(TAG_EMBED) && (*pc)(TAG_INVOFF)))
 	      return;
 	}
-    } /* end of ATTENDEES */
 
-    free_vevent_summary(&vesy);
+	if(padwid > 0){
+	   snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%*.*s", padwid, padwid, "");
+	   if(!gf_puts(tmp_20k_buf, pc))
+	      return;
+	}
 
-    avail = width - m1 -2;
+	if(!gf_puts(NEWLINE, pc))
+	   return;
+      }
+      avail = width - m1 -2;
 
-    dwid = MAX(MIN(40, avail), 0);
-    avail -= dwid;
+      dwid = MAX(MIN(40, avail), 0);
+      avail -= dwid;
 
-    snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%*.*s%s", m1, m1, "",
+      snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%*.*s%s", m1, m1, "",
 		repeat_char(dwid, '-'));
 
-    gf_puts(tmp_20k_buf, pc);
+      gf_puts(tmp_20k_buf, pc);
+      if(vesy->next)
+        gf_puts(NEWLINE, pc);
+  }
+  free_vevent_summary(&vesummary);
 }
 
 int

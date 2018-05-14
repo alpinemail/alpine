@@ -129,7 +129,8 @@ typedef struct vevent_s {
 #endif /* if 0 */
   void **prop;			/* the properties of an event component */
   GEN_ICLINE_S *uk_prop;	/* unknown values */
-  VALARM_S *valarm;	/* possible valarm */
+  VALARM_S *valarm;		/* possible valarm */
+  struct vevent_s *next;	/* calendar of method publish has many events */
 } VEVENT_S;
 
 typedef struct vtodo_s {
@@ -443,6 +444,7 @@ typedef struct vevent_summary_s {
   char **duration;
   char **attendee;
   unsigned char **description;
+  struct vevent_summary_s *next;
 } VEVENT_SUMMARY_S;
 
 typedef enum {VCalendar = 0, VTimeZone, VEvent, VTodo, VJournal,

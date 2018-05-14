@@ -381,6 +381,7 @@ ical_free_vevent(void **veventpv)
   ical_free_prop(&(*veventp)->prop, event_prop, EvUnknown);
   if((*veventp)->uk_prop) ical_free_gencline((void **) &(*veventp)->uk_prop);
   if((*veventp)->valarm) ical_free_valarm((void **) &(*veventp)->valarm);
+  if((*veventp)->next) ical_free_vevent((void **) &(*veventp)->next);
   fs_give(veventpv);
 }
 
@@ -516,6 +517,10 @@ char *ical_unfold_line(char *line)
      switch(line[j]){
 	case '\r': if(line[j+1] == '\n' && ical_wspace(line[j+2])){
 		      j += 3;	/* get past white space */
+		      continue;
+		   }
+	case '\n': if(ical_wspace(line[j+1])){
+		      j += 2;	/* get past white space */
 		      continue;
 		   }
 	default  : line[i++] = line[j++];
@@ -834,8 +839,17 @@ ical_parse_vcalendar(char **text)
 
 			   if(vcal->comp[ical_comp[i].pos] == NULL)
 			     vcal->comp[ical_comp[i].pos] = v;
-			   else
-			     (ical_comp[i].give)(&v);
+			   else{
+			     if((vcal->method && vcal->method->value
+				  && strucmp(vcal->method->value, "PUBLISH"))
+				|| struncmp(ical_comp[i].comp, "VEVENT", 6))
+			        (ical_comp[i].give)(&v);
+			     else{
+				VEVENT_S *vevent = (VEVENT_S *) vcal->comp[VEvent];
+				for(; vevent && vevent->next; vevent = vevent->next);
+				vevent->next = v;
+			     }
+			   }
 			} else {
 			   v = (void *) ical_parse_unknown_comp(&s, 0);
 			   if(vcal->uk_comp == NULL)
@@ -2154,7 +2168,7 @@ ical_get_tzid(ICAL_PARAMETER_S *param)
 VEVENT_SUMMARY_S *
 ical_vevent_summary(VCALENDAR_S *vcal)
 {
-  VEVENT_SUMMARY_S *rv;
+  VEVENT_SUMMARY_S *rv, *vsummary= NULL;
   ICLINE_S *method;
   VEVENT_S *vevent;
   GEN_ICLINE_S *gicl;
@@ -2164,29 +2178,33 @@ ical_vevent_summary(VCALENDAR_S *vcal)
   if(vcal == NULL) return NULL;
 
   method = vcal->method;
-  vevent = (VEVENT_S *) vcal->comp[VEvent];
 
+  vevent = (VEVENT_S *) vcal->comp[VEvent]; 
   if(vevent == NULL || vevent->prop == NULL)
     return NULL;
 
-  rv = fs_get(sizeof(VEVENT_SUMMARY_S));
-  memset((void *) rv, 0, sizeof(VEVENT_SUMMARY_S));
+  for(vevent = (VEVENT_S *) vcal->comp[VEvent]; 
+	vevent != NULL && vevent->prop != NULL; 
+	vevent = vevent->next, rv = rv->next){
 
-  if(method != NULL && !strucmp(method->value, "CANCEL"))
-    rv->cancel++;
+     rv = fs_get(sizeof(VEVENT_SUMMARY_S));
+     memset((void *) rv, 0, sizeof(VEVENT_SUMMARY_S));
 
-  if((icl = (ICLINE_S *) vevent->prop[EvPriority]) != NULL)
-     rv->priority = atoi(icl->value);
+     if(method != NULL && !strucmp(method->value, "CANCEL"))
+	rv->cancel++;
+
+     if((icl = (ICLINE_S *) vevent->prop[EvPriority]) != NULL)
+	rv->priority = atoi(icl->value);
  
-  if((icl = (ICLINE_S *) vevent->prop[EvSummary]) != NULL)
-    rv->summary = cpystr(icl->value ? icl->value : _("No Summary"));
+     if((icl = (ICLINE_S *) vevent->prop[EvSummary]) != NULL)
+	rv->summary = cpystr(icl->value ? icl->value : _("No Summary"));
 
-  if((icl = (ICLINE_S *) vevent->prop[EvClass]) != NULL)
-    rv->class = cpystr(icl->value ? icl->value : _("PUBLIC"));
-  else
-    rv->class = cpystr(_("PUBLIC"));
+     if((icl = (ICLINE_S *) vevent->prop[EvClass]) != NULL)
+	rv->class = cpystr(icl->value ? icl->value : _("PUBLIC"));
+     else
+	rv->class = cpystr(_("PUBLIC"));
 
-  if((icl = (ICLINE_S *) vevent->prop[EvOrganizer]) != NULL){
+     if((icl = (ICLINE_S *) vevent->prop[EvOrganizer]) != NULL){
         char *cn, *sender, *address;
         ICAL_PARAMETER_S *param;
 
@@ -2212,22 +2230,22 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 		address ? address : _("Unknown address"));
 	  rv->organizer = cpystr(tmp_20k_buf);
 	}
-    }	/* end of if(organizer) */
+     }	/* end of if(organizer) */
 
-    if((icl = (ICLINE_S *) vevent->prop[EvLocation]) != NULL)
-      rv->location = cpystr(icl->value ? icl->value : _("Location undisclosed"));
+     if((icl = (ICLINE_S *) vevent->prop[EvLocation]) != NULL)
+	rv->location = cpystr(icl->value ? icl->value : _("Location undisclosed"));
 
-    if((icl = (ICLINE_S *) vevent->prop[EvDtstart]) != NULL){
-      struct tm ic_date;
-      char tmp[200], *tzid;
-      int icd;	/* ical date return value */
+     if((icl = (ICLINE_S *) vevent->prop[EvDtstart]) != NULL){
+	struct tm ic_date;
+	char tmp[200], *tzid;
+	int icd;	/* ical date return value */
 
-      memset((void *)&ic_date, 0, sizeof(struct tm));
-      icd = ical_parse_date(icl->value, &ic_date);
-      tzid = ical_get_tzid(icl->param);
-      if(icd >= 0){
-         ic_date.tm_wday = ical_day_of_week(ic_date);
-	 switch(icd){
+	memset((void *)&ic_date, 0, sizeof(struct tm));
+	icd = ical_parse_date(icl->value, &ic_date);
+	tzid = ical_get_tzid(icl->param);
+	if(icd >= 0){
+	  ic_date.tm_wday = ical_day_of_week(ic_date);
+	  switch(icd){
 	    case 0: /* DATE-TIME */
 		    ical_date_time(tmp, sizeof(tmp), &ic_date);
 		    break;
@@ -2239,81 +2257,129 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 		    break;
 	    default: alpine_panic("Unhandled ical date format");
 		    break;
-	 }
-      }
-      else{
-	strncpy(tmp, _("Error while parsing event date"), sizeof(tmp));
-	tmp[sizeof(tmp) - 1] = '\0';
-      }
+	  }
+	}
+	else{
+	  strncpy(tmp, _("Error while parsing event date"), sizeof(tmp));
+	  tmp[sizeof(tmp) - 1] = '\0';
+	}
 
-      if(icl->value == NULL)
-	rv->evstart = cpystr(_("Unknown Start Date"));
-      else{
-	size_t len = strlen(tmp) + 1;
+	if(icl->value == NULL)
+	  rv->evstart = cpystr(_("Unknown Start Date"));
+	else{
+	  size_t len = strlen(tmp) + 1;
 
-	if(tzid != NULL)
-	  len += strlen(tzid) + 3; 	/* 3 = strlen(" ()") */
+	  if(tzid != NULL)
+	    len += strlen(tzid) + 3; 	/* 3 = strlen(" ()") */
 
-	rv->evstart = fs_get(len*sizeof(char));
-	snprintf(rv->evstart, len, "%s%s%s%s", tmp, 
+	  rv->evstart = fs_get(len*sizeof(char));
+	  snprintf(rv->evstart, len, "%s%s%s%s", tmp, 
 			tzid != NULL ? " (" : "",
 			tzid != NULL ? tzid : "",
 			tzid != NULL ? ")" : "");
-	rv->evstart[len-1] = '\0';
-      }
-      if(tzid)
-	fs_give((void **)&tzid);
-    } 	/* end of if dtstart */
+	  rv->evstart[len-1] = '\0';
+        }
+	if(tzid)
+	  fs_give((void **)&tzid);
+     }	/* end of if dtstart */
 
-    if((icl = (ICLINE_S *) vevent->prop[EvDuration]) != NULL){
-      int i, done = 0;
-      ICAL_DURATION_S ic_d, icd2;
-      if(ical_parse_duration(icl->value, &ic_d) == 0){
-	char tmp[MAILTMPLEN+1];
+     if((icl = (ICLINE_S *) vevent->prop[EvDuration]) != NULL){
+	int i, done = 0;
+	ICAL_DURATION_S ic_d, icd2;
+	if(ical_parse_duration(icl->value, &ic_d) == 0){
+	  char tmp[MAILTMPLEN+1];
 
-        for(i = 1, icd2 = ic_d; icd2.next != NULL; icd2 = *icd2.next, i++);
-	rv->duration = fs_get((i+1)*sizeof(char *));
-	i = 0;
+	  for(i = 1, icd2 = ic_d; icd2.next != NULL; icd2 = *icd2.next, i++);
+	  rv->duration = fs_get((i+1)*sizeof(char *));
+	  i = 0;
 
-        do {
-	   tmp[0] = '\0';
+	  do {
+	    tmp[0] = '\0';
 
-	   if(ic_d.weeks > 0)
-	     utf8_snprintf(tmp+strlen(tmp), MAILTMPLEN - strlen(tmp), 
+	    if(ic_d.weeks > 0)
+	      utf8_snprintf(tmp+strlen(tmp), MAILTMPLEN - strlen(tmp), 
 		"%d %s ", ic_d.weeks, ic_d.weeks == 1 ? _("week") : _("weeks"));
-	   if(ic_d.days > 0)
-	     utf8_snprintf(tmp+strlen(tmp), MAILTMPLEN - strlen(tmp), 
+	    if(ic_d.days > 0)
+	      utf8_snprintf(tmp+strlen(tmp), MAILTMPLEN - strlen(tmp), 
 		"%d %s ", ic_d.days, ic_d.days == 1 ?  _("day") : _("days"));
-	   if(ic_d.hours > 0)
-	     utf8_snprintf(tmp+strlen(tmp), MAILTMPLEN - strlen(tmp), 
+	    if(ic_d.hours > 0)
+	      utf8_snprintf(tmp+strlen(tmp), MAILTMPLEN - strlen(tmp), 
 		"%d %s ", ic_d.hours, ic_d.hours == 1 ?  _("hour") : _("hours"));
-	   if(ic_d.minutes > 0)
-	     utf8_snprintf(tmp+strlen(tmp), MAILTMPLEN - strlen(tmp), 
+	    if(ic_d.minutes > 0)
+	      utf8_snprintf(tmp+strlen(tmp), MAILTMPLEN - strlen(tmp), 
 		"%d %s ", ic_d.minutes, ic_d.minutes == 1 ?  _("minute") : _("minutes"));
-	   if(ic_d.seconds > 0)
-	     utf8_snprintf(tmp+strlen(tmp), MAILTMPLEN - strlen(tmp), 
+	    if(ic_d.seconds > 0)
+	      utf8_snprintf(tmp+strlen(tmp), MAILTMPLEN - strlen(tmp), 
 		"%d %s ", ic_d.seconds, ic_d.seconds == 1 ?  _("second") : _("seconds"));
 
-	   tmp[MAILTMPLEN] = '\0';
-	   rv->duration[i++] = cpystr(tmp);
+	    tmp[MAILTMPLEN] = '\0';
+	    rv->duration[i++] = cpystr(tmp);
 
-	   if(ic_d.next != NULL)
-	      ic_d = *ic_d.next;
-	   else
-	      done++;
-	} while (done == 0);
-	rv->duration[i] = NULL;
-      }
-    } /* end of DURATION */
-    else if((icl = (ICLINE_S *) vevent->prop[EvDtend]) != NULL){
-      struct tm ic_date;
-      char tmp[200], *tzid;
-      int icd;
+	    if(ic_d.next != NULL)
+	       ic_d = *ic_d.next;
+	    else
+	       done++;
+	  } while (done == 0);
+	  rv->duration[i] = NULL;
+        }
+     } /* end of DURATION */
+     else if((icl = (ICLINE_S *) vevent->prop[EvDtend]) != NULL){
+	      struct tm ic_date;
+	      char tmp[200], *tzid;
+	      int icd;
 
-      memset((void *)&ic_date, 0, sizeof(struct tm));
-      icd = ical_parse_date(icl->value, &ic_date);
-      tzid = ical_get_tzid(icl->param);
-      if(icd >= 0){
+	      memset((void *)&ic_date, 0, sizeof(struct tm));
+	      icd = ical_parse_date(icl->value, &ic_date);
+	      tzid = ical_get_tzid(icl->param);
+	      if(icd >= 0){
+	         ic_date.tm_wday = ical_day_of_week(ic_date);
+		 switch(icd){
+		    case 0: /* DATE-TIME */
+			    ical_date_time(tmp, sizeof(tmp), &ic_date);
+			    break;
+		    case 1: /* DATE */
+			    our_strftime(tmp, sizeof(tmp), "%a %x", &ic_date);
+			    break;
+		    case 2: /* DATE-TIME in GMT, Bug: add adjust to time zone */
+			    our_strftime(tmp, sizeof(tmp), "%a %x %I:%M %p", &ic_date);
+			    break;
+		    default: alpine_panic("Unhandled ical date format");
+			    break;
+	 	}
+     	  }
+	  else{
+	     strncpy(tmp, _("Error while parsing event date"), sizeof(tmp));
+	     tmp[sizeof(tmp) - 1] = '\0';
+	  }
+
+	  if(icl->value == NULL)
+	    rv->evend = cpystr(_("Unknown End Date"));
+	  else{
+	    size_t len = strlen(tmp) + 1;
+
+	    if(tzid != NULL)
+	      len += strlen(tzid) + 3; 	/* 3 = strlen(" ()") */
+
+	    rv->evend = fs_get(len*sizeof(char));
+	    snprintf(rv->evend, len, "%s%s%s%s", tmp, 
+			tzid != NULL ? " (" : "",
+			tzid != NULL ? tzid : "",
+			tzid != NULL ? ")" : "");
+	    rv->evend[len-1] = '\0';
+	  }
+	  if(tzid)
+	    fs_give((void **)&tzid);
+     }	/* end of if dtend */
+
+     if((icl = (ICLINE_S *) vevent->prop[EvDtstamp]) != NULL){
+       struct tm ic_date;
+       char tmp[200], *tzid;
+       int icd;
+
+       memset((void *)&ic_date, 0, sizeof(struct tm));
+       icd = ical_parse_date(icl->value, &ic_date);
+       tzid = ical_get_tzid(icl->param);
+       if(icd >= 0){
          ic_date.tm_wday = ical_day_of_week(ic_date);
 	 switch(icd){
 	    case 0: /* DATE-TIME */
@@ -2328,77 +2394,29 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 	    default: alpine_panic("Unhandled ical date format");
 		    break;
 	 }
-      }
-      else{
+       }
+       else{
 	strncpy(tmp, _("Error while parsing event date"), sizeof(tmp));
 	tmp[sizeof(tmp) - 1] = '\0';
-      }
+       }
+       if(icl->value == NULL)
+	 rv->dtstamp = cpystr(_("Unknown when event was scheduled"));
+       else{
+	 size_t len = strlen(tmp) + 1;
 
-      if(icl->value == NULL)
-	rv->evend = cpystr(_("Unknown End Date"));
-      else{
-	size_t len = strlen(tmp) + 1;
-
-	if(tzid != NULL)
+	 if(tzid != NULL)
 	  len += strlen(tzid) + 3; 	/* 3 = strlen(" ()") */
 
-	rv->evend = fs_get(len*sizeof(char));
-	snprintf(rv->evend, len, "%s%s%s%s", tmp, 
+	 rv->dtstamp = fs_get(len*sizeof(char));
+	 snprintf(rv->dtstamp, len, "%s%s%s%s", tmp, 
 			tzid != NULL ? " (" : "",
 			tzid != NULL ? tzid : "",
 			tzid != NULL ? ")" : "");
-	rv->evend[len-1] = '\0';
-      }
-      if(tzid)
-	fs_give((void **)&tzid);
-    }	/* end of if dtend */
+	 rv->dtstamp[len-1] = '\0';
+       }
+     } /* end of if dtstamp */
 
-    if((icl = (ICLINE_S *) vevent->prop[EvDtstamp]) != NULL){
-      struct tm ic_date;
-      char tmp[200], *tzid;
-      int icd;
-
-      memset((void *)&ic_date, 0, sizeof(struct tm));
-      icd = ical_parse_date(icl->value, &ic_date);
-      tzid = ical_get_tzid(icl->param);
-      if(icd >= 0){
-         ic_date.tm_wday = ical_day_of_week(ic_date);
-	 switch(icd){
-	    case 0: /* DATE-TIME */
-		    ical_date_time(tmp, sizeof(tmp), &ic_date);
-		    break;
-	    case 1: /* DATE */
-		    our_strftime(tmp, sizeof(tmp), "%a %x", &ic_date);
-		    break;
-	    case 2: /* DATE-TIME in GMT, Bug: add adjust to time zone */
-		    our_strftime(tmp, sizeof(tmp), "%a %x %I:%M %p", &ic_date);
-		    break;
-	    default: alpine_panic("Unhandled ical date format");
-		    break;
-	 }
-      }
-      else{
-	strncpy(tmp, _("Error while parsing event date"), sizeof(tmp));
-	tmp[sizeof(tmp) - 1] = '\0';
-      }
-      if(icl->value == NULL)
-	rv->dtstamp = cpystr(_("Unknown when event was scheduled"));
-      else{
-	size_t len = strlen(tmp) + 1;
-
-	if(tzid != NULL)
-	  len += strlen(tzid) + 3; 	/* 3 = strlen(" ()") */
-
-	rv->dtstamp = fs_get(len*sizeof(char));
-	snprintf(rv->dtstamp, len, "%s%s%s%s", tmp, 
-			tzid != NULL ? " (" : "",
-			tzid != NULL ? tzid : "",
-			tzid != NULL ? ")" : "");
-	rv->dtstamp[len-1] = '\0';
-      }
-    } /* end of if dtstamp */
-
-    if((gicl = (GEN_ICLINE_S *) vevent->prop[EvAttendee]) != NULL){
+     if((gicl = (GEN_ICLINE_S *) vevent->prop[EvAttendee]) != NULL){
 	int nattendees, i;
 
 	for(nattendees = 0; gicl != NULL; gicl = gicl->next, nattendees++);
@@ -2459,15 +2477,15 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 	   rv->attendee[i] = cpystr(tmp_20k_buf);
 	}
 	rv->attendee[i] = NULL;
-    } /* end of ATTENDEES */
+     } /* end of ATTENDEES */
 
-    if((icl = (ICLINE_S *) vevent->prop[EvDescription]) != NULL){
+     if((icl = (ICLINE_S *) vevent->prop[EvDescription]) != NULL){
 	char *s, *t, *u, *v;
 	int i, escaped;
 
 	if(icl->value == NULL){
 	   free_vevent_summary(&rv);
-	   return NULL;
+	   return vsummary;
 	}
 
 	v = cpystr(icl->value);	/* process a copy of icl->value */
@@ -2478,7 +2496,7 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 		if(!(*s == '\\' || *s == ',' || *s == 'n' || *s == 'N' || *s == ';')){
 		   free_vevent_summary(&rv);
 		   fs_give((void **)&v);
-		   return NULL;
+		   return vsummary;
 		}
 		escaped = 0;
 		continue;
@@ -2519,9 +2537,17 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 	rv->description[i++] = cpystr(ical_decode(s, vcal->encoding));
 	rv->description[i] = NULL;
 	fs_give((void **)&v);
-    } /* end of if(description) */
-
-    return rv;
+     } /* end of if(description) */
+     /* last instruction of the loop */
+     if(vsummary == NULL)
+	vsummary = rv;
+     else{
+	VEVENT_SUMMARY_S *vesy;
+	for(vesy = vsummary; vesy && vesy->next; vesy = vesy->next);
+	vesy->next = rv;
+     }
+  } /* end of "for" loop */
+  return vsummary;
 }
 
 void
@@ -2553,6 +2579,7 @@ free_vevent_summary(VEVENT_SUMMARY_S **vesy)
 	fs_give((void **) &(*vesy)->description[i]);
      fs_give((void **) &(*vesy)->description);
   }
+  if((*vesy)->next) free_vevent_summary(&(*vesy)->next);
   fs_give((void **) vesy);
 }
 

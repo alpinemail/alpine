@@ -21,7 +21,7 @@
 #include "../pith/mailpart.h"
 #include "context.h"
 #include "../pith/state.h"
-
+#include "../pith/icaltype.h"
 
 #define	DA_SAVE		0x01		/* flags used by display_attachment */
 #define	DA_FROM_VIEW	0x02		/* see mailpart.c		    */
@@ -34,6 +34,7 @@ void	    attachment_screen(struct pine *);
 void	    write_attachment(int, long, ATTACH_S *, char *);
 int         write_attachment_to_file(MAILSTREAM *, long, ATTACH_S *, int, char *);
 int	    display_attachment(long, ATTACH_S *, int);
+void        display_vevent_summary(long, ATTACH_S *, int, int);
 int         dispatch_attachment(ATTACH_S *);
 #ifdef	_WINDOWS
 void	    display_att_window(ATTACH_S *);

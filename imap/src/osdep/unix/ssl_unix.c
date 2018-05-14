@@ -404,14 +404,12 @@ static char *ssl_validate_cert (X509 *cert,char *host)
       "Server name does not match certificate";
 				/* if mismatch, see if in extensions */
     if (ret && (ext = X509_get_ext_d2i (cert,NID_subject_alt_name,NIL,NIL)) &&
-	(n = sk_GENERAL_NAME_num (ext))){
+	(n = sk_GENERAL_NAME_num (ext)))
       /* older versions of OpenSSL use "ia5" instead of dNSName */
       for (i = 0; ret && (i < n); i++)
 	if ((name = sk_GENERAL_NAME_value (ext,i)) &&
 	    (name->type = GEN_DNS) && (s = name->d.ia5->data) &&
 	    ssl_compare_hostnames (host,s)) ret = NIL;
-      sk_GENERAL_NAME_pop_free(ext, GENERAL_NAME_free);
-    }
   }
   else ret = "Unable to locate common name in certificate";
   return ret;
