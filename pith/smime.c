@@ -1224,8 +1224,12 @@ smime_deinit(void)
     dprint((9, "smime_deinit()"));
     app_RAND_write_file(NULL);
     if (s_cert_store != NULL) X509_STORE_free(s_cert_store);
+#ifdef ERR_free_strings
     ERR_free_strings();
+#endif /* ERR_free_strings */
+#ifdef EVP_cleanup
     EVP_cleanup();
+#endif /* EVP_cleanup */
     free_smime_struct(&ps_global->smime);
 }
 

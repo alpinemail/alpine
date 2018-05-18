@@ -1799,6 +1799,7 @@ gf_convert_8bit_charset(FILTER_S *f, int flg)
 typedef	struct _utf8c_s {
     void *conv_table;
     int   report_err;
+    int	  free_this;
 } UTF8C_S;
 
 
@@ -1913,9 +1914,12 @@ gf_convert_utf8_charset(FILTER_S *f, int flg)
     }
     else if(flg == GF_EOD){
 	(void) GF_FLUSH(f->next);
-	if(f->opt)
+	if(f->opt){
+	  if(((UTF8C_S *) f->opt)->conv_table != NULL
+	     && ((UTF8C_S *) f->opt)->free_this != 0)
+	  fs_give((void **) &((UTF8C_S *) f->opt)->conv_table);
 	  fs_give((void **) &f->opt);
-
+	}
 	(*f->next->f)(f->next, GF_EOD);
     }
     else if(flg == GF_RESET){
@@ -1929,13 +1933,14 @@ gf_convert_utf8_charset(FILTER_S *f, int flg)
 
 
 void *
-gf_convert_utf8_charset_opt(void *table, int report_err)
+gf_convert_utf8_charset_opt(void *table, int report_err, int free_this)
 {
     UTF8C_S *utf8c;
 
     utf8c = (UTF8C_S *) fs_get(sizeof(UTF8C_S));
     utf8c->conv_table = table;
     utf8c->report_err = report_err;
+    utf8c->free_this = free_this;
     return((void *) utf8c);
 }
 

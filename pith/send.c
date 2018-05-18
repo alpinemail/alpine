@@ -4369,7 +4369,7 @@ pine_rfc822_output_body(struct mail_bodystruct *body, soutr_t f, void *s)
 
 		    if(table){
 			gf_link_filter(gf_convert_utf8_charset,
-				       gf_convert_utf8_charset_opt(table,0));
+				       gf_convert_utf8_charset_opt(table,0,1));
 		    }
 		    else{
 			/* else, just send it? */
