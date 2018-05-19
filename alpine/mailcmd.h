@@ -101,6 +101,7 @@ int	    file_lister(char *, char *, size_t, char *, size_t, int, int);
 int	    read_msg_prompt(long, char *);
 void        advance_cur_after_delete(struct pine *, MAILSTREAM *, MSGNO_S *, CmdWhere);
 void        free_list_sel(LIST_SEL_S **);
+void	    free_mailcmd_globals(void);
 #ifdef	_WINDOWS
 int	    header_mode_callback(int, long);
 int	    zoom_mode_callback(int, long);

@@ -2702,6 +2702,9 @@ get_body_part_text(MAILSTREAM *stream, struct mail_bodystruct *body,
 	  *ret_charset = "UTF-8";
     }
 
+    if(charset)
+      fs_give((void **) &charset);
+
     /*
      * just use detach, but add an auxiliary filter to insert prefix,
      * and, perhaps, digest richtext

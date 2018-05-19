@@ -183,7 +183,7 @@ void	    gf_qp_8bit(FILTER_S *, int);
 void	    gf_8bit_qp(FILTER_S *, int);
 void	    gf_convert_8bit_charset(FILTER_S *, int);
 void	    gf_convert_utf8_charset(FILTER_S *, int);
-void	   *gf_convert_utf8_charset_opt(void *, int, int);
+void	   *gf_convert_utf8_charset_opt(void *, int);
 void	    gf_2022_jp_to_euc(FILTER_S *, int);
 void	    gf_native8bitjapanese_to_2022_jp(FILTER_S *, int);
 void	    gf_euc_to_2022_jp(FILTER_S *, int);

@@ -322,7 +322,8 @@ alpine_get_password(char *prompt, char *pass, size_t len)
                          0, len, prompt, NULL, NO_HELP, &flags);
 }
 
-int smime_import_certificate(char *filename, char *full_filename, char *what, size_t len)
+int
+smime_import_certificate(char *filename, char *full_filename, char *what, size_t len)
 {
    int   r = 1;
    static HISTORY_S *history = NULL;
@@ -330,6 +331,13 @@ int smime_import_certificate(char *filename, char *full_filename, char *what, si
 	{ctrl('T'), 10, "^T", N_("To Files")},
 	{-1, 0, NULL, NULL},
 	{-1, 0, NULL, NULL}};
+
+   /* special call to free history */ 
+   if(filename == NULL && full_filename == NULL && what == NULL && len == 0){
+      if(history != NULL)
+	free_hist(&history);
+      return 0;
+   }
 
    if(F_ON(F_ENABLE_TAB_COMPLETE,ps_global)){
       eopts[r].ch    =  ctrl('I');
@@ -2721,6 +2729,14 @@ save_prompt(struct pine *state, CONTEXT_S **cntxt, char *nfldr, size_t len_nfldr
     CONTEXT_S	     *tc;
     ESCKEY_S	      ekey[10];
 
+    if(state == NULL && cntxt == NULL && nfldr == NULL && len_nfldr == 0
+	&& nmsgs == NULL && env == NULL && rawmsgno == 0L && section == NULL
+	&& dela == NULL && prea == NULL){
+	if(history != NULL)
+	  free_hist(&history);
+	return 0;
+    }
+
     if(!cntxt)
       alpine_panic("no context ptr in save_prompt");
 
@@ -3542,9 +3558,15 @@ cmd_export(struct pine *state, MSGNO_S *msgmap, int qline, int aopt)
     long      i, count = 0L, start_of_append, rawno;
     gf_io_t   pc;
     STORE_S  *store;
-    struct variable *vars = ps_global->vars;
+    struct variable *vars = state ? ps_global->vars : NULL;
     ESCKEY_S export_opts[5];
     static HISTORY_S *history = NULL;
+
+    if(state == NULL && msgmap == NULL  && qline == 0 && aopt == 0){
+      if(history != NULL)
+	free_hist(&history);
+      return 0;
+    }
 
     if(ps_global->restricted){
 	q_status_message(SM_ORDER, 0, 3,
@@ -3999,12 +4021,19 @@ simple_export(struct pine *ps, void *srctext, SourceType srctype, char *prompt_m
     int r = 1, rflags = GER_NONE;
     char     filename[MAXPATH+1], full_filename[MAXPATH+1];
     STORE_S *store = NULL;
-    struct variable *vars = ps->vars;
+    struct variable *vars = ps ? ps->vars : NULL;
     static HISTORY_S *history = NULL;
     static ESCKEY_S simple_export_opts[] = {
 	{ctrl('T'), 10, "^T", N_("To Files")},
 	{-1, 0, NULL, NULL},
 	{-1, 0, NULL, NULL}};
+
+    if(ps == NULL && srctext == NULL && srctype == CharStar
+	&& prompt_msg == NULL && lister_msg == NULL){
+       if(history != NULL)
+	free_hist(&history);
+       return 0;
+    }
 
     if(F_ON(F_ENABLE_TAB_COMPLETE,ps)){
 	simple_export_opts[r].ch    =  ctrl('I');
@@ -5554,6 +5583,12 @@ broach_folder(int qline, int allow_list, int *notrealinbox, CONTEXT_S **context)
     ESCKEY_S    ekey[9];
     int		rc, r, ku = -1, n, flags, last_rc = 0, inbox, done = 0;
 
+    if(qline == 0 && allow_list == 0 && notrealinbox == NULL && context == NULL){
+      if(history != NULL)
+	free_hist(&history);
+      return NULL;
+    }
+
     /*
      * the idea is to provide a clue for the context the file name
      * will be saved in (if a non-imap names is typed), and to
@@ -6317,6 +6352,12 @@ cmd_pipe(struct pine *state, MSGNO_S *msgmap, int aopt)
     int	           capture = 1, raw = 0, delimit = 0, newpipe = 0;
     char           pipe_command[MAXPATH];
     ESCKEY_S pipe_opt[8];
+
+    if(state == NULL && msgmap == NULL && aopt == 0){
+      if(history != NULL)
+	free_hist(&history);
+      return 0;
+    }
 
     if(ps_global->restricted){
 	q_status_message(SM_ORDER | SM_DING, 0, 4,
@@ -8104,6 +8145,12 @@ select_by_text(MAILSTREAM *stream, MSGNO_S *msgmap, long int msgno, SEARCHSET **
     static char *match_me = N_("[Match_My_Addresses]");
     static char *dont_match_me = N_("[Don't_Match_My_Addresses]");
 
+    if(stream == NULL && msgmap == NULL && msgno == 0 && limitsrch == NULL){
+      if(history != NULL)
+	free_hist(&history);
+      return 0;
+    }
+
     ps_global->mangled_footer = 1;
     savedsstring[0] = '\0';
     ekey[0].ch = ekey[1].ch = ekey[2].ch = ekey[3].ch = -1;
@@ -9699,6 +9746,22 @@ print_index(struct pine *state, MSGNO_S *msgmap, int agg)
     }
 
     return(1);
+}
+
+
+void
+free_mailcmd_globals(void)
+{
+   /* these calls are not possible during normal operations, so these
+    * are hacks to free history memory 
+    */
+   smime_import_certificate(NULL, NULL, NULL, 0);
+   save_prompt(NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL);
+   cmd_export(NULL, NULL, 0, 0);
+   simple_export(NULL, NULL, CharStar, NULL, NULL);
+   broach_folder(0, 0, NULL, NULL);
+   cmd_pipe(NULL, NULL, 0);
+   select_by_text(NULL, NULL, 0, NULL);
 }
 
 

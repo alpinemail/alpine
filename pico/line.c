@@ -91,8 +91,7 @@ lalloc(int used)
     lp->l_size = size;
     lp->l_used = used;
     lp->l_sig  = 0;				/* assume it is not a signature line */
-    lp->l_text[0].c = '\0';			/* this is not necessary	*/
-    lp->l_text[0].a = lp->l_text[0].d = 0;	/* but it makes valgrind happy	*/
+    memset((void *)lp->l_text, 0, size*sizeof(CELL));
     return (lp);
 }
 
