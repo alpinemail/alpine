@@ -3234,10 +3234,6 @@ goodnight_gracey(struct pine *pine_state, int exit_val)
 
     dprint((7, "goodnight_gracey: close config files\n"));    
 
-#ifdef SMIME
-    smime_deinit();
-#endif
-
     free_pinerc_strings(&pine_state);
 
     strncpy(msg, pf, sizeof(msg));
@@ -3253,6 +3249,10 @@ goodnight_gracey(struct pine *pine_state, int exit_val)
     dprint((7, "goodnight_gracey: sp_end\n"));
     ps_global->noshow_error = 1;
     sp_end();
+
+#ifdef SMIME
+    smime_deinit();
+#endif
 
     /* after sp_end, which might call a filter */
     completely_done_with_adrbks();

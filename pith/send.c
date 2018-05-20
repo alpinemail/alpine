@@ -3711,8 +3711,10 @@ posting_characterset(void *data, char *preferred_charset, MsgPart mp)
 	     */
 	    charsetmap = init_charsetchecker(preferred_charset);
 
-	    if(!charsetmap)
+	    if(!charsetmap){
+	      if (ucs != NULL) fs_give((void **) &ucs);
 	      return(utf8);
+	    }
 
 	    validbitmap = ~0;
 	    while((validbitmap & ~0x1) && (*ucsp)){

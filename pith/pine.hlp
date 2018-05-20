@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 268 2018-05-02 20:16:40
+Alpine Commit 276 2018-05-20 11:51:40
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -236,6 +236,14 @@ Bugs that have been addressed include:
    <LI> If the directory where Alpine saves the certificates if empty,
         alpine would not create a self-signed certificate to encrypt the 
         password file.
+
+   <LI> S/MIME: The list of public certificates is freed before it is 
+        reused when a signature fails to verify. This causes Alpine to 
+        crash. Patch submitted by Linus Torvalds.
+
+   <LI> S/MIME: A message could fail to verify its signature even if the
+        certificate was saved when the message was open. Based on a report 
+        by David Woodhouse to the RedHat bugzilla system.
 </UL>
 
 <P>
