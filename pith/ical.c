@@ -299,7 +299,8 @@ ical_remove_escapes(char **textp)
     return rv;
 }
 
-void ical_debug(char *fcn, char *text)
+void
+ical_debug(char *fcn, char *text)
 {
    char piece[50];
    strncpy(piece, text, 49);
@@ -477,7 +478,8 @@ ical_free_timezone(void **tzpv)
   fs_give(tzpv);
 }
 
-void ical_free_valarm(void **valarmpv)
+void
+ical_free_valarm(void **valarmpv)
 {
   VALARM_S **valarmp = (VALARM_S **) valarmpv;
   int i, j;
@@ -506,7 +508,8 @@ ical_free_unknown_comp(ICAL_S **icalp)
   fs_give((void **)icalp);
 }
 
-char *ical_unfold_line(char *line)
+char *
+ical_unfold_line(char *line)
 {
   int i, j;
 
@@ -575,7 +578,8 @@ ical_get_parameter(char **line)
   return param;
 }
 
-char *ical_get_value(char **line)
+char *
+ical_get_value(char **line)
 {
   char *s, *t;
 
@@ -2027,7 +2031,8 @@ ical_first_of_month(int month, int year)
 /* given a day, month and year, return the weekday of that day
  * return value: on error -1, otherwise the day of the week.
  */
-int ical_day_of_week(struct tm date)
+int
+ical_day_of_week(struct tm date)
 {
  int d;
 

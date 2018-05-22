@@ -1112,7 +1112,8 @@ readpattern(char *utf8prompt, int text_mode, int flags)
 }
 
 /* given a line, reverse its content */
-void reverse_line(LINE *l)
+void
+reverse_line(LINE *l)
 {
   int i, j, a;
   UCS u;
@@ -1165,7 +1166,8 @@ reverse_buffer(void)
 
 
 /* given a UCS4 string reverse its content */
-void reverse_ucs4(UCS *s)
+void
+reverse_ucs4(UCS *s)
 {
   int i, j;
   UCS u;

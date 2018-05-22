@@ -807,7 +807,7 @@ get_ca_store(void)
 	resort_certificates(&ps_global->smime->cacertlist, CACert);
     }
 
-    if(!(lookup=X509_STORE_add_lookup(store, X509_LOOKUP_hash_dir()))){
+    if(!(lookup = X509_STORE_add_lookup(store, X509_LOOKUP_hash_dir()))){
 	X509_STORE_free(store);
 	return NULL;
     }

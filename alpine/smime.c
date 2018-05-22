@@ -1072,7 +1072,8 @@ smime_config_init_display(struct pine *ps, CONF_S **ctmp, CONF_S **first_line)
     (*ctmp)->next	    = NULL;
 }
 
-void display_certificate_information(struct pine *ps, X509 *cert, char *email, WhichCerts ctype, int num)
+void
+display_certificate_information(struct pine *ps, X509 *cert, char *email, WhichCerts ctype, int num)
 {
     STORE_S  *store;
     SCROLL_S  scrollargs;
@@ -1260,7 +1261,7 @@ manage_certificate_info_tool(int cmd, MSGNO_S *msgmap, SCROLL_S *sparms)
      case MC_TRUST: rv = 1; break;
 	default: rv = 0; break;
   }
- return rv;
+  return rv;
 }
 
 
@@ -1464,7 +1465,8 @@ smime_setup_size(char **s, size_t buflen, size_t n)
 }
 
 #ifdef PASSFILE
-void manage_password_file_certificates(struct pine *ps)
+void
+manage_password_file_certificates(struct pine *ps)
 {
     OPT_SCREEN_S    screen;
     int             readonly_warning = 0, rv = 10, fline, state = 0;
@@ -1631,7 +1633,8 @@ smime_manage_password_file_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **f
 #endif /* PASSFILE */
 
 
-void smime_manage_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line, WhichCerts ctype, int fline)
+void
+smime_manage_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line, WhichCerts ctype, int fline)
 {
     char            tmp[200];
     char	   *ext;
@@ -1743,7 +1746,8 @@ void smime_manage_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line
     }
 }
 
-void manage_certificates(struct pine *ps, WhichCerts ctype)
+void
+manage_certificates(struct pine *ps, WhichCerts ctype)
 {
     OPT_SCREEN_S    screen;
     int             readonly_warning = 0, rv = 10, fline;

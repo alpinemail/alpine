@@ -1214,7 +1214,8 @@ offer_none_color_for_var(struct pine *ps, struct variable *var)
 	       || var == &ps->vars[V_KW_COLORS]));
 }
 
-char *colorindexrule(char *s)
+char *
+colorindexrule(char *s)
 {
    char *conftext;
    char ***alval, **t;

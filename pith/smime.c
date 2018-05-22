@@ -1023,7 +1023,8 @@ forget_private_keys(void)
  * directory where the .pinerc is located, since according to documentation,
  * the .alpine-smime directories are subdirectories of the home directory
  */
-int smime_path(char *rpath, char *fpath, size_t len)
+int
+smime_path(char *rpath, char *fpath, size_t len)
 {
     *fpath = '\0';
     if(rpath && *rpath){
@@ -1234,7 +1235,8 @@ smime_deinit(void)
 }
 
 /* we renew the store when it has changed */
-void renew_store(void)
+void
+renew_store(void)
 {
     if(ps_global->smime->inited){
        if(s_cert_store != NULL)
@@ -1277,7 +1279,8 @@ smime_init(void)
 /* validate a certificate. Return value : 0 for no error, -1 for error.
  * In the latter case, set the openssl smime error in *error.
  */
-int smime_validate_cert(X509 *cert, long *error)
+int
+smime_validate_cert(X509 *cert, long *error)
 {
    X509_STORE_CTX *csc;
 
@@ -1430,8 +1433,6 @@ setup_privatekey_storage(void)
     }
     setup_certs_backup_by_type(Private);
 }
-
-
 
 static void
 setup_storage_locations(void)
@@ -2731,7 +2732,8 @@ get_pkcs7_from_part(long msgno,const char *section)
     return p7;
 }
 
-int same_cert(X509 *x, X509 *cert)
+int
+same_cert(X509 *x, X509 *cert)
 {
    char    bufcert[256],  bufx[256];
    int rv = 0;
