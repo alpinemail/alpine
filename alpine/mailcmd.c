@@ -105,6 +105,7 @@ int	  select_by_number(MAILSTREAM *, MSGNO_S *, SEARCHSET **);
 int	  select_by_thrd_number(MAILSTREAM *, MSGNO_S *, SEARCHSET **);
 int	  select_by_date(MAILSTREAM *, MSGNO_S *, long, SEARCHSET **);
 int	  select_by_text(MAILSTREAM *, MSGNO_S *, long, SEARCHSET **);
+int	  select_by_gm_content(MAILSTREAM *, MSGNO_S *, long, SEARCHSET **);
 int	  select_by_size(MAILSTREAM *, SEARCHSET **);
 SEARCHSET *visible_searchset(MAILSTREAM *, MSGNO_S *);
 int	  select_by_status(MAILSTREAM *, SEARCHSET **);
@@ -137,6 +138,8 @@ ESCKEY_S sel_opts1[] = {
 
 #define SEL_OPTS_THREAD 9	/* index number of "tHread" */
 #define SEL_OPTS_THREAD_CH 'h'
+#define SEL_OPTS_XGMEXT 10	/* index number of "boX" */
+#define SEL_OPTS_XGMEXT_CH 'g'
 
 char *sel_pmt2 = "SELECT criteria : ";
 static ESCKEY_S sel_opts2[] = {
@@ -199,6 +202,51 @@ static ESCKEY_S sel_opts4[] = {
     {-1, 0, NULL, NULL}
 };
 
+static ESCKEY_S sel_opts5[] = {
+    /* TRANSLATORS: very short descriptions of message selection criteria. Select Cur
+       means select the currently highlighted message; select by Number is by message
+       number; Status is by status of the message, for example the message might be
+       New or it might be Unseen or marked Important; Size has the Z upper case because
+       it is a Z command; Keyword is an alpine keyword that has been set by the user;
+       and Rule is an alpine rule */
+    {'a', 'a', "A", N_("select All")},
+    {'c', 'c', "C", N_("select Cur")},
+    {'n', 'n', "N", N_("Number")},
+    {'d', 'd', "D", N_("Date")},
+    {'t', 't', "T", N_("Text")},
+    {'s', 's', "S", N_("Status")},
+    {'z', 'z', "Z", N_("siZe")},
+    {'k', 'k', "K", N_("Keyword")},
+    {'r', 'r', "R", N_("Rule")},
+    {SEL_OPTS_THREAD_CH, 'h', "H", N_("tHread")},
+    {SEL_OPTS_XGMEXT_CH, 'g', "G", N_("GmSearch")},
+    {-1, 0, NULL, NULL},
+    {-1, 0, NULL, NULL},
+    {-1, 0, NULL, NULL},
+    {-1, 0, NULL, NULL},
+    {-1, 0, NULL, NULL}
+};
+
+static ESCKEY_S sel_opts6[] = {
+    {'a', 'a', "A", N_("select All")},
+    /* TRANSLATORS: select currrently highlighted message Thread */
+    {'c', 'c', "C", N_("select Curthrd")},
+    {'n', 'n', "N", N_("Number")},
+    {'d', 'd', "D", N_("Date")},
+    {'t', 't', "T", N_("Text")},
+    {'s', 's', "S", N_("Status")},
+    {'z', 'z', "Z", N_("siZe")},
+    {'k', 'k', "K", N_("Keyword")},
+    {'r', 'r', "R", N_("Rule")},
+    {SEL_OPTS_THREAD_CH, 'h', "H", N_("tHread")},
+    {SEL_OPTS_XGMEXT_CH, 'g', "G", N_("Gmail")},
+    {-1, 0, NULL, NULL},
+    {-1, 0, NULL, NULL},
+    {-1, 0, NULL, NULL},
+    {-1, 0, NULL, NULL},
+    {-1, 0, NULL, NULL}
+};
+
 
 static char *sel_flag = 
     N_("Select New, Deleted, Answered, Forwarded, or Important messages ? ");
@@ -236,6 +284,8 @@ static ESCKEY_S sel_date_opt[] = {
 };
 
 
+static char *sel_x_gm_ext =
+    N_("Search: ");
 static char *sel_text =
     N_("Select based on To, From, Cc, Recip, Partic, Subject fields or All msg text ? ");
 static char *sel_text_not =
@@ -6915,12 +6965,24 @@ aggregate_select(struct pine *state, MSGNO_S *msgmap, int q_line, CmdWhere in_in
     mm_search_stream = state->mail_stream;
     mm_search_count  = 0L;
 
-    sel_opts = THRD_INDX() ? sel_opts4 : sel_opts2;
+    if(is_imap_stream(state->mail_stream) && XGMEXT1(state->mail_stream))
+       sel_opts = THRD_INDX() ? sel_opts6 : sel_opts5;
+    else
+       sel_opts = THRD_INDX() ? sel_opts4 : sel_opts2;
+
     if(THREADING()){
 	sel_opts[SEL_OPTS_THREAD].ch = SEL_OPTS_THREAD_CH;
     }
     else{
-	sel_opts[SEL_OPTS_THREAD].ch = -1;
+	if(is_imap_stream(state->mail_stream) && XGMEXT1(state->mail_stream)){
+	  sel_opts[SEL_OPTS_THREAD].ch    = SEL_OPTS_XGMEXT_CH;
+	  sel_opts[SEL_OPTS_THREAD].rval  = sel_opts[SEL_OPTS_XGMEXT].rval;
+	  sel_opts[SEL_OPTS_THREAD].name  = sel_opts[SEL_OPTS_XGMEXT].name;
+	  sel_opts[SEL_OPTS_THREAD].label = sel_opts[SEL_OPTS_XGMEXT].label;
+	  sel_opts[SEL_OPTS_XGMEXT].ch    = -1;
+	}
+	else
+	  sel_opts[SEL_OPTS_THREAD].ch = -1;
     }
 
     if((old_tot = any_lflagged(msgmap, MN_SLCT)) != 0){
@@ -6944,8 +7006,13 @@ aggregate_select(struct pine *state, MSGNO_S *msgmap, int q_line, CmdWhere in_in
 	}
 
 	sel_opts += 2;			/* disable extra options */
-	switch(q = radio_buttons(_(sel_pmt1), q_line, sel_opts1, 'c', 'x', NO_HELP,
-				 RB_NORM)){
+	if(is_imap_stream(state->mail_stream) && XGMEXT1(state->mail_stream))
+	   q = 	double_radio_buttons(_(sel_pmt1), q_line, sel_opts1, 'c', 'x', NO_HELP,
+				   RB_NORM);
+	else
+	   q = radio_buttons(_(sel_pmt1), q_line, sel_opts1, 'c', 'x', NO_HELP,
+				 RB_NORM);
+	switch(q){
 	  case 'f' :			/* flip selection */
 	    msgno = 0L;
 	    for(i = 1L; i <= mn_get_total(msgmap); i++){
@@ -6981,8 +7048,12 @@ aggregate_select(struct pine *state, MSGNO_S *msgmap, int q_line, CmdWhere in_in
 
     if(!q){
 	while(1){
-	    q = radio_buttons(sel_pmt2, q_line, sel_opts, 'c', 'x',
-			      NO_HELP, RB_NORM|RB_RET_HELP);
+	    if(is_imap_stream(state->mail_stream) && XGMEXT1(state->mail_stream))
+	      q = double_radio_buttons(sel_pmt2, q_line, sel_opts, 'c', 'x', NO_HELP,
+				   RB_NORM);
+	    else
+	      q = radio_buttons(sel_pmt2, q_line, sel_opts, 'c', 'x', NO_HELP,
+				 RB_NORM|RB_RET_HELP);
 
 	    if(q == 3){
 		helper(h_index_cmd_select, _("HELP FOR SELECT"), HLPD_SIMPLE);
@@ -7079,6 +7150,11 @@ aggregate_select(struct pine *state, MSGNO_S *msgmap, int q_line, CmdWhere in_in
       case 'h' :			/* Thread */
 	ret = 0;
 	rv = select_by_thread(state->mail_stream, msgmap, &limitsrch);
+	break;
+
+      case 'g' :			/* X-GM-EXT-1 */
+	ret = 0;
+	rv = select_by_gm_content(state->mail_stream, msgmap, mn_get_cur(msgmap), &limitsrch);
 	break;
 
       default :
@@ -8118,6 +8194,80 @@ select_by_date(MAILSTREAM *stream, MSGNO_S *msgmap, long int msgno, SEARCHSET **
     return(0);
 }
 
+/*
+ * Select by searching in message headers or body
+ * using the x-gm-ext-1 capaility. This function
+ * reads the input from the user and passes it to
+ * the server directly. We need a x-gm-ext-1 variable
+ * in the search pgm to carry this information to the
+ * server.
+ * 
+ * Sets searched bits in mail_elts
+ * 
+ * Args    limitsrch -- limit search to this searchset
+ *
+ * Returns 0 on success.
+ */
+int
+select_by_gm_content(MAILSTREAM *stream, MSGNO_S *msgmap, long int msgno, SEARCHSET **limitsrch)
+{
+    int          r, we_cancel = 0, rv;
+    char         tmp[128];
+    char         namehdr[MAILTMPLEN];
+    ESCKEY_S     ekey[8];
+    HelpType help;
+
+    ps_global->mangled_footer = 1;
+    ekey[0].ch = ekey[1].ch = ekey[2].ch = ekey[3].ch = -1;
+
+    strncpy(tmp, sel_x_gm_ext, sizeof(tmp)-1);
+    tmp[sizeof(tmp)-1] = '\0';
+
+    namehdr[0] = '\0';
+
+    help = NO_HELP;
+    while (1){
+       int flags = OE_APPEND_CURRENT;
+
+       r = optionally_enter(namehdr, -FOOTER_ROWS(ps_global), 0,
+			 sizeof(namehdr), tmp, ekey, help, &flags);
+
+       if(r == 4)
+	  continue;
+
+       if(r == 3){
+            help = (help == NO_HELP) ? h_select_by_gm_content : NO_HELP;
+	    continue;
+       }
+
+       if (r == 1){
+	  cmd_cancelled("Selection by content");
+	  return(1);
+       }
+
+       removing_leading_white_space(namehdr);
+
+       if ((namehdr[0] != '\0') 
+	     && isspace((unsigned char) namehdr[strlen(namehdr) - 1]))
+	       removing_trailing_white_space(namehdr);
+
+       if (namehdr[0] != '\0')
+	  break;
+    }
+
+    if(ps_global && ps_global->ttyo){
+	blank_keymenu(ps_global->ttyo->screen_rows - 2, 0);
+	ps_global->mangled_footer = 1;
+    }
+
+    we_cancel = busy_cue(_("Selecting"), NULL, 1);
+
+    rv = agg_text_select(stream, msgmap, 'g', namehdr, 0, 0, NULL, "utf-8", limitsrch);
+    if(we_cancel)
+      cancel_busy_cue(0);
+
+    return(rv);
+}
 
 /*
  * Select by searching in message headers or body.

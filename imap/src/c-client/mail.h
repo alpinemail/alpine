@@ -996,6 +996,7 @@ SEARCHPGM {			/* search program */
   STRINGLIST *subject;		/* text in subject */
   STRINGLIST *text;		/* text in headers and body */
   STRINGLIST *to;		/* to recipients */
+  STRINGLIST *x_gm_ext1;	/* use X-GM-EXT-1 extension */
   unsigned long larger;		/* larger than this size */
   unsigned long smaller;	/* smaller than this size */
   unsigned long older;		/* older than this interval */

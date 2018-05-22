@@ -2342,6 +2342,12 @@ agg_text_select(MAILSTREAM *stream, MSGNO_S *msgmap, char type, char *namehdr,
 
   if(!mepgm)
     switch(type){
+      case 'g' :				/* X-GM-EXT-1 */
+	pgm->x_gm_ext1 = mail_newstringlist();
+	pgm->x_gm_ext1->text.data = (unsigned char *) cpystr(namehdr);
+	pgm->x_gm_ext1->text.size = strlen(namehdr);
+      break;
+
       case 'h' :	                        /* Any header */
         pgm->header = mail_newsearchheader (namehdr, sstring);
       break;

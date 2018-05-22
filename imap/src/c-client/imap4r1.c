@@ -1,7 +1,7 @@
 /* 
- * Copyright 2016 Eduardo Chappa
+ * Copyright 2016-2018 Eduardo Chappa
  *
- * Last Edited: February 1, 2015 Eduardo Chappa <chappa@gmx.com>
+ * Last Edited: May 5, 2018 Eduardo Chappa <alpine.chappa@gmx.com>
  *
  */
 /* ========================================================================
@@ -191,6 +191,7 @@ unsigned long imap_uid (MAILSTREAM *stream,unsigned long msgno);
 unsigned long imap_msgno (MAILSTREAM *stream,unsigned long uid);
 void imap_flag (MAILSTREAM *stream,char *sequence,char *flag,long flags);
 long imap_search (MAILSTREAM *stream,char *charset,SEARCHPGM *pgm,long flags);
+long imap_search_x_gm_ext1 (MAILSTREAM *stream,char *charset,SEARCHPGM *pgm,long flags);
 unsigned long *imap_sort (MAILSTREAM *stream,char *charset,SEARCHPGM *spg,
 			  SORTPGM *pgm,long flags);
 THREADNODE *imap_thread (MAILSTREAM *stream,char *type,char *charset,
@@ -2023,6 +2024,10 @@ long imap_search (MAILSTREAM *stream,char *charset,SEARCHPGM *pgm,long flags)
   char *s;
   IMAPPARSEDREPLY *reply;
   MESSAGECACHE *elt;
+
+  if(LOCAL->cap.x_gm_ext1 && pgm && pgm->x_gm_ext1)
+    return imap_search_x_gm_ext1(stream, charset, pgm, flags);
+
   if ((flags & SE_NOSERVER) ||	/* if want to do local search */
       LOCAL->loser ||		/* or loser */
       (!LEVELIMAP4 (stream) &&	/* or old server but new functions... */
@@ -3339,7 +3344,239 @@ IMAPPARSEDREPLY *imap_send_literal (MAILSTREAM *stream,char *tag,char **s,
   }
   return NIL;			/* success */
 }
-
+
+#define ADD_STRING(X, Y)	{		\
+	    if(remain > 0){			\
+	       sprintf (u, (X), (Y));		\
+	       len = strlen(u);			\
+	       if(len < remain){		\
+		 remain -= len;			\
+		 strncpy(t, u, strlen(u));	\
+		 t[strlen(u)] = '\0';		\
+		 t += strlen (t);		\
+	       }				\
+	    }					\
+	}
+
+
+long imap_search_x_gm_ext1 (MAILSTREAM *stream, char *charset, SEARCHPGM *pgm, long flags)
+{
+  char *cmd = (flags & SE_UID) ? "UID SEARCH X-GM-RAW" : "SEARCH X-GM-RAW";
+  char *p, *t, s[MAILTMPLEN+1], u[MAILTMPLEN], v[MAILTMPLEN];
+  IMAPARG *args[4],apgm,aatt,achs;;
+  IMAPPARSEDREPLY *reply;
+  unsigned long i,j,k;
+  MESSAGECACHE *elt;
+  size_t remain = sizeof(s) - 1, len;
+  NETMBX mb;   
+	
+  u[0] = s[0] = '\0';
+  t = s;
+  args[1] = args[2] = args[3] = NIL;
+
+  if(pgm->x_gm_ext1)
+     ADD_STRING(" %s", pgm->x_gm_ext1->text.data);
+
+#if 0 /* maybe later */
+  if (pgm->larger)
+     ADD_STRING(" larger:%lu", pgm->larger);
+
+  if (pgm->smaller)
+     ADD_STRING(" smaller:%lu", pgm->smaller);
+
+  if (pgm->deleted)
+     ADD_STRING(" %s", "in:trash");
+
+  if (pgm->undeleted)
+     ADD_STRING(" %s", "-in:trash");
+
+  if (pgm->draft)
+     ADD_STRING(" %s", "in:drafts");
+
+  if (pgm->undraft)
+     ADD_STRING(" %s", "-in:drafts");
+
+  if (pgm->flagged)
+     ADD_STRING(" %s", "is:starred");
+
+  if (pgm->unflagged)
+     ADD_STRING(" %s", "-is:starred");
+
+  if (pgm->seen)
+     ADD_STRING(" %s", "-is:unread");
+
+  if (pgm->unseen)
+     ADD_STRING(" %s", "is:unread");
+
+  if (pgm->keyword){
+    STRINGLIST *sl;
+    for(sl = pgm->keyword; remain > 0 && sl; sl = sl->next)
+      ADD_STRING(" label:%s", sl->text.data);
+  }
+
+  if (pgm->unkeyword){
+    STRINGLIST *sl;
+    for(sl = pgm->unkeyword; remain > 0 && sl; sl = sl->next)
+      ADD_STRING(" -label:%s", sl->text.data);
+  }
+
+  if (pgm->sentbefore){
+    unsigned short date = pgm->sentbefore;
+    sprintf(v, "%d/%d/%d", BASEYEAR + (date >> 9),
+			(date >> 5) & 0xf, date & 0x1f);
+    ADD_STRING(" before:%s", v);
+  }
+
+  if (pgm->sentsince){
+    unsigned short date = pgm->sentsince;
+    sprintf(v, "%d/%d/%d", BASEYEAR + (date >> 9),
+			(date >> 5) & 0xf, date & 0x1f);
+    ADD_STRING(" older:%s", v);
+  }
+
+  if (pgm->before){
+    unsigned short date = pgm->before;
+    sprintf(v, "%d/%d/%d", BASEYEAR + (date >> 9),
+			(date >> 5) & 0xf, date & 0x1f);
+    ADD_STRING(" before:%s", v);
+  }
+
+  if (pgm->since){
+    unsigned short date = pgm->since;
+    sprintf(v, "%d/%d/%d", BASEYEAR + (date >> 9),
+			(date >> 5) & 0xf, date & 0x1f);
+    ADD_STRING(" before:%s", v);
+  }
+
+  if (pgm->older){
+    sprintf(v, "%dd", pgm->older/86400);
+    ADD_STRING(" older_than:%s", v);
+  }
+
+  if (pgm->younger){
+    sprintf(v, "%dd", pgm->younger/86400);
+    ADD_STRING(" newer_than:%s", v);
+  }
+
+  if(pgm->bcc){
+    STRINGLIST *sl;
+    ADD_STRING("%s", pgm->bcc->next ? " {" : " ");
+    for(sl = pgm->bcc; remain > 0 && sl; sl = sl->next){
+      ADD_STRING("bcc:%s", sl->text.data);
+      ADD_STRING("%s", sl->next ? " " : "}");
+    }
+  }
+
+  if(pgm->cc){
+    STRINGLIST *sl;
+    ADD_STRING("%s", pgm->cc->next ? " {" : " ");
+    for(sl = pgm->cc; remain > 0 && sl; sl = sl->next){
+      ADD_STRING("cc:%s", sl->text.data);
+      ADD_STRING("%s", sl->next ? " " : "}");
+    }
+  }
+
+  if(pgm->from){
+    STRINGLIST *sl;
+    ADD_STRING("%s", pgm->from->next ? " {" : " ");
+    for(sl = pgm->from; remain > 0 && sl; sl = sl->next){
+      ADD_STRING("from:%s", sl->text.data);
+      ADD_STRING("%s", sl->next ? " " : (pgm->from->next ? "}" : ""));
+    }
+  }
+
+  if(pgm->to){
+    STRINGLIST *sl;
+    ADD_STRING("%s", pgm->to->next ? " {" : " ");
+    for(sl = pgm->to; remain > 0 && sl; sl = sl->next){
+      ADD_STRING("to:%s", sl->text.data);
+      ADD_STRING("%s", sl->next ? " " : (pgm->to->next ? "}" : ""));
+    }
+  }
+
+  if(pgm->subject){
+    STRINGLIST *sl;
+    ADD_STRING("%s", pgm->subject->next ? " {" : " ");
+    for(sl = pgm->subject; remain > 0 && sl; sl = sl->next){
+      ADD_STRING("subject:(%s)", sl->text.data);
+      ADD_STRING("%s", sl->next ? " " : (pgm->subject->next ? "}" : ""));
+    }
+  }
+
+  if(pgm->body){
+    STRINGLIST *sl;
+    ADD_STRING("%s", pgm->body->next ? " {" : " ");
+    for(sl = pgm->body; remain > 0 && sl; sl = sl->next){
+      ADD_STRING(" %s", sl->text.data);
+      ADD_STRING("%s", sl->next ? " " : (pgm->body->next ? "}" : ""));
+    }
+  }
+
+  if (mail_valid_net_parse (stream->mailbox,&mb)){
+     p = strchr(mb.mailbox, '/');
+     ADD_STRING(" in:%s", p ? p+1 : "inbox");
+  }
+
+#endif /* maybe later */
+      
+  s[0] = '\"';
+  strcat(t, "\"");
+
+  apgm.type = ATOM; apgm.text = (void *) s;
+  args[0] = &apgm;
+  args[1] = NIL;
+  LOCAL->uidsearch = (flags & SE_UID) ? T : NIL;
+  reply = imap_send (stream,cmd,args);
+  LOCAL->uidsearch = NIL;
+                                /* do locally if server won't grok */
+  if (!strcmp (reply->key,"BAD")) {
+     if ((flags & SE_NOLOCAL) ||
+        !mail_search_default (stream,charset,pgm,flags | SE_NOSERVER))
+      return NIL;
+  }
+  else if (!imap_OK (stream,reply)) {
+      mm_log (reply->text,ERROR);
+      return NIL;
+  }
+
+                                /* can never pre-fetch with a short cache */
+  if ((k = imap_prefetch) && !(flags & (SE_NOPREFETCH | SE_UID)) &&
+      !stream->scache) {        /* only if prefetching permitted */
+     t = LOCAL->tmp;             /* build sequence in temporary buffer */
+    *t = '\0';                  /* initially nothing */
+                                /* search through mailbox */
+    for (i = 1; k && (i <= stream->nmsgs); ++i)
+                                /* for searched messages with no envelope */
+      if ((elt = mail_elt (stream,i)) && elt->searched &&
+          !mail_elt (stream,i)->private.msg.env) {
+                                /* prepend with comma if not first time */
+        if (LOCAL->tmp[0]) *t++ = ',';
+        sprintf (t,"%lu",j = i);/* output message number */
+        t += strlen (t);        /* point at end of string */
+        k--;                    /* count one up */
+                                /* search for possible end of range */
+        while (k && (i < stream->nmsgs) &&
+               (elt = mail_elt (stream,i+1))->searched &&
+               !elt->private.msg.env) i++,k--;
+        if (i != j) {           /* if a range */
+          sprintf (t,":%lu",i); /* output delimiter and end of range */
+          t += strlen (t);      /* point at end of string */
+        }
+        if ((t - LOCAL->tmp) > (IMAPTMPLEN - 50)) break;
+      }
+    if (LOCAL->tmp[0]) {        /* anything to pre-fetch? */
+      /* pre-fetch envelopes for the first imap_prefetch number of messages */
+      if (!imap_OK (stream,reply =
+                    imap_fetch (stream,t = cpystr (LOCAL->tmp),FT_NEEDENV +
+                                ((flags & SE_NOHDRS) ? FT_NOHDRS : NIL) +
+                                ((flags & SE_NEEDBODY) ? FT_NEEDBODY : NIL))))
+        mm_log (reply->text,ERROR);
+      fs_give ((void **) &t);   /* flush copy of sequence */
+    }
+  }
+  return LONGT;
+}
+
 /* IMAP send search program
  * Accepts: MAIL stream
  *	    reply tag
@@ -5663,6 +5900,7 @@ void imap_parse_capabilities (MAILSTREAM *stream,char *t)
     else if (!compare_cstring (t,"CATENATE")) LOCAL->cap.catenate = T;
     else if (!compare_cstring (t,"CONDSTORE")) LOCAL->cap.condstore = T;
     else if (!compare_cstring (t,"ESEARCH")) LOCAL->cap.esearch = T;
+    else if (!compare_cstring (t,"X-GM-EXT-1")) LOCAL->cap.x_gm_ext1 = T;
     else if (((t[0] == 'S') || (t[0] == 's')) &&
 	     ((t[1] == 'O') || (t[1] == 'o')) &&
 	     ((t[2] == 'R') || (t[2] == 'r')) &&

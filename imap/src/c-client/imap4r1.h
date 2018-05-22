@@ -87,6 +87,7 @@ typedef struct imap_cap {
   unsigned int esearch : 1;	/* server has ESEARCH (RFC 4731) */
   unsigned int within : 1;	/* server has WITHIN (RFC 5032) */
   unsigned int extlevel;	/* extension data level supported by server */
+  unsigned int x_gm_ext1:1;	/* special extension for gmail server */
 				/* supported authenticators */
   unsigned int auth : MAXAUTHENTICATORS;
   THREADER *threader;		/* list of threaders */
@@ -127,6 +128,11 @@ typedef struct imap_cap {
 /* Has ACL extension */
 
 #define LEVELACL(stream) imap_cap (stream)->acl
+
+
+/* Has X-GM-EXT-1 extension */
+
+#define XGMEXT1(stream)	imap_cap(stream)->x_gm_ext1
 
 
 /* Has QUOTA extension */

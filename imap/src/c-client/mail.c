@@ -5990,6 +5990,7 @@ void mail_free_searchpgm (SEARCHPGM **pgm)
     mail_free_stringlist (&(*pgm)->subject);
     mail_free_stringlist (&(*pgm)->text);
     mail_free_stringlist (&(*pgm)->to);
+    mail_free_stringlist (&(*pgm)->x_gm_ext1);
     fs_give ((void **) pgm);	/* return program to free storage */
   }
 }

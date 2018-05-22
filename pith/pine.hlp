@@ -196,6 +196,10 @@ these contributed by Helmut Grohne. See
 password file encryption key. This allows users to use their password file
 without entering a master password.
 
+<LI> Add the &quot;g&quot; option to the select command that works in IMAP 
+servers that implement the X-GM-EXT-1 capability (such as the one offered 
+by Gmail.) This allows users to do selection in Alpine as if they were 
+doing a search in the web interface for Gmail.
 </UL>
 
 <P>
@@ -36847,6 +36851,9 @@ attachment, or ^C to cancel.
 ========== h_select_by_num ==========
 Enter a list of message numbers (or number ranges), or ^C to cancel. "end" 
 is the last message. "." is the current message. Example: 1-.,7-9,11,19,35-end
+========== h_select_by_gm_content ==========
+Enter your search key in the same way that you would enter a search
+key in the web interface for Gmail.
 ========== h_select_by_thrdnum ==========
 Enter a list of message numbers (or number ranges), or ^C to cancel. "end" 
 is the last message. "." is the current message. Example: 1-.,7-9,11,19,35-end
