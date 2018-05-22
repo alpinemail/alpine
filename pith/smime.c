@@ -3284,7 +3284,7 @@ decrypt_file(char *fp, int *rv, PERSONAL_CERT *pc)
     len = BIO_get_mem_data(out, &tmp);
     text = fs_get((len+1)*sizeof(char));
     strncpy(text, tmp, len);
-    text[len-1] = '\0';
+    text[len] = '\0';
     BIO_free(out);
   } else
     q_status_message1(SM_ORDER, 1, 1, _("Error decrypting: %s"),
