@@ -1259,6 +1259,15 @@ pine_tcptimeout(long int elapsed, long int sincelast, char *host)
     if(ps_global->noshow_timeout)
       return(rv);
 
+    if(ps_global->can_interrupt
+	&& ps_global->close_connection_timeout > 0L
+	&& elapsed >= (long)ps_global->tcp_query_timeout
+	&& elapsed >= (long)ps_global->close_connection_timeout){
+	ps_global->read_bail = 0;
+	ps_global->user_says_cancel = 1;
+	return 0;
+    } 
+
     if(!ps_global->ttyo)
       return(pine_tcptimeout_noscreen(elapsed, sincelast, host));
 

@@ -2285,6 +2285,8 @@ pine_imap_cmd_happened(MAILSTREAM *stream, char *cmd, long int flags)
     if(cmd && !strucmp(cmd, "CHECK"))
       reset_check_point(stream);
 
+    ps_global->can_interrupt = 0;	/* never interrupt anything */
+
     if(is_imap_stream(stream)){
 	time_t now;
 
@@ -2293,6 +2295,9 @@ pine_imap_cmd_happened(MAILSTREAM *stream, char *cmd, long int flags)
 	sp_set_last_activity(stream, now);
 	if(!(flags & SC_EXPUNGEDEFERRED))
 	  sp_set_last_expunged_reaper(stream, now);
+
+	if(cmd && !strucmp(cmd, "NOOP")) /* but can interrupt this one */
+	  ps_global->can_interrupt = 1;
     }
 }
 

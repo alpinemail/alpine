@@ -350,6 +350,7 @@ exclude_config_var(struct pine *ps, struct variable *var, int allow_hard_to_conf
       case V_TCPREADWARNTIMEO :
       case V_TCPWRITEWARNTIMEO :
       case V_TCPQUERYTIMEO :
+      case V_QUITQUERYTIMEO :
       case V_RSHCMD :
       case V_RSHPATH :
       case V_RSHOPENTIMEO :
@@ -1606,6 +1607,10 @@ text_toolit(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags, int look_
 	        (*cl)->var == &ps->vars[V_TCPREADWARNTIMEO] ||
 	        (*cl)->var == &ps->vars[V_TCPQUERYTIMEO]){
 	    lowrange = 5;
+	    hirange  = 1000;
+	}
+	else if((*cl)->var == &ps->vars[V_QUITQUERYTIMEO]){
+	    lowrange = 0;
 	    hirange  = 1000;
 	}
 	else if((*cl)->var == &ps->vars[V_TCPWRITEWARNTIMEO] ||
@@ -5432,6 +5437,12 @@ fix_side_effects(struct pine *ps, struct variable *var, int revert)
 	  if(ps->VAR_TCPQUERYTIMEO && SVAR_TCP_QUERY(ps, val, tmp_20k_buf, SIZEOF_20KBUF))
 	    q_status_message(SM_ORDER, 3, 5, tmp_20k_buf);
     }
+    else if(var == &ps->vars[V_QUITQUERYTIMEO]){
+	val = 0;
+	if(!revert)
+	  if(ps->VAR_QUITQUERYTIMEO && SVAR_QUIT_QUERY_TIMEO(ps, val, tmp_20k_buf, SIZEOF_20KBUF))
+	    q_status_message(SM_ORDER, 3, 5, tmp_20k_buf);
+    }
     else if(var == &ps->vars[V_RSHOPENTIMEO]){
 	val = 15;
 	if(!revert)
@@ -5769,6 +5780,7 @@ fix_side_effects(struct pine *ps, struct variable *var, int revert)
 		   var == &ps->vars[V_TCPREADWARNTIMEO] ||
 		   var == &ps->vars[V_TCPWRITEWARNTIMEO] ||
 		   var == &ps->vars[V_TCPQUERYTIMEO] ||
+		   var == &ps->vars[V_QUITQUERYTIMEO] ||
 		   var == &ps->vars[V_RSHOPENTIMEO] ||
 		   var == &ps->vars[V_SSHOPENTIMEO]))
       q_status_message(SM_ASYNC, 0, 3,

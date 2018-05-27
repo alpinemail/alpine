@@ -207,6 +207,9 @@ struct pine {
     unsigned     beginning_of_month:1;
     unsigned     beginning_of_year:1;
 
+    unsigned	 can_interrupt:1;
+    long int	 close_connection_timeout;
+
     unsigned 	 viewer_overlap:8;
     unsigned	 scroll_margin:8;
     unsigned 	 remote_abook_history:8;

@@ -390,6 +390,8 @@ CONF_TXT_T cf_text_tcp_write_timeo[] =	"Network write warning timeout. The defau
 
 CONF_TXT_T cf_text_tcp_query_timeo[] =	"If this much time has elapsed at the time of a tcp read or write\n# timeout, Alpine will ask if you want to break the connection.\n# Default is 60 seconds, minimum is 5, maximum is 1000.";
 
+CONF_TXT_T cf_text_close_connection_timeo[] =	"If this much time has elapsed at the time of a tcp read or write timeout,\n# Alpine will close the connection automatically without user intervention.\n# Setting this value to zero (the default) disables this. Setting this variable\n# to a smaller value than tcp-query-timeout will close the connection\n# automatically, and you will never be asked if you want to wait.";
+
 CONF_TXT_T cf_text_rsh_open_timeo[] =	"Sets the time in seconds that Alpine will attempt to open a UNIX remote\n# shell connection.  The default is 15, min is 5, and max is unlimited.\n# Zero disables rsh altogether.";
 
 CONF_TXT_T cf_text_rsh_path[] =		"Sets the name of the command used to open a UNIX remote shell connection.\n# The default is typically /usr/ucb/rsh.";
@@ -721,6 +723,8 @@ static struct variable variables[] = {
 	"TCP Write Warning Timeout",	cf_text_tcp_write_timeo},
 {"tcp-query-timeout",			0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	"TCP Query Timeout",	cf_text_tcp_query_timeo},
+{"close-connection-timeout",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
+	NULL,			cf_text_close_connection_timeo},
 {"rsh-command",				0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	NULL,			cf_text_rsh_command},
 {"rsh-path",				0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
@@ -2286,6 +2290,13 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
       init_error(ps, SM_ORDER | SM_DING, 3, 5, tmp_20k_buf);
     else
       ps->tcp_query_timeout = i;
+
+    set_current_val(&vars[V_QUITQUERYTIMEO], TRUE, TRUE);
+    ps->close_connection_timeout = i = 0;
+    if(VAR_QUITQUERYTIMEO && SVAR_QUIT_QUERY_TIMEO(ps, i, tmp_20k_buf, SIZEOF_20KBUF))
+      init_error(ps, SM_ORDER | SM_DING, 3, 5, tmp_20k_buf);
+    else
+      ps->close_connection_timeout = i;
 
     set_current_val(&vars[V_NEWSRC_PATH], TRUE, TRUE);
     if(VAR_NEWSRC_PATH && VAR_NEWSRC_PATH[0])

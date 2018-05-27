@@ -200,6 +200,12 @@ without entering a master password.
 servers that implement the X-GM-EXT-1 capability (such as the one offered 
 by Gmail.) This allows users to do selection in Alpine as if they were 
 doing a search in the web interface for Gmail.
+
+<LI> New variable close-connection-timeout, which tells Alpine to close
+a connection that is having problems being kept alive after the number
+of seconds configured in this variable, if the connection has not
+recovered. The default is 0, which means to keep the connection alive
+and wait for the connection to recover.
 </UL>
 
 <P>

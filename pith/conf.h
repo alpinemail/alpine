@@ -310,6 +310,7 @@
 #define VAR_TCPREADWARNTIMEO	     vars[V_TCPREADWARNTIMEO].current_val.p
 #define VAR_TCPWRITEWARNTIMEO	     vars[V_TCPWRITEWARNTIMEO].current_val.p
 #define VAR_TCPQUERYTIMEO	     vars[V_TCPQUERYTIMEO].current_val.p
+#define VAR_QUITQUERYTIMEO	     vars[V_QUITQUERYTIMEO].current_val.p
 #define VAR_RSHOPENTIMEO	     vars[V_RSHOPENTIMEO].current_val.p
 #define VAR_RSHPATH		     vars[V_RSHPATH].current_val.p
 #define VAR_RSHCMD		     vars[V_RSHCMD].current_val.p
@@ -751,6 +752,10 @@
 					 &(n), 5, 30000, 0, (e),	  \
 					  (el), 			  \
 					"Tcp-Query-Timeout")
+#define	SVAR_QUIT_QUERY_TIMEO(ps,n,e,el) strtoval((ps)->VAR_QUITQUERYTIMEO, 	  \
+					 &(n), 0, 30000, 0, (e),	  \
+					  (el), 			  \
+					"Reopen-Folder-Timeout")
 #define	SVAR_RSH_OPEN(ps,n,e,el) strtoval((ps)->VAR_RSHOPENTIMEO, 	  \
 					 &(n), 5, 30000, 0, (e),	  \
 					  (el), 			  \
