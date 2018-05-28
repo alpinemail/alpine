@@ -1263,6 +1263,7 @@ pine_tcptimeout(long int elapsed, long int sincelast, char *host)
 	&& ps_global->close_connection_timeout > 0L
 	&& elapsed >= (long)ps_global->tcp_query_timeout
 	&& elapsed >= (long)ps_global->close_connection_timeout){
+	ps_global->can_interrupt = 0;	/* do not return here */
 	ps_global->read_bail = 0;
 	ps_global->user_says_cancel = 1;
 	return 0;
