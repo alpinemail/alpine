@@ -1932,6 +1932,7 @@ free_pico_module_globals(void)
 {
   int i;
 
+#ifdef MOUSE
   for(i = 0; i < 12; i++){
     if(menuitems[i].kncp)
         free_color_pair(&menuitems[i].kncp);
@@ -1942,6 +1943,8 @@ free_pico_module_globals(void)
 	menuitems[i].label = NULL;
     }
   }
+#endif /* MOUSE */
+
 }
 
 
