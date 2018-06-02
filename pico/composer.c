@@ -2864,8 +2864,10 @@ PaintHeader(int line,		/* physical line on screen */
 
     display_delimiter(ComposerEditing ? 0 : 1);
 
-    if(lastc)
+    if(lastc){
        pico_set_colorp(lastc, PSC_NONE);
+       free_color_pair(&lastc);
+    }
 }
 
 
@@ -3372,13 +3374,13 @@ display_delimiter(int state)
     UCS    *bufp, *buf;
     COLOR_PAIR *lastc = NULL;
 
+    if(ComposerTopLine - 1 >= BOTTOM())		/* silently forget it */
+      return;
+
     if(Pmaster && Pmaster->colors){
        lastc = pico_get_cur_color();
        pico_set_colorp(Pmaster->colors->ntcp, PSC_NONE);
     }
-
-    if(ComposerTopLine - 1 >= BOTTOM())		/* silently forget it */
-      return;
 
     buf = utf8_to_ucs4_cpystr((gmode & MDHDRONLY) ? "" : HDR_DELIM);
     if(!buf)
@@ -3393,6 +3395,7 @@ display_delimiter(int state)
 	if(bufp[delim_ps] == '\0' && !(gmode & MDHDRONLY)){
 	    delim_ps = state;
 	    fs_give((void **) &buf);
+	    if(lastc) free_color_pair(&lastc);
 	    return;				/* already displayed! */
 	}
     }
@@ -3412,8 +3415,10 @@ display_delimiter(int state)
     peeol();
     fs_give((void **) &buf);
 
-    if(lastc)
+    if(lastc){
        pico_set_colorp(lastc, PSC_NONE);
+       free_color_pair(&lastc);
+    }
 }
 
 

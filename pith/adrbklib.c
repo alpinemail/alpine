@@ -1066,8 +1066,10 @@ build_abook_tries(AdrBk *ab, char *warning)
 		    }
 		}
 
-		if(reverse)
+		if(reverse){
 		  add_entry_to_trie(&ab->revfull_trie, reverse, (a_c_arg_t) entry_num);
+		  fs_give((void **) &reverse);
+		}
 
 		if(forward && forward != ae->fullname)
 		  fs_give((void **) &forward);

@@ -3377,14 +3377,20 @@ wstripe(int line, int column, char *utf8pmt, int key)
     ucs4pmt = utf8_to_ucs4_cpystr(utf8pmt);
     l = ucs4_strlen(ucs4pmt);
     while(1){
-	if(i >= term.t_ncol || col >= term.t_ncol || j >= l)
+	if(i >= term.t_ncol || col >= term.t_ncol || j >= l){
+	  if(lastc) free_color_pair(&lastc);
+	  if(ucs4pmt) fs_give((void **) &ucs4pmt);
 	  return;				/* equal strings */
+	}
 
 	if(ucs4pmt[j] == (UCS) key)
 	  j++;
 
-	if (pscr(line, i) == NULL)
+	if (pscr(line, i) == NULL){
+	  if(lastc) free_color_pair(&lastc);
+	  if(ucs4pmt) fs_give((void **) &ucs4pmt);
 	  return;
+	}
 	
 	if(pscr(line, i)->c != ucs4pmt[j]){
 	    if(j >= 1 && ucs4pmt[j-1] == (UCS) key)
