@@ -1857,6 +1857,7 @@ void *mm_blocknotify (int reason,void *data)
 
 void env_end(void)
 {
+  if(myMailboxDir) fs_give((void **) &myMailboxDir);
   if(myUserName) fs_give((void **)&myUserName);
   if(myHomeDir)	 fs_give((void **)&myHomeDir);
   if(ftpHome)	 fs_give((void **)&ftpHome);

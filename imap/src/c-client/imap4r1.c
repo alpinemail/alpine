@@ -2951,6 +2951,7 @@ long imap_setid (MAILSTREAM *stream, IDLIST *idlist)
 	if (imap_OK (stream,reply = imap_send (stream,"ID",args)))
 	   ret = LONGT;
 	else mm_log (reply->text,ERROR);
+	if(qroot) fs_give((void **) &qroot);
     } else mm_log("Empty or malformed ID list", ERROR);
   }
   else mm_log ("ID capability not available on this IMAP server",ERROR);

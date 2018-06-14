@@ -918,3 +918,11 @@ char *tcp_name_valid (char *s)
   }
   return ret;
 }
+
+void tcp_end(void)
+{
+ if(myClientAddr) fs_give((void **) &myClientAddr);
+ if(myClientHost) fs_give((void **) &myClientHost);
+ if(myServerAddr) fs_give((void **) &myServerAddr);
+ if(myServerHost) fs_give((void **) &myServerHost);
+}

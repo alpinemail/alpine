@@ -9907,7 +9907,7 @@ free_mailcmd_globals(void)
     * are hacks to free history memory 
     */
    smime_import_certificate(NULL, NULL, NULL, 0);
-   save_prompt(NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL);
+   save_prompt(NULL, NULL, NULL, 0, NULL, NULL, 0L, NULL, NULL, NULL);
    cmd_export(NULL, NULL, 0, 0);
    simple_export(NULL, NULL, CharStar, NULL, NULL);
    broach_folder(0, 0, NULL, NULL);

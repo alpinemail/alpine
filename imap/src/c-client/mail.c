@@ -6407,4 +6407,5 @@ char *net_localhost (NETSTREAM *stream)
 void free_c_client_module_globals(void)
 {
    env_end();
+   tcp_end();
 }

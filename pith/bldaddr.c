@@ -1261,3 +1261,9 @@ free_privatetop(PrivateTop **pt)
 	fs_give((void **)pt);
     }
 }
+
+void
+free_bldaddr_module_globals(void)
+{
+  if(last_fcc_used) fs_give((void **)&last_fcc_used);
+}

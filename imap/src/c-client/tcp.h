@@ -57,3 +57,4 @@ char *tcp_serverhost (void);
 long tcp_serverport (void);
 char *tcp_canonical (char *name);
 long tcp_isclienthost (char *host);
+void tcp_end(void);

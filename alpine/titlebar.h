@@ -50,6 +50,7 @@ void	    update_titlebar_lpercent(long);
 void	    titlebar_stream_closing(MAILSTREAM *);
 int         update_titlebar_status(void);
 void        check_cue_display(char *);
+void	    free_titlebar_globals(void);
 
 
 #endif /* PINE_TITLEBAR_INCLUDED */

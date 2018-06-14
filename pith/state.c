@@ -34,7 +34,7 @@ static char rcsid[] = "$Id: state.c 1074 2008-06-04 00:08:43Z hubert@u.washingto
 #include "../pith/list.h"
 #include "../pith/smime.h"
 #include "../pith/ical.h"
-
+#include "../pith/bldaddr.h"
 
 /*
  * Globals referenced throughout pine...
@@ -359,4 +359,7 @@ free_pith_module_globals(void)
 {
     free_filter_module_globals();
     ical_free_all();
+    free_bldaddr_module_globals();
+    fname_to_locale(NULL);
+    fname_to_utf8(NULL);
 }

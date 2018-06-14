@@ -56,6 +56,11 @@ fname_to_locale(char *fname)
     static size_t fname_locale_len = 0;
     char *converted_fname, *p;
 
+    if(fname == NULL){	/* special call to free memory */
+      if(fname_locale_buf) fs_give((void **) &fname_locale_buf);
+      return NULL;
+    }
+
     p = convert_to_locale(fname);
     if(p)
       converted_fname = p;
@@ -102,6 +107,11 @@ fname_to_utf8(char *fname)
     static char *fname_utf8_buf = NULL;
     static size_t fname_utf8_len = 0;
     char *converted_fname, *p;
+
+    if(fname == NULL){	/* special call to free memory */
+      if(fname_utf8_buf) fs_give((void **) &fname_utf8_buf);
+      return NULL;
+    }
 
     p = convert_to_utf8(fname, NULL, 0);
     if(p)

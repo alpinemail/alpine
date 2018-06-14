@@ -117,6 +117,6 @@ void	 set_last_fcc(char *);
 char	*get_fcc_based_on_to(ADDRESS *);
 void	 free_privatetop(PrivateTop **);
 void     strip_personal_quotes(ADDRESS *);
-
+void     free_bldaddr_module_globals(void);
 
 #endif /* PITH_BLDADDR_INCLUDED */

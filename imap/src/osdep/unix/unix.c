@@ -21,7 +21,7 @@
  *		Internet: MRC@Washington.EDU
  *
  * Date:	20 December 1989
- * Last Edited:	27 March 2008
+ * Last Edited:	June 13 2018 by Eduardo Chappa
  */
 
 
@@ -586,8 +586,15 @@ void unix_close (MAILSTREAM *stream,long options)
  * Returns: message header in RFC822 format
  */
 
-				/* lines to filter from header */
-static STRINGLIST *unix_hlines = NIL;
+
+STRINGLIST XIMAPbase = {"X-IMAPbase", 10, NIL};
+STRINGLIST XIMAP     = {"X-IMAP", 6, &XIMAPbase};
+STRINGLIST XUID      = {"X-UID", 5, &XIMAP};
+STRINGLIST XKeywords = {"X-Keywords", 10, &XUID};
+STRINGLIST XStatus   = {"X-Status", 8, &XKeywords};
+STRINGLIST Status    = {"Status", 6, &XStatus};
+
+static STRINGLIST *unix_hlines = &Status;
 
 char *unix_header (MAILSTREAM *stream,unsigned long msgno,
 		   unsigned long *length,long flags)
@@ -597,26 +604,6 @@ char *unix_header (MAILSTREAM *stream,unsigned long msgno,
   *length = 0;			/* default to empty */
   if (flags & FT_UID) return "";/* UID call "impossible" */
   elt = mail_elt (stream,msgno);/* get cache */
-  if (!unix_hlines) {		/* once only code */
-    STRINGLIST *lines = unix_hlines = mail_newstringlist ();
-    lines->text.size = strlen ((char *) (lines->text.data =
-					 (unsigned char *) "Status"));
-    lines = lines->next = mail_newstringlist ();
-    lines->text.size = strlen ((char *) (lines->text.data =
-					 (unsigned char *) "X-Status"));
-    lines = lines->next = mail_newstringlist ();
-    lines->text.size = strlen ((char *) (lines->text.data =
-					 (unsigned char *) "X-Keywords"));
-    lines = lines->next = mail_newstringlist ();
-    lines->text.size = strlen ((char *) (lines->text.data =
-					 (unsigned char *) "X-UID"));
-    lines = lines->next = mail_newstringlist ();
-    lines->text.size = strlen ((char *) (lines->text.data =
-					 (unsigned char *) "X-IMAP"));
-    lines = lines->next = mail_newstringlist ();
-    lines->text.size = strlen ((char *) (lines->text.data =
-					 (unsigned char *) "X-IMAPbase"));
-  }
 				/* go to header position */
   lseek (LOCAL->fd,elt->private.special.offset +
 	 elt->private.msg.header.offset,L_SET);

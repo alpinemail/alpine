@@ -3552,6 +3552,7 @@ free_alpine_module_globals(void)
 #endif
     free_message_queue();
     free_mailcmd_globals();
+    free_titlebar_globals();
 }
 
 #ifdef	WIN32

@@ -1066,3 +1066,15 @@ long tcp_isclienthost (char *host)
 /* Following statement must be at end of this module */
 
 #undef fork			/* undo any use of vfork() */
+
+void tcp_end(void)
+{
+ if(rshcommand) fs_give((void **) &rshcommand);
+ if(rshpath) fs_give((void **) &rshpath);
+ if(sshcommand) fs_give((void **) &sshcommand);
+ if(sshpath) fs_give((void **) &sshpath);
+ if(myClientAddr) fs_give((void **) &myClientAddr);
+ if(myClientHost) fs_give((void **) &myClientHost);
+ if(myServerAddr) fs_give((void **) &myServerAddr);
+ if(myServerHost) fs_give((void **) &myServerHost);
+}

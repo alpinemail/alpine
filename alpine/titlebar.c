@@ -1261,3 +1261,10 @@ newmail_check_point_cue(int onoroff)
       mswin_setcursor (MSWIN_CURSOR_ARROW);
 #endif
 }
+
+void
+free_titlebar_globals(void)
+{
+  if(as_fname) fs_give((void **) &as_fname);
+  if(as_cname) fs_give((void **) &as_cname);
+}

@@ -862,6 +862,8 @@ address_is_us(struct mail_address *a, struct pine *ps)
 	ret = 0;
 	if(a && a->host && a->mailbox)
 	  snprintf(addrstr, sizeof(addrstr), "%s@%s", a->mailbox, a->host);
+	else
+	  addrstr[0] = '\0';
 
 	for(t = ps_global->VAR_ALT_ADDRS; !ret && t[0] && t[0][0]; t++){
 	    char    *alt;
