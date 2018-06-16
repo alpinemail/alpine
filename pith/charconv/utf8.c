@@ -280,6 +280,10 @@ convert_to_utf8(char *str, char *fromcharset, int flags)
 	    }
 	    /* else no conversion necessary */
 
+	    if(result.data)
+	      fs_give((void **) &result.data);
+	    result.size = 0;
+
 	    return(ret);
 	}
 

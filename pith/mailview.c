@@ -609,12 +609,13 @@ format_body(long int msgno, BODY *body, HANDLE_S **handlesp, HEADER_S *hp, int f
 		    && body->nested.part->body.type == TYPETEXT)
 	      charset = parameter_val(body->nested.part->body.parameter, "charset");
 	    else
-	      charset = ps_global->display_charmap;
+	      charset = cpystr(ps_global->display_charmap);
 
 	    if(strucmp(charset, "us-ascii") && strucmp(charset, "utf-8")){
 		/* transliterate message text to UTF-8 */
 		gf_link_filter(gf_utf8, gf_utf8_opt(charset));
 	    }
+	    if (charset) fs_give((void **) &charset);
 
 	    /* link in filters, similar to what is done in decode_text() */
 	    if(!ps_global->pass_ctrl_chars){

@@ -1193,6 +1193,8 @@ main(int argc, char **argv)
 		q_status_message1(SM_ORDER, 3, 4,
 		    _("Unable to open folder \"%s\""), args.data.folder);
 
+		fs_give((void **) &args.data.folder);
+
 		goodnight_gracey(pine_state, -1);
 	    }
 	}

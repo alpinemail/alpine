@@ -117,6 +117,9 @@ free_pine_struct(struct pine **pps)
     if(!(pps && (*pps)))
       return;
 
+    if((*pps)->free_initial_cmds != NULL)
+      fs_give((void **) &(*pps)->free_initial_cmds);
+
     if((*pps)->id != NULL)
       mail_free_idlist(&(*pps)->id);
 
