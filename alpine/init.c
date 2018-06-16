@@ -46,7 +46,6 @@ CONF_TXT_T init_md_create[] =	"Creating subdirectory \"%s\" where Alpine will st
 /*
  * Internal prototypes
  */
-void	 display_init_err(char *, int);
 char	*context_string(char *);
 int	 prune_folders(CONTEXT_S *, char *, int, char *, unsigned);
 int	 prune_move_folder(char *, char *, CONTEXT_S *);
@@ -113,37 +112,6 @@ init_mail_dir(struct pine *ps)
 
     return(0);
 }
-
-
-/*----------------------------------------------------------------------
-  Make sure the default save folders exist in the default
-  save context.
-  ----*/
-void
-display_init_err(char *s, int err)
-{
-#ifdef	_WINDOWS
-    mswin_messagebox(s, err);
-#else
-    int n = 0;
-
-    if(err)
-      fputc(BELL, stdout);
-
-    for(; *s; s++)
-      if(++n > 60 && isspace((unsigned char)*s)){
-	  n = 0;
-	  fputc('\n', stdout);
-	  while(*(s+1) && isspace((unsigned char)*(s+1)))
-	    s++;
-      }
-      else
-	fputc(*s, stdout);
-
-    fputc('\n', stdout);
-#endif
-}
-
 
 /*
  * Return malloc'd string containing only the context specifier given

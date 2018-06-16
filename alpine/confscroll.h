@@ -45,6 +45,7 @@ extern char *empty_val2;
 
 extern struct variable  *score_act_global_ptr,
 			*scorei_pat_global_ptr,
+			*sig_act_global_ptr,
 			*age_pat_global_ptr,
 			*size_pat_global_ptr,
 			*cati_global_ptr,

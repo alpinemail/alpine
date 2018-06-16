@@ -51,8 +51,17 @@ int             rd_upgrade_cookies(REMDATA_S *, long, int);
 int             rd_check_for_suspect_data(REMDATA_S *);
 
 
+/* Remote data files are a little bit more complicated to transfer.
+ * There is a .abXXXXX master meta data file which contains information on
+ * other .abYYYYY files. This involves transfering all the .abYYYYY files
+ * to abYYYYY files, and then rewrite .abXXXXX to abXXXXX with the correct
+ * abYYYYY values.
+ */
+#ifdef ALPINE_USE_CONFIG_DIR
+char meta_prefix[] = "ab";
+#else
 char meta_prefix[] = ".ab";
-
+#endif /* ALPINE_USE_CONFIG_DIR */
 
 char *(*pith_opt_rd_metadata_name)(void);
 
@@ -512,21 +521,24 @@ rd_read_metadata(REMDATA_S *rd)
 	     * accessed from the PC or from unix where the pathnames to
 	     * get there will be different.
 	     */
-
+#ifdef REMOTE_SUBDIR
+	    build_path2(path, ps_global->config_dir, REMOTE_SUBDIR, rab->local_cache_file, sizeof(path));
+#else
 	    if((lc = last_cmpnt(ps_global->pinerc)) != NULL){
-		int to_copy;
+		 int to_copy;
 
-		to_copy = (lc - ps_global->pinerc > 1)
+		 to_copy = (lc - ps_global->pinerc > 1)
 			    ? (lc - ps_global->pinerc - 1) : 1;
-		strncpy(dir, ps_global->pinerc, MIN(to_copy, sizeof(dir)-1));
-		dir[MIN(to_copy, sizeof(dir)-1)] = '\0';
+		 strncpy(dir, ps_global->pinerc, MIN(to_copy, sizeof(dir)-1));
+		 dir[MIN(to_copy, sizeof(dir)-1)] = '\0';
 	    }
 	    else{
-		dir[0] = '.';
-		dir[1] = '\0';
+		 dir[0] = '.';
+		 dir[1] = '\0';
 	    }
-
 	    build_path(path, dir, rab->local_cache_file, sizeof(path));
+#endif /* REMOTE_SUBDIR */
+
 	    rd->lf = cpystr(path);
 	}
 	else{

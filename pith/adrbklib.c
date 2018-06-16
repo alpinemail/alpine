@@ -29,7 +29,7 @@ static char rcsid[] = "$Id: adrbklib.c 1266 2009-07-14 18:39:12Z hubert@u.washin
 #include "../pith/signal.h"
 #include "../pith/busy.h"
 #include "../pith/util.h"
-
+#include "../pith/init.h"
 
 AddrScrState as;
 
@@ -288,7 +288,11 @@ bootstrap_nocheck_policy:
 	/*------------ figure out and save name of file to open ---------*/
 	if(filename == NULL){
 	    if(homedir != NULL){
-		build_path(path, homedir, ADRBK_NAME, sizeof(path));
+		TRANSFER_S t = transfer_list_from_token(DF_ADDRESSBOOK);
+		if(t.subdir != NULL)
+		  build_path2(path, homedir, t.subdir, ADRBK_NAME, sizeof(path));
+		else
+		  build_path(path, homedir, ADRBK_NAME, sizeof(path));
 		ab->filename = cpystr(path);
 	    }
 	    else
@@ -300,8 +304,12 @@ bootstrap_nocheck_policy:
 	    }
 	    else{
 		if(homedir != NULL){
+		  TRANSFER_S t = transfer_list_from_token(DF_ADDRESSBOOK);
+		  if(t.subdir != NULL)
+		    build_path2(path, homedir, t.subdir, filename, sizeof(path));
+		  else
 		    build_path(path, homedir, filename, sizeof(path));
-		    ab->filename = cpystr(path);
+		  ab->filename = cpystr(path);
 		}
 		else
 		  ab->filename = cpystr(filename);
@@ -5117,18 +5125,25 @@ init_addrbooks(OpenStatus want_status, int reset_to_top, int open_if_only_one, i
 	    }
 	    else{
 		char book_path[MAXPATH+1];
-		char *lc = last_cmpnt(ps_global->pinerc);
+		char *lc;
+		TRANSFER_S t = transfer_list_from_token(DF_ADDRESSBOOK);
 
-		book_path[0] = '\0';
-		if(lc != NULL){
+		if(t.subdir != NULL)
+		  build_path2(book_path, ps_global->config_dir, t.subdir, filename, sizeof(book_path));
+		else{
+		  lc = last_cmpnt(ps_global->pinerc);
+
+		  book_path[0] = '\0';
+		  if(lc != NULL){
 		    strncpy(book_path, ps_global->pinerc,
 			    MIN(lc - ps_global->pinerc, sizeof(book_path)-1));
 		    book_path[MIN(lc - ps_global->pinerc,
 				  sizeof(book_path)-1)] = '\0';
-		}
+		  }
 
-		strncat(book_path, filename,
+		  strncat(book_path, filename,
 			sizeof(book_path)-1-strlen(book_path));
+		}
 		pab->filename = cpystr(book_path);
 	    }
 
@@ -5250,14 +5265,20 @@ adrbk_access(PerAddrBook *pab)
 	}
     }
     else if(pab){	/* local file */
+	TRANSFER_S t;
 #if defined(NO_LOCAL_ADDRBOOKS)
 	/* don't allow any access to local addrbooks */
 	access = NoAccess;
 #else /* !NO_LOCAL_ADDRBOOKS) */
-	build_path(fbuf, is_absolute_path(pab->filename) ? NULL
-							 : ps_global->home_dir,
+	t = transfer_list_from_token(DF_ADDRESSBOOK);
+	if(t.subdir != NULL)
+	  build_path2(fbuf, is_absolute_path(pab->filename) ? NULL
+		   : (ps_global->using_config_dir ? ps_global->config_dir : ps_global->home_dir),
+		   t.subdir, pab->filename, sizeof(fbuf));
+	else
+	  build_path(fbuf, is_absolute_path(pab->filename) ? NULL
+		   : (ps_global->using_config_dir ? ps_global->config_dir : ps_global->home_dir),
 		   pab->filename, sizeof(fbuf));
-
 #if defined(DOS) || defined(OS2)
 	/*
 	 * Microsoft networking causes some access calls to do a DNS query (!!)
@@ -5442,6 +5463,8 @@ init_abook(PerAddrBook *pab, OpenStatus want_status)
 	if(pab->access != NoAccess){
 	    char warning[800]; /* place to put a warning */
 	    int sort_rule;
+	    TRANSFER_S t = transfer_list_from_token(DF_ADDRESSBOOK);
+	    char root_path[MAXPATH+1];
 
 	    warning[0] = '\0';
 	    if(pab->access == ReadOnly)
@@ -5449,8 +5472,14 @@ init_abook(PerAddrBook *pab, OpenStatus want_status)
 	    else
 	      sort_rule = ps_global->ab_sort_rule;
 
-	    pab->address_book = adrbk_open(pab,
-		   ps_global->home_dir, warning, sizeof(warning), sort_rule);
+	    if(t.subdir)
+	      build_path(root_path, ps_global->config_dir, t.subdir, sizeof(root_path));
+	    else{
+	      char *target = ps_global->using_config_dir ? ps_global->config_dir : ps_global->home_dir;
+	      strncpy(root_path, target, strlen(target));
+	      root_path[sizeof(root_path)-1] = '\0';
+	    }
+	    pab->address_book = adrbk_open(pab, root_path, warning, sizeof(warning), sort_rule);
 
 	    if(pab->address_book == NULL){
 		pab->access = NoAccess;

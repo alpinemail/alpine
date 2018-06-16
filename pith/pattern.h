@@ -361,6 +361,8 @@ int         add_pattern(PAT_S *, long);
 int         delete_pattern(int, long);
 int         shuffle_pattern(int, int, long);
 PAT_LINE_S *parse_pat_file(char *);
+PAT_S      *parse_pat(char *);
+char	   *data_for_patline(PAT_S *);
 INTVL_S    *parse_intvl(char *);
 char       *stringform_of_intvl(INTVL_S *);
 char       *hdrtok_to_stringform(HEADER_TOK_S *);

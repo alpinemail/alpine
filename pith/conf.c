@@ -108,11 +108,19 @@ CONF_TXT_T cf_text_nntp_server[] =		"NNTP server for posting news. Also sets new
 
 #ifdef	SMIME
 
+#ifdef ALPINE_USE_CONFIG_DIR
+CONF_TXT_T cf_text_publiccertdir[] =		"Public certificates are kept in files in this directory. The files should\n# contain certificates in PEM format. The name of each file should look\n# like <emailaddress>.crt. The default directory in the configuration\n# directory is alpine-smime/public.";
+
+CONF_TXT_T cf_text_privatekeydir[] =		"Private keys are kept in files in this directory. The files are in PEM format.\n# The name of a file should look like <emailaddress>.key.\n# The default directory in the configuration directory is alpine-smime/private.";
+
+CONF_TXT_T cf_text_cacertdir[] =		"Certificate Authority certificates (in addition to the normal CACerts for the\n# system) are kept in files in this directory. The files are in PEM format.\n# Filenames should end with .crt. The default directory in the configuration\n# directory is alpine-smime/ca.";
+#else
 CONF_TXT_T cf_text_publiccertdir[] =		"Public certificates are kept in files in this directory. The files should\n# contain certificates in PEM format. The name of each file should look\n# like <emailaddress>.crt. The default directory is .alpine-smime/public.";
 
 CONF_TXT_T cf_text_privatekeydir[] =		"Private keys are kept in files in this directory. The files are in PEM format.\n# The name of a file should look like <emailaddress>.key.\n# The default directory is .alpine-smime/private.";
 
 CONF_TXT_T cf_text_cacertdir[] =		"Certificate Authority certificates (in addition to the normal CACerts for the\n# system) are kept in files in this directory. The files are in PEM format.\n# Filenames should end with .crt. The default directory is .alpine-smime/ca.";
+#endif /* ALPINE_USE_CONFIG_DIR */
 
 CONF_TXT_T cf_text_publiccertcontainer[] =	"If this option is set then public certificates are kept in a single container\n# \"file\" similar to a remote configuration file instead of in the\n# smime-publiccert-directory. The value can be a remote or local folder\n# specification like for a non-standard pinerc value. The default\n# is that it is not set.";
 
@@ -170,7 +178,11 @@ CONF_TXT_T cf_text_literal_sig[] =	"Contains the actual signature contents as op
 
 CONF_TXT_T cf_text_global_address_book[] =	"List of file or path names for global/shared addressbook(s).\n# Default: none\n# Syntax: optnl-label path-name";
 
+#ifdef  ALPINE_USE_CONFIG_DIR
+CONF_TXT_T cf_text_address_book[] =	"List of file or path names for personal addressbook(s).\n# Default: addressbook (Unix) or \\PINE\\ADDRBOOK (PC)\n# Syntax: optnl-label path-name";
+#else
 CONF_TXT_T cf_text_address_book[] =	"List of file or path names for personal addressbook(s).\n# Default: ~/.addressbook (Unix) or \\PINE\\ADDRBOOK (PC)\n# Syntax: optnl-label path-name";
+#endif /*  ALPINE_USE_CONFIG_DIR */
 
 CONF_TXT_T cf_text_feature_list[] =	"List of features; see Alpine's Setup/options menu for the current set.\n# e.g. feature-list= select-without-confirm, signature-at-bottom\n# Default condition for all of the features is no-.";
 
@@ -1471,7 +1483,13 @@ init_pinerc(struct pine *ps, char **debug_out)
     }
 
     if(!ps->pinerc){
-      build_path(buf, ps->home_dir, ".pinerc", sizeof(buf));
+      TRANSFER_S t;
+
+      t = transfer_list_from_token(USER_PINERC);
+      if(t.subdir != NULL)
+	build_path2(buf, ps->config_dir, t.subdir, USER_PINERC, sizeof(buf));
+      else
+	build_path(buf, ps->config_dir, USER_PINERC, sizeof(buf));
       ps->pinerc = cpystr(buf);
     }
 
@@ -1505,7 +1523,7 @@ init_pinerc(struct pine *ps, char **debug_out)
 	    buf[MIN(p - ps->pinerc, sizeof(buf)-1)] = '\0';
 	}
 
-	strncat(buf, ".pinercex", sizeof(buf)-1-strlen(buf));
+	strncat(buf, USER_PINERCEX, sizeof(buf)-1-strlen(buf));
         mprint(2, (db, DSIZE-(db-(*debug_out)), "Exceptions config not set on cmdline\n  checking for default \"%.100s\" in pinerc dir\n", buf));
 
 	if(can_access(buf, ACCESS_EXISTS) == 0)		/* found it! */
@@ -1537,7 +1555,11 @@ init_pinerc(struct pine *ps, char **debug_out)
 
 	    strncat(buf, ps->exceptions, sizeof(buf)-1-strlen(buf));
 #else
-	    build_path(buf, ps->home_dir, ps->exceptions, sizeof(buf));
+	    TRANSFER_S t = transfer_list_from_token(USER_PINERCEX);
+	    if(t.subdir != NULL)
+	      build_path2(buf, ps->using_config_dir ? ps->config_dir : ps->home_dir, t.subdir, ps->exceptions, sizeof(buf));
+	    else
+	      build_path(buf, ps->using_config_dir ? ps->config_dir : ps->home_dir, ps->exceptions, sizeof(buf));
 #endif
 	}
 	else{
@@ -6245,7 +6267,7 @@ dump_global_conf(void)
      fprintf(f, "#      %s -- system wide pine configuration\n#\n",
 	     SYSTEM_PINERC);
      fprintf(f, "# Values here affect all pine users unless they've overridden the values\n");
-     fprintf(f, "# in their .pinerc files.  A copy of this file with current comments may\n");
+     fprintf(f, "# in their %s files.  A copy of this file with current comments may\n", USER_PINERC);
      fprintf(f, "# be obtained by running \"pine -conf\". It will be printed to standard output.\n#\n");
      fprintf(f,"# For a variable to be unset its value must be null/blank.  This is not the\n");
      fprintf(f,"# same as the value of \"empty string\", which can be used to effectively\n");
@@ -6253,8 +6275,8 @@ dump_global_conf(void)
      fprintf(f,"# To set a variable to the empty string its value should be \"\".\n");
      fprintf(f,"# Switch variables are set to either \"yes\" or \"no\", and default to \"no\".\n");
      fprintf(f,"# Except for feature-list items, which are additive, values set in the\n");
-     fprintf(f,"# .pinerc file replace those in pine.conf, and those in pine.conf.fixed\n");
-     fprintf(f,"# over-ride all others.  Features can be over-ridden in .pinerc or\n");
+     fprintf(f,"# %s file replace those in pine.conf, and those in pine.conf.fixed\n", USER_PINERC);
+     fprintf(f,"# over-ride all others.  Features can be over-ridden in %s or\n", USER_PINERC);
      fprintf(f,"# pine.conf.fixed by pre-pending the feature name with \"no-\".\n#\n");
      fprintf(f,"# (These comments are automatically inserted.)\n");
 
@@ -6326,7 +6348,7 @@ dump_new_pinerc(char *filename)
 	    ps_global->pinerc = cpystr(p);
 	}else{
 	    char buf2[MAXPATH];
-	    build_path(buf2, ps_global->home_dir, DF_PINEDIR, sizeof(buf2));
+	    build_path(buf2, ps->using_config_dir ? ps->config_dir : ps_global->home_dir, DF_PINEDIR, sizeof(buf2));
 	    build_path(buf, buf2, SYSTEM_PINERC, sizeof(buf));
 	}
 
@@ -6334,7 +6356,11 @@ dump_new_pinerc(char *filename)
     }
 #else	/* !DOS */
     if(!ps_global->pinerc){
-	build_path(buf, ps_global->home_dir, ".pinerc", sizeof(buf));
+	TRANSFER_S t = transfer_list_from_token(USER_PINERC);
+	if(t.subdir != NULL)
+	   build_path2(buf, ps_global->using_config_dir ? ps_global->config_dir : ps_global->home_dir, t.subdir, USER_PINERC, sizeof(buf));
+	else
+	   build_path(buf, ps_global->using_config_dir ? ps_global->config_dir : ps_global->home_dir, USER_PINERC, sizeof(buf));
 	p = buf;
     }
 #endif	/* !DOS */

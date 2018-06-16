@@ -43,6 +43,7 @@ static char rcsid[] = "$Id: smime.c 1176 2008-09-29 21:16:42Z hubert@u.washingto
 #include "../pith/readfile.h"
 #include "../pith/remote.h"
 #include "../pith/body.h"
+#include "../pith/init.h"
 #ifdef PASSFILE
 #include "../pith/imap.h"
 #endif /* PASSFILE */
@@ -189,8 +190,8 @@ load_key_and_cert(char *pathkeydir, char *pathcertdir, char **keyfile,
  *		  2 - User cancelled to create self signed certificate
  *		 -1 - we do not know which directory to use
  *		 -2 - "-pwdcertdir" was given by user, but directory does not exist
- *		 -3 - "DF_PASSWORD_DIR" exists but it is not a directory!!??
- * 		 -4 - we tried to create DF_PASSWORD_DIR but failed.
+ *		 -3 - "DF_PWDCERTDIR" exists but it is not a directory!!??
+ * 		 -4 - we tried to create DF_PWDCERTDIR but failed.
  *		 -5 - password directory exists, but it is empty
  *
  */
@@ -222,7 +223,7 @@ setup_pwdcert(void **pwdcert)
      }
      else rv = -2;
   } else {
-      smime_path(DF_PASSWORD_DIR, pathdir, sizeof(pathdir));
+      smime_path(DF_PWDCERTDIR, pathdir, sizeof(pathdir));
       if(our_stat(pathdir, &sbuf) == 0){
 	if((sbuf.st_mode & S_IFMT) == S_IFDIR)
 	  setup_dir++;
@@ -1044,6 +1045,15 @@ smime_path(char *rpath, char *fpath, size_t len)
             if(strlen(ps_global->VAR_OPER_DIR) + spl < len - 1)
               build_path(fpath, ps_global->VAR_OPER_DIR, rpath, len);
         }
+#ifdef ALPINE_USE_CONFIG_DIR
+	else if(ps_global->config_dir){
+            if(strlen(ps_global->config_dir) + spl < len - 1){
+	      char *f = target_transfer_filename(rpath);
+              build_path(fpath, ps_global->config_dir, f, len);
+	      fs_give((void **) &f);
+	    }
+	}
+#endif /* ALPINE_USE_CONFIG_DIR */
 	else if(ps_global->home_dir){
             if(strlen(ps_global->home_dir) + spl < len - 1)
               build_path(fpath, ps_global->home_dir, rpath, len);

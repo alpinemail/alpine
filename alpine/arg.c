@@ -67,6 +67,7 @@ static char args_err_missing_pwdcertdir[] =	N_("missing argument for option \"-p
 static char args_err_non_abs_pwdcertdir[] =	N_("argument to \"-pwdcertdir\" should be fully-qualified");
 #endif /* SMIME inside PASSFILE */
 #endif
+static char args_err_missing_config_dir[] =	N_("missing argument for option \"-config_dir\"");
 static char args_err_missing_sort[] =		N_("missing argument for option \"-sort\"");
 static char args_err_missing_flag_arg[] =	N_("missing argument for flag \"%c\"");
 static char args_err_missing_flag_num[] =	N_("Non numeric argument for flag \"%c\"");
@@ -121,6 +122,10 @@ N_(" -conf\t\tConfiguration - Print out fresh global configuration. The"),
 N_("\t\tvalues of your global configuration affect all Alpine users"),
 N_("\t\ton your system unless they have overridden the values in their"),
 N_("\t\tpinerc files."),
+#ifdef ALPINE_USE_CONFIG_DIR
+N_(" -config_dir <dir> - Store all Alpine configuration files in <dir>")
+N_(" -disable-config_dir - disables use of configuration directory")
+#endif /* ALPINE_USE_CONFIG_DIR */
 N_(" -pinerc <file>\tConfiguration - Put fresh pinerc configuration in <file>"),
 N_(" -p <pinerc>\tUse alternate .pinerc file"),
 #if	!defined(DOS) && !defined(OS2)
@@ -364,7 +369,32 @@ Loop: while(--ac > 0)
 		  goto Loop;
 	      }
 #endif  /* LOCAL_PASSWD_CACHE */
+#ifdef ALPINE_USE_CONFIG_DIR
+	      /* we recycle config_dir to pass this  value to a later function
+	       * that will rewrite its value later to a full path. We do not
+	       * check that this value would work here, but later.
+	       */	
+	      else if(strcmp(*av, "config_dir") == 0){
+		  if(--ac){
+		      if((str = *++av) != NULL){
+			if(pine_state->config_dir)
+			  fs_give((void **)&pine_state->config_dir);
 
+			pine_state->config_dir = cpystr(str);
+		      }
+		  }
+		  else{
+		      display_args_err(_(args_err_missing_config_dir), NULL, 1);
+		      ++usage;
+		  }
+
+		  goto Loop;
+	      }
+	      else if(strcmp(*av, "disable-config-dir") == 0){
+		  ps_global->using_config_dir = -1;
+		  goto Loop;
+	      }
+#endif /* ALPINE_USE_CONFIG_DIR */
 	      else if(strcmp(*av, "convert_sigs") == 0){
 		  ps_global->convert_sigs = 1;
 		  goto Loop;

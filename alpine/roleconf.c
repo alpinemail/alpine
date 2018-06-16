@@ -45,6 +45,7 @@ static char rcsid[] = "$Id: roleconf.c 1266 2009-07-14 18:39:12Z hubert@u.washin
 #include "../pith/ablookup.h"
 #include "../pith/pattern.h"
 #include "../pith/tempfile.h"
+#include "../pith/init.h"
 
 
 #define NOT		"! "
@@ -1913,10 +1914,15 @@ role_config_addfile(struct pine *ps, CONF_S **cl, long int rflags)
 	pdir[sizeof(pdir)-1] = '\0';
 	len = strlen(pdir) + 1;
     }
-    else if((lc = last_cmpnt(ps->pinerc)) != NULL){
-	strncpy(pdir, ps->pinerc, MIN(sizeof(pdir)-1,lc-ps->pinerc));
-	pdir[MIN(sizeof(pdir)-1, lc-ps->pinerc)] = '\0';
-	len = strlen(pdir);
+    else{
+	TRANSFER_S t = transfer_list_from_token(DF_SIGNATURE_FILE);
+	if(t.subdir)
+	  build_path(pdir, ps_global->config_dir, t.subdir, sizeof(pdir));
+	else if((lc = last_cmpnt(ps->pinerc)) != NULL){
+	  strncpy(pdir, ps->pinerc, MIN(sizeof(pdir)-1,lc-ps->pinerc));
+	  pdir[MIN(sizeof(pdir)-1, lc-ps->pinerc)] = '\0';
+	  len = strlen(pdir);
+	}
     }
 
     strncpy(dir2, pdir, sizeof(dir2)-1);
@@ -2756,7 +2762,7 @@ role_config_edit_screen(struct pine *ps, PAT_S *def, char *title, long int rflag
                      cstm_act_var, smtp_act_var, nntp_act_var,
 		     sort_act_var, iform_act_var, startup_var,
 		     repl_type_var, forw_type_var, comp_type_var, score_act_var,
-		     hdrtok_act_var,
+		     hdrtok_act_var, 
 		     rolecolor_vars[2], filter_type_var, folder_act_var,
 		     keyword_set_var, keyword_clr_var,
 		     filt_new_var, filt_del_var, filt_imp_var, filt_ans_var;
@@ -3299,6 +3305,7 @@ role_config_edit_screen(struct pine *ps, PAT_S *def, char *title, long int rflag
     *apval = (def && def->action && def->action->litsig)
 	       ? cpystr(def->action->litsig) : NULL;
 
+    sig_act_global_ptr	   = &sig_act_var;
     sig_act_var.name       = cpystr(_("Set Signature"));
     sig_act_var.is_used    = 1;
     sig_act_var.is_user    = 1;
@@ -6229,11 +6236,16 @@ calculate_inick_stuff(struct pine *ps)
 		    pdir[MAXPATH] = '\0';
 		    len = strlen(pdir) + 1;
 		}
-		else if((lc = last_cmpnt(ps_global->pinerc)) != NULL){
-		    strncpy(pdir, ps_global->pinerc,
+		else{
+		    TRANSFER_S t = transfer_list_from_token(DF_SIGNATURE_FILE);
+		    if(t.subdir)
+		      build_path(pdir, ps_global->config_dir, t.subdir, sizeof(pdir));
+		    else if((lc = last_cmpnt(ps_global->pinerc)) != NULL){
+		      strncpy(pdir, ps_global->pinerc,
 			    MIN(MAXPATH,lc-ps_global->pinerc));
-		    pdir[MIN(MAXPATH, lc-ps_global->pinerc)] = '\0';
-		    len = strlen(pdir);
+		      pdir[MIN(MAXPATH, lc-ps_global->pinerc)] = '\0';
+		      len = strlen(pdir);
+		    }
 		}
 
 		if(pdir[0] && ps->VAR_SIGNATURE_FILE &&
@@ -7192,10 +7204,15 @@ role_text_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags)
 	    pdir[MAXPATH] = '\0';
 	    len = strlen(pdir) + 1;
 	}
-	else if((lc = last_cmpnt(ps_global->pinerc)) != NULL){
-	    strncpy(pdir, ps_global->pinerc, MIN(MAXPATH,lc-ps_global->pinerc));
-	    pdir[MIN(MAXPATH, lc-ps_global->pinerc)] = '\0';
-	    len = strlen(pdir);
+	else {
+	    TRANSFER_S t = transfer_list_from_token(DF_SIGNATURE_FILE);
+	    if(t.subdir)
+	      build_path(pdir, ps_global->config_dir, t.subdir, sizeof(pdir));
+	    else if((lc = last_cmpnt(ps_global->pinerc)) != NULL){
+	      strncpy(pdir, ps_global->pinerc, MIN(MAXPATH,lc-ps_global->pinerc));
+	      pdir[MIN(MAXPATH, lc-ps_global->pinerc)] = '\0';
+	      len = strlen(pdir);
+	    }
 	}
 
 	strncpy(title, "CHOOSE A", 15);

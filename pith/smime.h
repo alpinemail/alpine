@@ -28,11 +28,6 @@
 #include <openssl/rand.h>
 #include <openssl/err.h>
 
-#ifdef PASSFILE
-#define DF_PASSWORD_DIR ".alpine-smime/.pwd"
-#endif
-#define DF_SMIMETMPDIR  ".alpine-smime/smtmp"
-
 #define OUR_PKCS7_ENCLOSURE_SUBTYPE "x-pkcs7-enclosure"
 
 

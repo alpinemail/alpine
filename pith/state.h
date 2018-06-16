@@ -121,6 +121,7 @@ struct pine {
 
     char        *folders_dir;
 
+    int		 using_config_dir;	/* could be negative */
     unsigned	 signal_in_progress:1;	/* we are handling a signal */
     unsigned     mangled_footer:1; 	/* footer needs repainting */
     unsigned     mangled_header:1;	/* header needs repainting */
@@ -276,6 +277,7 @@ struct pine {
     POST_S      *post;
 
     char	*home_dir,
+		*config_dir,	/* location of configuration files */
                 *hostname,	/* Fully qualified hostname */
                 *localdomain,	/* The (DNS) domain this host resides in */
                 *userdomain,	/* The per user domain from .pinerc or */

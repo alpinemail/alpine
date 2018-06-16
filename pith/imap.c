@@ -1124,15 +1124,18 @@ passfile_name(char *pinerc, char *path, size_t len)
     if(ps_global->passfile)
       strncpy(path, ps_global->passfile, len-1);
     else{
-	if((p = last_cmpnt(pinerc)) && *(p-1) && *(p-1) != PASSFILE[0])
-	  for(i = 0; pinerc < p && i < len; pinerc++, i++)
-	    path[i] = *pinerc;
-	else
-	  i = 0;
+	if(ps_global->using_config_dir)
+	   build_path(path, ps_global->config_dir, PASSFILE, len);
+	else{
+	  if((p = last_cmpnt(pinerc)) && *(p-1) && *(p-1) != PASSFILE[0])
+	    for(i = 0; pinerc < p && i < len; pinerc++, i++)
+	      path[i] = *pinerc;
+	  else
+	    i = 0;
 
-	for(j = 0; (i < len) && (path[i] = PASSFILE[j]); i++, j++)
-	  ;
-	
+	  for(j = 0; (i < len) && (path[i] = PASSFILE[j]); i++, j++)
+	    ;
+	}
     }
 
     path[len-1] = '\0';

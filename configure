@@ -838,6 +838,7 @@ with_include_path
 with_lib_path
 with_pubcookie
 with_web_bin
+with_local_config_dir
 enable_debug
 enable_optimization
 enable_mouse
@@ -1615,6 +1616,11 @@ Optional Packages:
                           search
   --with-pubcookie        Include support for UW-Pubcookie Web Authentication
   --with-web-bin=PATH     Directory to hold Web Alpine component binary files
+  --without-local-config-dir
+                          Disable Local Configuration Support
+  --with-local-config-dir=RELATVE_PATH
+                          Subdirectory of $HOME that contains configuration
+                          information. Default: .alpine
   --with-smtp-msa=PATH    Local Mail Submission Agent (sendmail)
   --with-smtp-msa-flags=FLAGS
                           MSA flags for SMTP on stdin/stdout (-bs -odb -oem)
@@ -1655,7 +1661,7 @@ Optional Packages:
                           Specify default debug verbosity level (2)
   --with-debug-files=VALUE
                           Specify number of debug files (4)
-  --with-debug-file=VALUE Specify debug file name (.pine-debug)
+  --with-debug-file=VALUE Specify debug file name ("$alpine_DEBUG")
   --with-forwarded-keyword=VALUE
                           IMAP (c-client) keyword to store forwarded status
                           ("\$Forwarded")
@@ -1675,7 +1681,7 @@ Optional Packages:
                           Default Trash folder for Web Alpine (Trash)
   --with-default-interrupted-mail=VALUE
                           Default folder for interrupted mail
-                          (.pine-interrupted-mail)
+                          (".pine-interrupted-mail")
   --with-default-dead-letter-folder=VALUE
                           Default dead letter folder (dead.letter)
   --with-default-mail-directory=VALUE
@@ -1683,7 +1689,7 @@ Optional Packages:
   --with-default-inbox-name=VALUE
                           Default inbox name (INBOX)
   --with-default-signature-file=VALUE
-                          Default signature file (.signature)
+                          Default signature file ("$alpine_SIGNATURE")
   --with-default-elm-style-save=VALUE
                           Default to Elm style save (no)
   --with-default-header-in-reply=VALUE
@@ -1710,7 +1716,7 @@ Optional Packages:
   --with-default-ansi-printer=VALUE
                           ANSI printer definition (attached-to-ansi)
   --with-default-addressbook=VALUE
-                          Default addressbook name (.addressbook)
+                          Default addressbook name ("$alpine_ADDRESSBOOK")
   --with-default-local-fullname=VALUE
                           Default local support fullname ("Local Support")
   --with-default-local-address=VALUE
@@ -1720,12 +1726,14 @@ Optional Packages:
   --with-default-remote-addressbook-history=VALUE
                           Default address book history count (3)
   --with-smime-public-cert-directory=VALUE
-                          Default Public Cert Directory (.alpine-smime/public)
+                          Default Public Cert Directory
+                          ("$alpine_PUBLICCERTDIR")
   --with-smime-private-key-directory=VALUE
                           Default Private Key Directory
-                          (.alpine-smime/private)
+                          ("$alpine_PRIVATEKEYDIR")
   --with-smime-cacert-directory=VALUE
-                          Default Cert Authority Directory (.alpine-smime/ca)
+                          Default Cert Authority Directory
+                          ("$alpine_CACERTDIR")
   --with-default-printer=VALUE
                           Default printer (ANSI_PRINTER)
   --with-passfile=FILENAME
@@ -15410,6 +15418,59 @@ if test "${with_web_bin+set}" = set; then :
 fi
 
 
+
+# Check whether --with-local-config-dir was given.
+if test "${with_local_config_dir+set}" = set; then :
+  withval=$with_local_config_dir;  with_lcd=$withval
+fi
+
+
+if test "x$with_lcd" = "xno" ; then
+  alpine_LCD="none"
+  alpine_DOT="."
+fi
+
+
+alpine_PINERC="${alpine_DOT}pinerc"
+alpine_PINERCEX="${alpine_DOT}pinercex"
+alpine_ADDRESSBOOK="${alpine_DOT}addressbook"
+alpine_DEBUG="${alpine_DOT}pine-debug"
+alpine_CRASH="${alpine_DOT}pine-crash"
+alpine_SIGNATURE="${alpine_DOT}signature"
+alpine_PUBLICCERTDIR="${alpine_DOT}alpine-smime/public"
+alpine_PRIVATEKEYDIR="${alpine_DOT}alpine-smime/private"
+alpine_CACERTDIR="${alpine_DOT}alpine-smime/ca"
+alpine_PWDCERTDIR="${alpine_DOT}alpine-smime/.pwd"
+alpine_SMIMETMPDIR="${alpine_DOT}alpine-smime/smtmp"
+
+if test "x$alpine_LCD" != "xnone" ; then
+  alpine_CONFIG_DIR=".alpine"
+
+# Check whether --with-local-config-dir was given.
+if test "${with_local_config_dir+set}" = set; then :
+  withval=$with_local_config_dir;
+    case "$withval" in
+      no)
+	;;
+      yes)
+	;;
+      *)
+	alpine_CONFIG_DIR="$withval"
+	;;
+    esac
+
+fi
+
+
+$as_echo "#define ALPINE_USE_CONFIG_DIR /**/" >>confdefs.h
+
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define LOCAL_CONFIG_DIR "$alpine_CONFIG_DIR"
+_ACEOF
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking option: debugging is enabled" >&5
 $as_echo_n "checking option: debugging is enabled... " >&6; }
 # Check whether --enable-debug was given.
@@ -16594,7 +16655,7 @@ _ACEOF
 
 
 
-    dpv=.pine-debug
+    dpv="$alpine_DEBUG"
 
 # Check whether --with-debug-file was given.
 if test "${with_debug_file+set}" = set; then :
@@ -16756,7 +16817,7 @@ _ACEOF
 
 
 
-    dpv=.pine-interrupted-mail
+    dpv=".pine-interrupted-mail"
 
 # Check whether --with-default-interrupted-mail was given.
 if test "${with_default_interrupted_mail+set}" = set; then :
@@ -16828,7 +16889,7 @@ _ACEOF
 
 
 
-    dpv=.signature
+    dpv="$alpine_SIGNATURE"
 
 # Check whether --with-default-signature-file was given.
 if test "${with_default_signature_file+set}" = set; then :
@@ -17062,7 +17123,7 @@ _ACEOF
 
 
 
-    dpv=.addressbook
+    dpv="$alpine_ADDRESSBOOK"
 
 # Check whether --with-default-addressbook was given.
 if test "${with_default_addressbook+set}" = set; then :
@@ -17152,7 +17213,7 @@ _ACEOF
 
 
 
-    dpv=.alpine-smime/public
+    dpv="$alpine_PUBLICCERTDIR"
 
 # Check whether --with-smime-public-cert-directory was given.
 if test "${with_smime_public_cert_directory+set}" = set; then :
@@ -17170,7 +17231,7 @@ _ACEOF
 
 
 
-    dpv=.alpine-smime/private
+    dpv="$alpine_PRIVATEKEYDIR"
 
 # Check whether --with-smime-private-key-directory was given.
 if test "${with_smime_private_key_directory+set}" = set; then :
@@ -17188,7 +17249,7 @@ _ACEOF
 
 
 
-    dpv=.alpine-smime/ca
+    dpv="$alpine_CACERTDIR"
 
 # Check whether --with-smime-cacert-directory was given.
 if test "${with_smime_cacert_directory+set}" = set; then :
@@ -17203,6 +17264,7 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define DF_CACERT_DIR "$dpv"
 _ACEOF
+
 
 
 
@@ -17237,6 +17299,26 @@ _ACEOF
 
 cat >>confdefs.h <<_ACEOF
 #define DF_CA_CONTAINER "CAContainer"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define DF_SMIMETMPDIR "$alpine_SMIMETMPDIR"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define USER_PINERC "$alpine_PINERC"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define USER_PINERCEX "$alpine_PINERCEX"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define USER_PINE_CRASH "$alpine_CRASH"
 _ACEOF
 
 
@@ -17289,6 +17371,11 @@ $as_echo "$as_me: --with-passfile definition overrides OS-Specific password cach
 
 cat >>confdefs.h <<_ACEOF
 #define PASSFILE "$alpine_PASSFILE"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define DF_PWDCERTDIR "$alpine_PWDCERTDIR"
 _ACEOF
 
 fi

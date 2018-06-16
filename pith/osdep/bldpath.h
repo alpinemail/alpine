@@ -19,6 +19,7 @@
 
 
 void	 build_path(char *, char *, char *, size_t);
+void	 build_path2(char *, char *, char *, char *, size_t);
 int	 is_absolute_path(char *);
 int	 is_rooted_path(char *);
 int	 is_homedir_path(char *);

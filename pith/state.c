@@ -135,6 +135,9 @@ free_pine_struct(struct pine **pps)
     if((*pps)->home_dir != NULL)
       fs_give((void **)&(*pps)->home_dir);
 
+    if((*pps)->config_dir != NULL)
+      fs_give((void **)&(*pps)->config_dir);
+
     if((*pps)->folders_dir != NULL)
       fs_give((void **)&(*pps)->folders_dir);
 

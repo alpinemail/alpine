@@ -3502,16 +3502,21 @@ signature_path(char *sname, char *sbuf, size_t len)
 	      build_path(sbuf, ps_global->VAR_OPER_DIR, sname, len);
 	}
 	else{
+	    TRANSFER_S t = transfer_list_from_token(DF_SIGNATURE_FILE);
 	    char *lc = last_cmpnt(ps_global->pinerc);
 
-	    sbuf[0] = '\0';
-	    if(lc != NULL){
+	    if(t.subdir)
+	      build_path2(sbuf, ps_global->config_dir, t.subdir, sname, len);
+	    else {
+	      sbuf[0] = '\0';
+	      if(lc != NULL){
 		strncpy(sbuf,ps_global->pinerc,MIN(len-1,lc-ps_global->pinerc));
 		sbuf[MIN(len-1,lc-ps_global->pinerc)] = '\0';
-	    }
+	      }
 
-	    strncat(sbuf, sname, MAX(len-1-strlen(sbuf), 0));
-	    sbuf[len-1] = '\0';
+	      strncat(sbuf, sname, MAX(len-1-strlen(sbuf), 0));
+	      sbuf[len-1] = '\0';
+	    }
 	}
     }
 

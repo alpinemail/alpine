@@ -255,6 +255,51 @@ AC_ARG_WITH(web-bin,
     esac
   ])
 
+AC_ARG_WITH(local-config-dir,
+  AS_HELP_STRING([--without-local-config-dir],[Disable Local Configuration Support]),
+  [ with_lcd=$withval ])
+
+if test "x$with_lcd" = "xno" ; then
+  alpine_LCD="none"
+  alpine_DOT="."
+fi
+
+dnl files and directories that will be saved in the configurations directory will 
+dnl preserve their names but will not be hidden if that configurations directory
+dnl is NOT the home directory of the user.
+
+alpine_PINERC="${alpine_DOT}pinerc"
+alpine_PINERCEX="${alpine_DOT}pinercex"
+alpine_ADDRESSBOOK="${alpine_DOT}addressbook"
+alpine_DEBUG="${alpine_DOT}pine-debug"
+alpine_CRASH="${alpine_DOT}pine-crash"
+alpine_SIGNATURE="${alpine_DOT}signature"
+alpine_PUBLICCERTDIR="${alpine_DOT}alpine-smime/public"
+alpine_PRIVATEKEYDIR="${alpine_DOT}alpine-smime/private"
+alpine_CACERTDIR="${alpine_DOT}alpine-smime/ca"
+alpine_PWDCERTDIR="${alpine_DOT}alpine-smime/.pwd"
+alpine_SMIMETMPDIR="${alpine_DOT}alpine-smime/smtmp"
+
+if test "x$alpine_LCD" != "xnone" ; then
+dnl the next line defines the default for the configuration dir
+  alpine_CONFIG_DIR=".alpine"
+  AC_ARG_WITH(local-config-dir,
+  AS_HELP_STRING([--with-local-config-dir=RELATVE_PATH],[Subdirectory of $HOME that contains configuration information. Default: .alpine]),
+  [
+    case "$withval" in
+      no)
+	;;
+      yes)
+	;;
+      *)
+	alpine_CONFIG_DIR="$withval"
+	;;
+    esac
+  ])
+  AC_DEFINE(ALPINE_USE_CONFIG_DIR, [], [We use a directory to save our configuration])
+fi
+AC_DEFINE_UNQUOTED(LOCAL_CONFIG_DIR, "$alpine_CONFIG_DIR", [Specify local configuration directory])
+
 dnl disable debug, turned on by default
 AC_MSG_CHECKING([option: debugging is enabled])
 AC_ARG_ENABLE(debug, AS_HELP_STRING([--disable-debug],[Exclude debug messages from source]))
@@ -617,7 +662,7 @@ PINEVAR(fill-column, DF_FILLCOL, 74, [Default fill column])
 PINEVAR_UNQUOTED(max_fill-column, MAX_FILLCOL, 80, [Maximum fill column])
 PINEVAR_UNQUOTED(debug-level, DEFAULT_DEBUG, 2, [Specify default debug verbosity level])
 PINEVAR_UNQUOTED(debug-files, NUMDEBUGFILES, 4, [Specify number of debug files])
-PINEVAR(debug-file, DEBUGFILE, [.pine-debug], [Specify debug file name])
+PINEVAR(debug-file, DEBUGFILE, ["$alpine_DEBUG"], [Specify debug file name])
 PINEVAR(forwarded-keyword, FORWARDED_FLAG, ["\$Forwarded"], [IMAP (c-client) keyword to store forwarded status])
 PINEVAR(display-overlap, DF_OVERLAP, [2], [Lines preserved while paging])
 PINEVAR(display-margin, DF_MARGIN, [0], [Lines visible while scrolling])
@@ -626,11 +671,11 @@ PINEVAR(default-save-folder, DEFAULT_SAVE, [saved-messages], [Default save folde
 PINEVAR(default-legacy-postponed-folder, POSTPONED_MAIL, [postponed-mail], [Pre Pine 3.90 postponed folder])
 PINEVAR(default-postponed-folder, POSTPONED_MSGS, [postponed-msgs], [Default postponed folder])
 PINEVAR(default-trash-folder, TRASH_FOLDER, [Trash], [Default Trash folder for Web Alpine])
-PINEVAR(default-interrupted-mail, INTERRUPTED_MAIL, [.pine-interrupted-mail], [Default folder for interrupted mail])
+PINEVAR(default-interrupted-mail, INTERRUPTED_MAIL, [".pine-interrupted-mail"], [Default folder for interrupted mail])
 PINEVAR(default-dead-letter-folder, DEADLETTER, [dead.letter], [Default dead letter folder])
 PINEVAR(default-mail-directory, DF_MAIL_DIRECTORY, [mail], [Default mail directory])
 PINEVAR(default-inbox-name, INBOX_NAME, [INBOX], [Default inbox name])
-PINEVAR(default-signature-file, DF_SIGNATURE_FILE, [.signature], [Default signature file])
+PINEVAR(default-signature-file, DF_SIGNATURE_FILE, ["$alpine_SIGNATURE"], [Default signature file])
 PINEVAR(default-elm-style-save, DF_ELM_STYLE_SAVE, [no], [Default to Elm style save])
 PINEVAR(default-header-in-reply, DF_HEADER_IN_REPLY, [no], [Include header in reply])
 PINEVAR(default-old-style-reply, DF_OLD_STYLE_REPLY, [no], [Default to old style reply])
@@ -643,19 +688,24 @@ PINEVAR(default-saved-message-name-rule, DF_SAVED_MSG_NAME_RULE, [default-folder
 PINEVAR(default-fcc-rule, DF_FCC_RULE, [default-fcc], [Default fcc rule])
 PINEVAR(default-standard-printer, DF_STANDARD_PRINTER, [lpr], [Default standard printern])
 PINEVAR(default-ansi-printer, ANSI_PRINTER, [attached-to-ansi], [ANSI printer definition])
-PINEVAR(default-addressbook, DF_ADDRESSBOOK, [.addressbook], [Default addressbook name])
+PINEVAR(default-addressbook, DF_ADDRESSBOOK, ["$alpine_ADDRESSBOOK"], [Default addressbook name])
 PINEVAR(default-local-fullname, DF_LOCAL_FULLNAME, ["Local Support"], [Default local support fullname])
 PINEVAR(default-local-address, DF_LOCAL_ADDRESS, [postmaster], [Default local support address])
 PINEVAR(default-keyboard-lock-count, DF_KBLOCK_PASSWD_COUNT, [1], [Default keyboard lock count])
 PINEVAR(default-remote-addressbook-history, DF_REMOTE_ABOOK_HISTORY, [3], [Default address book history count])
-PINEVAR(smime-public-cert-directory, DF_PUBLICCERT_DIR, [.alpine-smime/public], [Default Public Cert Directory])
-PINEVAR(smime-private-key-directory, DF_PRIVATEKEY_DIR, [.alpine-smime/private], [Default Private Key Directory])
-PINEVAR(smime-cacert-directory, DF_CACERT_DIR, [.alpine-smime/ca], [Default Cert Authority Directory])
+PINEVAR(smime-public-cert-directory, DF_PUBLICCERT_DIR, ["$alpine_PUBLICCERTDIR"], [Default Public Cert Directory])
+PINEVAR(smime-private-key-directory, DF_PRIVATEKEY_DIR, ["$alpine_PRIVATEKEYDIR"], [Default Private Key Directory])
+PINEVAR(smime-cacert-directory, DF_CACERT_DIR, ["$alpine_CACERTDIR"], [Default Cert Authority Directory])
+
 PINEVAR_UNQUOTED(default-printer, DF_DEFAULT_PRINTER, [ANSI_PRINTER], [Default printer])
 
 AC_DEFINE_UNQUOTED([DF_PUBLIC_CONTAINER], "PublicContainer", [Name of default public container])
 AC_DEFINE_UNQUOTED([DF_PRIVATE_CONTAINER], "PrivateContainer", [Name of default private container])
 AC_DEFINE_UNQUOTED([DF_CA_CONTAINER], "CAContainer", [Name of default certificate authority container])
+AC_DEFINE_UNQUOTED([DF_SMIMETMPDIR], "$alpine_SMIMETMPDIR", [Default Directory for temporary files related to SMIME])
+AC_DEFINE_UNQUOTED([USER_PINERC], "$alpine_PINERC", [Name of user locally saved configuration file])
+AC_DEFINE_UNQUOTED([USER_PINERCEX], "$alpine_PINERCEX", [Name of user locally saved exceptions configuration file])
+AC_DEFINE_UNQUOTED([USER_PINE_CRASH], "$alpine_CRASH", [Name of file to save debug crash file])
 
 dnl set PASSFILE?
 AC_ARG_WITH(passfile,
@@ -697,6 +747,7 @@ if test -n "$alpine_PASSFILE" ; then
       ;;
   esac
   AC_DEFINE_UNQUOTED([PASSFILE], "$alpine_PASSFILE", [Password cache file (recommended if S/MIME is enabled and configured)])
+  AC_DEFINE_UNQUOTED([DF_PWDCERTDIR], "$alpine_PWDCERTDIR", [Default Directory for saving Certificates to encrypt/decrypt password file])
 fi
 
 dnl set DF_SSHPATH?

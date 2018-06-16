@@ -188,3 +188,12 @@ filename_is_restricted(char *s)
     return(strchr("./~", s[0]) != NULL || filename_parent_ref(s) != NULL);
 #endif
 }
+
+void
+build_path2(char *pathbuf, char *first_part, char *second_part, char *third_part, size_t len)
+{
+   char root_path[MAXPATH+1];
+
+   build_path(root_path, first_part, second_part, sizeof(root_path));
+   build_path(pathbuf, root_path, third_part, len);
+}

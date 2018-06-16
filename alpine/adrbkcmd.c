@@ -60,6 +60,7 @@ static char rcsid[] = "$Id: adrbkcmd.c 1074 2008-06-04 00:08:43Z hubert@u.washin
 #include "../pith/busy.h"
 #include "../pith/icache.h"
 #include "../pith/osdep/color.h"
+#include "../pith/init.h"
 
 
 /* internal prototypes */
@@ -3245,10 +3246,18 @@ ab_del_abook(long int cur_line, int command_line, char **err)
 	 * it first. That fills in the filenames we want to delete.
 	 */
 	if(pab->address_book == NULL){
+	    TRANSFER_S t = transfer_list_from_token(DF_ADDRESSBOOK);
+	    char root_path[MAXPATH+1];
+	    char *target = ps_global->using_config_dir ? ps_global->config_dir : ps_global->home_dir;
+
 	    warning[300] = '\0';
-	    pab->address_book = adrbk_open(pab, ps_global->home_dir,
-					   &warning[300], sizeof(warning)-300,
-					   AB_SORT_RULE_NONE);
+	    if(t.subdir != NULL)
+	       build_path(root_path, ps_global->config_dir, t.subdir, sizeof(root_path));
+	    else{
+	       strncpy(root_path, target, strlen(target));
+	       root_path[sizeof(root_path)-1] = '\0';
+	    }
+	    pab->address_book = adrbk_open(pab, root_path, &warning[300], sizeof(warning)-300, AB_SORT_RULE_NONE);
 	    /*
 	     * Couldn't get it open.
 	     */

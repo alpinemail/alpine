@@ -1,5 +1,8 @@
 /* include/config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* We use a directory to save our configuration */
+#undef ALPINE_USE_CONFIG_DIR
+
 /* Default configuration value */
 #undef ANSI_PRINTER
 
@@ -111,6 +114,10 @@
 /* Name of default public container */
 #undef DF_PUBLIC_CONTAINER
 
+/* Default Directory for saving Certificates to encrypt/decrypt password file
+   */
+#undef DF_PWDCERTDIR
+
 /* Default configuration value */
 #undef DF_REMOTE_ABOOK_HISTORY
 
@@ -122,6 +129,9 @@
 
 /* Default configuration value */
 #undef DF_SIGNATURE_FILE
+
+/* Default Directory for temporary files related to SMIME */
+#undef DF_SMIMETMPDIR
 
 /* Default configuration value */
 #undef DF_SORT_KEY
@@ -475,6 +485,9 @@
 /* Enable keyboard lock support */
 #undef KEYBOARD_LOCK
 
+/* Specify local configuration directory */
+#undef LOCAL_CONFIG_DIR
+
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */
 #undef LT_OBJDIR
@@ -632,6 +645,15 @@
 
 /* System defined unsigned 32 bit integer */
 #undef UINT32
+
+/* Name of user locally saved configuration file */
+#undef USER_PINERC
+
+/* Name of user locally saved exceptions configuration file */
+#undef USER_PINERCEX
+
+/* Name of file to save debug crash file */
+#undef USER_PINE_CRASH
 
 /* Compile in quota check on startup */
 #undef USE_QUOTAS

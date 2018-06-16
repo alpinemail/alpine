@@ -322,6 +322,7 @@
 #define VAR_INC2NDCHECKINTERVAL      vars[V_INC2NDCHECKINTERVAL].current_val.p
 #define GLO_INC2NDCHECKINTERVAL      vars[V_INC2NDCHECKINTERVAL].global_val.p
 #define VAR_INCCHECKLIST     	     vars[V_INCCHECKLIST].current_val.l
+#define VAR_PAT_ROLES     	     vars[V_PAT_ROLES].current_val.l
 #define VAR_SSHPATH		     vars[V_SSHPATH].current_val.p
 #define GLO_SSHPATH		     vars[V_SSHPATH].global_val.p
 #define VAR_SSHCMD		     vars[V_SSHCMD].current_val.p

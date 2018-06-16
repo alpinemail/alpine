@@ -91,6 +91,7 @@ OPT_SCREEN_S *opt_screen;
  */
 struct variable	        *score_act_global_ptr,
 			*scorei_pat_global_ptr,
+			*sig_act_global_ptr,
 			*age_pat_global_ptr,
 			*size_pat_global_ptr,
 			*cati_global_ptr,
@@ -5720,6 +5721,25 @@ fix_side_effects(struct pine *ps, struct variable *var, int revert)
             var == &ps->vars[V_IND_FROM_BACK_COLOR] ||
             var == &ps->vars[V_IND_SUBJ_BACK_COLOR]){
 	clear_index_cache(ps_global->mail_stream, 0);
+    }
+    else if(var == sig_act_global_ptr){
+	TRANSFER_S t;
+	int change = 0;
+
+	if(ps->using_config_dir){
+	   t.tname	   = var->current_val.p;
+	   t.is_exact_name = 1;
+	   t.prepend	   = "";
+	   t.subdir	   = SGNTURE_SUBDIR;
+	   if(transfer_config_file(t, ps->config_dir, &change) < 0)
+	      q_status_message1(SM_ORDER, 3, 5,
+		_("Failed to copy signature file %s to configuration directory"),
+		var->current_val.p);
+	   else if (change)
+	      q_status_message1(SM_ORDER, 3, 5,	
+		_("Saved signature file %s in configuration directory"),
+		var->current_val.p);
+	}
     }
     else if(var == score_act_global_ptr){
 	int score;

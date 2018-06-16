@@ -32,5 +32,7 @@
  */
 char	*read_file(char *, int);
 int	 our_copy(char *, char *);
+int	 our_copy_dir(char *, char *);
+int	 our_copy_link(char *, char *);
 
 #endif /* PITH_READFILE_INCLUDED */

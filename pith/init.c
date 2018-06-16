@@ -27,13 +27,23 @@ static char rcsid[] = "$Id: init.c 769 2007-10-24 00:15:40Z hubert@u.washington.
 #include "../pith/conf.h"
 #include "../pith/status.h"
 #include "../pith/folder.h"
-
+#include "../pith/readfile.h"
+#include "../pith/pattern.h"
 
 /*
  * Internal prototypes
  */
 int	 compare_sm_files(const qsort_t *, const qsort_t *);
 
+#ifdef ALPINE_USE_CONFIG_DIR
+#include "../pith/tempfile.h"
+#include "../pith/remote.h"
+int	 create_root_path(char *);
+int	 transfer_to_config_dir(char *);
+int	 transfer_copy_file(char *, char *, int *);
+int	 transfer_copy_link(char *, char *, int *);
+int	 transfer_copy_dir(char *, char *, int *);
+#endif /* ALPINE_USE_CONFIG_DIR */
 
 
 /*----------------------------------------------------------------------
@@ -154,6 +164,541 @@ init_userdir(struct pine *ps)
     return(0);
 }
 
+/*----------------------------------------------------------------------
+  Make sure the default save folders exist in the default
+  save context.
+  ----*/
+void
+display_init_err(char *s, int err)
+{
+#ifdef	_WINDOWS
+    mswin_messagebox(s, err);
+#else
+    int n = 0;
+
+    if(err)
+      fputc(BELL, stdout);
+
+    for(; *s; s++)
+      if(++n > 60 && isspace((unsigned char)*s)){
+	  n = 0;
+	  fputc('\n', stdout);
+	  while(*(s+1) && isspace((unsigned char)*(s+1)))
+	    s++;
+      }
+      else
+	fputc(*s, stdout);
+
+    fputc('\n', stdout);
+#endif
+}
+
+#ifdef ALPINE_USE_CONFIG_DIR
+/* these are used to report configuration directory creation problems */
+CONF_TXT_T init_config_exists[] =	"The \"%s\" subdirectory already exists, but it is not writable by Alpine so Alpine cannot run.  Please correct the permissions and restart Alpine.";
+
+CONF_TXT_T init_config_file[] =	"Alpine requires a directory called \"%s\" from where it will read and will write its configuration, and usualy creates it.  You already have a regular file by that name which means Alpine cannot create the directory.  Please move or remove it and start Alpine again.";
+
+CONF_TXT_T init_config_create[] =	"Creating subdirectory \"%s\" where Alpine will store its configuration and supporting files.";
+
+int
+create_root_path(char *path)
+{
+  char *s, *t, *root_dir;
+  struct stat sbuf;
+
+  if(path == NULL || *path == '\0')
+    return -1;
+
+  root_dir = path;
+  t = path + strlen(path) - 1;
+  while(*root_dir != '\0' 
+	&& stat(root_dir, &sbuf) < 0){
+     s = strrchr(root_dir, C_FILESEP);
+     if(s != NULL)
+       *s = '\0';
+  }
+  root_dir += strlen(root_dir);
+  *root_dir = C_FILESEP;
+  while(root_dir < t){
+     if(*root_dir == '\0'){
+	if(stat(path, &sbuf) < 0
+	   && create_mail_dir(path) < 0)
+	  return -1;
+        *root_dir = C_FILESEP;
+     }
+     else
+	root_dir++;
+  }
+  return 0;
+}
+
+int
+transfer_copy_link(char *dest_file, char *orig_file, int *change)
+{
+  if(create_root_path(dest_file) == 0){
+     if(our_copy_link(dest_file, orig_file) == 0){
+        if(change) (*change)++;
+	return 0;
+     }
+  }
+  return -1;
+}
+
+int
+transfer_copy_dir(char *dest_file, char *orig_file, int *change)
+{
+  if(create_root_path(dest_file) == 0){
+     if(our_copy_dir(dest_file, orig_file) == 0){
+        if(change) (*change)++;
+	return 0;
+     }
+  }
+  return -1;
+}
+
+int
+transfer_copy_file(char *dest_file, char *orig_file, int *change)
+{
+  if(create_root_path(dest_file) == 0){
+     int script;
+     script = dest_file[strlen(orig_file)-1] == '|' ? 1 : 0;
+     if(script){
+	orig_file[strlen(orig_file)-1] == '\0';
+	dest_file[strlen(dest_file)-1] == '\0';
+     }
+     if(our_copy(dest_file, orig_file) == 0){
+	struct stat sbuf;
+        if(change) (*change)++;
+	if(script == 0 
+	   || (our_stat(orig_file, &sbuf) == 0
+	       && our_chmod(dest_file, sbuf.st_mode & ~077) == 0))
+	  return 0;
+     }
+  }
+  return -1;
+}
+
+/* We transfer tfile to dest_dir 
+ * return value: -1 on error,
+ *                0 no error.
+ *
+ * Do not call unless ps->using_config_dir > 0.
+ */
+int
+transfer_config_file(TRANSFER_S dest_file, char *dest_dir, int *change)
+{
+  int i;
+  char orig_file[MAXPATH+1], orig_path[MAXPATH+1], dest_path[MAXPATH+1], *target_filename;
+  struct stat sbuf_orig, sbuf_dest;
+
+  if(dest_file.tname == NULL || is_absolute_path(dest_file.tname))
+    return 0;
+
+  /* construct origin */
+  sprintf(orig_file, "%s%s", dest_file.prepend, dest_file.tname);
+  orig_file[sizeof(orig_file)-1] = '\0';
+  build_path(orig_path, ps_global->home_dir, orig_file, sizeof(orig_path));
+
+  /* if origin does not exist, consider it transferred */
+  if(our_stat(orig_path, &sbuf_orig) < 0)
+    return 0;
+
+  target_filename = target_transfer_filename(orig_file);
+
+  if(dest_file.subdir != NULL)
+    build_path2(dest_path, dest_dir, dest_file.subdir, target_filename, sizeof(dest_path));
+  else
+    build_path(dest_path, dest_dir, target_filename, sizeof(dest_path));
+
+  fs_give((void **) &target_filename);
+
+  if(our_stat(dest_path, &sbuf_dest) < 0){    /* destination does not exist */
+    switch(sbuf_orig.st_mode & S_IFMT){
+	case S_IFREG:	/* regular file */
+		return transfer_copy_file(dest_path,orig_path, change);
+
+	case S_IFDIR:	/* Directory? */
+		return transfer_copy_dir(dest_path, orig_path, change);
+
+	case S_IFLNK: 	/* symbolic link? */
+		return transfer_copy_link(dest_path, orig_path, change);
+
+	default:	/* we do not copy anything else at this time */
+		return -1;
+    }
+  } 
+  /* else do not overwrite a file/directory that already exists 
+   * in the destination. Consider it transfered.
+   */
+  return 0;
+}
+
+TRANSFER_S
+transfer_list_from_token(char *token)
+{
+  int i;
+
+  if(ps_global->using_config_dir)
+     for (i = 0; transfer_list[i].tname != NULL
+		&& strcmp(transfer_list[i].tname, token) != 0; i++);
+  else
+     for (i = 0; transfer_list[i].tname != NULL; i++);
+
+  return transfer_list[i];
+}
+
+/* 
+ * We attempt to transfer all files. We do not stop for errors.
+ *
+ * return value: -1 on some error, 
+ *                0 no errors.
+ */
+int
+transfer_to_config_dir(char *dest_dir)
+{
+ int i, rv = 0;
+
+ for (i = 0; transfer_list[i].tname != NULL; i++)
+   rv += transfer_config_file(transfer_list[i], dest_dir, NULL);
+
+ return rv;
+}
+
+/* this functions takes a relative path and unhides its path, by
+ * switching any /. to / and removing a leading . too in a copy of
+ * the original filename. Memory freed by caller.
+ */
+char *
+target_transfer_filename(char *filename)
+{
+  char *f = NULL, *s, *u;
+
+  if(filename == NULL)
+    return f;
+
+  f = cpystr(filename);
+
+  if(is_absolute_path(f))
+    return f;
+
+  for(s = u = f; *u != '\0'; u++){
+     if(u == f && *u == '.')
+	continue;
+     if(*u == C_FILESEP){
+	if(*(u+1) == '.')
+	  *s++ = *u++;
+	else
+	  *s++ = *u;
+     } else
+     *s++ = *u;
+  }
+  *s = '\0';
+
+  return f;
+}
+
+int
+rd_transfer_metadata(char *orig_data, char *dest_dir)
+{
+    char *tempfile;
+    FILE *fp_old = NULL, *fp_new = NULL;
+    char *p = NULL, *pinerc_dir = NULL;
+    char *filename= NULL;
+    char *head, *tail;
+    char  line[MAILTMPLEN], location[MAXPATH+1];
+    int   fd, rv = 0, change = 0;
+    TRANSFER_S transfer_this;
+
+    if(orig_data == NULL || *orig_data == '\0')
+      return 0;
+
+    dprint((7, "Transfer remote metadata \n"));
+
+    transfer_this.tname         = orig_data;
+    transfer_this.is_exact_name = 1;
+    transfer_this.prepend       = "";
+    transfer_this.subdir        = REMOTE_SUBDIR;
+    filename = target_transfer_filename(orig_data);
+
+    if(transfer_config_file(transfer_this, dest_dir, &change) == 0){
+      if(filename != NULL && change){
+        set_variable(V_REMOTE_ABOOK_METADATA, filename, 1, 0, Main);
+        if(ps_global->prc)
+	  ps_global->prc->outstanding_pinerc_changes = 1;
+      }
+    }
+    else
+      rv += -1;
+
+    build_path2(location, ps_global->config_dir, REMOTE_SUBDIR, filename, sizeof(location));
+
+    if(!(tempfile = tempfile_in_same_dir(location, "am", &pinerc_dir)))
+      goto io_err;
+
+    if((fd = our_open(tempfile, O_TRUNC|O_WRONLY|O_CREAT|O_BINARY, 0600)) >= 0)
+      fp_new = fdopen(fd, "w");
+    
+    if(pinerc_dir)
+      fs_give((void **)&pinerc_dir);
+
+    fp_old = our_fopen(location, "rb");
+
+    if(fp_new && fp_old){
+	/*
+	 * Write the header line.
+	 */
+	if(fprintf(fp_new, "%s %s Pine Metadata\n",
+		   PMAGIC, METAFILE_VERSION_NUM) == EOF)
+	  goto io_err;
+
+	while((p = fgets(line, sizeof(line), fp_old)) != NULL){
+	    int add_line = -1;
+	    /*
+	     * Skip the header line and any lines that don't begin
+	     * with a "{".
+	     */
+	    if(line[0] != '{')
+	      continue;
+
+	    if((tail = strchr(p, '\t')) != NULL){
+		char *fname = tail+1;
+		TRANSFER_S transfer_this;
+		int move_this = 0;
+
+		head = tail;
+		tail = strchr(fname, '\t');
+		if(tail != NULL){
+		  *tail = '\0';
+		   if(*fname){
+		     transfer_this.tname         = fname;
+		     transfer_this.is_exact_name = 1;
+		     transfer_this.prepend       = "";
+		     transfer_this.subdir        = REMOTE_SUBDIR;
+		     add_line = transfer_config_file(transfer_this, dest_dir, NULL);
+		     if(*fname == '.') move_this++;
+		   }
+		  *tail = '\t';
+		  if(move_this){
+		    char *q;
+		    for(q = fname + 1; *q != '\0'; q++)
+			*(q-1) = *q;
+		    *(q-1) = '\0';
+		  }
+		}
+	    }
+	    
+	    /* add this line to new version of file */
+	    if(add_line == 0 && fputs(p, fp_new) == EOF)
+	      goto io_err;
+	}
+    }
+
+    if(fclose(fp_new) == EOF){
+	fp_new = NULL;
+	goto io_err;
+    }
+
+    if(fclose(fp_old) == EOF){
+	fp_old = NULL;
+	goto io_err;
+    }
+
+    if(rename_file(tempfile, location) < 0)
+      goto io_err;
+
+    if(tempfile)
+      fs_give((void **)&tempfile);
+    
+    if(filename)
+      fs_give((void **)&filename);
+    
+    return rv;
+
+io_err:
+    dprint((2, "io_err in rd_write_metadata(%s), tempfile=%s: %s\n",
+	    orig_data ? orig_data : "<NULL>", tempfile ? tempfile : "<NULL>",
+	    error_description(errno)));
+    q_status_message2(SM_ORDER, 3, 5,
+		    "Trouble updating metafile %s, continuing (%s)",
+		    orig_data ? orig_data : "<NULL>", error_description(errno));
+    if(tempfile){
+	our_unlink(tempfile);
+	fs_give((void **)&tempfile);
+    }
+    if(orig_data)
+      fs_give((void **)&orig_data);
+    if(fp_old)
+      (void)fclose(fp_old);
+    if(fp_new)
+      (void)fclose(fp_new);
+    if(filename)
+      fs_give((void **)&filename);
+
+    return rv;
+}
+
+int
+transfer_addressbook(char **orig_data, char *dest_dir)
+{
+    char *nickname, *filename, **p, *q;
+    int  rv = 0, change = 0;
+    TRANSFER_S transfer_this;
+
+    dprint((7, "Transfer addressbook\n"));
+
+    if(orig_data == NULL || *orig_data == NULL || **orig_data == '\0')
+      return 0;
+
+    for(p = orig_data; *p != NULL && **p != '\0'; p++){
+	char *newfile = NULL;
+	get_pair(*p, &nickname, &filename, 0, 0);
+	if(*filename != '{' && !is_absolute_path(filename)){
+	    transfer_this.tname         = filename;
+	    transfer_this.is_exact_name = 1;
+	    transfer_this.prepend       = "";
+	    transfer_this.subdir        = ABOOK_SUBDIR;
+	    if(transfer_config_file(transfer_this, dest_dir, &change) < 0)
+	       rv += -1;
+	    else
+	       newfile = target_transfer_filename(filename);
+	}
+	else
+	   newfile = cpystr(filename);
+	if(newfile){
+	   fs_resize((void **) &*p, 
+		strlen(nickname ? nickname : "") + strlen(nickname ? " " : "") + strlen(newfile) + 1);
+           sprintf(*p, "%s%s%s", nickname ? nickname : "", nickname ? " " : "", newfile);
+	   fs_give((void **) &newfile);
+	}
+	if(filename) fs_give((void **) &filename);
+	if(nickname) fs_give((void **) &nickname);
+    }
+
+    if(change){
+       set_variable_list(V_ADDRESSBOOK, orig_data, TRUE, Main);
+       if(ps_global->prc)
+         ps_global->prc->outstanding_pinerc_changes = 1;
+    }
+
+    return 0;
+}
+
+int
+transfer_signature(char *glo_signature, char **role_signature, char *dest_dir)
+{
+    char *newfile, **p, *q, *s;
+    int  rv = 0, change = 0;
+    TRANSFER_S transfer_this;
+
+    dprint((7, "Transfer signature\n"));
+
+    if(glo_signature){
+       transfer_this.tname         = glo_signature;
+       transfer_this.is_exact_name = 1;
+       transfer_this.prepend       = "";
+       transfer_this.subdir        = SGNTURE_SUBDIR;
+       if(transfer_config_file(transfer_this, dest_dir, &change) < 0)
+	  rv += -1;
+       else{
+	  newfile = target_transfer_filename(glo_signature);
+	  if(change){
+	    set_variable(V_SIGNATURE_FILE, newfile, 1, 0, Main);
+	    if(ps_global->prc)
+	       ps_global->prc->outstanding_pinerc_changes = 1;
+	  }
+	  fs_give((void **) &newfile);
+       }
+    }
+
+    change = 0;
+    for(p = role_signature; *p != NULL && **p != '\0'; p++){
+	PAT_S *pattern = parse_pat(*p);
+	if(pattern){
+	   if(pattern->action && pattern->action->sig){
+	     transfer_this.tname 	       = pattern->action->sig;
+	     transfer_this.is_exact_name = 1;
+	     transfer_this.prepend       = "";
+	     transfer_this.subdir        = SGNTURE_SUBDIR;
+	     if(transfer_config_file(transfer_this, dest_dir, &change) < 0)
+	        rv += -1;
+	     else{
+	        newfile = target_transfer_filename(pattern->action->sig);
+	        fs_give((void **) &pattern->action->sig);
+	        pattern->action->sig = cpystr(newfile);
+	        fs_give((void **) &newfile);
+	        s = data_for_patline(pattern);
+	        fs_resize((void **)&*p, strlen(s) + 4 + 1);
+	        sprintf(*p, "LIT:%s", s);
+	        fs_give((void **)&s);
+	     }
+	   }
+	   free_pat(&pattern);
+	}
+    }
+
+    if(change){
+      set_variable_list(V_PAT_ROLES, role_signature, TRUE, Main);
+      if(ps_global->prc)
+	 ps_global->prc->outstanding_pinerc_changes = 1;
+    }
+
+    return 0;
+}
+
+
+
+/*----------------------------------------------------------------------
+    Make sure the alpine configuration directory exists and initialize
+    it in case it does not.
+
+   Args: ps -- alpine structure to get mail directory and contexts from
+
+  Result: returns 0 if it exists or it is created and all is well
+                  1 if it is missing and can't be created.
+  ----*/
+int
+init_config_dir(struct pine *ps)
+{
+
+    switch(is_writable_dir(ps->config_dir)){
+      case 0:
+        /* --- all is well --- */
+	return(0);
+
+      case 1:
+	snprintf(tmp_20k_buf, SIZEOF_20KBUF, init_config_exists, ps->config_dir);
+	display_init_err(tmp_20k_buf, 1);
+	return(-1);
+
+      case 2:
+	snprintf(tmp_20k_buf, SIZEOF_20KBUF, init_config_file, ps->config_dir);
+	display_init_err(tmp_20k_buf, 1);
+	return(-1);
+
+      case 3:
+	snprintf(tmp_20k_buf, SIZEOF_20KBUF, init_config_create, ps->config_dir);
+	display_init_err(tmp_20k_buf, 0);
+#ifndef	_WINDOWS
+    	sleep(4);
+#endif
+        if(create_mail_dir(ps->config_dir) < 0){
+            snprintf(tmp_20k_buf, SIZEOF_20KBUF, "Error creating subdirectory \"%s\" : %s",
+		    ps->config_dir, error_description(errno));
+	    display_init_err(tmp_20k_buf, 1);
+            return(-1);
+        }
+	else if(transfer_to_config_dir(ps->config_dir) < 0){
+            snprintf(tmp_20k_buf, SIZEOF_20KBUF, "Error transfering configuration to subdirectory \"%s\" : %s",
+		    ps->config_dir, error_description(errno));
+	    display_init_err(tmp_20k_buf, 1);
+            return(-1);
+	}
+    }
+
+    return(0);
+}
+#endif /* ALPINE_USE_CONFIG_DIR */
 
 /*----------------------------------------------------------------------
         Fetch the hostname of the current system and put it in pine struct

@@ -310,6 +310,60 @@ main(int argc, char **argv)
 	exit(-1);
     }
 
+    /* here we configure the directory where Alpine will save its configuration
+     * This is a subdirectory of the home directory. This is done right after
+     * reading the command line arguments. If that is configured there,  we use
+     * that value. If not, we use the default value coming from the ./configure
+     * script.
+     *
+     * If we give a local pinerc file from the command line, do not do
+     * any conversion.
+     */
+#ifdef ALPINE_USE_CONFIG_DIR
+    if(ps_global->using_config_dir == 0 && ps_global->pinerc == NULL){
+      char *tmp = NULL;
+
+      if(ps_global->config_dir != NULL){	/* was set up by user on command line */
+	tmp = cpystr(ps_global->config_dir);	/* save it */
+	fs_give((void **)&ps_global->config_dir);
+      }
+
+      /* if no value comes from the command line, then 
+       * use the value from the configure script
+       */
+
+      if(tmp == NULL)
+        tmp = cpystr(LOCAL_CONFIG_DIR);
+
+      if(strlen(tmp) > 0){
+	ps_global->config_dir = fs_get((strlen(ps_global->home_dir) + strlen(tmp)+ 2)*sizeof(char));
+	sprintf(ps_global->config_dir, "%s%s%s", ps_global->home_dir, S_FILESEP, tmp);
+        ps_global->using_config_dir++;
+      }
+      else
+        ps_global->config_dir = cpystr(ps_global->home_dir);
+
+      if(tmp)
+	fs_give((void **)&tmp);
+
+      if(strlen(ps_global->config_dir) > MAXPATH){
+	printf(_("Configuration directory name is longer than %d\n"), MAXPATH);
+        printf(_("Directory name: \"%s\"\n"), ps_global->config_dir);
+	fs_give((void **) &ps_global->config_dir);
+	exit(-1);
+      }
+    }
+
+    if(pine_state->using_config_dir && init_config_dir(pine_state) < 0){
+      snprintf(tmp_20k_buf, SIZEOF_20KBUF,
+	_("Errors during transfer. May have incomplete configuration in %s\n"), 
+	ps_global->config_dir);
+      tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+      display_args_err(tmp_20k_buf, NULL, 1);
+      exit(-1);
+    }
+#endif /* ALPINE_USE_CONFIG_DIR */
+
     /* Windows has its own functions to determine width of a character
      * in the screen, so this is not necessary to do in Window, and
      * using pith_ucs4width does not produce the correct result
@@ -460,6 +514,43 @@ main(int argc, char **argv)
 	ps_global->s_pool.max_remstream));
 
     init_vars(pine_state, process_init_cmds);
+
+#ifdef ALPINE_USE_CONFIG_DIR
+    /* We transferred the default configuration files. At this point we
+     * already read the .pinerc file, so we can read the location of the
+     * any additional remote data, addressbook, and signatures that
+     * need to be transfered
+     */
+    if(pine_state->using_config_dir){ 
+      if(rd_transfer_metadata(pine_state->VAR_REMOTE_ABOOK_METADATA, pine_state->config_dir) < 0){
+	 snprintf(tmp_20k_buf, SIZEOF_20KBUF,
+	    _("Errors during transfer of remote data. May have incomplete configuration in %s\n"), 
+	    ps_global->config_dir);
+         tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+         display_args_err(tmp_20k_buf, NULL, 1);
+         exit(-1);
+      }
+      if(transfer_addressbook(pine_state->VAR_ADDRESSBOOK, pine_state->config_dir) < 0){
+	 snprintf(tmp_20k_buf, SIZEOF_20KBUF,
+	    _("Errors during transfer of local addressbooks. May have incomplete configuration in %s\n"), 
+	    ps_global->config_dir);
+         tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+         display_args_err(tmp_20k_buf, NULL, 1);
+         exit(-1);
+      }
+      if(transfer_signature(pine_state->VAR_SIGNATURE_FILE, pine_state->VAR_PAT_ROLES, pine_state->config_dir) < 0){
+	 snprintf(tmp_20k_buf, SIZEOF_20KBUF,
+	    _("Errors during transfer of local signatures. May have incomplete configuration in %s\n"), 
+	    ps_global->config_dir);
+         tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+         display_args_err(tmp_20k_buf, NULL, 1);
+         exit(-1);
+      }
+
+      if(ps_global->prc && ps_global->prc->outstanding_pinerc_changes)
+	 write_pinerc(ps_global, Main, WRP_NONE);
+    }
+#endif /* ALPINE_USE_CONFIG_DIR */
 
 #ifdef SMIME
     if(F_ON(F_DONT_DO_SMIME, ps_global))
@@ -683,7 +774,7 @@ main(int argc, char **argv)
       exit(-1);
     
     /*
-     * Verify mail dir if we're not in send only mode...
+     * Verify mail dir and config dir if we're not in send only mode...
      */
     if(args.action == aaFolder && init_mail_dir(pine_state) < 0)
       exit(-1);
@@ -2353,7 +2444,7 @@ choose_setup_cmd(int cmd, MSGNO_S *msgmap, SCROLL_S *sparms)
 #if defined(DOS) || defined(OS2)
         q_status_message(SM_ORDER, 0, 2, _("Need argument \"-x <except_config>\" or \"PINERCEX\" file to use eXceptions"));
 #else
-        q_status_message(SM_ORDER, 0, 2, _("Need argument \"-x <except_config>\" or \".pinercex\" file to use eXceptions"));
+        q_status_message1(SM_ORDER, 0, 2, _("Need argument \"-x <except_config>\" or \"%s\" file to use eXceptions"), USER_PINERCEX);
 #endif
 	rv = 0;
 	break;
@@ -2521,7 +2612,9 @@ setup_menu(struct pine *ps)
 	so_puts(store, _("    (Note: this command does not do anything unless you have a configuration\n"));
 	so_puts(store, _("    with exceptions enabled (you don't have that). Common ways to enable an\n"));
 	so_puts(store, _("    exceptions config are the command line argument \"-x <exception_config>\";\n"));
-	so_puts(store, _("    or the existence of the file \".pinercex\" for Unix Alpine, or \"PINERCEX\")\n"));
+	sprintf(tmp_20k_buf,
+		       _("    or the existence of the file \"%s\" for Unix Alpine, or \"PINERCEX\";\n"), USER_PINERCEX);
+	so_puts(store, tmp_20k_buf);
 	so_puts(store, _("    for PC-Alpine.)\n"));
 	so_puts(store, _("    (Another note: this command does not show up on the keymenu at the bottom\n"));
 	so_puts(store, _("    of the screen unless you press \"O\" for \"Other Commands\" --but you\n"));

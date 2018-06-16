@@ -115,6 +115,13 @@
 /* Default configuration value */
 #define DF_USE_ONLY_DOMAIN_NAME "no"
 
+#ifdef ALPINE_USE_CONFIG_DIR
+#undef ALPINE_USE_CONFIG_DIR
+#endif
+
+/* Default configuration value */
+#define LOCAL_CONFIG_DIR ""
+
 /* Define enable dmalloc debugging */
 /* #undef ENABLE_DMALLOC */
 

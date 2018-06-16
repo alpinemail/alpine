@@ -73,12 +73,17 @@ init_debug(void)
     char nbuf[5];
     char newfname[MAXPATH+1], filename[MAXPATH+1], *dfile = NULL;
     int i, fd;
+    TRANSFER_S t;
 
     if(!(debug || ps_global->debug_imap || ps_global->debug_tcp))
       return;
 
+    t = transfer_list_from_token(DEBUGFILE);
     for(i = ps_global->debug_nfiles - 1; i > 0; i--){
-        build_path(filename, ps_global->home_dir, DEBUGFILE, sizeof(filename));
+	if(t.subdir != NULL)
+	   build_path2(filename, ps_global->config_dir, t.subdir, DEBUGFILE, sizeof(filename));
+	else
+	   build_path(filename, ps_global->config_dir, DEBUGFILE, sizeof(filename));
         strncpy(newfname, filename, sizeof(newfname)-1);
 	newfname[sizeof(newfname)-1] = '\0';
 	snprintf(nbuf, sizeof(nbuf), "%d", i);
@@ -88,7 +93,10 @@ init_debug(void)
         (void)rename_file(filename, newfname);
     }
 
-    build_path(filename, ps_global->home_dir, DEBUGFILE, sizeof(filename)-1);
+    if(t.subdir != NULL)
+	build_path2(filename, ps_global->config_dir, t.subdir, DEBUGFILE, sizeof(filename)-1);
+    else
+	build_path(filename, ps_global->config_dir, DEBUGFILE, sizeof(filename)-1);
     strncat(filename, "1", sizeof(filename)-1-strlen(filename));
     filename[sizeof(filename)-1] = '\0';
 
@@ -156,6 +164,7 @@ save_debug_on_crash(FILE *dfile, int (*keystrokes) (int *, char *, size_t))
     int i;
     struct stat dbuf, tbuf;
     time_t now = time((time_t *)0);
+    TRANSFER_S t;
 
     if(!(dfile && fstat(fileno(dfile), &dbuf) == 0))
       return;
@@ -164,8 +173,11 @@ save_debug_on_crash(FILE *dfile, int (*keystrokes) (int *, char *, size_t))
 	    ALPINE_VERSION, debug);
     fprintf(dfile, "\n                   : %s\n", ctime(&now));
 
-    build_path(crashfile, ps_global->home_dir, ".pine-crash",sizeof(crashfile));
-
+    t = transfer_list_from_token(USER_PINE_CRASH);
+    if(t.subdir != NULL)
+      build_path2(crashfile, ps_global->config_dir, t.subdir, USER_PINE_CRASH, sizeof(crashfile));
+    else
+      build_path(crashfile, ps_global->config_dir, USER_PINE_CRASH, sizeof(crashfile));
     fprintf(dfile, "Attempting to save debug file to %s\n\n", crashfile);
     fprintf(stderr,
 	"\n\n       Attempting to save debug file to %s\n\n", crashfile);
@@ -198,7 +210,10 @@ save_debug_on_crash(FILE *dfile, int (*keystrokes) (int *, char *, size_t))
 
     /* look for existing debug file */
     for(i = 1; i <= ps_global->debug_nfiles; i++){
-	build_path(filename, ps_global->home_dir, DEBUGFILE, sizeof(filename));
+	if(t.subdir != NULL)
+	  build_path2(filename, ps_global->config_dir, t.subdir, DEBUGFILE, sizeof(filename));
+	else
+	  build_path(filename, ps_global->config_dir, DEBUGFILE, sizeof(filename));
 	snprintf(nbuf, sizeof(nbuf), "%d", i);
 	strncat(filename, nbuf, sizeof(filename)-1-strlen(filename));
 	if(our_stat(filename, &tbuf) != 0)
@@ -373,7 +388,7 @@ dump_config(struct pine *ps, gf_io_t pc, int brief)
 	gf_puts(tmp, pc);
 	if(i > 1){
 	    snprintf(tmp, sizeof(tmp), " (%.100s)",
-		    (i == 2) ? ((ps->prc) ? ps->prc->name : ".pinerc") :
+		    (i == 2) ? ((ps->prc) ? ps->prc->name : USER_PINERC) :
 		    (i == 3) ? ((ps->post_prc) ? ps->post_prc->name : "postload") :
 		    (i == 4) ? ((ps->pconf) ? ps->pconf->name
 						: SYSTEM_PINERC) :
@@ -471,6 +486,8 @@ dump_pine_struct(struct pine *ps, gf_io_t pc)
 
     gf_puts("\nhome_dir=\t", pc);
     gf_puts(ps->home_dir ? ps->home_dir : "NULL", pc);
+    gf_puts("\nconfig_dir=\t", pc);
+    gf_puts(ps->config_dir ? ps->config_dir : "NULL", pc);
     gf_puts("\nhostname=\t", pc);
     gf_puts(ps->hostname ? ps->hostname : "NULL", pc);
     gf_puts("\nlocaldom=\t", pc);
