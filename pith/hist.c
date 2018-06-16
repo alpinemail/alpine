@@ -50,8 +50,12 @@ free_hist(HISTORY_S **history)
 
     if(history && *history){
 	for(i = 0; i < (*history)->histsize; i++)
-	  if((*history)->hist[i] && (*history)->hist[i]->str)
-	    fs_give((void **) &(*history)->hist[i]->str);
+	  if((*history)->hist[i]){
+	    if((*history)->hist[i]->str)
+	       fs_give((void **) &(*history)->hist[i]->str);
+	    (*history)->hist[i]->cntxt = NULL;	/* taken care of elsewhere */
+	    fs_give((void **) &(*history)->hist[i]);
+	  }
 
 	fs_give((void **) history);
     }

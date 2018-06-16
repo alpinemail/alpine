@@ -1308,6 +1308,9 @@ main(int argc, char **argv)
 	  q_status_message(SM_ORDER | SM_DING, 4, 5, 
 		       _("Use Compose command to continue interrupted message."));
 
+	if(args.action == aaFolder && args.data.folder)
+	  fs_give((void **) &args.data.folder);
+
 #if defined(USE_QUOTAS)
 	{
 	    long q;
@@ -3551,7 +3554,6 @@ free_alpine_module_globals(void)
     free_passfile_cache();
 #endif
     free_message_queue();
-    free_mailcmd_globals();
     free_titlebar_globals();
 }
 
