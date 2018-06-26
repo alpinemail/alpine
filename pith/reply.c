@@ -1081,6 +1081,16 @@ reply_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
 				  plustext, role, 0, redraft_pos);
 	    }
 	    else if(orig_body->subtype
+		    && !strucmp(orig_body->subtype, "alternative")
+		    && orig_body->nested.part
+		    && orig_body->nested.part->next->body.type == TYPEMULTIPART
+		    && orig_body->nested.part->next->body.subtype
+		    && !strucmp(orig_body->nested.part->next->body.subtype, "MIXED"))
+		body = reply_body(stream, env,
+				  &orig_body->nested.part->next->body,
+				  msgno, "2", msgtext, prefix,
+				  plustext, role, 0, redraft_pos);
+	    else if(orig_body->subtype
 		    && !strucmp(orig_body->subtype, "alternative")){
 		/* Set up the simple text reply */
 		body			 = mail_newbody();
