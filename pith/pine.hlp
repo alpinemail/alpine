@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 287 2018-06-16 17:37:20
+Alpine Commit 290 2018-06-26 15:47:31
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -206,6 +206,11 @@ a connection that is having problems being kept alive after the number
 of seconds configured in this variable, if the connection has not
 recovered. The default is 0, which means to keep the connection alive
 and wait for the connection to recover.
+
+<LI> When a message is of type multipart/mixed, and its first part is
+multipart/signed, Alpine will include the text of the original message
+in a reply message, instead of including a multipart attachment.
+Suggested by Barry Landy.
 </UL>
 
 <P>

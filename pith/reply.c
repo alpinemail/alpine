@@ -1081,6 +1081,84 @@ reply_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
 				  plustext, role, 0, redraft_pos);
 	    }
 	    else if(orig_body->subtype
+		    && !strucmp(orig_body->subtype, "mixed")
+		    && orig_body->nested.part
+		    && orig_body->nested.part->body.type == TYPEMULTIPART
+		    && orig_body->nested.part->body.subtype
+		    && !strucmp(orig_body->nested.part->body.subtype, "signed")){
+		/* we can call reply_body as in the call above with section
+		 * equal to "1", but that adds the multipart text to the
+		 * list of attachments. We do not want that, so we redo this
+		 * manually.
+		 */
+		body = copy_body(NULL, orig_body);
+
+		/*
+		 * whatever subtype it is, demote it
+		 * to plain old MIXED.
+		 */
+		if(body->subtype)
+		  fs_give((void **) &body->subtype);
+
+		body->subtype = cpystr("Mixed");
+
+		if(reply_body_text(&orig_body->nested.part->body.nested.part->body,
+					   &tmp_body)){
+		    int partnum;
+
+		    reply_delimiter(env, role, pc);
+		    if(ps_global->reply.include_header)
+		      reply_forward_header(stream, msgno, sect_prefix,
+					   env, pc, prefix);
+					/* SECTBUFLEN = sizeof(sect_buf) */
+		    snprintf(sect_buf, sizeof(sect_buf), "%.*s%s%.*s",
+			    SECTBUFLEN/2-2,
+			    sect_prefix ? sect_prefix : "",
+			    sect_prefix ? "." : "",
+			    SECTBUFLEN/2-2,
+			    p = partno(orig_body, tmp_body));
+		    sect_buf[sizeof(sect_buf)-1] = '\0';
+		    fs_give((void **) &p);
+		    get_body_part_text(stream, tmp_body, msgno,
+				       sect_buf, 0L, pc, prefix,
+				       NULL, GBPT_NONE);
+
+		    part = body->nested.part->next;
+		    body->nested.part->next = NULL;
+		    mail_free_body_part(&body->nested.part);
+		    body->nested.part = mail_newbody_part();
+		    body->nested.part->body.type = TYPETEXT;
+		    body->nested.part->body.subtype = cpystr("Plain");
+		    body->nested.part->body.contents.text.data = msgtext;
+		    body->nested.part->next = part;
+					/* SECTBUFLEN = sizeof(sect_buf) */
+		    for(partnum = 2; part != NULL; part = part->next){
+			snprintf(sect_buf, sizeof(sect_buf), "%.*s%s%d",
+				SECTBUFLEN/2,
+				sect_prefix ? sect_prefix : "",
+				sect_prefix ? "." : "", partnum++);
+			sect_buf[sizeof(sect_buf)-1] = '\0';
+
+			if(!fetch_contents(stream, msgno,
+					   sect_buf, &part->body)){
+			    break;
+			}
+		    }
+		}
+		else {
+		    /*--- Fetch the original pieces ---*/
+		    if(!fetch_contents(stream, msgno, sect_prefix, body))
+		      q_status_message(SM_ORDER | SM_DING, 3, 4,
+				       _("Error including all message parts"));
+
+		    /*--- No text part, create a blank one ---*/
+		    part			  = mail_newbody_part();
+		    part->next			  = body->nested.part;
+		    body->nested.part		  = part;
+		    part->body.contents.text.data = msgtext;
+		}
+	    }
+	    else if(orig_body->subtype
 		    && !strucmp(orig_body->subtype, "alternative")
 		    && orig_body->nested.part
 		    && orig_body->nested.part->next->body.type == TYPEMULTIPART
