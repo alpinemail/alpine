@@ -1072,7 +1072,11 @@ reply_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
 	else if(orig_body->type == TYPEMULTIPART){
 	    /*------ Message is Multipart ------*/
 	    if(orig_body->subtype
-	       && !strucmp(orig_body->subtype, "signed")
+	       && (!strucmp(orig_body->subtype, "signed")
+#ifdef SMIME
+		   || !strucmp(orig_body->subtype, OUR_PKCS7_ENCLOSURE_SUBTYPE)
+#endif /* SMIME */
+		  )
 	       && orig_body->nested.part){
 		/* operate only on the signed part */
 		body = reply_body(stream, env,
