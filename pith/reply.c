@@ -1089,7 +1089,11 @@ reply_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
 		    && orig_body->nested.part
 		    && orig_body->nested.part->body.type == TYPEMULTIPART
 		    && orig_body->nested.part->body.subtype
-		    && !strucmp(orig_body->nested.part->body.subtype, "signed")){
+		    && (!strucmp(orig_body->nested.part->body.subtype, "signed")
+#ifdef SMIME
+		   || !strucmp(orig_body->nested.part->body.subtype, OUR_PKCS7_ENCLOSURE_SUBTYPE)
+#endif /* SMIME */
+		  )){
 		/* we can call reply_body as in the call above with section
 		 * equal to "1", but that adds the multipart text to the
 		 * list of attachments. We do not want that, so we redo this
