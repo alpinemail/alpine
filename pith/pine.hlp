@@ -216,6 +216,10 @@ Suggested by Barry Landy.
 <P>
 Bugs that have been addressed include:
 <UL>
+   <LI> Width of characters is not always determined correctly when wcwidth
+        is used. Revert to using code for the Windows operating system. 
+        Reported by Andrew Ho.
+
    <LI> Crash when attempting to bounce a message due to lack of space in
         allocated space for key menu array. Reported by David Sewell.
 
