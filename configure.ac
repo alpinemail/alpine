@@ -1645,14 +1645,6 @@ fi
 
 dnl check for tcl libraries for Web Alpine (HACKY)
 if test -n "$WEB_BUILD" ; then
-TCL_VERSIONS_DOT="tcl8.6 tcl8.5 tcl8.4 tcl8.3"
-TCL_VERSIONS_NODOT="`echo ${TCL_VERSIONS_DOT} | ${SED} 's/\.//g'`"
-TCL_VERSIONS="${TCL_VERSIONS_DOT} ${TCL_VERSIONS_NODOT} tcl"
-  AC_SEARCH_LIBS([Tcl_Eval],[$alpine_TCLLIB ${TCL_VERSIONS}],,
-    [
-      WEB_BUILD=
-    ])
-
   dnl look for header file
   if test -n "$alpine_TCLINC" ; then
     AC_CHECK_HEADER($alpine_TCLINC/tcl.h,,
@@ -1680,6 +1672,18 @@ TCL_VERSIONS="${TCL_VERSIONS_DOT} ${TCL_VERSIONS_NODOT} tcl"
 	if test "$found" != "yes" ; then
 	    WEB_BUILD=
 	    AC_MSG_NOTICE([header file tcl.h NOT found: Web Alpine will not be built])
+	else
+	    TCL_VERSIONS_DOT="tcl8.6 tcl8.5 tcl8.4 tcl8.3"
+	    TCL_VERSIONS_NODOT="`echo ${TCL_VERSIONS_DOT} | ${SED} 's/\.//g'`"
+	    TCL_VERSIONS="${TCL_VERSIONS_DOT} ${TCL_VERSIONS_NODOT} tcl"
+
+	    AC_SEARCH_LIBS([Tcl_Eval],[$alpine_TCLLIB ${TCL_VERSIONS}],,
+	    [
+	      WEB_BUILD=
+	    ])
+	    if test -z "$WEB_BUILD" ; then
+	       AC_MSG_NOTICE([TCL Lib files not found: Web Alpine will not be built])
+	    fi
 	fi
       ])
   fi
@@ -2079,7 +2083,10 @@ if test -n "$alpine_c_client_gccoptlevel" ; then
   AC_SUBST(C_CLIENT_GCCOPTLEVEL, GCCOPTLEVEL=\"$alpine_c_client_gccoptlevel\")
 fi
 
-c_client_auths="$extra_auth_gss $extra_auth_ntlm"
+if test -n $extra_auth_ntlm ; then
+  ALPINE_space=" "
+fi
+c_client_auths="${extra_auth_gss}${ALPINE_space}${extra_auth_ntlm}"
 AC_SUBST([C_CLIENT_AUTHS], $c_client_auths)
 
 AC_SUBST([C_CLIENT_SPECIALS], $c_client_specials)
