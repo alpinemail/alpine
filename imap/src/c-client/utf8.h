@@ -383,7 +383,7 @@
  * same text width as 0x???? in case we ever add static reverse mapping tables.
  */
 
-#define UBOGON UCS2_BOGON
+#define UBOGON 0xfff8		/* unmapped from UCS2_BOGON */
 #define NOCHAR UCS2_NOTCHAR
 
 /* Codepoints in non-Unicode character sets */
