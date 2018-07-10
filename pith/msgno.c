@@ -937,6 +937,9 @@ free_pine_elt(void **sparep)
 	if((*peltp)->pthrd)
 	  fs_give((void **) &(*peltp)->pthrd);
 
+	if((*peltp)->firsttext)
+	  fs_give((void **) &(*peltp)->firsttext);
+
 	if((*peltp)->ice)
 	  free_ice(&(*peltp)->ice);
 

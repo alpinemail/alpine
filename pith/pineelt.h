@@ -41,6 +41,7 @@ typedef struct pine_elt {
 	PINETHRD_S  *pthrd;
 	PARTEX_S    *exceptions;
 	ICE_S       *ice;
+	char	    *firsttext;
 	/* per-message pine state bits */
 	unsigned int hidden:1;
 	unsigned int excluded:1;

@@ -17,6 +17,7 @@ static char rcsid[] = "$Id: mailindx.c 1266 2009-07-14 18:39:12Z hubert@u.washin
 
 #include "../pith/headers.h"
 #include "../pith/mailindx.h"
+#include "../pith/pineelt.h"
 #include "../pith/mailview.h"
 #include "../pith/flag.h"
 #include "../pith/icache.h"
@@ -2815,7 +2816,6 @@ format_index_index_line(INDEXDATA_S *idata)
 		    if(first_text){
 			strncpy(str, first_text, BIGWIDTH);
 			str[BIGWIDTH] = '\0';
-			fs_give((void **) &first_text);
 		    }
 		}
 
@@ -3734,12 +3734,32 @@ char *
 fetch_firsttext(INDEXDATA_S *idata, int delete_quotes)
 {
     ENVELOPE *env;
-    BODY *body = NULL;
+    BODY *body = NULL, *new_body = NULL;
     char *firsttext = NULL;
     STORE_S *so;
     gf_io_t pc;
     long partial_fetch_len = 0L;
     SEARCHSET *ss, **sset;
+    MESSAGECACHE *mc;
+    PINELT_S     *pelt;
+
+    /* we cache the result we get from this function, so that we do not have to
+     * refetch the text in case there is a change. We could cache in the envelope
+     * but c-client does not have a special field for that, nor we want to use the
+     * sparep pointer, since there could be other uses for sparep later, and even
+     * if we add a pointer to the ENVELOPE structure, we would be caching the same
+     * text twice (one in a private pointer, and the new pointer) and that would
+     * not make sense. Instead we will use an elt for this
+     */
+
+    if((mc = mail_elt(idata->stream, idata->rawno))
+       && ((pelt = (PINELT_S *) mc->sparep) == NULL)){
+        pelt = (PINELT_S *) fs_get(sizeof(PINELT_S));
+        memset(pelt, 0, sizeof(PINELT_S));
+    }
+
+    if(pelt && pelt->firsttext != NULL)
+      return(pelt->firsttext);
 
 try_again:
 
@@ -3748,7 +3768,7 @@ try_again:
      * Can we get this somehow in the overview call in build_header_work?
      */
     ss = mail_newsearchset();
-    ss->first = idata->rawno;
+    ss->first = ss->last = idata->rawno;
     sset = (SEARCHSET **) mail_parameters(idata->stream,
 					  GET_FETCHLOOKAHEAD,
 					  (void *) idata->stream);
@@ -3794,6 +3814,7 @@ try_again:
 			&& (subtype=body->subtype) && ALLOWED_SUBTYPE(subtype))
 			    ||
 		       (body->type == TYPEMULTIPART && body->nested.part
+			&& (new_body = &body->nested.part->body) != NULL
 			&& body->nested.part->body.type == TYPETEXT
 			&& (subtype=body->nested.part->body.subtype)
 			&& ALLOWED_SUBTYPE(subtype)))
@@ -3802,7 +3823,8 @@ try_again:
 		      partno = "1.1";
 
 		    gf_set_so_writec(&pc, so);
-		    success = get_body_part_text(idata->stream, body, idata->rawno,
+		    success = get_body_part_text(idata->stream, new_body ? new_body : body,
+						 idata->rawno,
 						 partno, partial_fetch_len, pc,
 						 NULL, NULL,
 						 GBPT_NOINTR | GBPT_PEEK |
@@ -3853,10 +3875,15 @@ try_again:
 			    if(firsttext)
 			      fs_give((void **) &firsttext);
 
+			    if(ss)
+			      mail_free_searchset(&ss);
+
 			    partial_fetch_len = 4096L;
 			    goto try_again;
 			}
 		    }
+		    if(mc && pelt)
+			pelt->firsttext = firsttext;
 		}
 	    }	
 	}
