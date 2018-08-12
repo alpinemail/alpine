@@ -5973,14 +5973,22 @@ write_pinerc(struct pine *ps, EditWhich which, int flags)
       if(so_give(&so)) goto io_err;
 
 #ifndef _WINDOWS
-      if ((realfilename = realpath(filename, NULL)) != NULL)
-	realfilename_malloced = 1;
-      else if(our_stat(filename, &sbuf) < 0 && errno == ENOENT){
-	realfilename = filename;
-	realfilename_malloced = 0;
+      realfilename = fs_get(MAXPATH+1);
+      if(realfilename != NULL){
+	if(realpath(filename, realfilename) == NULL)
+	   fs_give((void **) &realfilename);
+        realfilename_malloced = realfilename != NULL ? 1 : 0;
       }
       else
-	goto io_err;
+	realfilename_malloced = 0;
+      if (realfilename_malloced == 0){
+	  if(our_stat(filename, &sbuf) < 0 && errno == ENOENT){
+	    realfilename = filename;
+	    realfilename_malloced = 0;
+	  }
+	  else
+	    goto io_err;
+      }
 #else
       realfilename = filename;
       realfilename_malloced = 0;
@@ -5990,7 +5998,7 @@ write_pinerc(struct pine *ps, EditWhich which, int flags)
 	file_attrib_copy(tmp, realfilename);
 	r = rename_file(tmp, realfilename);
 	if(realfilename_malloced != 0)
-	  free((void *)realfilename);
+	  fs_give((void **) &realfilename);
         if(r < 0) goto io_err;
       }
     }
