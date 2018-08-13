@@ -45,11 +45,16 @@ all:	$(CCLIENTLIB)
 
 osdep.h: os_nt.h
 	copy os_nt.h osdep.h
-	drivers $(EXTRADRIVERS) $(DRIVERS) dummy
-	setproto $(CREATEDRIVER) $(APPENDDRIVER)
-	echo ssl_onceonlyinit (); >> linkage.c
-	mkauths $(EXTRAAUTHENTICATORS) $(AUTHENTICATORS)
-	echo mail_versioncheck (CCLIENTVERSION); >> linkage.c
+	if exist linkage.c del linkage.c
+	if exist linkage.h del linkage.h
+	if exist auths.c del auths.c
+	$(CC) -c $(CFLAGS) proc.c
+	link /subsystem:console /out:proc.exe proc.obj
+	proc drivers $(EXTRADRIVERS) $(DRIVERS) dummy
+	proc setproto $(CREATEDRIVER) $(APPENDDRIVER)
+	proc sslinit
+	proc mkauths $(EXTRAAUTHENTICATORS) $(AUTHENTICATORS)
+	proc version
 
 ip_nt.c: ip$(IP)_nt.c
 	copy ip$(IP)_nt.c ip_nt.c

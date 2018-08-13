@@ -456,9 +456,8 @@ int main (int argc,char *argv[])
 char *mailutil_string_sequence(MAILSTREAM *m)
 {
   char *rv = NULL;
-  unsigned long i, j, count;
+  unsigned long i, j;
   size_t len = 0;
-  MESSAGECACHE elt;
   
 
   if(m == NULL || m->nmsgs == 0L) return NULL;

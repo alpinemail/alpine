@@ -62,7 +62,7 @@ OURLIBS= ../c-client/cclient.lib osdep/libalpineosd.lib osdep/mswin.res \
 	../pith/osdep/libpithosd.lib ../pith/charconv/libpithcc.lib ../regex/libregex.lib ../pith/libpith.lib \
 	../pico/osdep/libpicoosd.lib ../pico/libpico.lib
 
-LIBS= $(STDLIBS) $(LDAPLIBS) $(SPELLLIBS) $(OURLIBS) $(EXTRALIBES)
+LIBS= $(STDLIBS) $(LDAPLIBS) $(SPELLLIBS) $(OURLIBS) $(EXTRALIBES) $(LIBRESSLLIBS)
 
 all:	alpine.exe rpload.exe rpdump.exe
 

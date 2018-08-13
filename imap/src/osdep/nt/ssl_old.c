@@ -25,12 +25,8 @@
 
 #define SECURITY_WIN32
 #include <sspi.h>
-#if(_WIN32_WINNT < 0x0400)
-typedef unsigned int ALG_ID;
-#else
 #include <wincrypt.h>
 ALGIDDEF
-#endif
 #include <schnlsp.h>
 #include <issperr.h>
 

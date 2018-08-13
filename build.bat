@@ -39,7 +39,8 @@ set libressllibes=
 set libresslextralibes="crypt32.lib"
 goto ldapincludewnt
 :yeslibresslwnt
-set libresslflags=-I\"%ALPINE_LIBRESSL%\"\include -DENABLE_WINDOWS_LIBRESSL -DLIBRESSL_INTERNAL
+echo including LIBRESSL functionality
+set libresslflags=-I\"%ALPINE_LIBRESSL%\"\include -I\"%ALPINE_LIBRESSL%\"\include\openssl -DENABLE_WINDOWS_LIBRESSL
 set libressllibes=\"%ALPINE_LIBRESSL%\"\x86\libcrypto-41.lib \"%ALPINE_LIBRESSL%\"\x86\libssl-43.lib \"%ALPINE_LIBRESSL%\"\x86\libtls-15.lib
 set libresslextralibes=
 :ldapincludewnt
@@ -73,7 +74,8 @@ set libressllibes=
 set libresslextralibes="crypt32.lib"
 goto ldapincludew2k
 :yeslibresslw2k
-set libresslflags=-I\"%ALPINE_LIBRESSL%\"\include -DENABLE_WINDOWS_LIBRESSL  -DLIBRESSL_INTERNAL
+echo including LIBRESSL functionality
+set libresslflags=-I\"%ALPINE_LIBRESSL%\"\include -I\"%ALPINE_LIBRESSL%\"\include\openssl -DENABLE_WINDOWS_LIBRESSL
 set libressllibes=\"%ALPINE_LIBRESSL%\"\x86\libcrypto-41.lib \"%ALPINE_LIBRESSL%\"\x86\libssl-43.lib \"%ALPINE_LIBRESSL%\"\x86\libtls-15.lib
 set libresslextralibes=
 :ldapincludew2k
@@ -158,7 +160,7 @@ goto buildcclnt
 :buildcclnt
 echo Building c-client...
 cd c-client
-nmake -nologo -f %cclntmake% EXTRACFLAGS=%extracflags% %extramakecommand%
+nmake -nologo -f %cclntmake% EXTRACFLAGS=%extracflags% EXTRALIBES=%extralibes% %extramakecommand%
 if errorlevel 1 goto bogus
 cd ..
 goto buildmailutil
@@ -169,7 +171,7 @@ goto nobuildmailutil
 :yesbuildmailutil
 echo Building mailutil
 cd mailutil
-nmake -nologo -f %cclntmake% EXTRACFLAGS=%extracflags% %extramakecommand%
+nmake -nologo -f %cclntmake% EXTRACFLAGS=%extracflags% LIBRESSLLIBS="%libressllibes%" %extramakecommand%
 if errorlevel 1 goto bogus
 cd ..
 :nobuildmailutil
@@ -202,7 +204,7 @@ goto buildregex
 :buildregex
 echo Building regex...
 cd regex
-nmake -nologo -f %alpinemake% wnt=1 EXTRACFLAGS=%extracflags% EXTRALDFLAGS=%extraldflags% EXTRALIBES=%extralibes% %extramakecommand%
+nmake -nologo -f %alpinemake% wnt=1 EXTRACFLAGS=%extracflags% EXTRALDFLAGS=%extraldflags% %extramakecommand%
 if errorlevel 1 goto bogus
 cd ..
 goto buildpicoosd
@@ -210,7 +212,7 @@ goto buildpicoosd
 :buildpicoosd
 echo Building pico-osdep...
 cd pico\osdep
-nmake -nologo -f %alpinemake% wnt=1 EXTRACFLAGS=%extracflags% EXTRALDFLAGS=%extraldflags% EXTRALIBES=%extralibes% %extramakecommand%
+nmake -nologo -f %alpinemake% wnt=1 EXTRACFLAGS=%extracflags% EXTRALDFLAGS=%extraldflags% %extramakecommand%
 if errorlevel 1 goto bogus
 cd ..\..
 goto buildpico
@@ -218,7 +220,7 @@ goto buildpico
 :buildpico
 echo Building pico...
 cd pico
-nmake -nologo -f %alpinemake% wnt=1 EXTRACFLAGS=%extracflags% EXTRALDFLAGS=%extraldflags% EXTRALIBES=%extralibes% %extramakecommand%
+nmake -nologo -f %alpinemake% wnt=1 EXTRACFLAGS=%extracflags% EXTRALDFLAGS=%extraldflags% %extramakecommand%
 if errorlevel 1 goto bogus
 cd ..
 goto buildalpineosd
@@ -226,7 +228,7 @@ goto buildalpineosd
 :buildalpineosd
 echo Building alpine-osdep...
 cd alpine\osdep
-nmake -nologo -f %alpinemake% wnt=1 EXTRACFLAGS=%extracflags% EXTRALDFLAGS=%extraldflags% EXTRALIBES=%extralibes% EXTRARCFLAGS=%extrarcflags% %extramakecommand%
+nmake -nologo -f %alpinemake% wnt=1 EXTRACFLAGS=%extracflags% EXTRALDFLAGS=%extraldflags% EXTRARCFLAGS=%extrarcflags% %extramakecommand%
 if errorlevel 1 goto bogus
 cd ..\..
 goto buildalpine
@@ -234,7 +236,7 @@ goto buildalpine
 :buildalpine
 echo Building alpine...
 cd alpine
-nmake -nologo -f %alpinemake% wnt=1 EXTRACFLAGS=%extracflags% EXTRALDFLAGS=%extraldflags% EXTRALIBES=%extralibesalpine% EXTRARCFLAGS=%extrarcflags% %extramakecommand%
+nmake -nologo -f %alpinemake% wnt=1 EXTRACFLAGS=%extracflags% LIBRESSLLIBS="%libressllibes%" EXTRALIBES=%extralibesalpine% LDAPLIBS=%ldaplibes% EXTRALDFLAGS=%extraldflags% EXTRARCFLAGS=%extrarcflags% %extramakecommand%
 if errorlevel 1 goto bogus
 cd ..
 goto nobuildmapi
@@ -251,7 +253,7 @@ goto buildmapi
 :buildmapi
 echo Building mapi
 cd mapi
-nmake -nologo -f makefile EXTRACFLAGS=%extracflags% EXTRALDFLAGS=%extraldflags% EXTRALIBES=%extralibes% %extramakecommand%
+nmake -nologo -f makefile EXTRACFLAGS=%extracflags% EXTRALDFLAGS=%extraldflags% LDAPLIBS=%ldaplibes% %extramakecommand%
 if errorlevel 1 goto bogus
 cd ..
 

@@ -1,0 +1,48 @@
+The windows version of Alpine can be compiled with LibreSSL. The build 
+script will compile using LibreSSL if there is a libressl folder in the 
+main Alpine source code directory. If you rename or remove this folder, 
+Alpine will be compiled using the default SSL libraries in your computer.
+
+There are pros and cons to every decision. Here are the pros and cons to
+building using LibreSSL.
+
+Pros:
+
+  * LibreSSL can be updated at any time. This will make it possible to
+    build Alpine with the latest features of LibreSSL. If you decide to
+    not use LibreSSL, your SSL libraries will eventually not be updated.
+
+  * Certificates can be updated at any time, and so you can run your
+    favorite version of Alpine for many years, even after your Windows
+    version is not supported anymore.
+
+  * You get S/MIME support in Windows for free.
+
+Cons:
+
+  * LibreSSL will check certificates not using the certificates installed 
+    in your Windows computer, but it will do so in a different location. 
+    This means that it is the responsibility of the user to update the 
+    certificates. No matter what choice is made, if certificates are not
+    updated, validation will always eventually fail. 
+
+Default Certificates Location:
+
+  * When Alpine is compiled with LibreSSL support, certificates must be
+    placed in the C:\\libressl\ssl\certs directory. You can find a copy
+    of certificates in the git repository in the libressl/certs directory.
+    All you have to do is to copy the certificates in that directory to 
+    the C:\\libressl\ssl\certs directory.
+
+  * In order to make it easy to distribute certificates, each certificate
+    is distributed twice. Once with a long name, and another with the 
+    short name. The short name is called the "subject hash". A unix script 
+    called "doit.sh" can be used to create the short name. You can run 
+    such script, from this directory by using the command
+
+     ./doit.sh
+
+    and copy the resulting files with short names, to the 
+    C:\\libressl\ssl\certs folder. You only need the files with the short 
+    names, but both are distributed.
+

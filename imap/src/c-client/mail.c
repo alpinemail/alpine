@@ -2793,8 +2793,6 @@ BODY *mail_body_section (BODY *b, unsigned char *section)
 BODY *mail_body (MAILSTREAM *stream,unsigned long msgno,unsigned char *section)
 {
   BODY *b = NIL;
-  PART *pt;
-  unsigned long i;
 				/* make sure have a body */
   if (section && *section && mail_fetchstructure (stream,msgno,&b) && b)
     return mail_body_section(b, section);

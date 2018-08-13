@@ -3363,13 +3363,12 @@ IMAPPARSEDREPLY *imap_send_literal (MAILSTREAM *stream,char *tag,char **s,
 long imap_search_x_gm_ext1 (MAILSTREAM *stream, char *charset, SEARCHPGM *pgm, long flags)
 {
   char *cmd = (flags & SE_UID) ? "UID SEARCH X-GM-RAW" : "SEARCH X-GM-RAW";
-  char *p, *t, s[MAILTMPLEN+1], u[MAILTMPLEN], v[MAILTMPLEN];
-  IMAPARG *args[4],apgm,aatt,achs;;
+  char *t, s[MAILTMPLEN+1], u[MAILTMPLEN];
+  IMAPARG *args[4],apgm;
   IMAPPARSEDREPLY *reply;
   unsigned long i,j,k;
   MESSAGECACHE *elt;
   size_t remain = sizeof(s) - 1, len;
-  NETMBX mb;   
 	
   u[0] = s[0] = '\0';
   t = s;

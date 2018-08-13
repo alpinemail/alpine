@@ -967,7 +967,7 @@ print_private_key_information(char *email, int itype)
 	&& !load_private_key(pc)
 	&& ps_global->smime
 	&& ps_global->smime->need_passphrase){
-	if (*pith_opt_smime_get_passphrase)
+	if (pith_opt_smime_get_passphrase)
 	   (*pith_opt_smime_get_passphrase)();
 	load_private_key(pc);
   }

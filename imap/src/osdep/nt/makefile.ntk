@@ -22,6 +22,7 @@
 #
 # Date:		11 May 1989
 # Last Edited:	23 May 2007
+# Last Edited:   1 Aug 2018
 
 
 EXTRAAUTHENTICATORS =
@@ -31,7 +32,7 @@ AUTHENTICATORS = ext gss md5 pla log
 DRIVERS = imap nntp pop3 mbx mtx tenex unix
 CREATEDRIVER = mbx
 APPENDDRIVER = unix
-OSCOMPAT = /DWIN32 /D_WIN32_WINNT=0x0400 /I\k5\include
+OSCOMPAT = /DWIN32 /D_WIN32_WINNT=0x0501 /I\k5\include
 VSCOMPAT = /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE
 CFLAGS = /MT /W3 /Ox /DCHUNKSIZE=65536 $(OSCOMPAT) $(VSCOMPAT) -nologo /I.. $(EXTRACFLAGS)
 CC = cl
@@ -44,11 +45,16 @@ all:	$(CCLIENTLIB)
 
 osdep.h: os_nt.h
 	copy os_nt.h osdep.h
-	drivers $(EXTRADRIVERS) $(DRIVERS) dummy
-	setproto $(CREATEDRIVER) $(APPENDDRIVER)
-	echo ssl_onceonlyinit (); >> linkage.c
-	mkauths $(EXTRAAUTHENTICATORS) $(AUTHENTICATORS)
-	echo mail_versioncheck (CCLIENTVERSION); >> linkage.c
+	if exist linkage.c del linkage.c
+	if exist linkage.h del linkage.h
+	if exist auths.c del auths.c
+	$(CC) -c $(CFLAGS) proc.c
+	link /subsystem:console /out:proc.exe proc.obj
+	proc drivers $(EXTRADRIVERS) $(DRIVERS) dummy
+	proc setproto $(CREATEDRIVER) $(APPENDDRIVER)
+	proc sslinit
+	proc mkauths $(EXTRAAUTHENTICATORS) $(AUTHENTICATORS)
+	proc version
 
 ip_nt.c: ip4_nt.c
 	copy ip4_nt.c ip_nt.c
