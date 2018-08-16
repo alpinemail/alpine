@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 300 2018-08-12 22:34:18
+Alpine Commit 301 2018-08-15 21:08:38
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -211,6 +211,10 @@ and wait for the connection to recover.
 multipart/signed, Alpine will include the text of the original message
 in a reply message, instead of including a multipart attachment.
 Suggested by Barry Landy.
+
+<LI> S/MIME: Some clients do not transform messages to canonical form when 
+signing first and encrypting second, which makes Alpine fail to parse the 
+signed data after encryption. Reported by Holger Trapp.
 </UL>
 
 <P>

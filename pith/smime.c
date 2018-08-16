@@ -3418,13 +3418,39 @@ do_decoding(BODY *b, long msgno, const char *section)
         char	 *bstart;
         STRING	  s;
 	BUF_MEM  *bptr = NULL;
+	int we_free = 0;
 
 	BIO_get_mem_ptr(out, &bptr);
 	if(bptr)
-          h = bptr->data;
+	   h = bptr->data;
 
         /* look for start of body */
         bstart = strstr(h, "\r\n\r\n");
+
+	if(!bstart){
+	   /* 
+	    * Some clients do not canonicalize before encrypting, so 
+	    * look for "\n\n" instead.
+	    */
+	   bstart = strstr(h, "\n\n");
+	   if(bstart){
+	      int lines;
+	      char *s, *t;
+	      for(lines = 0, bstart = h; (bstart = strchr(bstart, '\n')) != NULL; 
+					bstart++, lines++);
+	      h = t = fs_get(strlen(bptr->data) + lines + 1);
+	      we_free++;
+	      for(s = bptr->data; *s != '\0'; s++)
+		if(*s == '\n' && *(s-1) != '\r'){
+		  *t++ = '\r';
+		  *t++ = '\n';
+		}
+		else
+		  *t++ = *s;
+	      *t = '\0';
+	      bstart = strstr(h, "\r\n\r\n");
+	   }
+	}
 
         if(!bstart){
             q_status_message(SM_ORDER, 3, 3, _("Encrypted data couldn't be parsed."));
@@ -3463,7 +3489,7 @@ do_decoding(BODY *b, long msgno, const char *section)
 
 	    b->type = TYPEMULTIPART;
 	    if(b->subtype)
-	      fs_give((void**) &b->subtype);
+	      fs_give((void **) &b->subtype);
 
 	    /*
 	     * This subtype is used in mailview.c to annotate the display of
@@ -3474,7 +3500,7 @@ do_decoding(BODY *b, long msgno, const char *section)
 	    b->encoding = ENC8BIT;
 
 	    if(b->description)
-	      fs_give((void**) &b->description);
+	      fs_give((void **) &b->description);
 
 	    b->description = cpystr(what_we_did);
 
@@ -3503,6 +3529,8 @@ do_decoding(BODY *b, long msgno, const char *section)
 
             modified_the_body = 1;
         }
+	if(we_free)
+	   fs_give((void **) &h);
     }
 
 end:
