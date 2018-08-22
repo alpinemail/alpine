@@ -58,6 +58,7 @@ fname_to_locale(char *fname)
 
     if(fname == NULL){	/* special call to free memory */
       if(fname_locale_buf) fs_give((void **) &fname_locale_buf);
+      fname_locale_len = 0;
       return NULL;
     }
 
@@ -110,6 +111,7 @@ fname_to_utf8(char *fname)
 
     if(fname == NULL){	/* special call to free memory */
       if(fname_utf8_buf) fs_give((void **) &fname_utf8_buf);
+      fname_utf8_len = 0;
       return NULL;
     }
 
