@@ -2201,8 +2201,10 @@ ical_vevent_summary(VCALENDAR_S *vcal)
      if((icl = (ICLINE_S *) vevent->prop[EvPriority]) != NULL)
 	rv->priority = atoi(icl->value);
  
-     if((icl = (ICLINE_S *) vevent->prop[EvSummary]) != NULL)
+     if((icl = (ICLINE_S *) vevent->prop[EvSummary]) != NULL){
 	rv->summary = cpystr(icl->value ? icl->value : _("No Summary"));
+	ical_remove_escapes(&rv->summary);
+     }
 
      if((icl = (ICLINE_S *) vevent->prop[EvClass]) != NULL)
 	rv->class = cpystr(icl->value ? icl->value : _("PUBLIC"));
@@ -2237,8 +2239,10 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 	}
      }	/* end of if(organizer) */
 
-     if((icl = (ICLINE_S *) vevent->prop[EvLocation]) != NULL)
+     if((icl = (ICLINE_S *) vevent->prop[EvLocation]) != NULL){
 	rv->location = cpystr(icl->value ? icl->value : _("Location undisclosed"));
+	ical_remove_escapes(&rv->location);
+     }
 
      if((icl = (ICLINE_S *) vevent->prop[EvDtstart]) != NULL){
 	struct tm ic_date;

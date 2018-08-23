@@ -333,7 +333,6 @@ format_calendar_vevent(VCALENDAR_S *vcal, ATTACH_S *a, HANDLE_S **handlesp, int 
     } /* end of if(organizer) */
 
     if(vesy->location){
-      ical_remove_escapes(&vesy->location);
       utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s%s",
 		padding, _("Location: "), vesy->location);
       gf_puts(tmp_20k_buf, pc);

@@ -2975,7 +2975,6 @@ display_vevent_summary(long int msgno, ATTACH_S *a, int flags, int depth)
        }
 
        if(vesy->location){
-         ical_remove_escapes(&vesy->location);
          utf8_snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s%s", 
 	   _("Location: "), vesy->location);
          so_puts(in_store, tmp_20k_buf);
