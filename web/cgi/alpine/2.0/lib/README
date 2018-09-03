@@ -1,0 +1,6 @@
+If you are interested in building web Alpine, you must download the
+yui library, and install it in this directory. In order to help you
+with this process, the script "yui.sh" does this job for you. 
+
+The script uses the wget and unzip programs, which you must have 
+installed, and an internet connection to download the yui library.

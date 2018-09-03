@@ -27,7 +27,13 @@ set _wp(urlprefix)	webmail
 
 # file system path to CGI application files
 # directory containing web alpine application scripts and supporting tools
-set _wp(fileroot)	/usr/local/libexec/alpine
+# The htdocs/ directory is located at /srv/www/htdocs. Here we copy the
+# web directory to /srv/www/Webalpine/web using "tar cf" followed by
+# "tar xf" which preserves symbolic links
+# Original configuration:
+#set _wp(fileroot)	/usr/local/libexec/alpine
+set _wp(fileroot)	/srv/www/Webalpine/web
+
 
 set _wp(tmpdir)		/tmp
 
@@ -59,6 +65,7 @@ set _wp(defconf)	$_wp(conffile)
 set _wp(lib)		[file join $_wp(fileroot) lib]
 
 # directory used temporarily to stage attatched and detached files
+# this directory is owned by wwwrun:www
 set _wp(detachpath)	[file join $_wp(fileroot) detach]
 
 set _wp(imagepath)	[file join / $_wp(urlprefix) images]
@@ -129,8 +136,8 @@ set _wp(menuargs)	{width="112" nowrap valign=top}
 set _wp(ispell)		/usr/local/bin/ispell
 
 # Yahoo! User Interface Library location
-#set _wp(yui)		$_wp(serverpath)/$_wp(appdir)/$_wp(ui2dir)/lib/yui
-set _wp(yui)		"http://yui.yahooapis.com/2.7.0"
+set _wp(yui)		$_wp(serverpath)/$_wp(appdir)/$_wp(ui2dir)/lib/yui
+#set _wp(yui)		"http://yui.yahooapis.com/2.7.0"
 
 # usage reporter - input: username as first command line argument
 #                  output: space separated integers usage and total
@@ -178,6 +185,16 @@ set _wp(indexheight) [expr {$_wp(indexheight) <= 20 ? 20 : $_wp(indexheight) >= 
 # destination of the default pinerc location.
 #
 set _wp(hosts) {
+    {
+      Gmail
+      imap.gmail.com/ssl
+      $_wp(confdir)/gmail.conf
+    }
+    {
+      GMX
+      imap.gmx.com/ssl
+      $_wp(confdir)/gmx.conf
+    }
     {
       Deskmail
       $User.deskmail.washington.edu/ssl
