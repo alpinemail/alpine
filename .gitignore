@@ -31,4 +31,11 @@ pith/help_c_gen
 pith/help_h_gen
 pith/helptext.c
 pith/helptext.h
-
+web/cgi/alpine/2.0/lib/yui-2.9.0/
+web/src/alpined.d/.libs/
+web/src/alpined.d/alpined
+web/src/alpined.d/alpineldap
+web/src/alpined.d/libwpcomm.la
+web/src/alpined.d/local.c
+web/src/alpined.d/wpcomm.lo
+web/src/cgi.tcl-1.10/pkgIndex.tcl

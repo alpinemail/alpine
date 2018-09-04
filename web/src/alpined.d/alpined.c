@@ -7569,6 +7569,11 @@ peIndexFormat(Tcl_Interp *interp)
 	    name = "Mailbox";
 	    break;
 
+	  case iOpeningText:
+	  case iOpeningTextNQ:
+	    name = "Excerpt";
+	    break;
+
 	  case iSubject :
 	  case iSubjKey :
 	  case iSubjKeyInit :

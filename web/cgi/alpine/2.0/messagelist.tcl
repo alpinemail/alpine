@@ -454,6 +454,15 @@ proc drawMessageList {c f n ppg} {
 
 		  set cd [cgi_buffer {cgi_h1 $h1c id=h1$ilu [cgi_url [cgi_quote_html $subtext] ${listaction}$ilu id=ml$ilu class=wap [subst $viewonclick]]}]
 		}
+		excerpt {
+		  set exstr [lindex [lindex [lindex $msg $j] 0] 0]
+		  set exlen 125
+		  if {[string length $exstr] > $exlen} {
+		    set exstr "[string range $exstr 0 $exlen]..."
+		  }
+
+		  set cd [cgi_buffer {cgi_h1 $h1c id=h1$ilu [cgi_url_transparent [cgi_quote_html $exstr] ${listaction}$ilu id=ml$ilu class=wap [subst $viewonclick]]}]
+		}
 		status {
 		  set align center
 		  catch {unset statclass}

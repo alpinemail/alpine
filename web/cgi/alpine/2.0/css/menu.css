@@ -10,13 +10,10 @@
  * ========================================================================
  */
 
-.menu a, .menu a:link, .menu a:visited {
+a.transparent, a.transparent:link, a.transparent:hover, a.transparent:visited {
 	white-space: nowrap;
-	color: #ffffff;
+	color: #000000;
 	display: block;
-	margin: 0;
-	padding: 0 8px;
-	line-height: 34px;
 	text-decoration: none;
 }
 
