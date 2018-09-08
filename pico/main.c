@@ -505,18 +505,16 @@ display_color_codes(void)
   (*term.t_open)();
   (*term.t_rev)(FALSE);
 
-  pico_toggle_color(1);
+  pico_toggle_color(0);
   if((ncolors = pico_count_in_color_table()) <= 0){
     fprintf(stderr, "%s", "Your screen does not support colors\r\n");
     exit(1);
   }
 
-
   if(term.t_ncol < 62 || term.t_nrow < 23){
     fprintf(stderr, "%s", "Screen must have at least 24 rows and 63 columns\r\n");
     exit(1);
   }
-
 
   fprintf(stdout, "%s", "The code of a color is the number in the same row plus\r\n");
   fprintf(stdout, "%s", "the number in the same column as that color.\r\n\r\n");
@@ -529,9 +527,10 @@ display_color_codes(void)
       default : fprintf(stderr, "Unknown number of colors %d\n", ncolors); 
 	        exit(1);
 	        break;
-    }
+  }
 
-    if(ncolors != 256){
+  pico_toggle_color(1);
+  if(ncolors != 256){
       for(k = -1; 16*k < ncolors; k++){
 	for(l = -1; l < ncolors; l++){
 	   if(k == -1){
@@ -564,7 +563,7 @@ display_color_codes(void)
 	if(k != -1 || ncolors == 8)
 	  fprintf(stdout, "%s", "\r\n");
       }
-    } else {
+  } else {
       fprintf(stdout, "%s", "Codes for terminal with 256 colors:\r\n");
       a = 16;
       for(k = -1; 36*k < ncolors; k++){
@@ -618,8 +617,8 @@ display_color_codes(void)
 	pico_toggle_color(0);
 	fprintf(stdout, "%s", "\r\n");
       }
-    }
-    pico_set_colorp(lastc, PSC_NONE);
+  }
+  pico_set_colorp(lastc, PSC_NONE);
 }
 #endif /* ! _WINDOWS */
 
@@ -762,7 +761,7 @@ Loop:
 	  }
 	  goto Loop;
 	}
-	else if(strcmp(*av, "color_codes") == 0){
+	else if(strcmp(*av, "color_code") == 0){
 	   display_color_codes();
 	   exit(0);
 	}
