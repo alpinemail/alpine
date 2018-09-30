@@ -33,6 +33,15 @@
 #include <bio.h>
 #include <crypto.h>
 #include <rand.h>
+#ifndef TLS_client_method
+#ifdef TLSv1_2_client_method
+#define TLS_client_method TLSv1_2_client_method
+#elif defined(TLSv1_1_client_method)
+#define TLS_client_method TLSv1_1_client_method
+#else 
+#define TLS_client_method TLSv1_client_method
+#endif /* TLSv1_2_client_method */
+#endif /* TLS_client_method */
 #ifdef OPENSSL_1_1_0
 #include <rsa.h>
 #include <bn.h>
