@@ -442,13 +442,17 @@
 				/* try SSL mode */
 #define NET_TRYSSL ((unsigned long) 0x8000000)
 				/* try TLS1 mode */
-#define NET_TRYTLS1   ((unsigned long) 0x1000000)
+#define NET_TRYTLS1   ((unsigned long) 0x4000000)
 				/* try TLS1_1 mode */
 #define NET_TRYTLS1_1 ((unsigned long) 0x2000000)
 				/* try TLS1_2 mode */
-#define NET_TRYTLS1_2 ((unsigned long) 0x4000000)
+#define NET_TRYTLS1_2 ((unsigned long) 0x1000000)
+				/* try TLS1_3 mode */
+#define NET_TRYTLS1_3 ((unsigned long) 0x800000)
 				/* try DTLS1 mode */
-#define NET_TRYDTLS1   ((unsigned long) 0x8000000)
+#define NET_TRYDTLS1   ((unsigned long) 0x400000)
+				/* try DTLS1_2 mode */
+#define NET_TRYDTLS1_2   ((unsigned long) 0x200000)
 
 /* Close options */
 
@@ -691,7 +695,9 @@ typedef struct net_mailbox {
   unsigned int tls1    : 1;	/* Use TLSv1 */
   unsigned int tls1_1  : 1;	/* Use TLSv1.1 */
   unsigned int tls1_2  : 1;	/* Use TLSV1.2 */
+  unsigned int tls1_3  : 1;	/* Use TLSV1.3 */
   unsigned int dtls1   : 1;	/* Use DTLSv1 */
+  unsigned int dtls1_2 : 1;	/* Use DTLSv1.2 */
   unsigned int trysslflag : 1;	/* try SSL driver first flag */
   unsigned int novalidate : 1;	/* don't validate certificates */
   unsigned int tlsflag : 1;	/* TLS flag */

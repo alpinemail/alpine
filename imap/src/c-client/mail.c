@@ -827,19 +827,29 @@ long mail_valid_net_parse_work (char *name,NETMBX *mb,char *service)
 	else if (mailssldriver && !compare_cstring (s,"ssl") && !mb->tlsflag)
 	  mb->sslflag = mb->notlsflag = T;
 	else if (!compare_cstring(s, "tls1") 
-			&& !mb->tls1_1 && !mb->tls1_2 && !mb->dtls1)
+			&& !mb->tls1_1 && !mb->tls1_2 && !mb->tls1_3
+			&& !mb->dtls1 && !mb->dtls1_2)
 	  mb->sslflag = mb->notlsflag = mb->tls1 = T;
-#ifdef TLSV1_2
 	else if (!compare_cstring(s, "tls1_1") 
-			&& !mb->tls1 && !mb->tls1_2 && !mb->dtls1)
+			&& !mb->tls1 && !mb->tls1_2 && !mb->tls1_3
+			&& !mb->dtls1 && !mb->dtls1_2)
 	  mb->sslflag = mb->notlsflag = mb->tls1_1 = T;
 	else if (!compare_cstring(s, "tls1_2") 
-			&& !mb->tls1 && !mb->tls1_1 && !mb->dtls1)
+			&& !mb->tls1 && !mb->tls1_1 && !mb->tls1_3
+			&& !mb->dtls1 && !mb->dtls1_2)
 	  mb->sslflag = mb->notlsflag = mb->tls1_2 = T;
-#endif
+	else if (!compare_cstring(s, "tls1_3") 
+			&& !mb->tls1 && !mb->tls1_1 && !mb->tls1_2
+			&& !mb->dtls1 && !mb->dtls1_2)
+	  mb->sslflag = mb->notlsflag = mb->tls1_3 = T;
 	else if (!compare_cstring(s, "dtls1")
-			&& !mb->tls1 && !mb->tls1_1 && !mb->tls1_2)
+			&& !mb->tls1 && !mb->tls1_1 && !mb->tls1_2
+			&& !mb->tls1_3 && !mb->dtls1_2)
 	  mb->sslflag = mb->notlsflag = mb->dtls1 = T;
+	else if (!compare_cstring(s, "dtls1_2")
+			&& !mb->tls1 && !mb->tls1_1 && !mb->tls1_2
+			&& !mb->tls1_3 && !mb->dtls1)
+	  mb->sslflag = mb->notlsflag = mb->dtls1_2 = T;
 	else if (mailssldriver && !compare_cstring (s,"novalidate-cert"))
 	  mb->novalidate = T;
 				/* hack for compatibility with the past */
@@ -6220,7 +6230,9 @@ NETSTREAM *net_open (NETMBX *mb,NETDRIVER *dv,unsigned long port,
   flags |= mb->tls1 || mb->tlsflag ? NET_TRYTLS1   : 0;
   flags |= mb->tls1_1 ? NET_TRYTLS1_1 : 0;
   flags |= mb->tls1_2 ? NET_TRYTLS1_2 : 0;
+  flags |= mb->tls1_3 ? NET_TRYTLS1_3 : 0;
   flags |= mb->dtls1  ? NET_TRYDTLS1  : 0;
+  flags |= mb->dtls1_2  ? NET_TRYDTLS1_2  : 0;
   if (strlen (mb->host) >= NETMAXHOST) {
     sprintf (tmp,"Invalid host name: %.80s",mb->host);
     MM_LOG (tmp,ERROR);

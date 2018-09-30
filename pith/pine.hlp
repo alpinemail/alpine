@@ -185,6 +185,9 @@ Additions include:
 <LI> NTLM authentication support with the ntlm library, in Unix systems.
 Based on code provided by Maciej W. Rozycki.
 
+<LI> Add /tls1_3 flag for servers that support it. Read more information
+in the secure protocols <A HREF="h_network_encryption_security">help</A>.
+
 <LI> Add -dict option to PC-Pico, which allows users to choose a dictionary
 when spelling. Sample usage: -dict "en_US, de_DE, fr_FR".
 
@@ -1368,6 +1371,42 @@ so in the S/MIME configuration screen, in the &quot;Manage Key and
 Certificate for Password File&quot; section, simply enter your current 
 password to unlock your current key and then press &quot;C&quot; to create 
 a new key.
+
+<P>
+&lt;End of help&gt;
+</BODY>
+</HTML>
+====== h_network_encryption_security ======
+<HTML>
+<HEAD>
+<TITLE>Network Encryption Security Explained</TITLE>
+</HEAD>
+<BODY>
+<H1>Network Encryption Security Explained</H1>
+
+You can specify which encryption protocol you would like to try when
+creating a secure connection to a server. Alpine will attempt to use
+that encryption protocol, but in practice the protocol being used will
+default to the most secure protocol that both Alpine and the server
+support.
+
+<P> If you use the latest version of OpenSSL, the /ssl modifier to the 
+server definition will use the most secure version of the TLS encryption 
+protocol. The same will be true if you try /tls1_1 or /tls1_2, but in an 
+old version of OpenSSL (pre 1.1.0 series) /tls1_1 might mean to use 
+version 1.1 of the TLS protocol.
+
+<P> You will never go wrong by using the /ssl modifier. At the time of
+this writing OpenSSL had released version 1.1.1, with support for
+TLS version 1.3. If your version of OpenSSL does not support this version
+of the TLS protocol, then the /tls1_3 modifier will only mean to use
+the most secure version of the TLS protocol that OpenSSL and the
+server can negotiate. In future versions of OpenSSL, /tls1_3 might mean
+to try to negotiate a higher version of the TLS protocol.
+
+<P> In order to avoid confusion, the /ssl flag is the best way to guarantee
+the highest encryption protocol available, and it is the recommended
+modifier to the server definition to create a secure encrypted connection.
 
 <P>
 &lt;End of help&gt;
@@ -20671,6 +20710,19 @@ Alpine must be linked with an SSL library for this option to be operational.
 
 </DD>
 
+<DT>DTLS1_2</DT>
+<DD>
+This parameter indicates that the connection to the server will be made
+over the SSL port, but using the DTLSv1.2 protocol, instead of the usual
+SSLv3 or SSLv2 protocols.
+Alpine must be linked with an SSL library for this option to be operational.
+
+<P>
+<CENTER><SAMP>/dtls1_2</SAMP></CENTER>
+<P>
+
+</DD>
+
 <DT>TLS1_1</DT>
 <DD>
 This parameter indicates that the connection to the server will be made
@@ -20688,6 +20740,19 @@ Alpine must be linked with an SSL library for this option to be operational.
 <DD>
 This parameter indicates that the connection to the server will be made
 over the SSL port, but using the TLSv1.2 protocol, instead of the usual
+SSLv3 or SSLv2 protocols.
+Alpine must be linked with an SSL library for this option to be operational.
+
+<P>
+<CENTER><SAMP>/tls1_2</SAMP></CENTER>
+<P>
+
+</DD>
+
+<DT>TLS1_3</DT>
+<DD>
+This parameter indicates that the connection to the server will be made
+over the SSL port, but using the TLSv1.3 protocol, instead of the usual
 SSLv3 or SSLv2 protocols.
 Alpine must be linked with an SSL library for this option to be operational.
 

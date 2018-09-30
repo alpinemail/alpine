@@ -52,6 +52,7 @@ static char rcsid[] = "$Id: conf.c 1266 2009-07-14 18:39:12Z hubert@u.washington
 #include "../pico/osdep/mswin.h"
 #endif
 
+#include <openssl/ssl.h>
 
 #define	TO_BAIL_THRESHOLD	60
 
@@ -8147,8 +8148,8 @@ get_supported_options(void)
     DRIVER        *d;
     AUTHENTICATOR *a;
     char          *title = _("Supported features in this Alpine");
-    char           sbuf[MAX_SCREEN_COLS+1];
-    int            cnt, alcnt, len, cols, disabled, any_disabled = 0;;
+    char           sbuf[MAX_SCREEN_COLS+1],  tmp[128];
+    int            cnt, alcnt, len, cols, disabled, any_disabled = 0, i;
 
     /*
      * Line count:
@@ -8190,10 +8191,32 @@ get_supported_options(void)
       config[cnt] = cpystr(_("  TLS and SSL"));
     else
       config[cnt] = cpystr(_("  None (no TLS or SSL)"));
-#ifdef SSL_SUPPORTS_TLSV1_2
-    if(++cnt < alcnt)
-      config[cnt] = cpystr("  TLSv1.1, TLSv1.2, and DTLSv1");
-#endif
+
+    tmp[0] = tmp[1] = ' ';
+    tmp[2] = '\0';
+#ifndef OPENSSL_NO_TLS1_METHOD
+     strcat(tmp, "TLSv1, ");
+#endif /* OPENSSL_NO_TLS1_METHOD */
+#ifdef TLS1_1_VERSION
+     strcat(tmp, "TLSv1.1, ");
+#endif /* TLS1_1_VERSION */
+#ifdef TLS1_2_VERSION
+     strcat(tmp, "TLSv1.2. ");
+#endif /* TLS1_2_VERSION */
+#ifdef TLS1_3_VERSION
+     strcat(tmp, "TLSv1.3, ");
+#endif /* TLS1_3_VERSION */
+#ifdef DTLS1_VERSION
+     strcat(tmp, "DTLSv1, ");
+#endif /* DTLS1_VERSION */
+#ifdef DTLS1_2_VERSION
+     strcat(tmp, "DTLSv1.2, ");
+#endif /* DTLS1_2_VERSION */
+    if(tmp[2] != '\0'){
+       tmp[strlen(tmp)-2] = '\0';
+       if(++cnt < alcnt)
+          config[cnt] = cpystr(tmp);
+    }
 #ifdef SMIME
     if(++cnt < alcnt)
       config[cnt] = cpystr("  S/MIME");

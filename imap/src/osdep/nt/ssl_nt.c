@@ -37,15 +37,30 @@
 #ifdef OPENSSL_1_1_0
 #include <rsa.h>
 #include <bn.h>
+#ifdef TLSv1_client_method
+#undef TLSv1_client_method
+#endif /* TLSv1_client_method */
 #ifdef TLSv1_1_client_method
-#undef TLSv1_1_client_method
+#undef TLSv1_1_client_method   
 #endif /* TLSv1_1_client_method */
 #ifdef TLSv1_2_client_method
 #undef TLSv1_2_client_method
 #endif /* TLSv1_2_client_method */
+#ifdef DTLSv1_client_method
+#undef DTLSv1_client_method
+#endif /* DTLSv1_client_method */
+#ifdef DTLSv1_2_client_method
+#undef DTLSv1_2_client_method
+#endif /* DTLSv1_2_client_method */
+#define TLSv1_client_method   TLS_client_method
 #define TLSv1_1_client_method TLS_client_method
 #define TLSv1_2_client_method TLS_client_method
-#endif /* OPENSSL_1_1_0 */
+#define DTLSv1_client_method  DTLS_client_method
+#define DTLSv1_2_client_method DTLS_client_method
+#endif /* OPENSSL_1_1_0 */  
+#ifndef DTLSv1_2_client_method 
+#define DTLSv1_2_client_method DTLSv1_client_method
+#endif /* DTLSv1_2_client_method */
 #undef STRING
 #undef crypt
 
@@ -187,26 +202,44 @@ SSLSTREAM *ssl_aopen (NETMBX *mb,char *service,char *usrbuf)
  */
 const SSL_METHOD *ssl_connect_mthd(int flag)
 {
-#ifdef OPENSSL_1_1_0
-  if(flag & NET_TRYTLS1)
-    return TLS_client_method(); 
+  if (flag & NET_TRYTLS1)
+#ifndef OPENSSL_NO_TLS1_METHOD  
+     return TLSv1_client_method();   
 #else
-  if(flag & NET_TRYTLS1)
-    return TLSv1_client_method(); 
-#endif /* OPENSSL_1_1_0 */
-#ifdef TLSV1_2
-  else if(flag & NET_TRYTLS1_1) 
-	return TLSv1_1_client_method();
-  else if(flag & NET_TRYTLS1_2) 
-	return TLSv1_2_client_method();
-#endif /* TLSV1_2 */
-#ifdef OPENSSL_1_1_0
-  else if(flag & NET_TRYDTLS1)
-	return DTLS_client_method();
+     return TLS_client_method();
+#endif /* OPENSSL_NO_TLS1_METHOD */
+     
+  else if(flag & NET_TRYTLS1_1)
+#ifndef OPENSSL_NO_TLS1_1_METHOD
+     return TLSv1_1_client_method(); 
 #else
-  else if(flag & NET_TRYDTLS1)
-	return DTLSv1_client_method();
-#endif /* OPENSSL_1_1_0 */
+     return TLS_client_method();
+#endif /* OPENSSL_NO_TLS1_1_METHOD */
+ 
+  else if(flag & NET_TRYTLS1_2)
+#ifndef OPENSSL_NO_TLS1_2_METHOD
+     return TLSv1_2_client_method();
+#else
+     return TLS_client_method();
+#endif /* OPENSSL_NO_TLS1_2_METHOD */
+
+  else if(flag & NET_TRYTLS1_3) 
+     return TLS_client_method();   
+     
+  else if(flag & NET_TRYDTLS1) 
+#ifndef OPENSSL_NO_DTLS1_METHOD 
+     return DTLSv1_client_method();  
+#else
+     return DTLS_client_method();
+#endif /* OPENSSL_NO_DTLS1_METHOD */ 
+ 
+  else if(flag & NET_TRYDTLS1_2)
+#ifndef OPENSSL_NO_DTLS1_METHOD 
+     return DTLSv1_2_client_method();
+#else
+     return DTLS_client_method();
+#endif /* OPENSSL_NO_DTLS1_METHOD */ 
+
   else return SSLv23_client_method();
 }
 

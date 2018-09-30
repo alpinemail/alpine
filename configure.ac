@@ -1497,22 +1497,6 @@ if test "x$alpine_SSLTYPE" != "xnone" ; then
    esac
 fi
 
-if test "x$alpine_SSLTYPE" != "xnone" ; then
-    if test "x$alpine_SSLVERSION" = "xold" -o "x$alpine_SSLPROVIDER" = "xlibressl" ; then
-        AC_SEARCH_LIBS(TLSv1_2_client_method,ssl,
-	[ alpine_c_client_cflags="$alpine_c_client_cflags -DTLSV1_2"
-	  AC_DEFINE([SSL_SUPPORTS_TLSV1_2], [1], [SSL Supports TLSV1.2])
-	])
-    else
-        AC_SEARCH_LIBS(TLS_client_method,ssl,, [ alpine_SSLTYPE="none"])
-        AC_SEARCH_LIBS(DTLS_client_method,ssl,,[ alpine_SSLTYPE="none"])
-	if test "x$alpine_SSLTYPE" != "xnone" ; then
-	  alpine_c_client_cflags="$alpine_c_client_cflags -DTLSV1_2"
-	  AC_DEFINE([SSL_SUPPORTS_TLSV1_2], [1], [SSL Supports TLSV1.2])
-	fi
-    fi
-fi
-
 dnl provide SSL support?
 if test "x$alpine_SSLTYPE" != "xnone" ; then
   if test "x$alpine_SSLVERSION" = "xold" -o "x$alpine_SSLPROVIDER" = "xlibressl" ; then
