@@ -786,7 +786,7 @@ get_ca_store(void)
 
     if(!(lookup=X509_STORE_add_lookup(store, X509_LOOKUP_file()))){
 	dprint((9, "X509_STORE_add_lookup() failed"));
-	X509_STORE_free(store);
+	free_x509_store(&store);
 	return NULL;
     }
     
@@ -794,21 +794,21 @@ get_ca_store(void)
        && ps_global->smime->cacontent){
 
 	if(!mem_add_extra_cacerts(ps_global->smime->cacontent, lookup)){
-	    X509_STORE_free(store);
+	    free_x509_store(&store);
 	    return NULL;
 	}
     }
     else if(ps_global->smime && ps_global->smime->catype == Directory
 	    && ps_global->smime->capath){
 	if(add_certs_in_dir(lookup, ps_global->smime->capath, ".crt", &ps_global->smime->cacertlist) < 0){
-	    X509_STORE_free(store);
+	    free_x509_store(&store);
 	    return NULL;
 	}
 	resort_certificates(&ps_global->smime->cacertlist, CACert);
     }
 
     if(!(lookup = X509_STORE_add_lookup(store, X509_LOOKUP_hash_dir()))){
-	X509_STORE_free(store);
+	free_x509_store(&store);
 	return NULL;
     }
 
@@ -820,6 +820,14 @@ get_ca_store(void)
     return store;
 }
 
+void
+free_x509_store(X509_STORE **xstore)
+{
+  if(xstore == NULL || *xstore == NULL)
+     return;
+  X509_STORE_free(*xstore);
+  *xstore = NULL;
+}
 
 EVP_PKEY *
 load_key(PERSONAL_CERT *pc, char *pass, int flag)

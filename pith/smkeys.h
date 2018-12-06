@@ -72,6 +72,7 @@ typedef struct personal_cert {
 /* exported protoypes */
 int	       add_certs_in_dir(X509_LOOKUP *lookup, char *path, char *ext, CertList **cdata);
 X509_STORE    *get_ca_store(void);
+void	       free_x509_store(X509_STORE **);
 PERSONAL_CERT *get_personal_certs(char *d);
 X509          *get_cert_for(char *email, WhichCerts ctype, int tolower);
 void           save_cert_for(char *email, X509 *cert, WhichCerts ctype);

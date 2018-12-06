@@ -990,7 +990,8 @@ smime_config_init_display(struct pine *ps, CONF_S **ctmp, CONF_S **first_line)
 
 #endif /* APPLEKEYCHAIN */
 
-    if(SMHOLDERTYPE(Private) == Keychain
+    if(ps_global->smime
+	&& SMHOLDERTYPE(Private) == Keychain
 	&& SMHOLDERTYPE(Public) == Keychain
 	&& SMHOLDERTYPE(CACert) == Keychain)
 	return;

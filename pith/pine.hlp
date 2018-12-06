@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 301 2018-08-15 21:08:38
+Alpine Commit 311 2018-12-06 16:16:12
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -236,6 +236,10 @@ Bugs that have been addressed include:
 
    <LI> Crash when a CA certificate failed to load, and user attempted to
         view certificate information of other certificate authorities.
+
+   <LI> Crash in the S/MIME configuration screen when a user turned off S/MIME, and
+        then reenabled it. Also crash when attempting to enter the S/MIME 
+        configuration screen if S/MIME was turned off.
 
    <LI> Deactivate some color code from Pico (as standalone editor in the
         windows version) until I find a way to activate it again. This is 

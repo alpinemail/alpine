@@ -1204,8 +1204,7 @@ renew_cert_data(CertList **data, WhichCerts ctype)
 	  else
 	    ps_global->smime->cacertlist = *data;
        }
-       X509_STORE_free(store);
-       store = NULL;
+       free_x509_store(&store);
     }
   }
   setup_certs_backup_by_type(ctype);
@@ -1224,7 +1223,7 @@ smime_deinit(void)
 {
     dprint((9, "smime_deinit()"));
     app_RAND_write_file(NULL);
-    if (s_cert_store != NULL) X509_STORE_free(s_cert_store);
+    if (s_cert_store != NULL) free_x509_store(&s_cert_store);
 #ifdef ERR_free_strings
     ERR_free_strings();
 #endif /* ERR_free_strings */
@@ -1240,7 +1239,7 @@ renew_store(void)
 {
     if(ps_global->smime->inited){
        if(s_cert_store != NULL)
-	 X509_STORE_free(s_cert_store);
+	 free_x509_store(&s_cert_store);
 	s_cert_store = get_ca_store();
     }
 }
