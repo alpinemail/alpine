@@ -1,5 +1,5 @@
 /* ========================================================================
- * Copyright 2015 Eduardo Chappa
+ * Copyright 2015-2018 Eduardo Chappa
  * Copyright 2008 Mark Crispin
  * ========================================================================
  */
@@ -11,7 +11,7 @@
  *
  * Date:	27 July 1988
  * Last Edited:	19 November 2008 (Crispin)
- * Last Edited: 16 January 2015 (Chappa)
+ * Last Edited: 8 December 2018 (Chappa)
  *
  * Previous versions of this file were
  *
@@ -486,7 +486,12 @@ long smtp_mail (SENDSTREAM *stream,char *type,ENVELOPE *env,BODY *body)
     case SMTPOK:		/* looks good */
       break;
     default:			/* other failure */
-      smtp_send (stream,"RSET",NIL);
+	/* Do not RSET connection at this time, or else client
+	 * will not see failure, and will see the reply to a
+	 * RSET command, which is typically success, and not the
+	 * error that made us come here, in the first place.
+	 *      smtp_send (stream,"RSET",NIL);
+	 */
       return NIL;
     }
 				/* negotiate the recipients */
