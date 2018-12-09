@@ -417,8 +417,8 @@ SENDSTREAM *smtp_close (SENDSTREAM *stream)
 long smtp_mail (SENDSTREAM *stream,char *type,ENVELOPE *env,BODY *body)
 {
   RFC822BUFFER buf;
-  char tmp[SENDBUFLEN+1], smtpserver[SENDBUFLEN+1];
-  long error = NIL;
+  char tmp[SENDBUFLEN+1], smtpserver[SENDBUFLEN+1], *error_string;
+  long error = NIL, i;
   long retry = NIL;
   buf.f = smtp_soutr;		/* initialize buffer */
   buf.s = stream->netstream;
@@ -478,7 +478,7 @@ long smtp_mail (SENDSTREAM *stream,char *type,ENVELOPE *env,BODY *body)
       }
     }
 				/* send "MAIL FROM" command */
-    switch (smtp_send (stream,type,tmp)) {
+    switch (i = smtp_send (stream,type,tmp)) {
     case SMTPUNAVAIL:		/* mailbox unavailable? */
     case SMTPWANTAUTH:		/* wants authentication? */
     case SMTPWANTAUTH2:
@@ -486,12 +486,12 @@ long smtp_mail (SENDSTREAM *stream,char *type,ENVELOPE *env,BODY *body)
     case SMTPOK:		/* looks good */
       break;
     default:			/* other failure */
-	/* Do not RSET connection at this time, or else client
-	 * will not see failure, and will see the reply to a
-	 * RSET command, which is typically success, and not the
-	 * error that made us come here, in the first place.
-	 *      smtp_send (stream,"RSET",NIL);
-	 */
+      error_string = stream && stream->reply ? cpystr(stream->reply) : NIL;
+      smtp_send (stream,"RSET",NIL);
+      if(error_string){		/* report it */
+	smtp_seterror(stream, i, error_string);
+	fs_give((void **) &error_string);
+      }
       return NIL;
     }
 				/* negotiate the recipients */
