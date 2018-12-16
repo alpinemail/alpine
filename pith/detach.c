@@ -219,6 +219,17 @@ detach(MAILSTREAM *stream,		/* c-client stream to use         */
 	      charset = cpystr(ps_global->VAR_UNK_CHAR_SET);
 	}
 
+	/* some messages are mislabeled as iso-8859-1 when in reality
+	 * they are windows-1252, so we treat them as windows-1252
+	 * from the beginning. If we did not make this change, we might
+	 * see '?' characters in the message, without an apparent explanation
+	 * of this fact.
+	 */
+	if(charset && !strucmp(charset, "iso-8859-1")){
+	    fs_give((void **) &charset);
+	    charset = cpystr("windows-1252");
+	}
+
 	/* convert to UTF-8 */
 	if(!(charset && !strucmp(charset, "utf-8")))
 	  gf_link_filter(gf_utf8, gf_utf8_opt(charset));
