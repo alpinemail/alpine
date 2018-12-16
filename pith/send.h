@@ -238,6 +238,7 @@ BODY	   *first_text_8bit(BODY *);
 ADDRESS    *generate_from(void);
 void	    set_mime_type_by_grope(BODY *);
 void	    set_charset_possibly_to_ascii(BODY *, char *);
+void	    remove_parameter(PARAMETER **param, char *);
 void	    set_parameter(PARAMETER **, char *, char *);
 void        pine_encode_body(BODY *);
 int         pine_header_line(char *, METAENV *, char *, soutr_t, TCPSTREAM *, int, int);

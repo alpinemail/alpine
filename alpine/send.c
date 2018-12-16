@@ -6196,6 +6196,10 @@ void
 create_message_body_text(struct mail_bodystruct *b, int flow_it)
 {
     set_mime_type_by_grope(b);
+    if(b != NULL){
+       remove_parameter(&b->parameter, "format"); /* we will set it up below */
+       remove_parameter(&b->parameter, "delsp");  /* we never set this up    */
+    }
     if(F_OFF(F_QUELL_FLOWED_TEXT, ps_global)
        && F_OFF(F_STRIP_WS_BEFORE_SEND, ps_global)
        && flow_it)

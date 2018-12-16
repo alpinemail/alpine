@@ -4120,6 +4120,31 @@ most_preferred_charset(unsigned long validbitmap)
     return(charsetlist[index]);
 }
 
+void
+remove_parameter(PARAMETER **param, char *paramname)
+{
+    PARAMETER *pm;
+
+    if(param == NULL || *param == NULL 
+	|| paramname == NULL || *paramname == '\0')
+      return;
+
+    for(pm = *param;
+	pm != NULL && pm->attribute != NULL && strucmp(pm->attribute, paramname);
+	pm = pm->next);
+
+    if(pm){
+	PARAMETER om, *qm;
+	om.next = *param;
+	for(qm = &om; qm->next != pm; qm = qm->next);
+	qm->next = pm->next;
+	pm->next = NULL;
+	mail_free_body_parameter(&pm);
+	if(*param == NULL)
+	   mail_free_body_parameter(param);
+    }
+}
+
 
 /*
  * Set parameter to new value.

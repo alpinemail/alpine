@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 312 2018-12-08 18:58:41
+Alpine Commit 315 2018-12-16 13:42:34
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -247,6 +247,11 @@ Bugs that have been addressed include:
         of it already exists in other ways, like color support, what does 
         not exist is the more complex code that Unix-Pico has with color 
         codes for specific colors.)
+
+   <LI> When a message is multipart, and the first part is flowed text, 
+        then forwarding the message will set the first part to be flowed, 
+        and sent that way even when the option Do Not Send Flowed Text is 
+        enabled. Reported by Holger Trapp.
 
    <LI> Update build.bat file to add /DWINVER=0x0501 so that Alpine can 
         build when using Visual Studio 2017. Fix contributed by 
