@@ -4140,8 +4140,6 @@ remove_parameter(PARAMETER **param, char *paramname)
 	qm->next = pm->next;
 	pm->next = NULL;
 	mail_free_body_parameter(&pm);
-	if(*param == NULL)
-	   mail_free_body_parameter(param);
     }
 }
 
