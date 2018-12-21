@@ -253,6 +253,15 @@ Bugs that have been addressed include:
         and sent that way even when the option Do Not Send Flowed Text is 
         enabled. Reported by Holger Trapp.
 
+   <LI> When a message/rfc822 part of a message is encoded with
+        Content-Transfer-Encoding: QUOTED-PRINTABLE, Alpine will stop 
+        processing that message. Later this causes Alpine to crash because 
+        when it displays messages, it assumes that both header and body 
+        parts are processed. Reported by Mark Crispin in 2010, in the 
+        Alpine-info list (message with subject "crash bug in 
+        alpine/mailpart.c:format_msg_att()") with no example, and reported 
+        now by Holger Trapp, with an example.
+
    <LI> Update build.bat file to add /DWINVER=0x0501 so that Alpine can 
         build when using Visual Studio 2017. Fix contributed by 
         Ulf-Dietrich Braunmann.

@@ -2724,7 +2724,10 @@ format_msg_att(long int msgno, ATTACH_S **a, HANDLE_S **handlesp, gf_io_t pc, in
 
 	gf_puts(NEWLINE, pc);
 
-	++(*a);
+	if(((*a)+1)->description)
+	   ++(*a);
+	else
+	   return rv;
 
 #ifdef SMIME
 	if((*a)->body && (*a)->body->subtype && (strucmp((*a)->body->subtype, OUR_PKCS7_ENCLOSURE_SUBTYPE)==0)){
@@ -2736,7 +2739,10 @@ format_msg_att(long int msgno, ATTACH_S **a, HANDLE_S **handlesp, gf_io_t pc, in
 		  rv = 0;
 	    }
 
-	    ++(*a);
+	    if(((*a)+1)->description)
+	      ++(*a);
+	    else
+	      return rv;
 	}
 #endif /* SMIME */
 
@@ -2752,7 +2758,10 @@ format_msg_att(long int msgno, ATTACH_S **a, HANDLE_S **handlesp, gf_io_t pc, in
 		  && gf_puts(NEWLINE, pc)))
 	  rv = 0;
 
-	++(*a);
+	if(((*a)+1)->description)
+	   ++(*a);
+	else
+	   return rv;
 
     }
     else if((*a)->body->subtype 
