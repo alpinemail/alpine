@@ -1610,20 +1610,10 @@ update_answered_flags(REPLY_S *reply)
 	if(!stream && reply->msgno)
 	  return;
 
-	/*
-	 * This is here only for people who ran pine4.42 and are
-	 * processing postponed mail from 4.42 now. Pine4.42 saved the
-	 * original mailbox name in the canonical name's position in
-	 * the postponed-msgs folder so it won't match the canonical
-	 * name from the stream.
-	 */
-	if(!stream && (!reply->origmbox ||
-		       (reply->mailbox &&
-		        !strcmp(reply->origmbox, reply->mailbox))))
-	  stream = sp_stream_get(reply->mailbox, SP_MATCH);
-
 	/* TRANSLATORS: program is busy updating the Answered flags so warns user */
-	we_cancel = busy_cue(_("Updating \"Answered\" Flags"), NULL, 0);
+	we_cancel = reply->forwarded
+		    ? busy_cue(_("Setting \"Forwarded\" Keyword"), NULL, 0)
+		    : busy_cue(_("Updating \"Answered\" Flags"), NULL, 0);
 	if(!stream){
 	    if((stream = pine_mail_open(NULL,
 				       reply->origmbox ? reply->origmbox
