@@ -229,6 +229,15 @@ pause_for_and_dq_cur_msg(void)
 
 	if((w = status_message_remaining_nolock()) != 0){
 	    delay_cmd_cue(1);
+	    /* protect user from changes in the clock. If the clock
+	     * changes during this process (for example, going from 
+	     * Standard time to Delayed time) this may result in big 
+	     * values for w. In those cases, reset w.
+	     */
+	    if(w < 0 || w > 5){	/* maximum wait time is 5 seconds */
+	      w = 5;
+	      displayed_time = time(0);
+	    }
 	    sleep(w);
 	    delay_cmd_cue(0);
 	}

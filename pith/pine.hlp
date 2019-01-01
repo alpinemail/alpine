@@ -298,6 +298,11 @@ Bugs that have been addressed include:
    <LI> S/MIME: A message could fail to verify its signature even if the
         certificate was saved when the message was open. Based on a report 
         by David Woodhouse to the RedHat bugzilla system.
+
+   <LI> When there are time changes in the clock, Alpine might go to sleep
+        for big amounts of time while displaying messages in the screen.
+        Reset sleep time to 5 seconds in case it finds it needs to sleep
+        more than 5 seconds or a negative amount of time.
 </UL>
 
 <P>
