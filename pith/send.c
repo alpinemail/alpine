@@ -4520,21 +4520,24 @@ pine_write_body_header(struct mail_bodystruct *body, soutr_t f, void *s)
 	    if(!pine_write_params(body->parameter, so))
 	      return(pwbh_finish(0, so));
 	}
-	else if(!so_puts(so, "; CHARSET=US-ASCII"))
+	else if ((body->type != TYPEMESSAGE
+		 || (body->subtype && strucmp(body->subtype, "RFC822")))
+		&& (!so_puts(so, "; CHARSET=US-ASCII")))
 	  return(pwbh_finish(0, so));
 	    
 	if(!so_puts(so, "\015\012"))
 	  return(pwbh_finish(0, so));
 
+			/* do not change the encoding of a TYPEMESSAGE part  */
 	if ((body->encoding		/* note: encoding 7BIT never output! */
 	     && !(so_puts(so, "Content-Transfer-Encoding: ")
 		  && so_puts(so, body_encodings[(body->encoding==ENCBINARY)
-						? ENCBASE64
-						: (body->encoding == ENC8BIT)
-						  ? ENCQUOTEDPRINTABLE
-						  : (body->encoding <= ENCMAX)
-						    ? body->encoding
-						    : ENCOTHER])
+			? (body->type == TYPEMESSAGE ? ENCBINARY : ENCBASE64)
+			: (body->encoding == ENC8BIT)
+			  ?(body->type == TYPEMESSAGE ? ENC8BIT : ENCQUOTEDPRINTABLE)
+			  : (body->encoding <= ENCMAX)
+			    ? body->encoding
+			    : ENCOTHER])
 		  && so_puts(so, "\015\012")))
 	    /*
 	     * If requested, strip Content-ID headers that don't look like they
