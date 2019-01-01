@@ -4127,9 +4127,9 @@ remove_parameter(PARAMETER **param, char *paramname)
 	PARAMETER om, *qm;
 	om.next = *param;
 	for(qm = &om; qm->next != pm; qm = qm->next);
-	qm->next = pm->next;
-	pm->next = NULL;
+	qm->next = copy_parameters(pm->next);
 	mail_free_body_parameter(&pm);
+	*param = om.next;
     }
 }
 
