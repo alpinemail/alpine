@@ -258,6 +258,10 @@ pause_for_and_mark_specific_msg(SMQ_T *msg)
 	int w;
 
 	w = (int) (displayed_time - time(0)) + msg->min_display_time;
+	if (w < 0 || w > 5){
+	   w = msg->min_display_time > 5 ? 5 : msg->min_display_time;
+	   displayed_time = time(0);
+	}
 	w = (w > 0) ? w : 0;
 	if(w){
 	    delay_cmd_cue(1);
