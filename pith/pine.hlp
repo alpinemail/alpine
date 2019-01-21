@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 315 2018-12-16 13:42:34
+Alpine Commit 324 2019-01-20 18:11:06
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -274,6 +274,10 @@ Bugs that have been addressed include:
 
    <LI> When the locale is not set up to UTF-8, alpine might determine the 
         width of a character incorrectly. Reported by Alexandre Fedotov.
+
+   <LI> In some rare cases, when attachments are deleted before saving 
+        emails, the filenames will be displayed in RFC1522 representation, 
+        instead of in decoded form. Reported and patched by Wang Kang.
 
    <LI> When colors are edited from the main setup configuration screen, some
         color settings are not updated until Alpine is restarted. Reported by

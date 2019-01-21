@@ -1625,7 +1625,8 @@ save_ex_explain_parts(struct mail_bodystruct *body, int depth, long unsigned int
 		    depth, depth, " ", body_type_names(body->type),
 		    MAILTMPLEN-300, body->subtype ? body->subtype : "Unknown",
 		    name ? " (Name=\"" : "",
-		    name ? name : "",
+		    name ? (char *) rfc1522_decode_to_utf8((unsigned char *)tmp_20k_buf,
+				SIZEOF_20KBUF, name) : "",
 		    name ? "\")" : "");
 	    if(!save_ex_output_line(tmp, len, pc))
 	      return(0);
