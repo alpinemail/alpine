@@ -2908,14 +2908,14 @@ IDLIST *imap_parse_idlist (char *text)
 	     sprintf(tmp,"ID value not found for name %.80s, at %.80s", ret->name, s);
 	     fs_give((void **)&ret->name);
 	     fs_give((void **)&ret);
-	     mm_log (tmp, ERROR);
+	     mm_log (tmp, NIL);	/* this is an technically an error */
 	   }
 	}
 	else {	/* failed!, quit */
 	  sprintf(tmp,"ID name \"%.80s\" has no value", ret->name);
 	  fs_give((void **)&ret->name);
 	  fs_give((void **)&ret);
-	  mm_log (tmp, ERROR);
+	  mm_log (tmp, NIL);	/* this is an technically an error */
 	}
      }
   }
