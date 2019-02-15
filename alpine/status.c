@@ -234,10 +234,7 @@ pause_for_and_dq_cur_msg(void)
 	     * Standard time to Delayed time) this may result in big 
 	     * values for w. In those cases, reset w.
 	     */
-	    if(w < 0 || w > 5){	/* maximum wait time is 5 seconds */
-	      w = 5;
-	      displayed_time = time(0);
-	    }
+	    w = (w > 0 ? (w > 5 ? 5 : w) : 0);
 	    sleep(w);
 	    delay_cmd_cue(0);
 	}
@@ -258,11 +255,7 @@ pause_for_and_mark_specific_msg(SMQ_T *msg)
 	int w;
 
 	w = (int) (displayed_time - time(0)) + msg->min_display_time;
-	if (w < 0 || w > 5){
-	   w = msg->min_display_time > 5 ? 5 : msg->min_display_time;
-	   displayed_time = time(0);
-	}
-	w = (w > 0) ? w : 0;
+	w = (w > 0) ? (w > 5 ? 5 : w): 0;
 	if(w){
 	    delay_cmd_cue(1);
 	    sleep(w);
