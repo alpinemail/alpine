@@ -553,9 +553,9 @@ long pop3_capa (MAILSTREAM *stream,long flags)
 
 long pop3_auth (MAILSTREAM *stream,NETMBX *mb,char *pwd,char *usr)
 {
-  unsigned long i,trial,auths = 0;
+  unsigned long i,trial,auths = 0, authsaved;
   char *t;
-  AUTHENTICATOR *at;
+  AUTHENTICATOR *at, *atsaved;
   long ret = NIL;
   long flags = (stream->secure ? AU_SECURE : NIL) |
     (mb->authuser[0] ? AU_AUTHUSER : NIL);
@@ -612,6 +612,15 @@ long pop3_auth (MAILSTREAM *stream,NETMBX *mb,char *pwd,char *usr)
     }
     for (t = NIL, LOCAL->saslcancel = NIL; !ret && LOCAL->netstream && auths &&
 	 (at = mail_lookup_auth (find_rightmost_bit (&auths)+1)); ) {
+        if(mb && *mb->auth){
+           if(!compare_cstring(at->name, mb->auth))
+              atsaved = at;
+           else{
+              authsaved = auths;
+              continue;
+           }
+        }   
+
       if (t) {			/* previous authenticator failed? */
 	sprintf (pwd,"Retrying using %.80s authentication after %.80s",
 		 at->name,t);
@@ -649,6 +658,12 @@ long pop3_auth (MAILSTREAM *stream,NETMBX *mb,char *pwd,char *usr)
       }
       fs_give ((void **) &t);
     }
+    if(mb && *mb->auth){
+      if(!authsaved) sprintf (pwd,"Client does not support AUTH=%.80s authenticator",mb->auth);
+      else if (!atsaved) sprintf (pwd,"POP server does not support AUTH=%.80s authenticator",mb->auth);
+      if (!authsaved || !atsaved) mm_log (pwd,ERROR);
+  }
+
   }
 
   else if (stream->secure)

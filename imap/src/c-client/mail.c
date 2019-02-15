@@ -806,6 +806,8 @@ long mail_valid_net_parse_work (char *name,NETMBX *mb,char *service)
 	  strcpy (mb->user,v);
 	else if (!compare_cstring (s,"authuser") && (i < NETMAXUSER) &&
 		 !*mb->authuser) strcpy (mb->authuser,v);
+	else if (!compare_cstring (s,"auth") && (i < NETMAXAUTH) &&
+		 !*mb->auth) strcpy (mb->auth,v);
 	else return NIL;
       }
 

@@ -281,14 +281,22 @@ SENDSTREAM *smtp_open_full (NETDRIVER *dv,char **hostlist,char *service,
 
 long smtp_auth (SENDSTREAM *stream,NETMBX *mb,char *tmp)
 {
-  unsigned long trial,auths;
+  unsigned long trial,auths, authsaved;
   char *lsterr = NIL;
   char usr[MAILTMPLEN];
-  AUTHENTICATOR *at;
+  AUTHENTICATOR *at, *atsaved;
   long ret = NIL;
   for (auths = ESMTP.auth, stream->saslcancel = NIL;
        !ret && stream->netstream && auths &&
        (at = mail_lookup_auth (find_rightmost_bit (&auths) + 1)); ) {
+    if(mb && *mb->auth){
+       if(!compare_cstring(at->name, mb->auth))
+          atsaved = at;
+       else{
+          authsaved = auths;
+          continue;
+       }
+    }
     if (lsterr) {		/* previous authenticator failed? */
       sprintf (tmp,"Retrying using %s authentication after %.80s",
 	       at->name,lsterr);
@@ -329,6 +337,11 @@ long smtp_auth (SENDSTREAM *stream,NETMBX *mb,char *tmp)
       mm_log (tmp,ERROR);
     }
     fs_give ((void **) &lsterr);
+  }
+  if(mb && *mb->auth){
+      if(!authsaved) sprintf (tmp, "Client does not support AUTH=%.80s authenticator",mb->auth);
+      else if (!atsaved) sprintf (tmp,"SMTP server does not support AUTH=%.80s authenticator",mb->auth);
+      if (!authsaved || !atsaved) mm_log (tmp,ERROR);
   }
   return ret;			/* authentication failed */
 }

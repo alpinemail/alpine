@@ -680,10 +680,12 @@ STRINGLIST {
 #define NETMAXUSER 65
 #define NETMAXMBX (MAILTMPLEN/4)
 #define NETMAXSRV 21
+#define NETMAXAUTH 16
 typedef struct net_mailbox {
   char host[NETMAXHOST];	/* host name (may be canonicalized) */
   char orighost[NETMAXHOST];	/* host name before canonicalization */
   char user[NETMAXUSER];	/* user name */
+  char auth[NETMAXAUTH];	/* authenticator name (PLAIN, etc.) */
   char authuser[NETMAXUSER];	/* authentication user name */
   char mailbox[NETMAXMBX];	/* mailbox name */
   char service[NETMAXSRV];	/* service name */
