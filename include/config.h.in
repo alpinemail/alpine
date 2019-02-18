@@ -64,6 +64,9 @@
 #undef DF_ELM_STYLE_SAVE
 
 /* Default configuration value */
+#undef DF_ENCRYPTION_RANGE
+
+/* Default configuration value */
 #undef DF_FCC_RULE
 
 /* Default configuration value */

@@ -36,6 +36,10 @@ char *UW_copyright = "Copyright 1988-2008 University of Washington\n\nLicensed u
 /* c-client global data */
 				/* version of this library */
 static char *mailcclientversion = CCLIENTVERSION;
+				/* Minimum in range of encryption supported */
+static int encryption_range_min = 0;
+				/* Maximum in range of encryption supported */
+static int encryption_range_max = 0;
 				/* app identity */
 static IDLIST *idapp = NIL;
 				/* list of mail drivers */
@@ -541,6 +545,16 @@ void *mail_parameters (MAILSTREAM *stream,long function,void *value)
   case GET_SSLFAILURE:
     ret = (void *) mailsslfailure;
     break;
+  case SET_ENCRYPTION_RANGE_MIN:
+    encryption_range_min =  *(int *) value;
+  case GET_ENCRYPTION_RANGE_MIN:
+    ret = (void *) &encryption_range_min;
+    break;
+  case SET_ENCRYPTION_RANGE_MAX:
+    encryption_range_max =  *(int *) value;
+  case GET_ENCRYPTION_RANGE_MAX:
+    ret = (void *) &encryption_range_max;
+    break;
   case SET_KINIT:
     mailkinit = (kinit_t) value;
   case GET_KINIT:
@@ -829,29 +843,17 @@ long mail_valid_net_parse_work (char *name,NETMBX *mb,char *service)
 	else if (mailssldriver && !compare_cstring (s,"ssl") && !mb->tlsflag)
 	  mb->sslflag = mb->notlsflag = T;
 	else if (!compare_cstring(s, "tls1") 
-			&& !mb->tls1_1 && !mb->tls1_2 && !mb->tls1_3
-			&& !mb->dtls1 && !mb->dtls1_2)
+			&& !mb->tls1_1 && !mb->tls1_2 && !mb->tls1_3)
 	  mb->sslflag = mb->notlsflag = mb->tls1 = T;
 	else if (!compare_cstring(s, "tls1_1") 
-			&& !mb->tls1 && !mb->tls1_2 && !mb->tls1_3
-			&& !mb->dtls1 && !mb->dtls1_2)
+			&& !mb->tls1 && !mb->tls1_2 && !mb->tls1_3)
 	  mb->sslflag = mb->notlsflag = mb->tls1_1 = T;
 	else if (!compare_cstring(s, "tls1_2") 
-			&& !mb->tls1 && !mb->tls1_1 && !mb->tls1_3
-			&& !mb->dtls1 && !mb->dtls1_2)
+			&& !mb->tls1 && !mb->tls1_1 && !mb->tls1_3)
 	  mb->sslflag = mb->notlsflag = mb->tls1_2 = T;
 	else if (!compare_cstring(s, "tls1_3") 
-			&& !mb->tls1 && !mb->tls1_1 && !mb->tls1_2
-			&& !mb->dtls1 && !mb->dtls1_2)
+			&& !mb->tls1 && !mb->tls1_1 && !mb->tls1_2)
 	  mb->sslflag = mb->notlsflag = mb->tls1_3 = T;
-	else if (!compare_cstring(s, "dtls1")
-			&& !mb->tls1 && !mb->tls1_1 && !mb->tls1_2
-			&& !mb->tls1_3 && !mb->dtls1_2)
-	  mb->sslflag = mb->notlsflag = mb->dtls1 = T;
-	else if (!compare_cstring(s, "dtls1_2")
-			&& !mb->tls1 && !mb->tls1_1 && !mb->tls1_2
-			&& !mb->tls1_3 && !mb->dtls1)
-	  mb->sslflag = mb->notlsflag = mb->dtls1_2 = T;
 	else if (mailssldriver && !compare_cstring (s,"novalidate-cert"))
 	  mb->novalidate = T;
 				/* hack for compatibility with the past */
@@ -1263,7 +1265,7 @@ MAILSTREAM *mail_open (MAILSTREAM *stream,char *name,long options)
 	if (mb.tls1) strcat (tmp,"/tls1");
 	if (mb.tls1_1) strcat (tmp,"/tls1_1");
 	if (mb.tls1_2) strcat (tmp,"/tls1_2");
-	if (mb.dtls1) strcat (tmp,"/dtls1");
+	if (mb.tls1_3) strcat (tmp,"/tls1_3");
 	if (mb.trysslflag) strcat (tmp,"/tryssl");
 	if (mb.novalidate) strcat (tmp,"/novalidate-cert");
 	strcat (tmp,"/pop3/loser}");
@@ -6233,8 +6235,6 @@ NETSTREAM *net_open (NETMBX *mb,NETDRIVER *dv,unsigned long port,
   flags |= mb->tls1_1 ? NET_TRYTLS1_1 : 0;
   flags |= mb->tls1_2 ? NET_TRYTLS1_2 : 0;
   flags |= mb->tls1_3 ? NET_TRYTLS1_3 : 0;
-  flags |= mb->dtls1  ? NET_TRYDTLS1  : 0;
-  flags |= mb->dtls1_2  ? NET_TRYDTLS1_2  : 0;
   if (strlen (mb->host) >= NETMAXHOST) {
     sprintf (tmp,"Invalid host name: %.80s",mb->host);
     MM_LOG (tmp,ERROR);

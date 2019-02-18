@@ -281,6 +281,8 @@ CONF_TXT_T cf_text_disable_drivers[] =		"List of mail drivers to disable.";
 
 CONF_TXT_T cf_text_disable_auths[] =		"List of SASL authenticators to disable.";
 
+CONF_TXT_T cf_text_encryption_range[] =		"A range in the form min,max that sets the minimum amd maximum versions of the\n# SSL protocol that Alpine will use when connecting to a secure server.";
+
 CONF_TXT_T cf_text_remote_abook_metafile[] =	"Set by Alpine; contains data for caching remote address books.";
 
 CONF_TXT_T cf_text_old_patterns[] =		"Patterns is obsolete, use patterns-xxx";
@@ -744,6 +746,8 @@ static struct variable variables[] = {
 	NULL,			cf_text_disable_drivers},
 {"disable-these-authenticators",	0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0,
 	NULL,			cf_text_disable_auths},
+{"encryption-protocol-range",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
+	NULL,			cf_text_encryption_range},
 {"remote-abook-metafile",		0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0,
 	NULL,			cf_text_remote_abook_metafile},
 {"remote-abook-history",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
@@ -1601,6 +1605,7 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
 
     GLO_PRINTER			= cpystr(DF_DEFAULT_PRINTER);
     GLO_ELM_STYLE_SAVE		= cpystr(DF_ELM_STYLE_SAVE);
+    GLO_ENCRYPTION_RANGE	= cpystr(DF_ENCRYPTION_RANGE);
     GLO_SAVE_BY_SENDER		= cpystr(DF_SAVE_BY_SENDER);
     GLO_HEADER_IN_REPLY		= cpystr(DF_HEADER_IN_REPLY);
     GLO_INBOX_PATH		= cpystr("inbox");
@@ -2328,6 +2333,7 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     set_current_val(&vars[V_FORCED_ABOOK_ENTRY], TRUE, TRUE);
     set_current_val(&vars[V_DISABLE_DRIVERS], TRUE, TRUE);
     set_current_val(&vars[V_DISABLE_AUTHS], TRUE, TRUE);
+    set_current_val(&vars[V_ENCRYPTION_RANGE], TRUE, TRUE);
 
     set_current_val(&vars[V_VIEW_HEADERS], TRUE, TRUE);
     /* strip spaces and colons */
@@ -7825,6 +7831,8 @@ config_help(int var, int feature)
 	return(h_config_disable_drivers);
       case V_DISABLE_AUTHS :
 	return(h_config_disable_auths);
+      case V_ENCRYPTION_RANGE :
+	return(h_config_encryption_range);
       case V_REMOTE_ABOOK_METADATA :
 	return(h_config_abook_metafile);
       case V_REPLY_STRING :
@@ -8187,36 +8195,26 @@ get_supported_options(void)
       /* TRANSLATORS: headings */
       config[cnt] = cpystr(_("Encryption:"));
 
-    if(++cnt < alcnt && mail_parameters(NIL, GET_SSLDRIVER, NIL))
+    if(++cnt < alcnt && mail_parameters(NIL, GET_SSLDRIVER, NIL)){
       config[cnt] = cpystr(_("  TLS and SSL"));
+      tmp[0] = tmp[1] = ' ';
+      tmp[2] = '\0';
+      strcat(tmp, "TLSv1, ");
+      strcat(tmp, "TLSv1.1, ");
+      strcat(tmp, "TLSv1.2, ");
+#ifdef TLS1_3_VERSION
+      strcat(tmp, "TLSv1.3, ");
+#endif /* TLS1_3_VERSION */
+      strcat(tmp, "DTLSv1, ");
+      strcat(tmp, "DTLSv1.2, ");
+      tmp[strlen(tmp)-2] = '.';
+      tmp[strlen(tmp)-1] = '\0';
+    }
     else
       config[cnt] = cpystr(_("  None (no TLS or SSL)"));
 
-    tmp[0] = tmp[1] = ' ';
-    tmp[2] = '\0';
-#ifndef OPENSSL_NO_TLS1_METHOD
-     strcat(tmp, "TLSv1, ");
-#endif /* OPENSSL_NO_TLS1_METHOD */
-#ifdef TLS1_1_VERSION
-     strcat(tmp, "TLSv1.1, ");
-#endif /* TLS1_1_VERSION */
-#ifdef TLS1_2_VERSION
-     strcat(tmp, "TLSv1.2. ");
-#endif /* TLS1_2_VERSION */
-#ifdef TLS1_3_VERSION
-     strcat(tmp, "TLSv1.3, ");
-#endif /* TLS1_3_VERSION */
-#ifdef DTLS1_VERSION
-     strcat(tmp, "DTLSv1, ");
-#endif /* DTLS1_VERSION */
-#ifdef DTLS1_2_VERSION
-     strcat(tmp, "DTLSv1.2, ");
-#endif /* DTLS1_2_VERSION */
-    if(tmp[2] != '\0'){
-       tmp[strlen(tmp)-2] = '\0';
-       if(++cnt < alcnt)
-          config[cnt] = cpystr(tmp);
-    }
+    if(++cnt < alcnt)
+      config[cnt] = cpystr(tmp);
 #ifdef SMIME
     if(++cnt < alcnt)
       config[cnt] = cpystr("  S/MIME");
@@ -8451,4 +8449,38 @@ pcpine_general_help(titlebuf)
 }
 
 #endif	/* _WINDOWS */
+
+typedef struct ssl_versions_s {
+  char *name;
+  int   version;
+} SSL_VERSIONS_S;
+
+int
+pith_ssl_encryption_version(char *s)
+{
+  SSL_VERSIONS_S ssl_versions[] = {
+	{"no_min", 0},
+	{"ssl3",   SSL3_VERSION},
+	{"tls1",   TLS1_VERSION},
+	{"tls1_1", TLS1_1_VERSION },
+	{"tls1_2", TLS1_2_VERSION},
+#ifdef TLS1_3_VERSION
+	{"tls1_3", TLS1_3_VERSION},
+#endif /* TLS1_3_VERSION */
+	{"no_max", 0},	/* set this last in the list */
+	{ NULL, 0},
+  };
+  int i;
+
+  if(s == NULL || *s == '\0')
+    return -1;
+
+  for(i = 0; ssl_versions[i].name != NULL; i++)
+     if(strcmp(ssl_versions[i].name, s) == 0)
+        break;
+
+  if(strcmp(s, "no_max") == 0) i--;
+
+  return ssl_versions[i].name != NULL ? ssl_versions[i].version : -1;
+}
 

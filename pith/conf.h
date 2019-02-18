@@ -263,6 +263,8 @@
 #define GLO_REMOTE_ABOOK_HISTORY     vars[V_REMOTE_ABOOK_HISTORY].global_val.p
 #define VAR_REMOTE_ABOOK_VALIDITY    vars[V_REMOTE_ABOOK_VALIDITY].current_val.p
 #define GLO_REMOTE_ABOOK_VALIDITY    vars[V_REMOTE_ABOOK_VALIDITY].global_val.p
+#define GLO_ENCRYPTION_RANGE         vars[V_ENCRYPTION_RANGE].global_val.p
+#define VAR_ENCRYPTION_RANGE	     vars[V_ENCRYPTION_RANGE].current_val.p
   /* Elm style save is obsolete in Pine 3.81 (see saved msg name rule) */
 #define VAR_ELM_STYLE_SAVE           vars[V_ELM_STYLE_SAVE].current_val.p
 #define GLO_ELM_STYLE_SAVE           vars[V_ELM_STYLE_SAVE].global_val.p
@@ -912,6 +914,7 @@ char     **get_supported_options(void);
 unsigned   reset_startup_rule(MAILSTREAM *);
 void	   free_pinerc_lines(PINERC_LINE **);
 void	   panic1(char *, char *);
+int	   pith_ssl_encryption_version(char *);
 
 /* mandatory to implement prototypes */
 int	   set_input_timeout(int);

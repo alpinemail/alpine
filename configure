@@ -914,6 +914,9 @@ with_ssl_dir
 with_ssl_certs_dir
 with_ssl_include_dir
 with_ssl_lib_dir
+with_encryption_minimum_version
+with_encryption_maximum_version
+with_encryption_range
 with_krb5
 with_krb5_dir
 with_krb5_include_dir
@@ -1756,6 +1759,12 @@ Optional Packages:
   --with-ssl-include-dir=DIR
                           SSL include file path
   --with-ssl-lib-dir=DIR  SSL library path
+  --encryption-minimum-version=VERSION
+                          Minimum SSL encryption version. Default: no_min
+  --encryption-maximum-version=VERSION
+                          Maximum SSL encryption version. Default: no_max
+  --with-encryption-range=VALUE
+                          Default Encryption Range ($alpine_RANGE )
   --without-krb5          Disable Kerberos support
   --with-krb5-dir=DIR     Root of Kerberos lib/include path
   --with-krb5-include-dir=DIR
@@ -18213,6 +18222,96 @@ fi
   fi
 fi
 
+if test "x$alpine_SSLTYPE" != "xnone" ; then
+  alpine_default_SSLMIN="no_min"
+  alpine_default_SSLMAX="no_max"
+  alpine_default_RANGE="${alpine_default_SSLMIN},${alpine_default_SSLMAX}"
+  alpine_ENCRYPTION="$alpine_default_SSLMIN ssl3 tls1 tls1_1 tls1_2 tls1_3 $alpine_default_SSLMAX"
+  alpine_SSLMIN="$alpine_default_SSLMIN"
+  alpine_SSLMAX="$alpine_default_SSLMAX"
+  alpine_RANGE="$alpine_default_RANGE"
+
+# Check whether --with-encryption-minimum-version was given.
+if test "${with_encryption_minimum_version+set}" = set; then :
+  withval=$with_encryption_minimum_version;
+      if test "x$withval" != "xno" ; then
+	alpine_SSLMIN=$withval
+      fi
+
+fi
+
+
+# Check whether --with-encryption-maximum-version was given.
+if test "${with_encryption_maximum_version+set}" = set; then :
+  withval=$with_encryption_maximum_version;
+      if test "x$withval" != "xno" ; then
+	alpine_SSLMAX=$withval
+      fi
+
+fi
+
+  alpine_RANGE="$alpine_SSLMIN $alpine_SSLMAX"
+  for range in ${alpine_RANGE} ; do
+      for encryption in ${alpine_ENCRYPTION} ; do
+	  if test "x$range" = "x$encryption" ; then
+	     if test -z $alpine_min ; then
+		alpine_min="yes"
+	     else
+		alpine_max="yes"
+	     fi
+	  fi
+      done
+  done
+
+  if test -z $alpine_max ; then
+     as_fn_error $? "Unrecognized maximum encryption version: $alpine_max" "$LINENO" 5
+  fi
+
+  if test -z $alpine_min ; then
+     as_fn_error $? "Unrecognized minimum encryption version: $alpine_min" "$LINENO" 5
+  fi
+
+  if test "x$alpine_SSLMIN" != "x$alpine_SSLMAX" ; then
+     alpine_RANGE_FEASIBLE=`echo "$alpine_ENCRYPTION" | sed "s/^.*$alpine_SSLMIN//" | grep "$alpine_SSLMAX"`
+     if test -n "$alpine_RANGE_FEASIBLE" ; then
+	alpine_RANGE="${alpine_SSLMIN},${alpine_SSLMAX}"
+     else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Reversing order of minimum and maximum encryption" >&5
+$as_echo "$as_me: WARNING: Reversing order of minimum and maximum encryption" >&2;}
+	alpine_RANGE="${alpine_SSLMAX},${alpine_SSLMIN}"
+     fi
+  else
+     if test "x$alpine_SSLMIN" = "x$alpine_default_SSLMIN" ; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Overriding maximum encryption to default" >&5
+$as_echo "$as_me: WARNING: Overriding maximum encryption to default" >&2;}
+	alpine_SSLMAX="$alpine_default_SSLMAX"
+     fi
+     if test "x$alpine_SSLMAX" = "x$alpine_default_SSLMAX" ; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Overriding minimum encryption to default" >&5
+$as_echo "$as_me: WARNING: Overriding minimum encryption to default" >&2;}
+	alpine_SSLMIN="$alpine_default_SSLMIN"
+     fi
+     alpine_RANGE="${alpine_SSLMIN},${alpine_SSLMAX}"
+  fi
+
+    dpv=$alpine_RANGE
+
+# Check whether --with-encryption-range was given.
+if test "${with_encryption_range+set}" = set; then :
+  withval=$with_encryption_range;
+	if test "x$withval" != "xno" ; then
+	  dpv=$withval
+	fi
+
+fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define DF_ENCRYPTION_RANGE "$dpv"
+_ACEOF
+
+
+fi
 
 
 # Check whether --with-krb5 was given.

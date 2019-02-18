@@ -70,9 +70,9 @@ typedef struct nntp_local {
   unsigned int notlsflag : 1;	/* TLS not used in session */
   unsigned int sslflag : 1;	/* SSL session */
   unsigned int tls1 : 1;	/* TLSv1 on SSL port */
-  unsigned int dtls1 : 1;	/* DTLSv1 on SSL port */
   unsigned int tls1_1 : 1;	/* TLSv1_1 on SSL port */
   unsigned int tls1_2 : 1;	/* TLSv1_2 on SSL port */
+  unsigned int tls1_3 : 1;	/* TLSv1_3 on SSL port */
   unsigned int novalidate : 1;	/* certificate not validated */
   unsigned int xover : 1;	/* supports XOVER */
   unsigned int xhdr : 1;	/* supports XHDR */
@@ -667,9 +667,9 @@ MAILSTREAM *nntp_mopen (MAILSTREAM *stream)
     if (LOCAL->notlsflag) mb.notlsflag = T;
     if (LOCAL->sslflag) mb.sslflag = T;
     if (LOCAL->tls1) mb.tls1 = T;
-    if (LOCAL->dtls1) mb.dtls1 = T;
     if (LOCAL->tls1_1) mb.tls1_1 = T;
     if (LOCAL->tls1_2) mb.tls1_2 = T;
+    if (LOCAL->tls1_3) mb.tls1_3 = T;
     if (LOCAL->novalidate) mb.novalidate = T;
     if (LOCAL->nntpstream->loser) mb.loser = T;
     if (stream->secure) mb.secflag = T;
@@ -694,7 +694,7 @@ MAILSTREAM *nntp_mopen (MAILSTREAM *stream)
     if (mb.tls1) strcat (tmp,"/tls1");
     if (mb.tls1_1) strcat (tmp,"/tls1_1");
     if (mb.tls1_2) strcat (tmp,"/tls1_2");
-    if (mb.dtls1) strcat (tmp,"/dtls1");
+    if (mb.tls1_3) strcat (tmp,"/tls1_3");
     if (mb.novalidate) strcat (tmp,"/novalidate-cert");
     if (mb.loser) strcat (tmp,"/loser");
     if (mb.secflag) strcat (tmp,"/secure");
@@ -765,9 +765,9 @@ MAILSTREAM *nntp_mopen (MAILSTREAM *stream)
   if (LOCAL->notlsflag) strcat (tmp,"/notls");
   if (LOCAL->sslflag) strcat (tmp,"/ssl");
   if (LOCAL->tls1) strcat (tmp,"/tls1");
-  if (LOCAL->dtls1) strcat (tmp,"/dtls1");
   if (LOCAL->tls1_1) strcat (tmp,"/tls1_1");
   if (LOCAL->tls1_2) strcat (tmp,"/tls1_2");
+  if (LOCAL->tls1_3) strcat (tmp,"/tls1_3");
   if (LOCAL->novalidate) strcat (tmp,"/novalidate-cert");
   if (LOCAL->nntpstream->loser) strcat (tmp,"/loser");
   if (stream->secure) strcat (tmp,"/secure");

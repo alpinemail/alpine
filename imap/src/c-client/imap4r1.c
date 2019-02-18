@@ -88,7 +88,7 @@ typedef struct imap_local {
   unsigned int tls1 : 1;	/* using TLSv1 over SSL */
   unsigned int tls1_1 : 1;	/* using TLSv1_1 over SSL */
   unsigned int tls1_2 : 1;	/* using TLSv1_2 over SSL */
-  unsigned int dtls1 : 1;	/* using DTLSv1 over SSL */
+  unsigned int tls1_3 : 1;	/* using TLSv1_3 over SSL */
   unsigned int novalidate : 1;	/* certificate not validated */
   unsigned int filter : 1;	/* filter SEARCH/SORT/THREAD results */
   unsigned int loser : 1;	/* server is a loser */
@@ -955,9 +955,9 @@ MAILSTREAM *imap_open (MAILSTREAM *stream)
 				/* save state for future recycling */
     if (mb.tlsflag) LOCAL->tlsflag = T;
     if (mb.tls1) LOCAL->tls1 = T;
-    if (mb.dtls1) LOCAL->dtls1 = T;
     if (mb.tls1_1) LOCAL->tls1_1 = T;
     if (mb.tls1_2) LOCAL->tls1_2 = T;
+    if (mb.tls1_3) LOCAL->tls1_3 = T;
     if (mb.tlssslv23) LOCAL->tlssslv23 = T;
     if (mb.notlsflag) LOCAL->notlsflag = T;
     if (mb.sslflag) LOCAL->sslflag = T;
@@ -979,7 +979,7 @@ MAILSTREAM *imap_open (MAILSTREAM *stream)
     if (LOCAL->tls1) strcat (tmp,"/tls1");
     if (LOCAL->tls1_1) strcat (tmp,"/tls1_1");
     if (LOCAL->tls1_2) strcat (tmp,"/tls1_2");
-    if (LOCAL->dtls1) strcat (tmp,"/dtls1");
+    if (LOCAL->tls1_3) strcat (tmp,"/tls1_3");
     if (LOCAL->tlssslv23) strcat (tmp,"/tls-sslv23");
     if (LOCAL->notlsflag) strcat (tmp,"/notls");
     if (LOCAL->sslflag) strcat (tmp,"/ssl");

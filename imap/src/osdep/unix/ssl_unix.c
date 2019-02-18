@@ -33,42 +33,10 @@
 #include <bio.h>
 #include <crypto.h>
 #include <rand.h>
-#ifndef TLS_client_method
-#ifdef TLSv1_2_client_method
-#define TLS_client_method TLSv1_2_client_method
-#elif defined(TLSv1_1_client_method)
-#define TLS_client_method TLSv1_1_client_method
-#else 
-#define TLS_client_method TLSv1_client_method
-#endif /* TLSv1_2_client_method */
-#endif /* TLS_client_method */
 #ifdef OPENSSL_1_1_0
 #include <rsa.h>
 #include <bn.h>
-#ifdef TLSv1_client_method
-#undef TLSv1_client_method
-#endif /* TLSv1_client_method */
-#ifdef TLSv1_1_client_method
-#undef TLSv1_1_client_method
-#endif /* TLSv1_1_client_method */
-#ifdef TLSv1_2_client_method
-#undef TLSv1_2_client_method
-#endif /* TLSv1_2_client_method */
-#ifdef DTLSv1_client_method
-#undef DTLSv1_client_method
-#endif /* DTLSv1_client_method */
-#ifdef DTLSv1_2_client_method
-#undef DTLSv1_2_client_method
-#endif /* DTLSv1_2_client_method */
-#define TLSv1_client_method   TLS_client_method
-#define TLSv1_1_client_method TLS_client_method
-#define TLSv1_2_client_method TLS_client_method
-#define DTLSv1_client_method  DTLS_client_method
-#define DTLSv1_2_client_method DTLS_client_method
 #endif /* OPENSSL_1_1_0 */
-#ifndef DTLSv1_2_client_method
-#define DTLSv1_2_client_method DTLSv1_client_method
-#endif /* DTLSv1_2_client_method */
 #undef STRING
 #undef crypt
 
@@ -105,7 +73,8 @@ typedef struct ssl_stream {
 #include "sslio.h"
 
 /* Function prototypes */
-const SSL_METHOD *ssl_connect_mthd(int flag);
+int ssl_disable_mask(int ssl_version, int direction);
+const SSL_METHOD *ssl_connect_mthd(int flag, int *min, int *max);
 static SSLSTREAM *ssl_start(TCPSTREAM *tstream,char *host,unsigned long flags);
 static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags);
 static int ssl_open_verify (int ok,X509_STORE_CTX *ctx);
@@ -205,50 +174,95 @@ SSLSTREAM *ssl_aopen (NETMBX *mb,char *service,char *usrbuf)
   return NIL;			/* don't use this mechanism with SSL */
 }
 
+typedef struct ssl_disable_s {
+  int   version;
+  int   disable_code;
+} SSL_DISABLE_S;
+        
+SSL_DISABLE_S ssl_disable[] = {
+    {SSL2_VERSION, SSL_OP_NO_SSLv2},
+    {SSL3_VERSION, SSL_OP_NO_SSLv3},
+    {TLS1_VERSION, SSL_OP_NO_TLSv1},
+    {TLS1_1_VERSION, SSL_OP_NO_TLSv1_1},
+    {TLS1_2_VERSION, SSL_OP_NO_TLSv1_2},
+#ifdef TLS1_3_VERSION
+    {TLS1_3_VERSION, SSL_OP_NO_TLSv1_3},
+#endif /* TLS1_3_VERSION */
+    {0, 0}
+};
+
+#define NUMBER_SSL_VERSIONS (sizeof(ssl_disable)/sizeof(ssl_disable[0]) - 1)
+
+/* returns the mask to disable a specific version.
+ * If version not found, returns 0.
+ * 
+ * Arguments: version, and direction.
+ * If direction is -1, returns mask to disable versions less than given version.
+ * If direction is +1, returns mask to disable versions bigger than given version.
+ */
+int ssl_disable_mask(int ssl_version, int direction)
+{
+  int rv = 0;
+  int i;
+  for(i = 0; ssl_disable[i].version != 0 
+		&& ssl_disable[i].version != ssl_version; i++);
+  if(i == 0 
+     || i == NUMBER_SSL_VERSIONS - 1 
+     || ssl_disable[i].version == 0) 
+    return rv;
+  i += direction; 	/* move in the direction */
+  for(; i >= 0 && i <= NUMBER_SSL_VERSIONS - 1; i += direction)
+     rv |= ssl_disable[i].disable_code;
+  return rv;
+}
+
+
 /* ssl_connect_mthd: returns a context pointer to the connection to
  * a ssl server
  */
-const SSL_METHOD *ssl_connect_mthd(int flag)
+const SSL_METHOD *ssl_connect_mthd(int flag, int *min, int *max)
 {
-  if (flag & NET_TRYTLS1)
-#ifndef OPENSSL_NO_TLS1_METHOD
+  char tmp[10000];
+  int client_request;
+  client_request = (flag & NET_TRYTLS1) ? TLS1_VERSION
+		 : (flag & NET_TRYTLS1_1) ? TLS1_1_VERSION
+		 : (flag & NET_TRYTLS1_2) ? TLS1_2_VERSION
+#ifdef TLS1_3_VERSION
+		 : (flag & NET_TRYTLS1_3) ? TLS1_3_VERSION
+#else
+		 : (flag & NET_TRYTLS1_3) ? INT_MAX
+#endif
+		 : 0L;
+
+  *min = *(int *) mail_parameters(NULL, GET_ENCRYPTION_RANGE_MIN, NULL);
+  *max = *(int *) mail_parameters(NULL, GET_ENCRYPTION_RANGE_MAX, NULL);
+
+  /* 
+   * if no special request, negotiate the maximum the client is configured
+   * to negotiate
+   */
+  if(client_request == 0)
+    client_request = *max;
+
+  if(client_request < *min || client_request > *max)
+    return NIL;		/* out of range? bail out */
+
+#ifndef OPENSSL_1_1_0
+  if(client_request == SSL3_VERSION)
+     return SSLv3_client_method();
+  if(client_request == TLS1_VERSION)
      return TLSv1_client_method();
-#else
-     return TLS_client_method();
-#endif /* OPENSSL_NO_TLS1_METHOD */
-
-  else if(flag & NET_TRYTLS1_1)
-#ifndef OPENSSL_NO_TLS1_1_METHOD
+  else if(client_request == TLS1_1_VERSION)
      return TLSv1_1_client_method();
-#else
-     return TLS_client_method();
-#endif /* OPENSSL_NO_TLS1_1_METHOD */
-
-  else if(flag & NET_TRYTLS1_2)
-#ifndef OPENSSL_NO_TLS1_2_METHOD
+  else if(client_request == TLS1_2_VERSION)
      return TLSv1_2_client_method();
-#else
+#ifdef TLS1_3_VERSION	/* this is only reachable if TLS1_3 support exists */
+  else if(client_request == TLS1_3_VERSION)
      return TLS_client_method();
-#endif /* OPENSSL_NO_TLS1_2_METHOD */
+#endif /* TLS1_3_VERSION */
+#endif /* ifndef OPENSSL_1_1_0 */
 
-  else if(flag & NET_TRYTLS1_3)
-     return TLS_client_method();
-
-  else if(flag & NET_TRYDTLS1)
-#ifndef OPENSSL_NO_DTLS1_METHOD
-     return DTLSv1_client_method();
-#else
-     return DTLS_client_method();
-#endif /* OPENSSL_NO_DTLS1_METHOD */
-
-  else if(flag & NET_TRYDTLS1_2)
-#ifndef OPENSSL_NO_DTLS1_METHOD
-     return DTLSv1_2_client_method();
-#else
-     return DTLS_client_method();
-#endif /* OPENSSL_NO_DTLS1_METHOD */
-
-  else return SSLv23_client_method();
+  return SSLv23_client_method();
 }
 
 /* Start SSL/TLS negotiations
@@ -317,6 +331,7 @@ static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags)
   BIO *bio;
   X509 *cert;
   unsigned long sl,tl;
+  int min, max;
   char *s,*t,*err,tmp[MAILTMPLEN], buf[256];
   sslcertificatequery_t scq =
     (sslcertificatequery_t) mail_parameters (NIL,GET_SSLCERTIFICATEQUERY,NIL);
@@ -326,9 +341,21 @@ static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags)
     (sslclientkey_t) mail_parameters (NIL,GET_SSLCLIENTKEY,NIL);
   if (ssl_last_error) fs_give ((void **) &ssl_last_error);
   ssl_last_host = host;
-  if (!(stream->context = SSL_CTX_new (ssl_connect_mthd(flags))))
+  if (!(stream->context = SSL_CTX_new (ssl_connect_mthd(flags, &min, &max))))
     return "SSL context failed";
   SSL_CTX_set_options (stream->context,0);
+#ifdef OPENSSL_1_1_0
+  if(stream->context != NIL &&
+     ((min != 0 && SSL_CTX_set_min_proto_version(stream->context, min) == 0) ||
+      (max != 0 && SSL_CTX_set_max_proto_version(stream->context, max) == 0)))
+    return "SSL set protocol version Failed";
+#else
+  { int masklow, maskhigh;
+    masklow = ssl_disable_mask(min, -1);
+    maskhigh = ssl_disable_mask(max, 1);
+    SSL_CTX_set_options(stream->context, masklow|maskhigh);
+  }
+#endif /* OPENSSL_1_1_0 */
 				/* disable certificate validation? */
   if (flags & NET_NOVALIDATECERT)
     SSL_CTX_set_verify (stream->context,SSL_VERIFY_NONE,NIL);
@@ -363,6 +390,9 @@ static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags)
 				/* create connection */
   if (!(stream->con = (SSL *) SSL_new (stream->context)))
     return "SSL connection failed";
+  if (host && !SSL_set_tlsext_host_name(stream->con, host)){
+    return "Server Name Identification (SNI) failed";
+  }
   bio = BIO_new_socket (stream->tcpstream->tcpsi,BIO_NOCLOSE);
   SSL_set_bio (stream->con,bio,bio);
   SSL_set_connect_state (stream->con);

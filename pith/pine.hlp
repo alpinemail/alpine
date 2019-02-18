@@ -188,6 +188,12 @@ Based on code provided by Maciej W. Rozycki.
 <LI> Add /tls1_3 flag for servers that support it. Read more information
 in the secure protocols <A HREF="h_network_encryption_security">help</A>.
 
+<LI> New variable 
+<A HREF="h_config_encryption_range"><!--#echo var="VAR_encryption-protocol-range"--></A> 
+that allows users to configure versions of the SSL/TLS protocol that Alpine is 
+restricted to try when establishing a secure connection SSL/TLS to a remote 
+server. The default can be set at compilation time.
+
 <LI> Add -dict option to PC-Pico, which allows users to choose a dictionary
 when spelling. Sample usage: -dict "en_US, de_DE, fr_FR".
 
@@ -218,6 +224,10 @@ Suggested by Barry Landy.
 <LI> S/MIME: Some clients do not transform messages to canonical form when 
 signing first and encrypting second, which makes Alpine fail to parse the 
 signed data after encryption. Reported by Holger Trapp.
+
+<LI> Add /auth=XYZ to the way to define a server. This allows users to  
+select the method to authenticate to an IMAP, SMTP or POP3 server.
+Examples are /auth=plain, or /auth=gssapi, etc.
 </UL>
 
 <P>
@@ -304,9 +314,13 @@ Bugs that have been addressed include:
         by David Woodhouse to the RedHat bugzilla system.
 
    <LI> When there are time changes in the clock, Alpine might go to sleep
-        for big amounts of time while displaying messages in the screen.
-        Reset sleep time to 5 seconds in case it finds it needs to sleep
+        for big amounts of time while displaying messages in the screen. 
+        Reset sleep time to 5 seconds in case it finds it needs to sleep 
         more than 5 seconds or a negative amount of time.
+
+   <LI> Restore recognition of empty directories. It was deleted by mistake
+        when added support for internationalization in folders. Based on a 
+        report by Michael Rutter.
 </UL>
 
 <P>
@@ -3356,6 +3370,7 @@ if the connection is encrypted.
 <LI> <A HREF="h_config_disable_password_file_saving"><!--#echo var="FEAT_disable-password-file-saving"--></A> Disable password file saving</LI>
 <LI> <A HREF="h_config_mailcap_params"><!--#echo var="FEAT_enable-mailcap-param-substitution"--></A> feature </LI>
 <LI> <A HREF="h_config_disable_auths"><!--#echo var="VAR_disable-these-authenticators"--></A> option </LI>
+<LI> <A HREF="h_config_encryption_range"><!--#echo var="VAR_encryption-protocol-range"--></A> option </LI>
 </UL>
 <P>
 &lt;End of help on this topic&gt;
@@ -4324,6 +4339,7 @@ There are also additional details on
 <li><a href="h_config_default_fcc">OPTION: <!--#echo var="VAR_default-fcc"--></a>
 <li><a href="h_config_def_save_folder">OPTION: <!--#echo var="VAR_default-saved-msg-folder"--></a>
 <li><a href="h_config_disable_auths">OPTION: <!--#echo var="VAR_disable-these-authenticators"--></a>
+<li><a href="h_config_encryption_range">OPTION: <!--#echo var="VAR_encryption-protocol-range"--></a>
 <li><a href="h_config_disable_drivers">OPTION: <!--#echo var="VAR_disable-these-drivers"--></a>
 <li><a href="h_config_char_set">OPTION: Display Character Set</a>
 <li><a href="h_config_display_filters">OPTION: <!--#echo var="VAR_display-filters"--></a>
@@ -20710,6 +20726,9 @@ take place over a Secure Socket Layer connection.  The server must support
 this method, and be prepared to accept connections on the appropriate
 port (993 by default).
 Alpine must be linked with an SSL library for this option to be operational.
+Using this option will make Alpine try to connect to the server using the
+most secure encrypted SSL connection that both your version of Alpine and the
+server support.
 
 <P>
 <CENTER><SAMP>/ssl</SAMP></CENTER>
@@ -20727,79 +20746,50 @@ Alpine must be linked with an SSL library for this option to be operational.
 <P>
 <CENTER><SAMP>/tls1</SAMP></CENTER>
 <P>
-
-</DD>
-
-<DT>DTLS1</DT>
-<DD>
-This parameter indicates that the connection to the server will be made
-over the SSL port, but using the DTLSv1 protocol, instead of the usual
-SSLv3 or SSLv2 protocols.
-Alpine must be linked with an SSL library for this option to be operational.
-
-<P>
-<CENTER><SAMP>/dtls1</SAMP></CENTER>
-<P>
-
-</DD>
-
-<DT>DTLS1_2</DT>
-<DD>
-This parameter indicates that the connection to the server will be made
-over the SSL port, but using the DTLSv1.2 protocol, instead of the usual
-SSLv3 or SSLv2 protocols.
-Alpine must be linked with an SSL library for this option to be operational.
-
-<P>
-<CENTER><SAMP>/dtls1_2</SAMP></CENTER>
-<P>
-
 </DD>
 
 <DT>TLS1_1</DT>
 <DD>
 This parameter indicates that the connection to the server will be made
-over the SSL port, but using the TLSv1.1 protocol, instead of the usual
-SSLv3 or SSLv2 protocols.
-Alpine must be linked with an SSL library for this option to be operational.
+over the SSL port, but using the TLSv1.1 protocol.
+Alpine must be linked with an SSL library that supports this encryption
+protocol for this option to be operational.
 
 <P>
 <CENTER><SAMP>/tls1_1</SAMP></CENTER>
 <P>
-
 </DD>
 
 <DT>TLS1_2</DT>
 <DD>
 This parameter indicates that the connection to the server will be made
-over the SSL port, but using the TLSv1.2 protocol, instead of the usual
-SSLv3 or SSLv2 protocols.
-Alpine must be linked with an SSL library for this option to be operational.
+over the SSL port, but using the TLSv1.2 protocol.
+Alpine must be linked with an SSL library that supports this encryption
+protocol for this option to be operational.
 
 <P>
 <CENTER><SAMP>/tls1_2</SAMP></CENTER>
 <P>
-
 </DD>
 
 <DT>TLS1_3</DT>
 <DD>
 This parameter indicates that the connection to the server will be made
-over the SSL port, but using the TLSv1.3 protocol, instead of the usual
-SSLv3 or SSLv2 protocols.
-Alpine must be linked with an SSL library for this option to be operational.
+over the SSL port, but using the TLSv1.3 protocol.
+Alpine must be linked with an SSL library that supports this encryption
+protocol for this option to be operational.
 
 <P>
-<CENTER><SAMP>/tls1_2</SAMP></CENTER>
+<CENTER><SAMP>/tls1_3</SAMP></CENTER>
 <P>
-
 </DD>
-
 
 <DT>NoValidate-Cert</DT>
 <DD>Do not validate certificates (for TLS or SSL connections) from the server.
 This is needed if the server uses self-signed certificates or if Alpine
-cannot validate the certificate for some other known reason.
+cannot validate the certificate for some other known reason. You should avoid
+using this option, and instead install the certificate of the server, so you
+are not a victim of a cracker-in-the-middle attack.
 <P>
 </DD>
 
@@ -25697,6 +25687,63 @@ GSSAPI (which in turn disables Alpine's Kerberos support).
 It is never necessary to disable authenticators, since Alpine will try
 other authenticators before giving up.
 However, disabling the relevant authenticator avoids annoying error messages.
+<P>
+<UL>   
+<LI><A HREF="h_finding_help">Finding more information and requesting help</A>
+</UL><P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+====== h_config_encryption_range =====
+<HTML>
+<HEAD>
+<TITLE>OPTION: <!--#echo var="VAR_encryption-protocol-range"--></TITLE>
+</HEAD>
+<BODY>
+<H1>OPTION: <!--#echo var="VAR_encryption-protocol-range"--></H1>
+
+This option sets a range of encryption protocols that can be attempted when
+Alpine will try to establish a secure connection using the SSL or TLS
+protocols.
+
+<P>
+Before a secure connection to an external server is established, Alpine and the
+server will attempt to negotiate a secure connection. This part is known as the
+&quot;ClientHello&quot;. At that time Alpine will announce the version of
+encryption that it would like to establish. The server can reject that, and announce
+a different version of encryption. Once both the server and Alpine have found
+a version of encryption that they both agree on, they will both use it to start
+a secure connection.
+
+<P>
+The use of the /ssl parameter in the definition of the server will make Alpine
+attempt the highest encryption protocol that it can use, in agreement with the
+server. However, using this option, you will set limits to the versions of
+the protocols that are used. This would, for example, allow you to disable the use
+of ssl3, in favor of more modern protocols. 
+
+<P>
+For purposes of this option, the protocols are sorted 
+as follows
+
+<P>
+<CENTER>
+no_min < ssl3 < tls1 < tls1_1 < tls1_2 < tls1_3 < no_max
+</CENTER>
+
+<P>
+For example, if you want to disable ssl3, all you have to do is to set the minimum 
+version to tls1, or any higher protocol. 
+
+<P>The name of the parameters used to configure this option is the same as the 
+parameters that are added to the definition of a server to make it a secure 
+connection, and they are listed above for your reference.
+
+<P>
+The special values &quot;no_min&quot; and &quot;no_max&quot; do not set values
+for the minimum and maximum protocol versions, and Alpine will use the maximum
+and minimum values of encryption protocols built into your SSL library.
+
 <P>
 <UL>   
 <LI><A HREF="h_finding_help">Finding more information and requesting help</A>

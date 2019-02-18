@@ -341,6 +341,7 @@ exclude_config_var(struct pine *ps, struct variable *var, int allow_hard_to_conf
       case V_GLOB_ADDRBOOK :
       case V_DISABLE_DRIVERS :
       case V_DISABLE_AUTHS :
+      case V_ENCRYPTION_RANGE :
       case V_REMOTE_ABOOK_METADATA :
       case V_REMOTE_ABOOK_HISTORY :
       case V_REMOTE_ABOOK_VALIDITY :
@@ -5767,6 +5768,7 @@ fix_side_effects(struct pine *ps, struct variable *var, int revert)
 		        var == &ps->vars[V_NEWS_SPEC] ||
 		        var == &ps->vars[V_DISABLE_DRIVERS] ||
 		        var == &ps->vars[V_DISABLE_AUTHS] ||
+		        var == &ps->vars[V_ENCRYPTION_RANGE] ||
 		        var == &ps->vars[V_RSHPATH] ||
 		        var == &ps->vars[V_RSHCMD] ||
 		        var == &ps->vars[V_SSHCMD] ||

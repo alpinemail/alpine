@@ -57,6 +57,9 @@
 #define DF_ELM_STYLE_SAVE "no"
 
 /* Default configuration value */
+#define DF_ENCRYPTION_RANGE "no_min,no_max"
+
+/* Default configuration value */
 #define DF_FCC_RULE "default-fcc"
 
 /* Default configuration value */

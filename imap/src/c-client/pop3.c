@@ -424,7 +424,7 @@ MAILSTREAM *pop3_open (MAILSTREAM *stream)
       if (mb.tls1) strcat (tmp,"/tls1");
       if (mb.tls1_1) strcat (tmp,"/tls1_1");
       if (mb.tls1_2) strcat (tmp,"/tls1_2");
-      if (mb.dtls1) strcat (tmp,"/dtls1");
+      if (mb.tls1_3) strcat (tmp,"/tls1_3");
       if (mb.notlsflag) strcat (tmp,"/notls");
       if (mb.sslflag) strcat (tmp,"/ssl");
       if (mb.novalidate) strcat (tmp,"/novalidate-cert");
