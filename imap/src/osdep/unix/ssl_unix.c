@@ -1,4 +1,5 @@
 /* ========================================================================
+ * Copyright 2019 Eduardo Chappa
  * Copyright 2008-2009 Mark Crispin
  * ========================================================================
  */
@@ -222,7 +223,6 @@ int ssl_disable_mask(int ssl_version, int direction)
  */
 const SSL_METHOD *ssl_connect_mthd(int flag, int *min, int *max)
 {
-  char tmp[10000];
   int client_request;
   client_request = (flag & NET_TRYTLS1) ? TLS1_VERSION
 		 : (flag & NET_TRYTLS1_1) ? TLS1_1_VERSION
@@ -250,7 +250,7 @@ const SSL_METHOD *ssl_connect_mthd(int flag, int *min, int *max)
 #ifndef OPENSSL_1_1_0
   if(client_request == SSL3_VERSION)
      return SSLv3_client_method();
-  if(client_request == TLS1_VERSION)
+  else if(client_request == TLS1_VERSION)
      return TLSv1_client_method();
   else if(client_request == TLS1_1_VERSION)
      return TLSv1_1_client_method();
