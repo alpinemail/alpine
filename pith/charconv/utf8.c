@@ -310,9 +310,10 @@ char *
 convert_to_locale(char *utf8str)
 {
 #define CHNK 500
-    char *inp, *retp, *ret = NULL;
+    char *inp, *ret = NULL;
     CBUF_S cb;
-    int r, alloced;
+    int alloced;
+    size_t i = 0;
 
     if(native_utf8 || !utf8str || !utf8str[0])
       return(NULL);
@@ -323,7 +324,6 @@ convert_to_locale(char *utf8str)
 
     alloced = CHNK;
     ret = (char *) fs_get(alloced * sizeof(char));
-    retp = ret;
 
     /*
      * There's gotta be a better way to do this but utf8_to_locale was
@@ -337,20 +337,18 @@ convert_to_locale(char *utf8str)
 	 * enough room for the next wide characters worth of output chars
 	 * and allocate more space if not.
 	 */
-	if((alloced - (retp-ret)) < MAX(MB_LEN_MAX,32)){
+        if((alloced - i) < MAX(MB_LEN_MAX,32)){
 	    alloced += CHNK;
 	    fs_resize((void **) &ret, alloced * sizeof(char));
 	}
 
-	r = utf8_to_locale((int) *inp++, &cb,
-			   (unsigned char *) retp, alloced-(retp-ret));
-
-	retp += r;
+        i += utf8_to_locale((int) *inp++, &cb,
+                           (unsigned char *) &ret[i], alloced - i);
     }
 
-    *retp = '\0';
+    fs_resize((void **) &ret, i + 1);
 
-    fs_resize((void **) &ret, strlen(ret)+1);
+    ret[i] = '\0';
 
     return(ret);
 }

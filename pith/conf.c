@@ -1587,7 +1587,7 @@ based on the contents.
 void 
 init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
 {
-    char	 buf[MAXPATH+1], *p, *q, **s;
+    char         buf[MAXPATH+1], *p, *q, **s, *comma_index;
     register struct variable *vars = ps->vars;
     int		 obs_header_in_reply = 0,     /* the obs_ variables are to       */
 		 obs_old_style_reply = 0,     /* support backwards compatibility */
@@ -1992,13 +1992,13 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
       printer_value_check_and_adjust();
 
     set_current_val(&vars[V_LAST_TIME_PRUNE_QUESTION], TRUE, TRUE);
-    if(VAR_LAST_TIME_PRUNE_QUESTION != NULL){
+    if(VAR_LAST_TIME_PRUNE_QUESTION != NULL && 
+        (comma_index = strindex(VAR_LAST_TIME_PRUNE_QUESTION, '.')) != NULL){
         /* The month value in the file runs from 1-12, the variable here
            runs from 0-11; the value in the file used to be 0-11, but we're 
            fixing it in January */
         ps->last_expire_year  = atoi(VAR_LAST_TIME_PRUNE_QUESTION);
-        ps->last_expire_month =
-			atoi(strindex(VAR_LAST_TIME_PRUNE_QUESTION, '.') + 1);
+        ps->last_expire_month = atoi(comma_index + 1);
         if(ps->last_expire_month == 0){
             /* Fix for 0 because of old bug */
             snprintf(buf, sizeof(buf), "%d.%d", ps_global->last_expire_year,

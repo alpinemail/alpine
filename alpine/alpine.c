@@ -278,12 +278,18 @@ main(int argc, char **argv)
 	dup2(STDIN_FD, PIPED_FD);	/* redirected stdin to new desc */
 	dup2(STDERR_FD, STDIN_FD);	/* rebind stdin to the tty	*/
 	stdin_getc = read_stdin_char;
-	if(stdin_getc && args.action == aaURL){
-	  display_args_err(
+	if(stdin_getc){
+	  if(args.action == aaURL){
+	     display_args_err(
   "Cannot read stdin when using -url\nFor mailto URLs, use \'body=\' instead", 
-	   NULL, 1);
-	  args_help();
-	  exit(-1);
+	     NULL, 1);
+	     args_help();
+	     exit(-1);
+	  } else if (args.action == aaFolder){
+	     display_args_err("Cannot take input from pipe when opening a folder", NULL, 1);
+	     args_help();
+	     exit(-1);
+	  }
 	}
     }
 
@@ -445,7 +451,7 @@ main(int argc, char **argv)
     mail_parameters(NULL, SET_SSLFAILURE, (void *) pine_sslfailure);
 
     if(init_pinerc_debugging){
-	dprint((2, init_pinerc_debugging));
+        dprint((2, "%s", init_pinerc_debugging));
 	fs_give((void **)&init_pinerc_debugging);
     }
 

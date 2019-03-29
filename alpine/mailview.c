@@ -2140,22 +2140,23 @@ int
 url_local_fragment(char *fragment)
 {
     SCRLCTRL_S *st = scroll_state(SS_CUR);
-    HANDLE_S   *hp;
+    HANDLE_S   *hp = NULL;
 
     /*
      * find a handle with the fragment's name
      */
-    for(hp = st->parms->text.handles; hp; hp = hp->next)
-      if(hp->type == URL && hp->h.url.name
-	 && !strcmp(hp->h.url.name, fragment + 1))
-	break;
-
-    if(!hp)
-      for(hp = st->parms->text.handles->prev; hp; hp = hp->prev)
-	if(hp->type == URL && hp->h.url.name
+    if(st){
+      for(hp = st->parms->text.handles; hp; hp = hp->next)
+        if(hp->type == URL && hp->h.url.name
 	   && !strcmp(hp->h.url.name, fragment + 1))
 	  break;
 
+      if(!hp)
+        for(hp = st->parms->text.handles->prev; hp; hp = hp->prev)
+	  if(hp->type == URL && hp->h.url.name
+	     && !strcmp(hp->h.url.name, fragment + 1))
+	    break;
+    }
     /*
      * set the top line of the display to contain this line
      */
