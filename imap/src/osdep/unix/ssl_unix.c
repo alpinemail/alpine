@@ -230,9 +230,9 @@ const SSL_METHOD *ssl_connect_mthd(int flag, int *min, int *max)
 #ifdef TLS1_3_VERSION
 		 : (flag & NET_TRYTLS1_3) ? TLS1_3_VERSION
 #else
-		 : (flag & NET_TRYTLS1_3) ? INT_MAX
+		 : (flag & NET_TRYTLS1_3) ? -2
 #endif
-		 : 0L;
+		 : 0;
 
   *min = *(int *) mail_parameters(NULL, GET_ENCRYPTION_RANGE_MIN, NULL);
   *max = *(int *) mail_parameters(NULL, GET_ENCRYPTION_RANGE_MAX, NULL);

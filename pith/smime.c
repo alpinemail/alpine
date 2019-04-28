@@ -818,7 +818,7 @@ import_certificate(WhichCerts ctype, PERSONAL_CERT *p_cert, char *fname)
 		        q_status_message(SM_ORDER, 1, 3, _("Error decrypting Password file"));
 		     }
 		   } else {
-		     q_status_message(SM_ORDER, 1, 3, _("Password file not encrypted and coulr not encrypt"));
+		     q_status_message(SM_ORDER, 1, 3, _("Password file not encrypted and could not encrypt"));
 		     rc = 0;
 		   }
 		}

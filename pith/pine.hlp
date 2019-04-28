@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 334 2019-03-29 09:48:59
+Alpine Commit 335 2019-04-28 16:01:07
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -301,7 +301,7 @@ Bugs that have been addressed include:
    <LI> TLS 1.2 works does not work if Alpine is compiled with openssl &gt;= 1.1.0.
         Reported and patched by Kyle George.
 
-   <LI> If the directory where Alpine saves the certificates if empty,
+   <LI> If the directory where Alpine saves the certificates is empty,
         alpine would not create a self-signed certificate to encrypt the 
         password file.
 

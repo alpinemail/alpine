@@ -7592,6 +7592,9 @@ url_local_ldap(char *url)
     we_cancel = busy_cue(_("Searching for LDAP url"), NULL, 0);
     ps_global->mangled_footer = 1;
 
+#ifdef _SOLARIS_SDK
+    if((ld = ldap_init(ldapurl->lud_host, ldapurl->lud_port)) == NULL)
+#else
 #if (LDAPAPI >= 11)
 #ifdef _WINDOWS
     if((ld = ldap_init(ldapurl->lud_host, ldapurl->lud_port)) == NULL)
@@ -7599,10 +7602,11 @@ url_local_ldap(char *url)
     snprintf(tmp_20k_buf, SIZEOF_20KBUF, "ldap://%s:%d", ldapurl->lud_host, ldapurl->lud_port);
     tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
     if(ldap_initialize(&ld, tmp_20k_buf) != LDAP_SUCCESS)
-#endif
+#endif /* _WINDOWS */
 #else
     if((ld = ldap_open(ldapurl->lud_host, ldapurl->lud_port)) == NULL)
-#endif
+#endif /* LDAPAPI >= 11 */
+#endif /* _SOLARIS_SDK */
     {
 	if(we_cancel){
 	    cancel_busy_cue(-1);

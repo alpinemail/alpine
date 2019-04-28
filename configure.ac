@@ -1067,8 +1067,8 @@ else
   case $host in
     *-*-freebsd*)
 	alpine_LDAPDIR="/usr/local"
-	alpine_LDAPINCLUDE="${LDAPDIR}/include"
-	alpine_LDAPLIB="${LDAPDIR}/lib"
+	alpine_LDAPINCLUDE="${alpine_LDAPDIR}/include"
+	alpine_LDAPLIB="${alpine_LDAPDIR}/lib"
         ;;
   esac;
 
@@ -1079,8 +1079,8 @@ else
     [
       if test "x$withval" != "xno" ; then 
 	alpine_LDAPDIR="${withval}"
-	alpine_LDAPINCLUDE="${LDAPDIR}/include"
-	alpine_LDAPLIB="${LDAPDIR}/lib"
+	alpine_LDAPINCLUDE="${alpine_LDAPDIR}/include"
+	alpine_LDAPLIB="${alpine_LDAPDIR}/lib"
       fi
     ])
 
@@ -1581,7 +1581,7 @@ if test "x$alpine_SSLTYPE" != "xnone" ; then
      fi
   else
      AC_SEARCH_LIBS(OPENSSL_init_ssl,ssl,, [ alpine_SSLTYPE="none" ])
-     if test "x$alpine_SSLTYPE" = "xnone" ; then
+     if test "x$aalpiLlpine_SSLTYPE" = "xnone" ; then
         AC_MSG_ERROR(No library containing OPENSSL_init_ssl found in your path)
         exit 1
      fi
