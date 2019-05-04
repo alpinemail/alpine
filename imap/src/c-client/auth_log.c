@@ -58,16 +58,15 @@ long auth_login_client (authchallenge_t challenger,authrespond_t responder,
 			char *service,NETMBX *mb,void *stream,
 			unsigned long *trial,char *user)
 {
-  char pwd[MAILTMPLEN];
+  char *pwd = NIL;
   void *challenge;
   unsigned long clen;
   long ret = NIL;
 				/* get user name prompt */
   if ((challenge = (*challenger) (stream,&clen)) != NULL) {
     fs_give ((void **) &challenge);
-    pwd[0] = NIL;		/* prompt user */
-    mm_login (mb,user,pwd,*trial);
-    if (!pwd[0]) {		/* user requested abort */
+    mm_login (mb,user, &pwd,*trial);
+    if (!pwd) {			/* user requested abort */
       (*responder) (stream,NIL,0);
       *trial = 0;		/* cancel subsequent attempts */
       ret = LONGT;		/* will get a BAD response back */
@@ -85,9 +84,10 @@ long auth_login_client (authchallenge_t challenger,authrespond_t responder,
 	  ret = LONGT;		/* check the authentication */
 	}
       }
+      fs_give((void **) &pwd);
     }
   }
-  memset (pwd,0,MAILTMPLEN);	/* erase password */
+  if(pwd) fs_give((void **) &pwd);
   if (!ret) *trial = 65535;	/* don't retry if bad protocol */
   return ret;
 }

@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 335 2019-04-28 16:01:07
+Alpine Commit 336 2019-05-04 12:40:47
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -180,6 +180,8 @@ addresses bugs found in previous releases and has a few additions as well.
 Additions include:
 
 <UL>
+<LI> Support for <A HREF="h_xoauth2">XOAUTH2</A> authentication method in Gmail.
+
 <LI> PC-Alpine builds with LibreSSL and supports S/MIME.
 
 <LI> NTLM authentication support with the ntlm library, in Unix systems.
@@ -1459,6 +1461,116 @@ modifier to the server definition to create a secure encrypted connection.
 &lt;End of help&gt;
 </BODY>
 </HTML>
+====== h_xoauth2 ======
+<HTML>
+<HEAD>
+<TITLE>XOAUTH2 Authenticator Explained</TITLE>
+</HEAD>
+<BODY>
+<H1>XOAUTH2 Authenticator Explained</H1>
+
+The XOAUTH2 authenticator method is a way in which you can sign in to your
+account to read and send email. This method is different from the traditional
+username/password that users are accostumed to, and it needs to be set up
+by the user. This text will help you understand this authentication method.
+
+<P>
+The most important difference between this method and other autentication
+methods is what happens if someone steals your credentials. This method is
+attached to three components: Your username, your password and your email
+program.
+
+<P>
+At the beginning of this process, the developer of the email program 
+registers the email program with the email service provider (Gmail, 
+Outlook, etc.) In return, the email service provider creates an id and
+secret for the email program, which the email program will use in the 
+future. Since Alpine is an open source program, these values are part
+of the source code, and are known to everyone, and cannot be obfuscated.
+
+<P>
+After a program has been registered with an email service provider, the 
+user must authorize the email program access to their email account in 
+that service. Alpine helps you do that, but it cannot do all the process 
+for you, and you will need to use an external web browser to authorize
+Alpine to read and send email.
+
+<P>
+This part of the process is simple. Alpine creates a URL based on the id 
+and secret created by the email service, which the user opens. Once the 
+URL has been opened, the user signs in to the server, and once signed into
+the account, the user is asked to authorize Alpine access to the email 
+account. If the user agrees, an &quot;<I>Access Code</I>&quot; will be
+generated.
+
+<P>
+An Access Code is a very long string, and so the recommendation is to copy 
+and paste this code back into Alpine, at the time Alpine is helping you 
+set up this authenticator. This part of the process is done only once per 
+email program (If you run Alpine in several computers, you would do this 
+once per computer. Each computer gets its own Access Code.)
+
+<P>
+Once Alpine has an Access Code, it goes back internally to the email 
+service and asks it to generate two strings, called the &quot;<I>Refresh 
+Token</I>&quot; and the &quot;<I>Access Token</I>&quot;. This part is 
+invisible to the user, and they will never see it, but in order for you to 
+understand what to do in case you lose them, you need to understand their 
+use.
+
+<P>
+The <I>Access Token</I> is the equivalent of a temporary password. It 
+allows the user to access (and reaccess as many times as they would like)
+their email account for a limited amount of time, typically 1 hour after
+it was issued. After that time expires, users need a new Access Token.
+
+<P>
+The <I>Refresh Token</I> is the equivalent of a password generator. With 
+this token, Alpine can go to the email service provider and request a new 
+Access Token. This part of the process does not need user intervention, 
+anyone can do this, as long as they have the Refresh Token, program id and 
+program secret, so it is important that users keep their Refresh Token as 
+secure as they can.
+
+<P>
+Given that the Refresh Token and the Access Token are long strings, users 
+are not supposed to be able to memorize them and recall them later. Alpine 
+will store them in the password file, should a user have one. Otherwise, 
+the user will have to create one each time they run Alpine, starting by 
+creating the Access Code all over each time they try to sign in to their 
+email account. When Alpine is compiled with SSL and password file support, 
+it will default to saving this information using encryption and under a 
+master password, so unless they have made changes to this process, their 
+Refresh and Access Tokens are saved securely and persist from one session 
+to the next.
+
+<P>
+Should any person steal your Refresh Token, you must login to your account 
+with your username and password and revoke Alpine authorization to your 
+account. This is enough to stop the person who stole your Refresh Token 
+from accessing your email service. In the case of Gmail, changing your 
+password will invalidate your Refresh Token, and this will be enough to 
+prevent others from using a stolen Refresh Token. Consult with your email
+service provider to learn what you can do if someone steals your Refresh
+Token.
+
+<P>
+If, for any reason, Alpine cannot sign in to your email service for two 
+consecutive times with Access Codes generated by your Refresh Token, it 
+will remove the Refresh Token from your password file, forcing you to get 
+a new one, by getting an Access Code first, and granting authorization to
+Alpine to access your email once again.
+
+<P>
+This implementation of XOAUTH2 knows the list of servers that it can 
+access using the same credentials, so Alpine will be able to read and send 
+emails using the same Access Token. You will not have to create 
+Access and Refresh Tokens for the IMAP and SMTP servers separately.
+
+<P>
+&lt;End of help&gt;
+</BODY>
+</HTML>
 ====== h_tls_failure_details ======
 <HTML>
 <HEAD>
@@ -1564,6 +1676,34 @@ you will get no warning if you do this.
 
 <P>
 &lt;End of Cert Validation Failures help&gt;
+</BODY>
+</HTML>
+====== h_oauth2_start ======
+<HTML>
+<HEAD>
+<TITLE>Setting up XOAUTH2 Authentication</TITLE>
+</HEAD>
+<BODY>
+<H1>Setting up XOAUTH2 Authentication</H1>
+
+You are trying to connect to a server that uses the XOAUTH2 method of
+authentication.
+
+<P>
+In order to set this up, you need to authenticate in the target server
+and authorize Alpine to access your email account.
+
+<P>
+After you have authorized Alpine, the server will generate an
+&quot;access code.&quot; In order to use this code, press 'C'
+and copy and paste this code back into Alpine.
+
+<P>
+After you have input the code, Alpine will conclude logging you into your
+account.
+
+<P>
+&lt;End of setting up XOAUTH2 Authentication help&gt;
 </BODY>
 </HTML>
 ====== h_release_tlscerts ======

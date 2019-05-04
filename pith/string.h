@@ -144,6 +144,7 @@ char       *add_escapes(char *, char *, int, char *, char *);
 char       *copy_quoted_string_asis(char *);
 int	    isxpair(char *);
 STRLIST_S  *new_strlist(char *);
+STRLIST_S  *new_strlist_auth(char *, char *, char);
 STRLIST_S  *copy_strlist(STRLIST_S *);
 void	    combine_strlists(STRLIST_S **, STRLIST_S *);
 void	    free_strlist(STRLIST_S **);

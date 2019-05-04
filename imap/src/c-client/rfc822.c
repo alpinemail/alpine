@@ -65,7 +65,7 @@ static const char *errhst = ERRHOST;
 
 char *body_types[TYPEMAX+1] = {
   "TEXT", "MULTIPART", "MESSAGE", "APPLICATION", "AUDIO", "IMAGE", "VIDEO",
-  "MODEL", "X-UNKNOWN"
+  "MODEL", "*", "X-UNKNOWN"
 };
 
 

@@ -40,6 +40,7 @@ struct ssl_driver {		/* must parallel NETDRIVER in mail.h */
   char *(*remotehost) (SSLSTREAM *stream);
   unsigned long (*port) (SSLSTREAM *stream);
   char *(*localhost) (SSLSTREAM *stream);
+  char *(*getsize) (SSLSTREAM *stream, unsigned long size);
 };
 
 
@@ -58,6 +59,7 @@ typedef struct ssl_stdiostream {
 SSLSTREAM *ssl_open (char *host,char *service,unsigned long port);
 SSLSTREAM *ssl_aopen (NETMBX *mb,char *service,char *usrbuf);
 char *ssl_getline (SSLSTREAM *stream);
+char *ssl_getsize (SSLSTREAM *stream, unsigned long size);
 long ssl_getbuffer (SSLSTREAM *stream,unsigned long size,char *buffer);
 long ssl_getdata (SSLSTREAM *stream);
 long ssl_soutr (SSLSTREAM *stream,char *string);

@@ -31,11 +31,14 @@ char   *pine_newsrcquery(MAILSTREAM *, char *, char *);
 int     url_local_certdetails(char *);
 void    pine_sslfailure(char *, char *, unsigned long);
 void	mm_expunged_current(long unsigned int);
+char   *oauth2_get_access_code(char *, OAUTH2_S *, int *);
 
 #ifdef	LOCAL_PASSWD_CACHE
-int     get_passfile_passwd(char *, char *, char *, STRLIST_S *, int);
+int     get_passfile_passwd(char *, char **, char *, STRLIST_S *, int);
+int     get_passfile_passwd_auth(char *, char **, char *, STRLIST_S *, int, char *);
 int     is_using_passfile(void);
 void    set_passfile_passwd(char *, char *, char *, STRLIST_S *, int, int);
+void    set_passfile_passwd_auth(char *, char *, char *, STRLIST_S *, int, int, char *);
 char   *get_passfile_user(char *, STRLIST_S *);
 void	free_passfile_cache(void);
 #endif	/* LOCAL_PASSWD_CACHE */

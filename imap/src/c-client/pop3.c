@@ -554,7 +554,7 @@ long pop3_capa (MAILSTREAM *stream,long flags)
 long pop3_auth (MAILSTREAM *stream,NETMBX *mb,char *pwd,char *usr)
 {
   unsigned long i,trial,auths = 0, authsaved;
-  char *t;
+  char *t, *app_pwd = NIL;
   AUTHENTICATOR *at, *atsaved;
   long ret = NIL;
   long flags = (stream->secure ? AU_SECURE : NIL) |
@@ -675,7 +675,12 @@ long pop3_auth (MAILSTREAM *stream,NETMBX *mb,char *pwd,char *usr)
     trial = 0;			/* initial trial count */
     do {
       pwd[0] = 0;		/* prompt user for password */
-      mm_login (mb,usr,pwd,trial++);
+      if(app_pwd) fs_give((void **) &app_pwd);
+      mm_login (mb,usr, &app_pwd,trial++);
+      if(app_pwd){ 
+	strncpy(pwd, app_pwd, MAILTMPLEN);
+	pwd[MAILTMPLEN-1] = '\0';
+      }
       if (pwd[0]) {		/* send login sequence if have password */
 	if (pop3_send (stream,"USER",usr)) {
 	  LOCAL->sensitive = T;	/* hide this command */
@@ -693,6 +698,7 @@ long pop3_auth (MAILSTREAM *stream,NETMBX *mb,char *pwd,char *usr)
     } while (!ret && pwd[0] && (trial < pop3_maxlogintrials) &&
 	     LOCAL->netstream);
   }
+  if(app_pwd) fs_give((void **) &app_pwd);
   memset (pwd,0,MAILTMPLEN);	/* erase password */
 				/* get capabilities if logged in */
   if (ret && capaok) pop3_capa (stream,flags);

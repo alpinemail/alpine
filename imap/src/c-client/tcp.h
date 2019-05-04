@@ -40,6 +40,7 @@ void *tcp_parameters (long function,void *value);
 TCPSTREAM *tcp_open (char *host,char *service,unsigned long port);
 TCPSTREAM *tcp_aopen (NETMBX *mb,char *service,char *usrbuf);
 char *tcp_getline (TCPSTREAM *stream);
+char *tcp_getsize (TCPSTREAM *stream, unsigned long size);
 long tcp_getbuffer (TCPSTREAM *stream,unsigned long size,char *buffer);
 long tcp_getdata (TCPSTREAM *stream);
 long tcp_soutr (TCPSTREAM *stream,char *string);

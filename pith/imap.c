@@ -855,9 +855,15 @@ imap_seq_exec_append(MAILSTREAM *stream, long int msgno, void *args)
  Result: username and password passed back to imap
   ----*/
 void
-mm_login(NETMBX *mb, char *user, char *pwd, long int trial)
+mm_login(NETMBX *mb, char *user, char **pwd, long int trial)
 {
     mm_login_work(mb, user, pwd, trial, NULL, NULL);
+}
+
+void
+mm_login_method(NETMBX *mb, char *user, void *login, long int trial, char *method)
+{
+    mm_login_method_work(mb, user, login, trial, method, NULL, NULL);
 }
 
 
@@ -888,11 +894,35 @@ cached_user_name(char *host)
 int
 imap_same_host(STRLIST_S *hl1, STRLIST_S *hl2)
 {
-    STRLIST_S *lp;
+    return imap_same_host_auth(hl1, hl2, NULL);
+}
 
+/* An explanation about this function. The way this is used in the
+ * new code for XOAUTH2, makes it so that when we are checking if 
+ * the hosts and orighosts are the same, we are given the mb->host
+ * and mb->orighost pointers, and we cannot transform them in any
+ * way to be sure that increasing their size will not overflow the
+ * fixed width buffer that contain them, so we cannot change that.
+ * For purposes of this function, these values come in the hl2 variable.
+ * However, for purposes of this function, the values in hl1 are the ones
+ * that come straight from the cache, and here no transformation is made,
+ * that is, we save them as we read them, so when we compare the values
+ * read from the cache, with those that we want to save, we need to make
+ * sure we "shift" the hl1 variable, but not the hl2 variable.
+ */
+int
+imap_same_host_auth(STRLIST_S *hl1, STRLIST_S *hl2, char *authtype)
+{
+    STRLIST_S *lp;
+    size_t len, offset;
+
+    len    = authtype ? strlen(authtype) : 0;
+    offset = authtype ? 1 : 0;
     for( ; hl1; hl1 = hl1->next)
       for(lp = hl2; lp; lp = lp->next)
-      if(!strucmp(hl1->name, lp->name))
+      if((len == 0 || (!struncmp(hl1->name, authtype, len)
+			&& hl1->name[len] == PWDAUTHSEP))
+	  && !strucmp(hl1->name + len + offset, lp->name))
 	return(TRUE);
 
     return(FALSE);
@@ -949,9 +979,16 @@ imap_get_user(MMLOGIN_S *m_list, STRLIST_S *hostlist)
  * attempt to login with the password from the cache.
  */
 int
-imap_get_passwd(MMLOGIN_S *m_list, char *passwd, char *user, STRLIST_S *hostlist, int altflag)
+imap_get_passwd(MMLOGIN_S *m_list, char **passwd, char *user, STRLIST_S *hostlist, int altflag)
+{
+  return imap_get_passwd_auth(m_list, passwd, user, hostlist, altflag, NULL);
+}
+
+int
+imap_get_passwd_auth(MMLOGIN_S *m_list, char **passwd, char *user, STRLIST_S *hostlist, int altflag, char *authtype)
 {
     MMLOGIN_S *l;
+    int len, offset;
     
     dprint((9,
 	       "imap_get_passwd: checking user=%s alt=%d host=%s%s%s\n",
@@ -961,18 +998,22 @@ imap_get_passwd(MMLOGIN_S *m_list, char *passwd, char *user, STRLIST_S *hostlist
 	       (hostlist->next && hostlist->next->name) ? ", " : "",
 	       (hostlist->next && hostlist->next->name) ? hostlist->next->name
 						        : ""));
+    len = authtype ? strlen(authtype) : 0;
+    offset = authtype ? 1 : 0;
     for(l = m_list; l; l = l->next)
-      if(imap_same_host(l->hosts, hostlist)
+      if(imap_same_host_auth(l->hosts, hostlist, authtype)
 	 && *user
-	 && !strcmp(user, l->user)
+	 && (len == 0 || (!struncmp(l->user, authtype, len)
+		    	   && l->user[len] == PWDAUTHSEP))
+	 && !strcmp(user, l->user + len + offset)
 	 && l->altflag == altflag){
 	  if(passwd){
-	      strncpy(passwd, l->passwd, NETMAXPASSWD);
-	      passwd[NETMAXPASSWD-1] = '\0';
+	      fs_resize((void **) passwd, strlen(l->passwd + len + offset) + 1);
+	      strcpy(*passwd, l->passwd + len + offset);
 	  }
 	  dprint((9, "imap_get_passwd: match\n"));
 	  dprint((10, "imap_get_passwd: trying passwd=\"%s\"\n",
-		      passwd ? passwd : "?"));
+		      passwd && *passwd ? *passwd : "?"));
 	  return(TRUE);
       }
 
@@ -986,15 +1027,28 @@ void
 imap_set_passwd(MMLOGIN_S **l, char *passwd, char *user, STRLIST_S *hostlist,
 	        int altflag, int ok_novalidate, int warned)
 {
+   imap_set_passwd_auth(l, passwd, user, hostlist, altflag, ok_novalidate, 
+			warned, NULL);
+}
+
+void
+imap_set_passwd_auth(MMLOGIN_S **l, char *passwd, char *user, STRLIST_S *hostlist,
+	        int altflag, int ok_novalidate, int warned, char *authtype)
+{
     STRLIST_S **listp;
     size_t      len;
+    size_t	authlen, offset;
 
+    authlen = authtype ? strlen(authtype) : 0;
+    offset  = authtype ? 1 : 0;
     dprint((9, "imap_set_passwd\n"));
     for(; *l; l = &(*l)->next)
-      if(imap_same_host((*l)->hosts, hostlist)
-	 && !strcmp(user, (*l)->user)
+      if((authlen == 0 || (!struncmp((*l)->user, authtype, authlen)
+			   && (*l)->user[authlen] == PWDAUTHSEP))
+	 && !strcmp(user, (*l)->user + authlen + offset)
+	 && imap_same_host_auth((*l)->hosts, hostlist, authtype)
 	 && altflag == (*l)->altflag){
-	if(strcmp(passwd, (*l)->passwd) ||
+	if(strcmp(passwd, (*l)->passwd + authlen + offset) ||
 	   (*l)->ok_novalidate != ok_novalidate ||
 	   (*l)->warned != warned)
 	  break;
@@ -1008,17 +1062,24 @@ imap_set_passwd(MMLOGIN_S **l, char *passwd, char *user, STRLIST_S *hostlist,
     }
 
     len = strlen(passwd);
-    if(!(*l)->passwd || strlen((*l)->passwd) < len)
-      (*l)->passwd = ps_get(len+1);
+    if(!(*l)->passwd || strlen((*l)->passwd) < len + authlen + offset)
+      (*l)->passwd = ps_get(len + authlen + offset + 1);
 
-    strncpy((*l)->passwd, passwd, len+1);
+    if(authtype)
+      sprintf((*l)->passwd, "%s%c%s", authtype, PWDAUTHSEP, passwd);
+    else
+      strncpy((*l)->passwd, passwd, len+1);
 
-    (*l)->altflag = altflag;
-    (*l)->ok_novalidate = ok_novalidate;
-    (*l)->warned = warned;
+    (*l)->altflag = altflag; (*l)->ok_novalidate = ok_novalidate; (*l)->warned = warned;
 
-    if(!(*l)->user)
-      (*l)->user = cpystr(user);
+    if(!(*l)->user){
+      if(authlen > 0){
+	(*l)->user = fs_get(strlen(user) + authlen + offset + 1);
+	sprintf((*l)->user, "%s%c%s", authtype, PWDAUTHSEP, user);
+      }
+      else
+	(*l)->user = cpystr(user);
+    }
 
     dprint((9, "imap_set_passwd: user=%s altflag=%d\n",
 	   (*l)->user ? (*l)->user : "?",
@@ -1031,7 +1092,7 @@ imap_set_passwd(MMLOGIN_S **l, char *passwd, char *user, STRLIST_S *hostlist,
 	  ;
 
 	if(!*listp){
-	    *listp = new_strlist(hostlist->name);
+	    *listp = new_strlist_auth(hostlist->name, authtype, PWDAUTHSEP);
 	    dprint((9, "imap_set_passwd: host=%s\n",
 		       (*listp)->name ? (*listp)->name : "?"));
 	}

@@ -99,15 +99,14 @@ long auth_md5_client (authchallenge_t challenger,authrespond_t responder,
 		      char *service,NETMBX *mb,void *stream,
 		      unsigned long *trial,char *user)
 {
-  char pwd[MAILTMPLEN],hshbuf[2*MD5DIGLEN + 1];
+  char *pwd = NIL,hshbuf[2*MD5DIGLEN + 1];
   void *challenge;
   unsigned long clen;
   long ret = NIL;
 				/* get challenge */
   if ((challenge = (*challenger) (stream,&clen)) != NULL) {
-    pwd[0] = NIL;		/* prompt user */
-    mm_login (mb,user,pwd,*trial);
-    if (!pwd[0]) {		/* user requested abort */
+    mm_login (mb,user, &pwd,*trial);
+    if (!pwd) {		/* user requested abort */
       fs_give ((void **) &challenge);
       (*responder) (stream,NIL,0);
       *trial = 0;		/* cancel subsequent attempts */
@@ -126,9 +125,10 @@ long auth_md5_client (authchallenge_t challenger,authrespond_t responder,
 	  ret = LONGT;		/* check the authentication */
 	}
       }
+      fs_give((void **) &pwd);
     }
   }
-  memset (pwd,0,MAILTMPLEN);	/* erase password in case not overwritten */
+  if(pwd) fs_give((void **) &pwd);
   if (!ret) *trial = 65535;	/* don't retry if bad protocol */
   return ret;
 }

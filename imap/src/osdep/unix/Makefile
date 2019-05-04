@@ -140,7 +140,7 @@ RANLIB=ranlib
 
 # Standard distribution build parameters
 
-DEFAULTAUTHENTICATORS=ext md5 pla log
+DEFAULTAUTHENTICATORS=ext md5 pla oa2 log
 #
 # mh needs to be after any other directory format drivers (such as mx or mix)
 # since otherwise mh will seize any directory that is under the mh path.
@@ -155,7 +155,7 @@ CHUNKSIZE=65536
 ARCHIVE=c-client.a
 BINARIES=osdep.o mail.o misc.o newsrc.o smanager.o utf8.o utf8aux.o siglocal.o \
  dummy.o pseudo.o netmsg.o flstring.o fdstring.o \
- rfc822.o nntp.o smtp.o imap4r1.o pop3.o \
+ rfc822.o nntp.o smtp.o imap4r1.o http.o json.o pop3.o \
  unix.o mbx.o mmdf.o tenex.o mtx.o news.o phile.o mh.o mx.o mix.o
 CFLAGS=-g
 
@@ -889,7 +889,7 @@ dummy.o: mail.h misc.h osdep.h dummy.h
 fdstring.o: mail.h misc.h osdep.h fdstring.h
 flstring.o: mail.h misc.h osdep.h flstring.h
 imap4r1.o: mail.h misc.h osdep.h imap4r1.h rfc822.h
-mail.o: mail.h misc.h osdep.h rfc822.h linkage.h
+mail.o: mail.h misc.h osdep.h rfc822.h linkage.h json.h
 mbx.o: mail.h misc.h osdep.h dummy.h
 mh.o: mail.h misc.h osdep.h dummy.h
 mix.o: mail.h misc.h osdep.h dummy.h
@@ -911,7 +911,8 @@ tenex.o: mail.h misc.h osdep.h dummy.h
 unix.o: mail.h misc.h osdep.h unix.h pseudo.h dummy.h
 utf8.o: mail.h misc.h osdep.h utf8.h tmap.c widths.c
 utf8aux.o: mail.h misc.h osdep.h utf8.h
-
+json.o: mail.h misc.h osdep.h utf8.h json.h
+http.o: mail.h misc.h osdep.h utf8.h http.h json.h
 
 # OS-dependent
 
@@ -922,7 +923,8 @@ osdep.o:mail.h misc.h env.h fs.h ftl.h nl.h tcp.h \
 	gethstid.c getspnam.c \
 	gr_wait.c gr_wait4.c gr_waitp.c \
 	kerb_mit.c \
-	auth_ext.c auth_gss.c auth_log.c auth_md5.c auth_ntl.c auth_pla.c \
+	auth_ext.c auth_gss.c auth_log.c auth_md5.c auth_ntl.c \
+	auth_oa2.c auth_pla.c \
 	pmatch.c scandir.c setpgrp.c strerror.c truncate.c write.c \
 	memmove.c memmove2.c memset.c \
 	tz_bsd.c tz_nul.c tz_sv4.c \

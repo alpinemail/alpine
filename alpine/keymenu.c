@@ -562,6 +562,21 @@ struct key ans_certquery_keys[] =
 	{"S", N_("Save"), {MC_SAVETEXT,1,{'s'}}, KS_SAVE}};
 INST_KEY_MENU(ans_certquery_keymenu, ans_certquery_keys);
 
+struct key oauth2_alpine_auth_keys[] =
+       {HELP_MENU,
+	NULL_MENU,
+	{"C",N_("Enter Code"),{MC_YES,1,{'c'}},KS_NONE},
+	{"V","[" N_("View URL") "]",{MC_VIEW_HANDLE,3,{'v',ctrl('M'),ctrl('J')}},KS_NONE},
+	{"E",N_("Exit"),{MC_NO,1,{'e'}},KS_NONE},
+	NULL_MENU,
+	PREVPAGE_MENU,
+	NEXTPAGE_MENU,
+	PRYNTTXT_MENU,
+	WHEREIS_MENU,
+	FWDEMAIL_MENU,
+	{"S", N_("Save"), {MC_SAVETEXT,1,{'s'}}, KS_SAVE}};
+INST_KEY_MENU(oauth2_auth_keymenu, oauth2_alpine_auth_keys);
+
 
 struct key forge_keys[] =
        {HELP_MENU,

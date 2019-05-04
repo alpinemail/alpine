@@ -752,11 +752,15 @@ void mm_dlog (char *string)
  *	    trial count
  */
 
-void mm_login (NETMBX *mb,char *username,char *password,long trial)
+void mm_login (NETMBX *mb,char *username,char **password,long trial)
 {
   fatal ("mm_login() call");
 }
 
+void mm_login_method(NETMBX *mb, char *user, void *login, long trial, char *method)
+{
+  fatal ("mm_login_method() call");
+}
 
 /* About to enter critical code
  * Accepts: stream

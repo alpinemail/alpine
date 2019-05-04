@@ -89,6 +89,8 @@ static threadresults_t mailthreadresults = NIL;
 static copyuid_t mailcopyuid = NIL;
 				/* APPEND UID results */
 static appenduid_t mailappenduid = NIL;
+
+static oauth2getaccesscode_t oauth2getaccesscode = NIL;
 				/* free elt extra stuff callback */
 static freeeltsparep_t mailfreeeltsparep = NIL;
 				/* free envelope extra stuff callback */
@@ -665,6 +667,12 @@ void *mail_parameters (MAILSTREAM *stream,long function,void *value)
     idapp = (IDLIST *) value;
   case GET_IDPARAMS:  
     ret = (void *) idapp;
+    break;
+  case SET_OA2CLIENTGETACCESSCODE:
+    oauth2getaccesscode = (oauth2getaccesscode_t) value;
+  case GET_OA2CLIENTGETACCESSCODE:
+    ret = (void *) oauth2getaccesscode;
+    break;
   default:
     if ((r = smtp_parameters (function,value)) != NULL) ret = r;
     if ((r = env_parameters (function,value)) != NULL) ret = r;
@@ -6211,7 +6219,8 @@ static NETDRIVER tcpdriver = {
   tcp_host,			/* return host name */
   tcp_remotehost,		/* return remote host name */
   tcp_port,			/* return port number */
-  tcp_localhost			/* return local host name */
+  tcp_localhost,		/* return local host name */
+  tcp_getsize			/* read a specific number of bytes */
 };
 
 
@@ -6323,6 +6332,13 @@ char *net_getline (NETSTREAM *stream)
 {
   return (*stream->dtb->getline) (stream->stream);
 }
+
+
+char *net_getsize (NETSTREAM *stream, unsigned long size)
+{
+  return (*stream->dtb->getsize) (stream->stream, size);
+}
+
 
 
 /* Network receive buffer

@@ -1013,18 +1013,22 @@ void mm_dlog (char *string)
  *	    trial count
  */
 
-void mm_login (NETMBX *mb,char *username,char *password,long trial)
+void mm_login (NETMBX *mb,char *username,char **password,long trial)
 {
 				/* set user name */
   strncpy (username,*mb->user ? mb->user : user,NETMAXUSER-1);
   if (pass) {
-    strncpy (password,pass,255);/* and password */
+    *password = cpystr(pass);/* and password */
+    (*password)[255] = '\0';
     fs_give ((void **) &pass);
   }
-  else memset (password,0,256);	/* no password to send, abort login */
-  username[NETMAXUSER] = password[255] = '\0';
+  username[NETMAXUSER] = '\0';
 }
 
+void mm_login_method (NETMBX *mb,char *username,void *password,long trial, char *method)
+{
+  password = NULL;
+}
 /* About to enter critical code
  * Accepts: stream
  */

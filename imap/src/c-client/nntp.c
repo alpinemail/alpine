@@ -2039,7 +2039,7 @@ long nntp_send_auth (SENDSTREAM *stream,long flags)
 long nntp_send_auth_work (SENDSTREAM *stream,NETMBX *mb,char *pwd,long flags)
 {
   unsigned long trial,auths;
-  char tmp[MAILTMPLEN],usr[MAILTMPLEN];
+  char tmp[MAILTMPLEN],usr[MAILTMPLEN], *pwd2 = NIL;
   AUTHENTICATOR *at;
   char *lsterr = NIL;
   long ret = NIL;
@@ -2096,10 +2096,10 @@ long nntp_send_auth_work (SENDSTREAM *stream,NETMBX *mb,char *pwd,long flags)
   else for (trial = 0, pwd[0] = 'x';
 	    !ret && pwd[0] && (trial < nntp_maxlogintrials) &&
 	      stream->netstream; ) {
-    pwd[0] = NIL;		/* get user name and password */
-    mm_login (mb,usr,pwd,trial++);
+    mm_login (mb,usr, &pwd2,trial++);
+    pwd[0] = pwd2 ? pwd2[0] : '\0';
 				/* do the authentication */
-    if (pwd[0]) switch ((int) nntp_send_work (stream,"AUTHINFO USER",usr)) {
+    if (pwd2 && *pwd2) switch ((int) nntp_send_work (stream,"AUTHINFO USER",usr)) {
     case NNTPBADCMD:		/* give up if unrecognized command */
       mm_log (NNTP.ext.authuser ? stream->reply :
 	      "Can't do AUTHINFO USER to this server",ERROR);
@@ -2110,7 +2110,7 @@ long nntp_send_auth_work (SENDSTREAM *stream,NETMBX *mb,char *pwd,long flags)
       break;
     case NNTPWANTPASS:		/* wants password */
       stream->sensitive = T;	/* hide this command */
-      if (nntp_send_work (stream,"AUTHINFO PASS",pwd) == NNTPAUTHED)
+      if (nntp_send_work (stream,"AUTHINFO PASS",pwd2) == NNTPAUTHED)
 	ret = LONGT;		/* password OK */
       stream->sensitive = NIL;	/* unhide */
       if (ret) break;		/* OK if successful */

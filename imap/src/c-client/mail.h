@@ -1,7 +1,7 @@
 /*
- * Copyright 2016 Eduardo Chappa
+ * Copyright 2016-2018 Eduardo Chappa
  *
- * Last Edited: February 6, 2015 Eduardo Chappa <chappa@gmx.com>
+ * Last Edited: July 21, 2018 Eduardo Chappa <chappa@washington.edu>
  *
  */
 /* ========================================================================
@@ -154,6 +154,8 @@
 #define SET_IDPARAMS  (long) 166
 #define GET_IDSTREAM  (long) 167
 #define SET_IDSTREAM  (long) 168
+#define GET_OA2CLIENTGETACCESSCODE (long) 169
+#define SET_OA2CLIENTGETACCESSCODE (long) 170
 
 	/* 2xx: environment */
 #define GET_USERNAME (long) 201
@@ -396,7 +398,7 @@
 #define DR_HALFOPEN (long) 0x10000
 #define DR_DIRFMT (long) 0x20000/* driver is a directory-format */
 #define DR_MODSEQ (long) 0x40000/* driver supports modseqs */
-
+#define DR_SHORTLIVED (long) 0x80000/* assume server disconnects after sending command  */
 
 /* Cache management function codes */
 
@@ -769,7 +771,8 @@ typedef struct mail_envelope {
 #define TYPEIMAGE 5		/* static image */
 #define TYPEVIDEO 6		/* video */
 #define TYPEMODEL 7		/* model */
-#define TYPEOTHER 8		/* unknown */
+#define TYPEALL 8		/* type "*" */
+#define TYPEOTHER 9		/* unknown */
 #define TYPEMAX 15		/* maximum type code */
 
 
@@ -1253,6 +1256,7 @@ NETDRIVER {
   char *(*remotehost) (void *stream);
   unsigned long (*port) (void *stream);
   char *(*localhost) (void *stream);
+  char *(*getsize) (void *stream, unsigned long size);
 };
 
 
@@ -1662,7 +1666,8 @@ void mm_lsub (MAILSTREAM *stream,int delimiter,char *name,long attributes);
 void mm_status (MAILSTREAM *stream,char *mailbox,MAILSTATUS *status);
 void mm_log (char *string,long errflg);
 void mm_dlog (char *string);
-void mm_login (NETMBX *mb,char *user,char *pwd,long trial);
+void mm_login (NETMBX *mb,char *user,char **pwd,long trial);
+void mm_login_method (NETMBX *mb,char *user, void *info,long trial, char *method);
 void mm_critical (MAILSTREAM *stream);
 void mm_nocritical (MAILSTREAM *stream);
 long mm_diskerror (MAILSTREAM *stream,long errcode,long serious);
@@ -1882,6 +1887,7 @@ char *net_host (NETSTREAM *stream);
 char *net_remotehost (NETSTREAM *stream);
 unsigned long net_port (NETSTREAM *stream);
 char *net_localhost (NETSTREAM *stream);
+char *net_getsize(NETSTREAM *stream, unsigned long size);
 
 long sm_subscribe (char *mailbox);
 long sm_unsubscribe (char *mailbox);
@@ -1902,3 +1908,44 @@ long INWAIT (long seconds);
 int PSOUT (char *s);
 int PSOUTR (SIZEDTEXT *s);
 int PFLUSH (void);
+
+/* XOAUTH Client-Side Support */
+
+#define OA2NAME	"XOAUTH2"
+
+#define OAUTH2_MAX_EQUIV        (2)
+#define OAUTH2_TOT_EQUIV        (OAUTH2_MAX_EQUIV + 2)
+#define OAUTH2_PARAM_NUMBER	(7)
+
+typedef enum {OA2_Id = 0, OA2_Secret, OA2_Code, OA2_RefreshToken,
+	      OA2_Scope, OA2_Redirect,   
+	      OA2_GrantTypeforAccessToken, OA2_GrantTypefromRefreshToken,
+	      OA2_Response, OA2_State, OA2_Prompt, OA2_End} OA2_type;
+
+typedef enum {OA2_GetAccessCode = 0,
+	      OA2_GetAccessTokenFromAccessCode,
+	      OA2_GetAccessTokenFromRefreshToken,
+	      OA2_GetEnd} OA2_function;
+
+typedef struct OA2_param_s {
+   char *name;                          
+   char *value;
+} OAUTH2_PARAM_S;
+   
+typedef struct OA2_serverparam_s {
+  char *name;         /* method name: GET or POST */
+  char *urlserver;
+  OA2_type params[OAUTH2_PARAM_NUMBER];
+} OAUTH2_SERVER_METHOD_S;
+
+typedef struct oauth2_s {
+   char *name;                          /* provider name */
+   char *host[OAUTH2_TOT_EQUIV];        /* servers for which this data applies  */
+   OAUTH2_PARAM_S param[OA2_End];	/* parameters name and values for this server */
+		/* servers, methods and parameters to retrieve access code and tokens */
+   OAUTH2_SERVER_METHOD_S server_mthd[OA2_GetEnd];
+   char *access_token;
+   unsigned long expiration;
+} OAUTH2_S;
+
+typedef char *(*oauth2getaccesscode_t) (char *url, OAUTH2_S *, int *);

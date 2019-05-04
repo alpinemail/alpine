@@ -1142,14 +1142,22 @@ long imap_anon (MAILSTREAM *stream,char *tmp)
 
 long imap_auth (MAILSTREAM *stream,NETMBX *mb,char *tmp,char *usr)
 {
-  unsigned long trial,ua;
+  unsigned long trial,ua,uasaved;
   int ok;
   char tag[16];
   char *lsterr = NIL;
-  AUTHENTICATOR *at;
+  AUTHENTICATOR *at, *atsaved;
   IMAPPARSEDREPLY *reply;
   for (ua = LOCAL->cap.auth, LOCAL->saslcancel = NIL; LOCAL->netstream && ua &&
        (at = mail_lookup_auth (find_rightmost_bit (&ua) + 1));) {
+    if(mb && *mb->auth){
+       if(!compare_cstring(at->name, mb->auth))
+	  atsaved = at;
+       else{
+          uasaved = ua;
+          continue;
+      }
+    }
     if (lsterr) {		/* previous authenticator failed? */
       sprintf (tmp,"Retrying using %s authentication after %.80s",
 	       at->name,lsterr);
@@ -1201,6 +1209,11 @@ long imap_auth (MAILSTREAM *stream,NETMBX *mb,char *tmp,char *usr)
     }
     fs_give ((void **) &lsterr);
   }
+  if(mb && *mb->auth){
+     if(!uasaved) sprintf (tmp,"Client does not support AUTH=%.80s authenticator",mb->auth);
+     else if (!atsaved) sprintf (tmp,"IMAP server does not support AUTH=%.80s authenticator",mb->auth);
+     if (!uasaved || !atsaved) mm_log (tmp,ERROR);
+  }
   return NIL;			/* ran out of authenticators */
 }
 
@@ -1219,6 +1232,7 @@ long imap_login (MAILSTREAM *stream,NETMBX *mb,char *pwd,char *usr)
   IMAPARG *args[3];
   IMAPARG ausr,apwd;
   long ret = NIL;
+  char *app_pwd = NIL;
   if (stream->secure)		/* never do LOGIN if want security */
     mm_log ("Can't do secure authentication with this server",ERROR);
 				/* never do LOGIN if server disabled it */
@@ -1232,8 +1246,13 @@ long imap_login (MAILSTREAM *stream,NETMBX *mb,char *pwd,char *usr)
     apwd.text = (void *) pwd;
     args[0] = &ausr; args[1] = &apwd; args[2] = NIL;
     do {
-      pwd[0] = 0;		/* prompt user for password */
-      mm_login (mb,usr,pwd,trial++);
+      if(app_pwd) fs_give((void **) &app_pwd);
+      pwd[0] = '\0';
+      mm_login (mb,usr, &app_pwd,trial++);
+      if(app_pwd){
+	strncpy(pwd, app_pwd, MAILTMPLEN);
+	pwd[MAILTMPLEN-1] = '\0';
+      }
       if (pwd[0]) {		/* send login command if have password */
 	LOCAL->sensitive = T;	/* hide this command */
 				/* send "LOGIN usr pwd" */
@@ -1251,7 +1270,8 @@ long imap_login (MAILSTREAM *stream,NETMBX *mb,char *pwd,char *usr)
     } while (!ret && pwd[0] && (trial < imap_maxlogintrials) &&
 	     LOCAL->netstream && !LOCAL->byeseen && !LOCAL->referral);
   }
-  memset (pwd,0,MAILTMPLEN);	/* erase password */
+  if(app_pwd) fs_give((void **) &app_pwd);
+  memset((void *) pwd, 0, MAILTMPLEN);
   return ret;
 }
 

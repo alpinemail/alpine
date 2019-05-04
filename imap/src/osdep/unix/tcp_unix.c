@@ -1063,6 +1063,28 @@ long tcp_isclienthost (char *host)
   return ret;
 }
 
+char *tcp_getsize (TCPSTREAM *stream, unsigned long size)
+{
+  char *ret = NIL;
+  unsigned long got = 0L, need = size, n;
+  int done = 0;
+
+  while(!done){
+     if(!tcp_getdata (stream)) return ret;	/* return what we have */
+     n = stream->ictr < need ? stream->ictr : need;
+     fs_resize((void **) &ret, got + n + 1);
+     memcpy(ret + got, stream->iptr, n);
+     ret[got+n] = '\0';
+     got  += n;
+     need -= n;
+     stream->iptr += n;
+     stream->ictr -= n;
+     if(need == 0L) done++;
+  }
+
+  return ret;
+}
+
 /* Following statement must be at end of this module */
 
 #undef fork			/* undo any use of vfork() */

@@ -1389,6 +1389,11 @@ dot_on_handle(long int line, int goal)
     return(key);
 }
 
+int
+url_launch(HANDLE_S *handle)
+{
+  return do_url_launch(handle->h.url.tool, handle->h.url.path);
+}
 
 /*
  * url_launch - Sniff the given url, see if we can do anything with
@@ -1396,18 +1401,16 @@ dot_on_handle(long int line, int goal)
  *
  */
 int
-url_launch(HANDLE_S *handle)
+do_url_launch(char *toolp, char *url)
 {
     int	       rv = 0;
     url_tool_t f;
 #define	URL_MAX_LAUNCH	(2 * MAILTMPLEN)
 
-    if(handle->h.url.tool){
-	char	*toolp, *cmdp, *p, cmd[URL_MAX_LAUNCH + 4];
+    if(toolp){
+	char	*cmdp, *p, cmd[URL_MAX_LAUNCH + 4];
 	int	 mode, copied = 0;
 	PIPE_S  *syspipe;
-
-	toolp = handle->h.url.tool;
 
 	/* This code used to quote a URL to prevent arbitrary command execution
 	 * through a URL. The plan was to quote the URL with single quotes,
@@ -1434,8 +1437,7 @@ url_launch(HANDLE_S *handle)
 		cmdp--;
 
 	      copied = 1;
-	      for(p = handle->h.url.path;
-		  p && *p && cmdp-cmd < URL_MAX_LAUNCH; p++)
+	      for(p = url; p && *p && cmdp-cmd < URL_MAX_LAUNCH; p++)
 		  *cmdp++ = *p;
 
 	      *cmdp = '\0';
@@ -1462,14 +1464,13 @@ url_launch(HANDLE_S *handle)
 			    /* TRANSLATORS: Cannot start command : <command name> */
 			    _("Cannot start command : %s"), cmd);
     }
-    else if((f = url_local_handler(handle->h.url.path)) != NULL){
-	if((*f)(handle->h.url.path) > 1)
+    else if((f = url_local_handler(url)) != NULL){
+	if((*f)(url) > 1)
 	  rv = 1;		/* done! */
     }
     else
       q_status_message1(SM_ORDER, 2, 2,
-			_("\"URL-Viewer\" not defined: Can't open %s"),
-			handle->h.url.path);
+			_("\"URL-Viewer\" not defined: Can't open %s"), url);
     
     return(rv);
 }
@@ -1486,6 +1487,12 @@ url_launch_too_long(int return_value)
 
 char *
 url_external_handler(HANDLE_S *handle, int specific)
+{
+  return get_url_external_handler(handle->h.url.path, specific);
+}
+
+char *
+get_url_external_handler(char *url, int specific)
 {
     char **l, *test, *cmd, *p, *q, *ep;
     int	   i, specific_match;
@@ -1524,11 +1531,9 @@ url_external_handler(HANDLE_S *handle, int specific)
 			    else
 			      q = ep;
 			  while(!((i = strlen(p))
-				  && ((p[i-1] == ':'
-				       && handle->h.url.path[i - 1] == ':')
-				      || (p[i-1] != ':'
-					  && handle->h.url.path[i] == ':'))
-				  && !struncmp(handle->h.url.path, p, i))
+				  && ((p[i-1] == ':' && url[i - 1] == ':')
+				      || (p[i-1] != ':' && url[i] == ':'))
+				  && !struncmp(url, p, i))
 				&& *(p = q));
 
 			  if(*p){
@@ -1571,7 +1576,7 @@ url_external_handler(HANDLE_S *handle, int specific)
     cmd = NULL;
 
     if(!specific){
-	cmd = url_os_specified_browser(handle->h.url.path);
+	cmd = url_os_specified_browser(url);
 	/*
 	 * Last chance, anything handling "text/html" in mailcap...
 	 */

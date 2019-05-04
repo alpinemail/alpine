@@ -235,7 +235,11 @@ mm_notify(MAILSTREAM *stream, char *string, long errflag)
 		       3, 6, ps_global->last_error);
 }
 
+void
+mm_login_method_work (NETMBX *mb,char *user,void *login,long trial, char *method, char *usethisprompt, char *altuserforcache)
+{
 
+}
 
 /*----------------------------------------------------------------------
       Do work of getting login and password from user for IMAP login
@@ -248,11 +252,12 @@ mm_notify(MAILSTREAM *stream, char *string, long errflag)
  Result: username and password passed back to imap
   ----*/
 void
-mm_login_work(NETMBX *mb, char *user, char *pwd, long trial, char *usethisprompt, char *altuserforcache)
+mm_login_work(NETMBX *mb, char *user, char **passwd, long trial, char *usethisprompt, char *altuserforcache)
 {
     STRLIST_S hostlist[2];
     NETMBX    cmb;
     int	      l;
+    char *pwd = *passwd;
 
     pwd[0] = '\0';
 
@@ -262,6 +267,7 @@ mm_login_work(NETMBX *mb, char *user, char *pwd, long trial, char *usethisprompt
     if(trial){			/* one shot only! */
 	user[0] = '\0';
 	peCredentialError = 1;
+	*passwd = pwd;
 	return;
     }
 
@@ -276,6 +282,7 @@ mm_login_work(NETMBX *mb, char *user, char *pwd, long trial, char *usethisprompt
 	else
 	  user[0] = pwd[0] = '\0';
 
+	*passwd = pwd;
         return;
     }
 #endif
@@ -284,6 +291,7 @@ mm_login_work(NETMBX *mb, char *user, char *pwd, long trial, char *usethisprompt
     /* we *require* secure authentication */
     if(!(mb->sslflag || mb->tlsflag) && strcmp("localhost",mb->host)){
 	user[0] = pwd[0] = '\0';
+	*passwd = pwd;
         return;
     }
 #endif
@@ -307,6 +315,7 @@ mm_login_work(NETMBX *mb, char *user, char *pwd, long trial, char *usethisprompt
 	 * don't blindly offer user/pass
 	 */
 	user[0] = pwd[0] = '\0';
+	*passwd = pwd;
         return;
     }
 
@@ -323,9 +332,10 @@ mm_login_work(NETMBX *mb, char *user, char *pwd, long trial, char *usethisprompt
       hostlist[0].next = NULL;
 
     /* try last working password associated with this host. */
-    if(!imap_get_passwd(mm_login_list, pwd, user, hostlist, (mb->sslflag || mb->tlsflag))){
+    if(!imap_get_passwd(mm_login_list, passwd, user, hostlist, (mb->sslflag || mb->tlsflag))){
 	peNoPassword = 1;
 	user[0] = pwd[0]  = '\0';
+	*passwd = pwd;
     }
 }
 

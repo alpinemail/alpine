@@ -775,14 +775,23 @@ void mm_log(string, errflg)
     }
 }
 
+void mm_login_method(mb, user, pwd, trial, method)
+    NETMBX *mb;
+    char   *user;
+    void   *pwd;
+    long    trial;
+    char   *method;
+{
+    mm_login(mb, user, (char **) pwd, trial);
+}
 
 void mm_login(mb, user, pwd, trial)
     NETMBX *mb;
     char   *user;
-    char   *pwd;
+    char   **pwd;
     long    trial;
 {
-    char prompt[100], *last;
+    char prompt[100], *last, tmp[MAILTMPLEN];
     int  i, j, goal, ugoal, len, rc, flags = 0;
 #define NETMAXPASSWD 100
 
@@ -834,14 +843,13 @@ void mm_login(mb, user, pwd, trial)
 
 	if(rc == 1 || !user[0]) {
 	    user[0]   = '\0';
-	    pwd[0] = '\0';
 	}
     }
     else
       strncpy(user, mb->user, NETMAXUSER);
 
     user[NETMAXUSER-1] = '\0';
-    pwd[NETMAXPASSWD-1] = '\0';
+//    pwd[NETMAXPASSWD-1] = '\0';
 
     if(!user[0])
       return;
@@ -901,16 +909,17 @@ void mm_login(mb, user, pwd, trial)
     strncpy(&prompt[i], &"  ENTER PASSWORD: "[i ? 0 : 8], sizeof(prompt)-i);
     prompt[sizeof(prompt)-1] = '\0';
 
-    *pwd = '\0';
+    tmp[0] = '\0';
     while(1) {
 	flags = OE_PASSWD;
-        rc = opt_enter(pwd, NETMAXPASSWD, prompt, &flags);
+        rc = opt_enter(tmp, NETMAXPASSWD, prompt, &flags);
 	if(rc != 4)
           break;
     }
 
-    if(rc == 1 || !pwd[0]) {
-        user[0] = pwd[0] = '\0';
+    if(tmp[0]) *pwd = cpystr(tmp);
+    if(rc == 1 || !tmp[0]) {
+        user[0] = '\0';
         return;
     }
 }

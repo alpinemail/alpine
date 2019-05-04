@@ -21,7 +21,9 @@
 #include "../pith/string.h"
 
 
-#define NETMAXPASSWD 100
+#define NETMAXPASSWD 512	/* increased from 100 due to token lengths.
+				 * must be less than MAILTMPLEN
+				 */
 
 
 /*
@@ -69,6 +71,8 @@ typedef	struct mm_list_s {
 #define	URL_IMAP_IMBXLSTLSUB	0x0010
 #define	URL_IMAP_ISERVERONLY	0x0020
 
+/* Marker for Separator of Authentication Method */
+#define PWDAUTHSEP	'\001'
 
 /*
  * Exported globals setup by searching functions to tell mm_searched
@@ -119,10 +123,13 @@ char   *imap_referral(MAILSTREAM *, char *, long);
 long    imap_proxycopy(MAILSTREAM *, char *, char *, long);
 char   *cached_user_name(char *);
 int     imap_same_host(STRLIST_S *, STRLIST_S *);
+int     imap_same_host_auth(STRLIST_S *, STRLIST_S *, char *);
 int     imap_get_ssl(MMLOGIN_S *, STRLIST_S *, int *, int *);
 char   *imap_get_user(MMLOGIN_S *, STRLIST_S *);
-int     imap_get_passwd(MMLOGIN_S *, char *, char *, STRLIST_S *, int);
+int     imap_get_passwd(MMLOGIN_S *, char **, char *, STRLIST_S *, int);
+int	imap_get_passwd_auth (MMLOGIN_S *, char **, char *, STRLIST_S *, int, char *);
 void    imap_set_passwd(MMLOGIN_S **, char *, char *, STRLIST_S *, int, int, int);
+void    imap_set_passwd_auth(MMLOGIN_S **, char *, char *, STRLIST_S *, int, int, int, char *);
 void    imap_flush_passwd_cache(int);
 
 
@@ -130,7 +137,8 @@ void    imap_flush_passwd_cache(int);
 
 /* called by build_folder_list(), ok if it does nothing */
 void    set_read_predicted(int);
-void    mm_login_work (NETMBX *mb,char *user,char *pwd,long trial,char *usethisprompt, char *altuserforcache);
+void    mm_login_work (NETMBX *mb,char *user,char **pwd,long trial,char *usethisprompt, char *altuserforcache);
+void    mm_login_method_work (NETMBX *mb,char *user,void *login,long trial, char *method, char *usethisprompt, char *altuserforcache);
 
 /* this is necessary to figure out the name of the password file of the application. */
 #ifdef PASSFILE

@@ -4642,11 +4642,16 @@ void mm_dlog (char *string)
  *	    trial count
  */
 
-void mm_login (NETMBX *mb,char *username,char *password,long trial)
+void mm_login (NETMBX *mb,char *username,char **password,long trial)
 {
 				/* set user name */
   strncpy (username,*mb->user ? mb->user : (char *) user,NETMAXUSER);
-  strncpy (password,pass,256);	/* and password */
+  *password = cpystr(pass);	/* and password */
+}
+
+void mm_login_method (NETMBX *mb,char *username,void *password,long trial, char *method)
+{
+   password = NULL;
 }
 
 

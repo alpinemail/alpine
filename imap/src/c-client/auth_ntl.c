@@ -1,6 +1,7 @@
 /* ========================================================================
- * Copyright 1988-2008 University of Washington
+ * Copyright 2018      Eduardo Chappa
  * Copyright 2015      Imagination Technologies
+ * Copyright 1988-2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +57,7 @@ long auth_ntlm_client (authchallenge_t challenger, authrespond_t responder,
   tSmbNtlmAuthRequest request;
   char tbuf[MAILTMPLEN];
   char ubuf[MAILTMPLEN];
-  char pass[MAILTMPLEN];
+  char *pass = NIL;
   unsigned long clen;
   unsigned long ulen;
   unsigned long dlen;
@@ -66,9 +67,8 @@ long auth_ntlm_client (authchallenge_t challenger, authrespond_t responder,
 				/* get initial (empty) challenge */
   if (challenge = (*challenger) (stream, &clen)) {
     fs_give ((void **) &challenge);
-    pass[0] = NIL;		/* prompt user */
-    mm_login (mb, user, pass, *trial);
-    if (!pass[0]) {		/* user requested abort */
+    mm_login (mb, user, &pass, *trial);
+    if (!pass) {		/* user requested abort */
       (*responder) (stream, NIL, 0);
       *trial = 0;		/* cancel subsequent attempts */
       ret = LONGT;		/* will get a BAD response back */
@@ -104,9 +104,10 @@ long auth_ntlm_client (authchallenge_t challenger, authrespond_t responder,
 	  }
 	}
       }
+      if(pass) fs_give((void **) &pass);
     }
   }
-  memset (pass,0,MAILTMPLEN);	/* erase password */
+  if(pass) fs_give((void **) &pass);
   if (!ret) *trial = 65535;	/* don't retry if bad protocol */
   return ret;
 }

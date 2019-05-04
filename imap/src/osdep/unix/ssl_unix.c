@@ -107,7 +107,8 @@ static struct ssl_driver ssldriver = {
   ssl_host,			/* return host name */
   ssl_remotehost,		/* return remote host name */
   ssl_port,			/* return port number */
-  ssl_localhost			/* return local host name */
+  ssl_localhost,		/* return local host name */
+  ssl_getsize			/* return needed number of bytes */
 };
 				/* non-NIL if doing SSL primary I/O */
 static SSLSTDIOSTREAM *sslstdio = NIL;
@@ -546,7 +547,28 @@ char *ssl_getline (SSLSTREAM *stream)
   }
   return ret;
 }
-
+
+char *ssl_getsize (SSLSTREAM *stream, unsigned long size)
+{
+  char *ret = NIL;
+  unsigned long got = 0L, need = size, n;
+  int done = 0;
+  
+  while(!done){
+     if(!ssl_getdata (stream)) return ret;      /* return what we have */
+     n = stream->ictr < need ? stream->ictr : need;
+     fs_resize((void **) &ret, got + n + 1);
+     memcpy(ret + got, stream->iptr, n);
+     ret[got+n] = '\0';
+     got  += n;   
+     need -= n;
+     stream->iptr += n;
+     stream->ictr -= n;
+     if(need == 0L) done++;
+  }
+
+  return ret;
+}
 /* SSL receive line or partial line
  * Accepts: SSL stream
  *	    pointer to return size

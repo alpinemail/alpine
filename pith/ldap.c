@@ -556,7 +556,7 @@ ldap_lookup(LDAP_SERV_S *info, char *string, CUSTOM_FILT_S *cust,
     }
     else if(!ps_global->intr_pending){
       int proto = 3, tlsmustbail = 0;
-      char pwd[NETMAXPASSWD], user[NETMAXUSER];
+      char *pwd = NULL, user[NETMAXUSER];
 #ifdef _WINDOWS
       char *passwd = NULL;
 #else
@@ -634,7 +634,7 @@ try_password_again:
 
 	  if(!tlsmustbail){
 	      snprintf(pmt, sizeof(pmt), "  %s", (info->nick && *info->nick) ? info->nick : serv);
-	      mm_login_work(&mb, user, pwd, pwdtrial, pmt, info->binddn);
+	      mm_login_work(&mb, user, &pwd, pwdtrial, pmt, info->binddn);
 	      if(pwd && pwd[0])
 #ifdef _WINDOWS
 		passwd = pwd;
@@ -1172,6 +1172,8 @@ try_password_again:
 	  }
 	}
       }
+      if(pwd)
+	fs_give((void **) &pwd);
     }
 
     if(we_cancel)

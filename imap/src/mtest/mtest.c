@@ -705,7 +705,7 @@ void mm_dlog (char *string)
 }
 
 
-void mm_login (NETMBX *mb,char *user,char *pwd,long trial)
+void mm_login (NETMBX *mb,char *user,char **pwd,long trial)
 {
   char *s,tmp[MAILTMPLEN];
   if (curhst) fs_give ((void **) &curhst);
@@ -724,8 +724,15 @@ void mm_login (NETMBX *mb,char *user,char *pwd,long trial)
   }
   if (curusr) fs_give ((void **) &curusr);
   curusr = cpystr (user);
-  strcpy (pwd,getpass (s));
+  if(pwd) *pwd = cpystr(getpass (s));
 }
+
+/* IMPLEMENT THIS LATER */
+void mm_login_method (NETMBX *mb,char *user,void *pwd,long trial, char *method)
+{
+  mm_login(mb, user, (char **) pwd, trial);
+}
+
 
 
 void mm_critical (MAILSTREAM *stream)

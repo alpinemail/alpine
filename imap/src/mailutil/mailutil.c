@@ -1,5 +1,5 @@
 /* 
- * Copyright 2016 Eduardo Chappa
+ * Copyright 2016-2018 Eduardo Chappa
  */
 
 /* ========================================================================
@@ -1035,7 +1035,7 @@ void mm_dlog (char *string)
  *	    trial count
  */
 
-void mm_login (NETMBX *mb,char *username,char *password,long trial)
+void mm_login (NETMBX *mb,char *username,char **password,long trial)
 {
   char *s,tmp[MAILTMPLEN];
   sprintf (s = tmp,"{%s/%s",mb->host,mb->service);
@@ -1050,7 +1050,37 @@ void mm_login (NETMBX *mb,char *username,char *password,long trial)
     if ((s = strchr (username,'\n')) != NULL) *s = '\0';
     s = "password: ";
   }
-  if(strlen (s = getpass (s)) < MAILTMPLEN) strcpy (password,s);
+  if(strlen (s = getpass (s)) < MAILTMPLEN) *password = cpystr(s);
+}
+
+void mm_login_method (NETMBX *mb,char *username, void *login,long trial, char *method)
+{
+  if(method == NULL) return;
+  if(strcmp(method, "XOAUTH2") == 0){
+    OAUTH2_S *muinfo = NULL;	/* mail util info */
+    char *s,tmp[MAILTMPLEN];
+    sprintf (s = tmp,"{%s/%s",mb->host,mb->service);
+    if (*mb->user) sprintf (tmp+strlen (tmp),"/user=%s",
+			  strcpy (username,mb->user));
+    if (*mb->user) strcat (s = tmp,"} access token: ");
+    else {
+      printf ("%s} username: ",tmp);
+      fgets (username,NETMAXUSER-1,stdin);
+      username[NETMAXUSER-1] = '\0';
+      if ((s = strchr (username,'\n')) != NULL) *s = '\0';
+      printf ("%s} access token: ", tmp);
+    }
+    fgets (s,MAILTMPLEN/2-1,stdin);
+    tmp[MAILTMPLEN/2-1] = '\0';
+    if ((s = strchr (tmp,'\n')) != NULL) *s = '\0';
+    if(tmp[0]){
+       muinfo = fs_get(sizeof(OAUTH2_S));
+       memset((void *) muinfo, 0, sizeof(OAUTH2_S));
+       muinfo->access_token = cpystr(tmp);
+	/* STILL MISSING: get expires in info */
+    }
+    login = (void *) muinfo;
+  }
 }
 
 

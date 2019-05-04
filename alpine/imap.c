@@ -39,6 +39,7 @@ static char rcsid[] = "$Id: imap.c 1266 2009-07-14 18:39:12Z hubert@u.washington
 #include "arg.h"
 #include "busy.h"
 #include "titlebar.h"
+#include "xoauth2.h"
 #include "../pith/state.h"
 #include "../pith/conf.h"
 #include "../pith/msgno.h"
@@ -100,12 +101,15 @@ static int storepassprompt = -1;
 void  mm_login_alt_cue(NETMBX *);
 long  pine_tcptimeout_noscreen(long, long, char *);
 int   answer_cert_failure(int, MSGNO_S *, SCROLL_S *);
+int   oauth2_auth_answer(int, MSGNO_S *, SCROLL_S *);
 
 #ifdef	LOCAL_PASSWD_CACHE
 int   read_passfile(char *, MMLOGIN_S **);
 void  write_passfile(char *, MMLOGIN_S *);
 int   preserve_prompt(char *);
+int   preserve_prompt_auth(char *, char *authtype);
 void  update_passfile_hostlist(char *, char *, STRLIST_S *, int);
+void  update_passfile_hostlist_auth(char *, char *, STRLIST_S *, int, char *);
 void  free_passfile_cache_work(MMLOGIN_S **);
 
 static	MMLOGIN_S	*passfile_cache = NULL;
@@ -127,6 +131,477 @@ int   init_wincred_funcs(void);
 
 static	char *details_cert, *details_host, *details_reason;
 
+typedef struct auth_code_s {
+  char *code;
+  int   answer;
+} AUTH_CODE_S;
+
+char *
+oauth2_get_access_code(char *url, OAUTH2_S *oauth2, int *tryanother)
+{
+   char tmp[MAILTMPLEN];
+   char *code;
+
+   if(ps_global->ttyo){
+	SCROLL_S  sargs;
+	STORE_S  *in_store, *out_store;
+	gf_io_t   pc, gc;
+	HANDLE_S *handles = NULL;
+	AUTH_CODE_S user_input;
+
+	if(!(in_store = so_get(CharStar, NULL, EDIT_ACCESS)) ||
+	   !(out_store = so_get(CharStar, NULL, EDIT_ACCESS)))
+	  goto try_wantto;
+
+	so_puts(in_store, "<HTML><P>");
+	sprintf(tmp, _("<CENTER>Auhtorizing Alpine Access to %s Email Services</CENTER>"), oauth2->name);
+	so_puts(in_store, tmp);
+	sprintf(tmp, _("</P><P>Alpine is attempting to log you into your %s account, using the XOAUTH2 method."), oauth2->name),
+	so_puts(in_store, tmp);
+
+	so_puts(in_store, _(" In order to do that, Alpine needs to open the following URL:"));
+	so_puts(in_store,"</P><P>");
+	sprintf(tmp_20k_buf, _("<A HREF=\"%s\">%s.</A>"), url, url);
+	so_puts(in_store, tmp_20k_buf);
+
+	so_puts(in_store, _("</P><P> Alpine will try to use your URL Viewers setting to find a browser to open this URL."));
+	sprintf(tmp, _(" When you open this link, you will be sent to %s's servers to complete this process."), oauth2->name);
+	so_puts(in_store, tmp);
+	so_puts(in_store, _(" Alternatively, you can copy and paste the previous link and open it with the browser of your choice."));
+
+        so_puts(in_store, _("</P><P> After you open the previous link, you will be asked to authenticate and later to authorize access to Alpine. "));
+        so_puts(in_store, _(" At the end of this process, you will be given an access code or redirected to a web page."));
+	so_puts(in_store, _(" If you see a code, copy it and then press 'C', and enter the code at the prompt."));
+	so_puts(in_store, _(" If you do not see a code, copy the url of the page you were redirected to and again press 'C' and copy and paste it into the prompt. "));
+	so_puts(in_store, _(" Once you have completed this process,  Alpine will proceed with authentication."));
+	so_puts(in_store, _(" If you do not wish to proceed, cancel by pressing 'E' to exit"));
+	so_puts(in_store, _("</P></HTML>"));
+
+	so_seek(in_store, 0L, 0);
+	init_handles(&handles);
+	gf_filter_init();
+	gf_link_filter(gf_html2plain,
+		       gf_html2plain_opt(NULL,
+					 ps_global->ttyo->screen_cols, non_messageview_margin(),
+					 &handles, NULL, GFHP_LOCAL_HANDLES));
+	gf_set_so_readc(&gc, in_store);
+	gf_set_so_writec(&pc, out_store);
+	gf_pipe(gc, pc);
+	gf_clear_so_writec(out_store);
+	gf_clear_so_readc(in_store);
+
+	memset(&sargs, 0, sizeof(SCROLL_S));
+	sargs.text.handles  = handles;
+	sargs.text.text     = so_text(out_store);
+	sargs.text.src      = CharStar;
+	sargs.text.desc     = _("help text");
+	sargs.bar.title     = _("SETTING UP XOAUTH2 AUTHORIZATION");
+	sargs.proc.tool     = oauth2_auth_answer;
+	sargs.proc.data.p   = (void *)&user_input;
+	sargs.keys.menu     = &oauth2_auth_keymenu;
+	/* don't want to re-enter c-client */
+	sargs.quell_newmail = 1;
+	setbitmap(sargs.keys.bitmap);
+	sargs.help.text     = h_oauth2_start;
+	sargs.help.title    = _("HELP FOR SETTING UP XOAUTH2");
+
+	do {
+	   scrolltool(&sargs);
+	   ps_global->mangled_screen = 1;
+	   ps_global->painted_body_on_startup = 0;
+	   ps_global->painted_footer_on_startup = 0;
+	} while (user_input.answer != 'e');
+
+	if(!struncmp(user_input.code, "https://", 8)){
+	     char *s, *t;
+	     s = strstr(user_input.code, "code=");
+	     if(s != NULL){
+		t = strchr(s, '&');
+		if(t) *t = '\0';
+		code = cpystr(s+5);
+		if(t) *t = '&';
+	     }
+	}
+	else code = user_input.code ? cpystr(user_input.code) : NULL;
+	if(user_input.code) fs_give((void **) &user_input.code);
+
+	if(code == NULL) *tryanother = 1;
+
+	so_give(&in_store);
+	so_give(&out_store);
+	free_handles(&handles);
+    }
+    else{
+	int flags, rc, q_line;
+	/* TRANSLATORS: user needs to input an access code from the server */
+	char *accesscodelabel = _("Copy and Paste Access Code");
+	char prompt[MAILTMPLEN], token[MAILTMPLEN];
+	/*
+	 * If screen hasn't been initialized yet, use want_to.
+	 */
+try_wantto:
+	memset((void *)tmp, 0, sizeof(tmp));
+	strncpy(tmp, _("Alpine would like to get authorization to access your email: "), sizeof(tmp));
+	tmp[sizeof(tmp)-1] = '\0';
+	strncat(tmp, _(": Proceed "), sizeof(tmp)-strlen(tmp)-1);
+
+	if(want_to(tmp, 'n', 'x', NO_HELP, WT_NORM) == 'y'){
+	  q_line = -(ps_global->ttyo ? ps_global->ttyo->footer_rows : 3);
+	  flags = OE_APPEND_CURRENT;
+	  sprintf(prompt, "%s: ", accesscodelabel);
+	  do {
+	     rc = optionally_enter(token, q_line, 0, MAILTMPLEN,
+			   prompt, NULL, NO_HELP, &flags);
+	  } while (rc != 0 && rc != 1);
+	  if(!struncmp(token, "https://", 8)){
+	     char *s, *t;
+	     s = strstr(token, "code=");
+	     if(s != NULL){
+		t = strchr(s, '&');
+		if(t) *t = '\0';
+		code = cpystr(s+5);
+		if(t) *t = '&';
+	     }
+	  }
+	  else code = token[0] ? cpystr(token) : NULL;
+	}
+   }
+
+   return code;
+}
+
+void mm_login_oauth2(NETMBX *, char *, OAUTH2_S *, long int, char *, char *);
+
+/* The purpose of this function is to report to c-client the values of the
+ * different tokens and codes so that c-client can try to log in the user
+ * to the server. This function DOES NOT attempt to get these values for
+ * the user. That is attempted in the c-client side (as best as it can be
+ * done given our circumstances: no http support, no javascript support,
+ * etc.). This is the best we can do:
+ *
+ * 1. In a first call, get an unloaded OAUTH2_S login pointer and load it
+ *    as best as we can. Unloaded means that there is no server known to
+ *    connect, no access token, etc. Pretty much nothing is known about
+ *    how to get access code, access token, etc. We ask the user to fill
+ *    it up for us, if they can. If the user fills it up we save those
+ *    values.
+ *
+ * 2. In a subsequent call, if the OAUTH2_S login pointer is loaded, we
+ *    save the information that c-client got for us.
+ *
+ * 3. When saving this information we use the password caching facilities,
+ *    but we must do it in a different format so that old information and
+ *    new information are not mixed. In order to accomodate this for new
+ *    authentication methods, we save the information in the same fields,
+ *    but this time we modify it slightly, so that old functions fail to
+ *    understand the new information and so not modify it nor use it. The
+ *    modification is simple: Every piece of information that was saved
+ *    before is prepended  XOAUTH2\001 to indicate the authentication
+ *    method for which it works. The character \001 is a separator. New 
+ *    Alpine will know how to deal with this, but old versions, will not
+ *    strip this prefix from the information and fail to get the
+ *    information or modify it when needed. Only new versions of Alpine will
+ *    know how to process this information.
+ *       new_value             = authenticator_method separator old_value
+ *       authenticator_method  = "XOAUTH2_S"
+ *       separator             = "U+1"
+ *    example: if old value is imap.gmail.com, the new value for the XOAUTH2
+ *    authenticator is "XOAUTH2\001imap.gmail.com".
+ *    In addition, the password field is not used to encode the password
+ *    anymore, it is used to save login information needed in a format that
+ *    the caller function chooses, but that must be preceeded by the 
+ *    "authenticator_method separator" code as above.
+ */
+void
+mm_login_oauth2(NETMBX *mb, char *user, OAUTH2_S *login, long int trial,
+	        char *usethisprompt, char *altuserforcache)
+{
+    char      *token, tmp[MAILTMPLEN];
+    char      prompt[4*MAILTMPLEN], value[4*MAILTMPLEN], *last;
+    char      defuser[NETMAXUSER];
+    char      hostleadin[80], hostname[200], defubuf[200];
+    char      logleadin[80], pwleadin[50];
+    char     *url_oauth2;
+    char     *tool = NULL;
+    char     *OldRefreshToken, *OldAccessToken;
+    char     *NewRefreshToken, *NewAccessToken;
+    char     *SaveRefreshToken, *SaveAccessToken;
+    /* TRANSLATORS: A label for the hostname that the user is logging in on */
+    char     *hostlabel = _("HOST");
+    /* TRANSLATORS: user is logging in as a particular user (a particular
+       login name), this is just labelling that user name. */
+    char     *userlabel = _("USER");
+    STRLIST_S hostlist[2], hostlist2[OAUTH2_TOT_EQUIV+1];
+    HelpType  help ;
+    int       len, rc, q_line, flags, i, j;
+    int       oespace, avail, need, save_dont_use;
+    int       save_in_init;
+    int	      registered;
+    int       ChangeAccessToken, ChangeRefreshToken, ChangeExpirationTime;
+    OAUTH2_S  *oa2list;
+    unsigned long OldExpirationTime, NewExpirationTime, SaveExpirationTime;
+#if defined(_WINDOWS) || defined(LOCAL_PASSWD_CACHE)
+    int       preserve_password = -1;
+#endif
+
+    dprint((9, "mm_login_oauth2 trial=%ld user=%s service=%s%s%s%s%s\n",
+	       trial, mb->user ? mb->user : "(null)",
+	       mb->service ? mb->service : "(null)",
+	       mb->port ? " port=" : "",
+	       mb->port ? comatose(mb->port) : "",
+	       altuserforcache ? " altuserforcache =" : "",
+	       altuserforcache ? altuserforcache : ""));
+
+    q_line = -(ps_global->ttyo ? ps_global->ttyo->footer_rows : 3);
+
+    save_in_init = ps_global->in_init_seq;
+    ps_global->in_init_seq = 0;
+    ps_global->no_newmail_check_from_optionally_enter = 1;
+
+    /* make sure errors are seen */
+    if(ps_global->ttyo)
+      flush_status_messages(0);
+
+    token = NULL;	/* start from scratch */
+
+    hostlist[0].name = mb->host;
+    if(mb->orighost && mb->orighost[0] && strucmp(mb->host, mb->orighost)){
+       hostlist[0].next = &hostlist[1];
+       hostlist[1].name = mb->orighost;
+       hostlist[1].next = NULL;
+    }
+    else
+       hostlist[0].next = NULL;
+
+    if(hostlist[0].name){
+	dprint((9, "mm_login_oauth2: host=%s\n",
+	       hostlist[0].name ? hostlist[0].name : "?"));
+	if(hostlist[0].next && hostlist[1].name){
+	    dprint((9, "mm_login_oauth2: orighost=%s\n", hostlist[1].name));
+	}
+    }
+
+    /*
+     * We check to see if the server we are going to log in to is already
+     * registered. This gives us a list of servers with the same
+     * credentials, so we use the same credentials for all of them.
+     */
+
+    for(registered = 0, oa2list = alpine_oauth2_list; 
+	  oa2list && oa2list->host != NULL && oa2list->host[0] != NULL;
+	  oa2list++){
+	for(i = 0; i < OAUTH2_TOT_EQUIV 
+		   && oa2list->host[i] != NULL
+		   && strucmp(oa2list->host[i], mb->orighost) != 0; i++);
+	if(i < OAUTH2_TOT_EQUIV && oa2list->host[i] != NULL){
+	   registered++;
+	   break;
+	}
+    }
+
+    if(registered){
+       hostlist2[i = 0].name = mb->host;
+       if(mb->orighost && mb->orighost[0] && strucmp(mb->host, mb->orighost))
+          hostlist2[++i].name = mb->orighost;
+
+       for(j = 0; j < OAUTH2_TOT_EQUIV && oa2list->host[j] != NULL; j++){
+	  int k;
+	  for(k = 0; k <= i && hostlist2[k].name 
+		     && strcmp(hostlist2[k].name, oa2list->host[j]); k++);
+	  if(k == i + 1)
+	     hostlist2[++i].name = oa2list->host[j];
+       }
+       hostlist2[i+1].name = NULL;
+       hostlist2[i+1].next = NULL;
+       for(j = i; j >= 0; j--)
+	  hostlist2[j].next = &hostlist2[j+1];
+    }
+
+    /*
+     * We check if we have a refresh token saved somewhere, if so
+     * we use it to get a new access token, otherwise we need to
+     * get an access code so we can get (and save) a refresh token
+     * and use the access token.
+     */
+    if(trial == 0L && !altuserforcache){
+	int code;
+
+	if(*mb->user != '\0')
+	   strncpy(user, mb->user, NETMAXUSER);
+	else{
+	   flags = OE_APPEND_CURRENT;
+	   sprintf(prompt, "%s: %s - %s: ", hostlabel, mb->orighost, userlabel);
+	   rc = optionally_enter(user, q_line, 0, NETMAXUSER,
+			   prompt, NULL, NO_HELP, &flags);
+	}
+	user[NETMAXUSER-1] = '\0';
+
+	/* Search for a refresh token that is already loaded ... */
+	if(imap_get_passwd_auth(mm_login_list, &token, user, 
+	   registered ? hostlist2 : hostlist,
+	   (mb->sslflag||mb->tlsflag), OA2NAME)){
+	    dprint((9, "mm_login_oauth2: found a refresh token\n"));
+	    ps_global->no_newmail_check_from_optionally_enter = 0;
+	    ps_global->in_init_seq = save_in_init;
+	}
+#ifdef	LOCAL_PASSWD_CACHE
+	/* or see if we have saved one in the local password cache and load it */
+	else if(get_passfile_passwd_auth(ps_global->pinerc, &token,
+			       user, registered ? hostlist2 : hostlist,
+			       (mb->sslflag||mb->tlsflag), OA2NAME)){
+	    imap_set_passwd_auth(&mm_login_list, token, user,
+			    hostlist, (mb->sslflag||mb->tlsflag), 0, 0, OA2NAME);
+	    update_passfile_hostlist_auth(ps_global->pinerc, user, hostlist,
+				     (mb->sslflag||mb->tlsflag), OA2NAME);
+	    dprint((9, "mm_login_oauth2: found a refresh token in cache\n"));
+	    ps_global->no_newmail_check_from_optionally_enter = 0;
+	    ps_global->in_init_seq = save_in_init;
+	}
+	if(token && *token) preserve_password = 1;   /* resave it, no need to ask */
+#endif	/* LOCAL_PASSWD_CACHE */
+    }
+    user[NETMAXUSER-1] = '\0';
+
+    /* The Old* variables is what c_client knows */
+    OldRefreshToken   = login->param[OA2_RefreshToken].value;
+    OldAccessToken    = login->access_token;
+    OldExpirationTime = login->expiration;
+
+    /* The New* variables is what Alpine knows */
+    NewRefreshToken   = NewAccessToken  = NULL;
+    NewExpirationTime = 0L;
+    ChangeAccessToken = ChangeRefreshToken = ChangeExpirationTime = 0;
+
+    if(token && *token){
+       char *s, *t;
+
+       s = token;
+       t = strchr(s, PWDAUTHSEP);
+       if(t == NULL)
+	  NewRefreshToken = cpystr(s);
+       else {
+	  *t++ = '\0';
+	  NewRefreshToken = cpystr(s);
+	  s = t;
+	  t = strchr(s, PWDAUTHSEP);
+	  if(t == NULL)
+	    NewAccessToken = cpystr(s);
+	  else {
+	     *t++ = '\0';
+	     NewAccessToken = cpystr(s);
+	     s = t;
+	     NewExpirationTime = strtol(s, &s, 10);
+	     if(NewExpirationTime <= 0 || NewExpirationTime <= time(0))
+		NewExpirationTime = 0L;
+	  }
+       }
+       /* check we got good information, and send good information below */
+       if(NewRefreshToken && !*NewRefreshToken)
+	  fs_give((void **) &NewRefreshToken);
+       if(NewAccessToken && (NewExpirationTime == 0L || !*NewAccessToken)) 
+	  fs_give((void **) &NewAccessToken);
+    }
+
+    /* Default to saving what we already had saved */
+
+    SaveRefreshToken = NewRefreshToken;
+    SaveAccessToken  = NewAccessToken;
+    SaveExpirationTime = NewExpirationTime;
+
+    /* Translation of the logic below:
+     * if (c-client has a refresh token
+	   and (alpine does not have a refresh token or (alpine and c-client have different refresh tokens)){
+	   forget the Alpine refresh token;
+	   make the Alpine Refresh token = c-client refresh token.;
+	   signal that we changed the refresh token;
+	   In this situation we do not need to clear up the Alpine access token. This will
+           expire, so we can use it until it expires. We can save the c-client refresh token
+           together with the Alpine Access Token and the expiration date of the Alpine Access
+	   Token.
+       } else if(c-client does not have a refresh token and Alpine has one and this is not the first attempt){
+	   forget the Alpine refresh token;
+	   if Alpine has an access token, forget it;
+	   reset the expiration time
+	   signal that we changed the refresh token;  (because the service expired it)
+       }
+     */
+
+    if(OldRefreshToken != NULL 
+	&& (NewRefreshToken == NULL || strcmp(OldRefreshToken, NewRefreshToken))){
+	if(NewRefreshToken) fs_give((void **) &NewRefreshToken);
+	NewRefreshToken = cpystr(OldRefreshToken);
+	ChangeRefreshToken++;
+	SaveRefreshToken = OldRefreshToken;
+	SaveAccessToken  = NewAccessToken;
+	SaveExpirationTime = NewExpirationTime;
+    } else if (OldRefreshToken == NULL && NewRefreshToken != NULL && trial > 0){
+	fs_give((void **) &NewRefreshToken);
+	if(NewAccessToken) fs_give((void **) &NewAccessToken);
+	NewExpirationTime = 0L;
+	ChangeRefreshToken++;
+	SaveRefreshToken = NULL;
+	SaveAccessToken  = NULL;
+	SaveExpirationTime = 0L;
+    }
+
+    if(OldAccessToken != NULL 
+	&& (NewAccessToken == NULL || strcmp(OldAccessToken, NewAccessToken))){
+	if(NewAccessToken) fs_give((void **) &NewAccessToken);
+	NewAccessToken = cpystr(OldAccessToken);
+	ChangeAccessToken++;
+	NewExpirationTime = OldExpirationTime;
+	SaveRefreshToken = NewRefreshToken;
+	SaveAccessToken  = NewAccessToken;
+	SaveExpirationTime = NewExpirationTime;
+    }
+
+    if(!registered){
+       login->param[OA2_RefreshToken].value = SaveRefreshToken;
+       login->access_token = SaveAccessToken;
+       login->expiration = SaveExpirationTime;
+    } else {
+       oa2list->param[OA2_RefreshToken].value = SaveRefreshToken;
+       oa2list->access_token = SaveAccessToken;
+       oa2list->expiration = SaveExpirationTime;
+      *login = *oa2list;	/* load login pointer */
+    }
+
+    if(!ChangeAccessToken && !ChangeRefreshToken)
+       return;
+
+    /* get ready to save this information. The format will be
+     *  RefreshToken \001 LastAccessToken \001 ExpirationTime
+     * (spaces added for clarity, \001 is PWDAUTHSEP)
+     */
+    if(token) fs_give((void **) &token);
+    sprintf(tmp, "%lu", SaveExpirationTime);
+    tmp[sizeof(tmp) - 1] = '\0';
+    len = strlen(SaveRefreshToken ? SaveRefreshToken : "")
+		  + strlen(SaveAccessToken ? SaveAccessToken : "")
+		  + strlen(tmp) + 2;
+    token = fs_get(len + 1);
+    sprintf(token, "%s%c%s%c%lu", 
+		    SaveRefreshToken ? SaveRefreshToken : "", PWDAUTHSEP,
+		    SaveAccessToken  ? SaveAccessToken  : "", PWDAUTHSEP, 
+		    SaveExpirationTime);
+
+    /* remember the access information for next time */
+    if(F_OFF(F_DISABLE_PASSWORD_CACHING,ps_global))
+	    imap_set_passwd_auth(&mm_login_list, token,
+		      altuserforcache ? altuserforcache : user, hostlist,
+		      (mb->sslflag||mb->tlsflag), 0, 0, OA2NAME);
+#ifdef	LOCAL_PASSWD_CACHE
+    /* if requested, remember it on disk for next session */
+    if(save_password && F_OFF(F_DISABLE_PASSWORD_FILE_SAVING,ps_global))
+	    set_passfile_passwd_auth(ps_global->pinerc, token,
+		        altuserforcache ? altuserforcache : user, hostlist,
+			(mb->sslflag||mb->tlsflag),
+			(preserve_password == -1 ? 0
+			 : (preserve_password == 0 ? 2 :1)), OA2NAME);
+#endif	/* LOCAL_PASSWD_CACHE */
+
+    ps_global->no_newmail_check_from_optionally_enter = 0;
+}
 
 /*----------------------------------------------------------------------
          recieve notification from IMAP
@@ -328,11 +803,21 @@ mm_log(char *string, long int errflg)
     ps_global->last_error[sizeof(ps_global->last_error) - 1] = '\0';
 }
 
+void
+mm_login_method_work(NETMBX *mb, char *user, void *login, long int trial,
+	      char *method, char *usethisprompt, char *altuserforcache)
+{
+   if(method == NULL)
+      return;
+   if(strucmp(method, OA2NAME) == 0)
+     mm_login_oauth2(mb, user, (OAUTH2_S *) login, trial, usethisprompt, altuserforcache);
+}
 
 void
-mm_login_work(NETMBX *mb, char *user, char *pwd, long int trial,
+mm_login_work(NETMBX *mb, char *user, char **pwd, long int trial,
 	      char *usethisprompt, char *altuserforcache)
 {
+    char      tmp[MAILTMPLEN];
     char      prompt[1000], *last;
     char      port[20], non_def_port[20], insecure[20];
     char      defuser[NETMAXUSER];
@@ -371,6 +856,11 @@ mm_login_work(NETMBX *mb, char *user, char *pwd, long int trial,
 	       altuserforcache ? altuserforcache : ""));
     q_line = -(ps_global->ttyo ? ps_global->ttyo->footer_rows : 3);
 
+    if(pwd && *pwd){
+      char *s = *pwd;
+      fs_give((void **) &s);
+      *pwd = NULL;
+    }
     save_in_init = ps_global->in_init_seq;
     ps_global->in_init_seq = 0;
     ps_global->no_newmail_check_from_optionally_enter = 1;
@@ -460,7 +950,7 @@ mm_login_work(NETMBX *mb, char *user, char *pwd, long int trial,
 	/* check to see if there's a password left over from last session */
 	if(get_passfile_passwd(ps_global->pinerc, pwd,
 			       user, hostlist, (mb->sslflag||mb->tlsflag))){
-	    imap_set_passwd(&mm_login_list, pwd, user,
+	    imap_set_passwd(&mm_login_list, *pwd, user,
 			    hostlist, (mb->sslflag||mb->tlsflag), 0, 0);
 	    update_passfile_hostlist(ps_global->pinerc, user, hostlist,
 				     (mb->sslflag||mb->tlsflag));
@@ -503,7 +993,7 @@ mm_login_work(NETMBX *mb, char *user, char *pwd, long int trial,
 	    /* check to see if there's a password left over from last session */
 	    if(get_passfile_passwd(ps_global->pinerc, pwd,
 				   user, hostlist, (mb->sslflag||mb->tlsflag))){
-		imap_set_passwd(&mm_login_list, pwd, user,
+		imap_set_passwd(&mm_login_list, *pwd, user,
 				hostlist, (mb->sslflag||mb->tlsflag), 0, 0);
 		update_passfile_hostlist(ps_global->pinerc, user, hostlist,
 					 (mb->sslflag||mb->tlsflag));
@@ -540,7 +1030,7 @@ mm_login_work(NETMBX *mb, char *user, char *pwd, long int trial,
 	    /* check to see if there's a password left over from last session */
 	    if(get_passfile_passwd(ps_global->pinerc, pwd,
 				   user, hostlist, (mb->sslflag||mb->tlsflag))){
-		imap_set_passwd(&mm_login_list, pwd, user,
+		imap_set_passwd(&mm_login_list, *pwd, user,
 				hostlist, (mb->sslflag||mb->tlsflag), 0, 0);
 		update_passfile_hostlist(ps_global->pinerc, user, hostlist,
 					 (mb->sslflag||mb->tlsflag));
@@ -785,7 +1275,7 @@ mm_login_work(NETMBX *mb, char *user, char *pwd, long int trial,
 #ifdef	LOCAL_PASSWD_CACHE
 	if(get_passfile_passwd(ps_global->pinerc, pwd,
 			       user, hostlist, (mb->sslflag||mb->tlsflag))){
-	    imap_set_passwd(&mm_login_list, pwd, user,
+	    imap_set_passwd(&mm_login_list, *pwd, user,
 			    hostlist, (mb->sslflag||mb->tlsflag), 0, 0);
 	    ps_global->no_newmail_check_from_optionally_enter = 0;
 	    ps_global->in_init_seq = save_in_init;
@@ -804,7 +1294,7 @@ mm_login_work(NETMBX *mb, char *user, char *pwd, long int trial,
 #ifdef	LOCAL_PASSWD_CACHE
 	if(get_passfile_passwd(ps_global->pinerc, pwd,
 			       altuserforcache, hostlist, (mb->sslflag||mb->tlsflag))){
-	    imap_set_passwd(&mm_login_list, pwd, altuserforcache,
+	    imap_set_passwd(&mm_login_list, *pwd, altuserforcache,
 			    hostlist, (mb->sslflag||mb->tlsflag), 0, 0);
 	    ps_global->no_newmail_check_from_optionally_enter = 0;
 	    ps_global->in_init_seq = save_in_init;
@@ -966,7 +1456,7 @@ mm_login_work(NETMBX *mb, char *user, char *pwd, long int trial,
 	    retry, hostleadin, hostname, port, insecure, logleadin, defubuf, pwleadin);
     prompt[sizeof(prompt)-1] = '\0';
 
-    *pwd = '\0';
+    tmp[0] = '\0';
     while(1) {
 	if(ps_global->ttyo)
 	  mm_login_alt_cue(mb);
@@ -975,12 +1465,13 @@ mm_login_work(NETMBX *mb, char *user, char *pwd, long int trial,
 	ps_global->dont_use_init_cmds = 1;
 	flags = F_ON(F_QUELL_ASTERISKS, ps_global) ? OE_PASSWD_NOAST : OE_PASSWD;
 #ifdef _WINDOWS
-	rc = os_login_dialog(mb, user, NETMAXUSER, pwd, NETMAXPASSWD, 0, 1,
+	rc = os_login_dialog(mb, user, NETMAXUSER, tmp, NETMAXPASSWD, 0, 1,
 			     &preserve_password);
 #else /* !_WINDOWS */
-        rc = optionally_enter(pwd, q_line, 0, NETMAXPASSWD,
+        rc = optionally_enter(tmp, q_line, 0, NETMAXPASSWD,
 			      prompt, NULL, help, &flags);
 #endif /* !_WINDOWS */
+	*pwd = cpystr(tmp);
 	ps_global->dont_use_init_cmds = save_dont_use;
 
         if(rc == 3) {
@@ -992,9 +1483,9 @@ mm_login_work(NETMBX *mb, char *user, char *pwd, long int trial,
           break;
     }
 
-    if(rc == 1 || !pwd[0]) {
+    if(rc == 1 || !tmp[0]) {
 	ps_global->user_says_cancel = (rc == 1);
-        user[0] = pwd[0] = '\0';
+        user[0] = '\0';
 	ps_global->no_newmail_check_from_optionally_enter = 0;
 	ps_global->in_init_seq = save_in_init;
         return;
@@ -1005,13 +1496,13 @@ mm_login_work(NETMBX *mb, char *user, char *pwd, long int trial,
 #endif
     /* remember the password for next time */
     if(F_OFF(F_DISABLE_PASSWORD_CACHING,ps_global))
-      imap_set_passwd(&mm_login_list, pwd,
+      imap_set_passwd(&mm_login_list, *pwd,
 		      altuserforcache ? altuserforcache : user, hostlist,
 		      (mb->sslflag||mb->tlsflag), 0, 0);
 #ifdef	LOCAL_PASSWD_CACHE
     /* if requested, remember it on disk for next session */
       if(save_password && F_OFF(F_DISABLE_PASSWORD_FILE_SAVING,ps_global))
-      set_passfile_passwd(ps_global->pinerc, pwd,
+      set_passfile_passwd(ps_global->pinerc, *pwd,
 		        altuserforcache ? altuserforcache : user, hostlist,
 			(mb->sslflag||mb->tlsflag),
 			(preserve_password == -1 ? 0
@@ -1860,6 +2351,47 @@ answer_cert_failure(int cmd, MSGNO_S *msgmap, SCROLL_S *sparms)
 }
 
 
+int
+oauth2_auth_answer(int cmd, MSGNO_S *msgmap, SCROLL_S *sparms)
+{
+    int rv = 1, rc;
+    AUTH_CODE_S user;
+    int q_line, flags;
+    /* TRANSLATORS: user needs to input an access code from the server */
+    char     *accesscodelabel = _("Copy and Paste Access Code");
+    char token[MAILTMPLEN], prompt[MAILTMPLEN];
+
+    ps_global->next_screen = SCREEN_FUN_NULL;
+
+    token[0] = '\0';
+    switch(cmd){
+      case MC_YES :
+	q_line = -(ps_global->ttyo ? ps_global->ttyo->footer_rows : 3);
+	flags = OE_APPEND_CURRENT;
+	sprintf(prompt, "%s: ", accesscodelabel);
+	do {
+	   rc = optionally_enter(token, q_line, 0, MAILTMPLEN,
+			   prompt, NULL, NO_HELP, &flags);
+	} while (rc != 0 && rc != 1);
+	user.code = rc == 0 ? cpystr(token) : NULL;
+	user.answer = 'e';
+	rv = rc == 1 ? 0 : 1;
+	break;
+
+      case MC_NO :
+	user.code = NULL;
+	user.answer = 'e';
+	break;
+
+      default:
+	alpine_panic("Unexpected command in oauth2_auth_answer");
+	break;
+    }
+    *(AUTH_CODE_S *) sparms->proc.data.p = user;
+    return(rv);
+}
+
+
 /*----------------------------------------------------------------------
   This can be used to prevent the flickering of the check_cue char
   caused by numerous (5000+) fetches by c-client.  Right now, the only
@@ -2117,8 +2649,10 @@ read_passfile(pinerc, l)
 
 		if(passwd && host && user){		/* valid field? */
 		    STRLIST_S hostlist[2];
-		    int	      flags = sflags ? atoi(sflags) : 0;
+		    int	      flags;
 
+		    tmp = sflags ? strchr(sflags, PWDAUTHSEP) : NULL;
+		    flags = sflags ? atoi(tmp ? ++tmp : sflags) : 0;
 		    hostlist[0].name = host;
 		    if(orighost){
 			hostlist[0].next = &hostlist[1];
@@ -2267,8 +2801,10 @@ read_passfile(pinerc, l)
 
 		    if(passwd && host && user){		/* valid field? */
 			STRLIST_S hostlist[2];
-			int	      flags = sflags ? atoi(sflags) : 0;
+			int	      flags;
 
+			tmp   = sflags ? strchr(sflags, PWDAUTHSEP) : NULL;
+			flags = sflags ? atoi(tmp ? ++tmp : sflags) : 0;
 			hostlist[0].name = host;
 			if(orighost){
 			    hostlist[0].next = &hostlist[1];
@@ -2314,9 +2850,10 @@ read_passfile(pinerc, l)
 
     char  tmp[MAILTMPLEN], *ui[5];
     int   i, j, n, rv = 0;
+    size_t len;
 #ifdef SMIME
     char tmp2[MAILTMPLEN];
-    char *text = NULL, *text2 = NULL;
+    char *tmptext, *text = NULL, *text2 = NULL;
     int encrypted = 0;
 #endif /* SMIME */
     FILE *fp;
@@ -2401,6 +2938,7 @@ read_passfile(pinerc, l)
      */
     if(encrypted){
 	text = text2 = decrypt_file((char *)tmp, &i, (PERSONAL_CERT *)ps_global->pwdcert);
+	len = text2 ? strlen(text2) : 0;
 	switch(i){
 	   case -2: using_passfile = 0;
 		    break;
@@ -2416,8 +2954,14 @@ read_passfile(pinerc, l)
 	   default: break;
 	}
     }
-    else
+    else{
+       struct stat sbuf;
+       if(our_stat(tmp, &sbuf) == 0)
+	  len = sbuf.st_size;
+       else
+	  len = 0;
        fp = our_fopen(tmp, "rb");	/* reopen to read data */
+    }
 #endif /* SMIME */
 
     if(using_passfile == 0){
@@ -2427,34 +2971,36 @@ read_passfile(pinerc, l)
       return using_passfile;
     }
 
+    tmptext = fs_get(len + 1);
 #ifdef SMIME
-    for(n = 0; encrypted ? line_get(tmp, sizeof(tmp), &text2) 
-	: (fgets(tmp, sizeof(tmp), fp) != NULL); n++){
+    for(n = 0; len > 0 && (encrypted ? line_get(tmptext, len + 1, &text2) 
+	: (fgets(tmptext, len+1, fp) != NULL)); n++){
 #else /* SMIME */
-    for(n = 0; fgets(tmp, sizeof(tmp), fp); n++){
+    for(n = 0; fgets(tmptext, len+1, fp); n++){
 #endif /* SMIME */
 	/*** do any necessary DEcryption here ***/
 	xlate_key = n;
-	for(i = 0; tmp[i]; i++)
-	  tmp[i] = xlate_out(tmp[i]);
+	for(i = 0; tmptext[i]; i++)
+	  tmptext[i] = xlate_out(tmptext[i]);
 
-	if(i && tmp[i-1] == '\n')
-	  tmp[i-1] = '\0';			/* blast '\n' */
+	if(i && tmptext[i-1] == '\n')
+	  tmptext[i-1] = '\0';			/* blast '\n' */
 
 	dprint((10, "read_passfile: %s\n", tmp ? tmp : "?"));
 	ui[0] = ui[1] = ui[2] = ui[3] = ui[4] = NULL;
-	for(i = 0, j = 0; tmp[i] && j < 5; j++){
-	    for(ui[j] = &tmp[i]; tmp[i] && tmp[i] != '\t'; i++)
+	for(i = 0, j = 0; tmptext[i] && j < 5; j++){
+	    for(ui[j] = &tmptext[i]; tmptext[i] && tmptext[i] != '\t'; i++)
 	      ;					/* find end of data */
 
-	    if(tmp[i])
-	      tmp[i++] = '\0';			/* tie off data */
+	    if(tmptext[i])
+	      tmptext[i++] = '\0';			/* tie off data */
 	}
 
 	dprint((10, "read_passfile: calling imap_set_passwd\n"));
 	if(ui[0] && ui[1] && ui[2]){		/* valid field? */
 	    STRLIST_S hostlist[2];
-	    int	      flags = ui[3] ? atoi(ui[3]) : 0;
+	    char     *s = ui[3] ? strchr(ui[3], PWDAUTHSEP) : NULL;
+	    int	  flags = ui[3] ? atoi(s ? ++s : ui[3]) : 0;
 
 	    hostlist[0].name = ui[2];
 	    if(ui[4]){
@@ -2470,6 +3016,7 @@ read_passfile(pinerc, l)
 	}
     }
 
+    if (tmptext) fs_give((void **) &tmptext);
 #ifdef SMIME
     if (text) fs_give((void **)&text);
 #else /* SMIME */
@@ -2486,6 +3033,7 @@ write_passfile(pinerc, l)
     char      *pinerc;
     MMLOGIN_S *l;
 {
+   char *authend, *authtype;
 #ifdef	WINCRED
 # if	(WINCRED > 0)
     char  target[MAILTMPLEN];
@@ -2499,11 +3047,21 @@ write_passfile(pinerc, l)
     dprint((9, "write_passfile\n"));
 
     for(; l; l = l->next){
-	snprintf(target, sizeof(target), "%s%s\t%s\t%d",
+	authtype = l->passwd;
+	authend = strchr(l->passwd, PWDAUTHSEP);
+	if(authend != NULL){
+	   *authend = '\0';
+	   sprintf(blob, "%s%c%d", authtype, PWDAUTHSEP, l->altflag);
+	   *authend = PWDAUTHSEP;
+        }
+	else
+	   sprintf(blob, "%d", l->altflag);
+
+	snprintf(target, sizeof(target), "%s%s\t%s\t%s",
 		 TNAME,
 		 (l->hosts && l->hosts->name) ? l->hosts->name : "",
 		 l->user ? l->user : "",
-		 l->altflag);
+		 blob);
 	ltarget = utf8_to_lptstr((LPSTR) target);
 
 	if(ltarget){
@@ -2528,7 +3086,6 @@ write_passfile(pinerc, l)
  #endif	/* WINCRED > 0 */
 
 #elif	APPLEKEYCHAIN
-
     int   rc;
     char  target[MAILTMPLEN];
     char  blob[MAILTMPLEN];
@@ -2540,10 +3097,20 @@ write_passfile(pinerc, l)
     dprint((9, "write_passfile\n"));
 
     for(; l; l = l->next){
-	snprintf(target, sizeof(target), "%s\t%s\t%d",
+	authtype = l->passwd;
+	authend = strchr(l->passwd, PWDAUTHSEP);
+	if(authend != NULL){
+	   *authend = '\0';
+	   sprintf(blob, "%s%c%d", authtype, PWDAUTHSEP, l->altflag);
+	   *authend = PWDAUTHSEP;
+        }
+	else
+	   sprintf(blob, "%d", l->altflag);
+
+	snprintf(target, sizeof(target), "%s\t%s\t%s",
 		 (l->hosts && l->hosts->name) ? l->hosts->name : "",
 		 l->user ? l->user : "",
-		 l->altflag);
+		 blob);
 
 	snprintf(blob, sizeof(blob), "%s%s%s",
 		 l->passwd ? l->passwd : "", 
@@ -2588,12 +3155,11 @@ write_passfile(pinerc, l)
     }
 
 #else /* PASSFILE */
-
-    char  tmp[MAILTMPLEN];
+    char  tmp[4*MAILTMPLEN], blob[4*MAILTMPLEN];
     int   i, n;
     FILE *fp;
 #ifdef SMIME
-    char *text = NULL, tmp2[MAILTMPLEN];
+    char *text = NULL, tmp2[4*MAILTMPLEN];
     int len = 0;
 #endif
 
@@ -2614,9 +3180,19 @@ write_passfile(pinerc, l)
 #endif /* SMIME */
 
     for(n = 0; l; l = l->next, n++){
+	authtype = l->passwd;
+	authend = strchr(l->passwd, PWDAUTHSEP);
+	if(authend != NULL){
+	   *authend = '\0';
+	   sprintf(blob, "%s%c%d", authtype, PWDAUTHSEP, l->altflag);
+	   *authend = PWDAUTHSEP;
+        }
+	else
+	   sprintf(blob, "%d", l->altflag);
+
 	/*** do any necessary ENcryption here ***/
-	snprintf(tmp, sizeof(tmp), "%s\t%s\t%s\t%d%s%s\n", l->passwd, l->user,
-		l->hosts->name, l->altflag,
+	snprintf(tmp, sizeof(tmp), "%s\t%s\t%s\t%s%s%s\n", l->passwd, l->user,
+		l->hosts->name, blob,
 		(l->hosts->next && l->hosts->next->name) ? "\t" : "",
 		(l->hosts->next && l->hosts->next->name) ? l->hosts->next->name
 							 : "");
@@ -2705,22 +3281,31 @@ ask_erase_credentials(void)
 
 
 #ifdef	LOCAL_PASSWD_CACHE
+int
+get_passfile_passwd(pinerc, passwd, user, hostlist, altflag)
+    char      *pinerc, **passwd, *user;
+    STRLIST_S *hostlist;
+    int	       altflag;
+{
+    return get_passfile_passwd_auth(pinerc, passwd, user, hostlist, altflag, NULL);
+}
 
 /*
- * get_passfile_passwd - return the password contained in the special passord
+ * get_passfile_passwd_auth - return the password contained in the special passord
  *            cache.  The file is assumed to be in the same directory
  *            as the pinerc with the name defined above.
  */
 int
-get_passfile_passwd(pinerc, passwd, user, hostlist, altflag)
-    char      *pinerc, *passwd, *user;
+get_passfile_passwd_auth(pinerc, passwd, user, hostlist, altflag, authtype)
+    char      *pinerc, **passwd, *user;
     STRLIST_S *hostlist;
     int	       altflag;
+    char      *authtype;
 {
-    dprint((10, "get_passfile_passwd\n"));
+    dprint((10, "get_passfile_passwd_auth\n"));
     return((passfile_cache || read_passfile(pinerc, &passfile_cache))
-	     ? imap_get_passwd(passfile_cache, passwd,
-			       user, hostlist, altflag)
+	     ? imap_get_passwd_auth(passfile_cache, passwd,
+			       user, hostlist, altflag, authtype)
 	     : 0);
 }
 
@@ -2769,8 +3354,16 @@ get_passfile_user(pinerc, hostlist)
 int
 preserve_prompt(char *pinerc)
 {
+  return preserve_prompt_auth(pinerc, NULL);
+}
+
+int
+preserve_prompt_auth(char *pinerc, char *authtype)
+{
 #ifdef	WINCRED
 # if	(WINCRED > 0)
+#define PROMPT_PWD _("Preserve password for next login")
+#define PROMPT_OA2 _("Preserve Refresh and Access tokens for next login")
     /* 
      * This prompt was going to be able to be turned on and off via a registry
      * setting controlled from the config menu.  We decided to always use the
@@ -2779,7 +3372,9 @@ preserve_prompt(char *pinerc)
      * OS X somewhat uses the behavior just described.
      */
     if(mswin_store_pass_prompt()
-       && (want_to(_("Preserve password for next login"),
+       && (want_to(authtype 
+		? (strcmp(authtype, OA2NAME) ? PROMPT_PWD : PROMPT_OA2)
+		: PROMPT_PWD,
 		  'y', 'x', NO_HELP, WT_NORM)
 	   == 'y'))
       return(1);
@@ -2790,11 +3385,14 @@ preserve_prompt(char *pinerc)
 # endif
 
 #elif	APPLEKEYCHAIN
+#define PROMPT_PWD _("Preserve password for next login")
+#define PROMPT_OA2 _("Preserve Refresh and Access tokens for next login")
 
     int rc;
     if((rc = macos_store_pass_prompt()) != 0){
-	if(want_to(_("Preserve password for next login"),
-		   'y', 'x', NO_HELP, WT_NORM)
+        if(want_to(authtype 
+		? (strcmp(authtype, OA2NAME) ? PROMPT_PWD : PROMPT_OA2)
+		: PROMPT_PWD, 'y', 'x', NO_HELP, WT_NORM)
 	   == 'y'){
 	    if(rc == -1){
 		macos_set_store_pass_prompt(1);
@@ -2812,6 +3410,9 @@ preserve_prompt(char *pinerc)
     }
     return(0);
 #else /* PASSFILE */
+#define PROMPT_PWD _("Preserve password on DISK for next login")
+#define PROMPT_OA2 _("Preserve Refresh and Access tokens on DISK for next login")
+
     char tmp[MAILTMPLEN];
     struct stat sbuf;
 
@@ -2819,8 +3420,9 @@ preserve_prompt(char *pinerc)
         return 0;
 
     if(F_OFF(F_DISABLE_PASSWORD_FILE_SAVING,ps_global))
-	return(want_to(_("Preserve password on DISK for next login"), 
-		   'y', 'x', NO_HELP, WT_NORM)
+	return(want_to(authtype 
+		? (strcmp(authtype, OA2NAME) ? PROMPT_PWD : PROMPT_OA2)
+		: PROMPT_PWD, 'y', 'x', NO_HELP, WT_NORM)
 	   == 'y');
     return(0);
 #endif /* PASSFILE */
@@ -2947,6 +3549,14 @@ macos_erase_keychain(void)
 
 #ifdef	LOCAL_PASSWD_CACHE
 
+void
+set_passfile_passwd(pinerc, passwd, user, hostlist, altflag, already_prompted)
+    char      *pinerc, *passwd, *user;
+    STRLIST_S *hostlist;
+    int	       altflag, already_prompted;
+{
+   set_passfile_passwd_auth(pinerc, passwd, user, hostlist, altflag, already_prompted, NULL);
+}
 /*
  * set_passfile_passwd - set the password file entry associated with
  *            cache.  The file is assumed to be in the same directory
@@ -2956,21 +3566,31 @@ macos_erase_keychain(void)
  *                              2 prompted, answered no
  */
 void
-set_passfile_passwd(pinerc, passwd, user, hostlist, altflag, already_prompted)
+set_passfile_passwd_auth(pinerc, passwd, user, hostlist, altflag, already_prompted, authtype)
     char      *pinerc, *passwd, *user;
     STRLIST_S *hostlist;
     int	       altflag, already_prompted;
+    char      *authtype;
 {
-    dprint((10, "set_passfile_passwd\n"));
-    if(((already_prompted == 0 && preserve_prompt(pinerc))
+    dprint((10, "set_passfile_passwd_auth\n"));
+    if(((already_prompted == 0 && preserve_prompt_auth(pinerc, authtype))
 	   || already_prompted == 1)
        && !ps_global->nowrite_password_cache
        && (passfile_cache || read_passfile(pinerc, &passfile_cache))){
-	imap_set_passwd(&passfile_cache, passwd, user, hostlist, altflag, 0, 0);
+	imap_set_passwd_auth(&passfile_cache, passwd, user, hostlist, altflag, 0, 0, authtype);
 	write_passfile(pinerc, passfile_cache);
     }
 }
 
+void
+update_passfile_hostlist(pinerc, user, hostlist, altflag)
+    char      *pinerc;
+    char      *user;
+    STRLIST_S *hostlist;
+    int        altflag;
+{
+  update_passfile_hostlist_auth(pinerc, user, hostlist, altflag, NULL);
+}
 
 /*
  * Passfile lines are
@@ -2981,21 +3601,24 @@ set_passfile_passwd(pinerc, passwd, user, hostlist, altflag, already_prompted)
  * This routine attempts to repair that.
  */
 void
-update_passfile_hostlist(pinerc, user, hostlist, altflag)
+update_passfile_hostlist_auth(pinerc, user, hostlist, altflag, authtype)
     char      *pinerc;
     char      *user;
     STRLIST_S *hostlist;
     int        altflag;
+    char      *authtype;
 {
 #ifdef	 WINCRED
     return;
 #else /* !WINCRED */
     MMLOGIN_S *l;
+    size_t  len    = authtype ? strlen(authtype) : 0;
+    size_t  offset = authtype ? 1 : 0;
     
     for(l = passfile_cache; l; l = l->next)
-      if(imap_same_host(l->hosts, hostlist)
+      if(imap_same_host_auth(l->hosts, hostlist, authtype)
 	 && *user
-	 && !strcmp(user, l->user)
+	 && !strcmp(user, l->user + len + offset)
 	 && l->altflag == altflag){
 	  break;
       }
@@ -3003,7 +3626,7 @@ update_passfile_hostlist(pinerc, user, hostlist, altflag)
     if(l && l->hosts && hostlist && !l->hosts->next && hostlist->next
        && hostlist->next->name
        && !ps_global->nowrite_password_cache){
-	l->hosts->next = new_strlist(hostlist->next->name);
+	l->hosts->next = new_strlist_auth(hostlist->next->name, authtype, PWDAUTHSEP);
 	write_passfile(pinerc, passfile_cache);
     }
 #endif /* !WINCRED */

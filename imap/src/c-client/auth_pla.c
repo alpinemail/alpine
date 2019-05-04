@@ -55,7 +55,7 @@ long auth_plain_client (authchallenge_t challenger,authrespond_t responder,
 			char *service,NETMBX *mb,void *stream,
 			unsigned long *trial,char *user)
 {
-  char *u,pwd[MAILTMPLEN];
+  char *u, *pwd = NIL;
   void *challenge;
   unsigned long clen;
   long ret = NIL;
@@ -70,9 +70,8 @@ long auth_plain_client (authchallenge_t challenger,authrespond_t responder,
       (*responder) (stream,NIL,0);
       ret = LONGT;		/* will get a BAD response back */
     }
-    pwd[0] = NIL;		/* prompt user if empty challenge */
-    mm_login (mb,user,pwd,*trial);
-    if (!pwd[0]) {		/* empty challenge or user requested abort */
+    mm_login (mb,user, &pwd,*trial);
+    if (!pwd) {		/* empty challenge or user requested abort */
       (*responder) (stream,NIL,0);
       *trial = 0;		/* cancel subsequent attempts */
       ret = LONGT;		/* will get a BAD response back */
@@ -100,9 +99,10 @@ long auth_plain_client (authchallenge_t challenger,authrespond_t responder,
       }
       memset (response,0,rlen);	/* erase credentials */
       fs_give ((void **) &response);
+      fs_give ((void **) &pwd);
     }
   }
-  memset (pwd,0,MAILTMPLEN);	/* erase password */
+  if(pwd) fs_give ((void **) &pwd);
   if (!ret) *trial = 65535;	/* don't retry if bad protocol */
   return ret;
 }

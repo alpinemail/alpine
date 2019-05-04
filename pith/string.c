@@ -2839,11 +2839,23 @@ isxpair(char *s)
 STRLIST_S *
 new_strlist(char *name)
 {
-    STRLIST_S *sp = (STRLIST_S *) fs_get(sizeof(STRLIST_S));
-    memset(sp, 0, sizeof(STRLIST_S));
-    if(name)
-      sp->name = cpystr(name);
+  return new_strlist_auth(name, NULL, '\0');
+}
 
+STRLIST_S *
+new_strlist_auth(char *name, char *authtype, char sep)
+{
+    STRLIST_S *sp = (STRLIST_S *) fs_get(sizeof(STRLIST_S));
+    int len = authtype ? strlen(authtype) : 0;
+    int offset = authtype ? 1 : 0;
+
+    memset(sp, 0, sizeof(STRLIST_S));
+    if(name){
+      sp->name = fs_get(strlen(name) + len + offset + 1);
+      sprintf(sp->name, "%s%s%s", authtype ? authtype :  "",
+			authtype ? " " : "", name);
+      if(authtype != NULL) sp->name[len] = sep;
+    }
     return(sp);
 }
 
