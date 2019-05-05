@@ -277,8 +277,8 @@ mc_parse_file(char *file)
 {
     char *tokens[MC_TOKEN_MAX];
 
-    while(mc_parse_line(&file, tokens))
-      mc_build_entry(tokens);
+    while(file && *file)
+      if(mc_parse_line(&file, tokens)) mc_build_entry(tokens);
 }
 
 
