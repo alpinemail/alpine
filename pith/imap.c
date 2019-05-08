@@ -4,7 +4,7 @@ static char rcsid[] = "$Id: imap.c 1142 2008-08-13 17:22:21Z hubert@u.washington
 
 /*
  * ========================================================================
- * Copyright 2013-2018 Eduardo Chappa
+ * Copyright 2013-2019 Eduardo Chappa
  * Copyright 2006-2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -1007,10 +1007,8 @@ imap_get_passwd_auth(MMLOGIN_S *m_list, char **passwd, char *user, STRLIST_S *ho
 		    	   && l->user[len] == PWDAUTHSEP))
 	 && !strcmp(user, l->user + len + offset)
 	 && l->altflag == altflag){
-	  if(passwd){
-	      fs_resize((void **) passwd, strlen(l->passwd + len + offset) + 1);
-	      strcpy(*passwd, l->passwd + len + offset);
-	  }
+	  if(passwd)
+	    *passwd = cpystr(l->passwd + len + offset);
 	  dprint((9, "imap_get_passwd: match\n"));
 	  dprint((10, "imap_get_passwd: trying passwd=\"%s\"\n",
 		      passwd && *passwd ? *passwd : "?"));
@@ -1062,8 +1060,7 @@ imap_set_passwd_auth(MMLOGIN_S **l, char *passwd, char *user, STRLIST_S *hostlis
     }
 
     len = strlen(passwd);
-    if(!(*l)->passwd || strlen((*l)->passwd) < len + authlen + offset)
-      (*l)->passwd = ps_get(len + authlen + offset + 1);
+    (*l)->passwd = ps_get(len + authlen + offset + 1);
 
     if(authtype)
       sprintf((*l)->passwd, "%s%c%s", authtype, PWDAUTHSEP, passwd);

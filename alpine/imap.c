@@ -856,11 +856,6 @@ mm_login_work(NETMBX *mb, char *user, char **pwd, long int trial,
 	       altuserforcache ? altuserforcache : ""));
     q_line = -(ps_global->ttyo ? ps_global->ttyo->footer_rows : 3);
 
-    if(pwd && *pwd){
-      char *s = *pwd;
-      fs_give((void **) &s);
-      *pwd = NULL;
-    }
     save_in_init = ps_global->in_init_seq;
     ps_global->in_init_seq = 0;
     ps_global->no_newmail_check_from_optionally_enter = 1;
@@ -2851,9 +2846,10 @@ read_passfile(pinerc, l)
     char  tmp[MAILTMPLEN], *ui[5];
     int   i, j, n, rv = 0;
     size_t len;
+    char *tmptext = NULL;
 #ifdef SMIME
     char tmp2[MAILTMPLEN];
-    char *tmptext, *text = NULL, *text2 = NULL;
+    char *text = NULL, *text2 = NULL;
     int encrypted = 0;
 #endif /* SMIME */
     FILE *fp;
@@ -2971,12 +2967,13 @@ read_passfile(pinerc, l)
       return using_passfile;
     }
 
-    tmptext = fs_get(len + 1);
+    if(len > 0){
+      tmptext = fs_get(len + 1);
 #ifdef SMIME
-    for(n = 0; len > 0 && (encrypted ? line_get(tmptext, len + 1, &text2) 
-	: (fgets(tmptext, len+1, fp) != NULL)); n++){
+      for(n = 0; encrypted ? line_get(tmptext, len + 1, &text2) 
+	: (fgets(tmptext, len+1, fp) != NULL); n++){
 #else /* SMIME */
-    for(n = 0; fgets(tmptext, len+1, fp); n++){
+      for(n = 0; fgets(tmptext, len+1, fp); n++){
 #endif /* SMIME */
 	/*** do any necessary DEcryption here ***/
 	xlate_key = n;
@@ -3014,6 +3011,7 @@ read_passfile(pinerc, l)
 
 	    imap_set_passwd(l, ui[0], ui[1], hostlist, flags & 0x01, 0, 0);
 	}
+      }
     }
 
     if (tmptext) fs_give((void **) &tmptext);
@@ -3202,15 +3200,9 @@ write_passfile(pinerc, l)
 	  tmp[i] = xlate_in(tmp[i]);
 
 #ifdef SMIME
-        if(len == 0){
-	   len = strlen(tmp) + 1;
-	   text = fs_get(len*sizeof(char));
-	   *text = '\0';
-	}
-	if(strlen(text) + strlen(tmp) > len){
-	   len = strlen(text) + strlen(tmp) + 1;
-	   fs_resize((void **)&text, len*sizeof(char));
-	}
+	fs_resize((void **)&text, (len + strlen(tmp) + 1)*sizeof(char));
+	text[len] = '\0';
+	len += strlen(tmp) + 1;
 	strncat(text, tmp, strlen(tmp));
 #else /* SMIME */
 	fputs(tmp, fp);
