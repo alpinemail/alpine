@@ -113,11 +113,12 @@ long auth_md5_client (authchallenge_t challenger,authrespond_t responder,
       ret = LONGT;		/* will get a BAD response back */
     }
     else {			/* got password, build response */
-      sprintf (pwd,"%.65s %.33s",user,hmac_md5 (hshbuf,challenge,clen,
+      char tmp[128];
+      sprintf (tmp,"%.65s %.33s",user,hmac_md5 (hshbuf,challenge,clen,
 						pwd,strlen (pwd)));
       fs_give ((void **) &challenge);
 				/* send credentials, allow retry if OK */
-      if ((*responder) (stream,pwd,strlen (pwd))) {
+      if ((*responder) (stream,tmp,strlen (tmp))) {
 	if ((challenge = (*challenger) (stream,&clen)) != NULL)
 	  fs_give ((void **) &challenge);
 	else {
@@ -125,10 +126,13 @@ long auth_md5_client (authchallenge_t challenger,authrespond_t responder,
 	  ret = LONGT;		/* check the authentication */
 	}
       }
-      fs_give((void **) &pwd);
+      memset((void *) tmp, 0, sizeof(tmp));
     }
   }
-  if(pwd) fs_give((void **) &pwd);
+  if(pwd){
+    memset((void *) pwd, 0, strlen(pwd));
+    fs_give((void **) &pwd);
+  }
   if (!ret) *trial = 65535;	/* don't retry if bad protocol */
   return ret;
 }
