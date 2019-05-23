@@ -2785,8 +2785,11 @@ smime_extract_and_save_cert(PKCS7 *p7)
 
 			/* if not saved, try to save it */
 	     if(already_saved == 0
-		  && (*pith_smime_confirm_save)(email[j]) == 1)
+		  && (*pith_smime_confirm_save)(email[j]) == 1){
 		save_cert_for(email[j], x, Public);
+		if(ps_global->smime->publiccertlist)	/* renew store */
+		  free_certlist(&ps_global->smime->publiccertlist);
+	     }
 
 			/* check if it got saved */
 	     cert = get_cert_for(email[j], Public, 1);

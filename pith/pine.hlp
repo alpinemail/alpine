@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 342 2019-05-23 12:27:59
+Alpine Commit 343 2019-05-23 13:34:15
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -233,6 +233,11 @@ Examples are /auth=plain, or /auth=gssapi, etc.
 
 <LI> Add backward search in the index screen. Based on patch by Astyanax Foo, 
 submitted in 2009, but resubmitted by Erich Eckner on 2019.
+
+<LI> SMIME: When Alpine is set to validate a message using the user's store, and
+     user agrees to save a certificate of another user, use the saved 
+     certificate immediately to verify the smime message. Reported by 
+     Stefan Mueller.
 </UL>
 
 <P>
