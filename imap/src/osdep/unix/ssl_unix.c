@@ -333,6 +333,7 @@ static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags)
   X509 *cert;
   unsigned long sl,tl;
   int min, max;
+  int masklow, maskhigh;
   char *s,*t,*err,tmp[MAILTMPLEN], buf[256];
   sslcertificatequery_t scq =
     (sslcertificatequery_t) mail_parameters (NIL,GET_SSLCERTIFICATEQUERY,NIL);
@@ -345,18 +346,9 @@ static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags)
   if (!(stream->context = SSL_CTX_new (ssl_connect_mthd(flags, &min, &max))))
     return "SSL context failed";
   SSL_CTX_set_options (stream->context,0);
-#ifdef OPENSSL_1_1_0
-  if(stream->context != NIL &&
-     ((min != 0 && SSL_CTX_set_min_proto_version(stream->context, min) == 0) ||
-      (max != 0 && SSL_CTX_set_max_proto_version(stream->context, max) == 0)))
-    return "SSL set protocol version Failed";
-#else
-  { int masklow, maskhigh;
-    masklow = ssl_disable_mask(min, -1);
-    maskhigh = ssl_disable_mask(max, 1);
-    SSL_CTX_set_options(stream->context, masklow|maskhigh);
-  }
-#endif /* OPENSSL_1_1_0 */
+  masklow = ssl_disable_mask(min, -1);
+  maskhigh = ssl_disable_mask(max, 1);
+  SSL_CTX_set_options(stream->context, masklow|maskhigh);
 				/* disable certificate validation? */
   if (flags & NET_NOVALIDATECERT)
     SSL_CTX_set_verify (stream->context,SSL_VERIFY_NONE,NIL);
