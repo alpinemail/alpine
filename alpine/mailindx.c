@@ -2954,21 +2954,25 @@ away.
 void
 index_search(struct pine *state, MAILSTREAM *stream, int command_line, MSGNO_S *msgmap)
 {
-    int         rc, select_all = 0, flags, prefetch, we_turned_on = 0;
+    int         rc, select_all = 0, flags, prefetch, searchbound, otherbound, offset = 0, we_turned_on = 0;
     long        i, sorted_msg, selected = 0L;
     char        prompt[MAX_SEARCH+50], new_string[MAX_SEARCH+1];
     char        buf[MAX_SCREEN_COLS+1], *p;
     HelpType	help;
     char        search_string[MAX_SEARCH+1];
     ICE_S      *ice, *ic;
+    static int direction = 1;
     static HISTORY_S *history = NULL;
     static ESCKEY_S header_search_key[] = { {0, 0, NULL, NULL },
 					    {ctrl('Y'), 10, "^Y", N_("First Msg")},
 					    {ctrl('V'), 11, "^V", N_("Last Msg")},
+					    {ctrl('W'), 20, "^W", ""},
+					    {0, 0, NULL, NULL },
 					    {KEY_UP,    30, "", ""},
 					    {KEY_DOWN,  31, "", ""},
 					    {-1, 0, NULL, NULL} };
-#define KU_IS (3)	/* index of KEY_UP */
+#define KD_IS (3)	/* index of Direction key */
+#define KU_IS (5)	/* index of KEY_UP */
 #define PREFETCH_THIS_MANY_LINES (50)
 
     init_hist(&history, HISTSIZE);
@@ -2995,7 +2999,8 @@ index_search(struct pine *state, MAILSTREAM *stream, int command_line, MSGNO_S *
     new_string[0] = '\0';
 
     while(1) {
-	snprintf(prompt, sizeof(prompt), _("Word to search for [%s] : "), search_string);
+	snprintf(prompt, sizeof(prompt), _("Word to search %sfor [%s] : "),
+		direction == -1 ? _("(backwards) ") : "", search_string);
 
 	if(F_ON(F_ENABLE_AGG_OPS, ps_global)){
 	    header_search_key[0].ch    = ctrl('X');
@@ -3025,6 +3030,8 @@ index_search(struct pine *state, MAILSTREAM *stream, int command_line, MSGNO_S *
 	    header_search_key[KU_IS+1].label = "";
 	}
 	
+	header_search_key[KD_IS].label = direction == 1 ? _("Backward") : _("Forward");
+
 	flags = OE_APPEND_CURRENT | OE_KEEP_TRAILING_SPACE;
 	
         rc = optionally_enter(new_string, command_line, 0, sizeof(new_string),
@@ -3092,6 +3099,10 @@ index_search(struct pine *state, MAILSTREAM *stream, int command_line, MSGNO_S *
 
 	    continue;
 	}
+	else if(rc == 20){
+	    direction *= -1;
+	    continue;
+	}
 
         if(rc != 4){			/* 4 is redraw */
 	    save_hist(history, new_string, 0, NULL);
@@ -3115,9 +3126,18 @@ index_search(struct pine *state, MAILSTREAM *stream, int command_line, MSGNO_S *
     we_turned_on = intr_handling_on();
 
     prefetch = 0;
-    for(i = sorted_msg + ((select_all)?0:1);
-	i <= mn_get_total(msgmap) && !ps_global->intr_pending;
-	i++){
+    if (direction == -1) {
+	searchbound = -1;
+	otherbound = mn_get_total(msgmap);
+	offset = 2;
+    } else {
+	searchbound = mn_get_total(msgmap);
+	otherbound = 1;
+    }
+
+    for(i = sorted_msg + ((select_all)?0:1) - offset;
+	i * direction <= searchbound && !ps_global->intr_pending;
+	i += direction){
       if(msgline_hidden(stream, msgmap, i, 0))
 	continue;
 
@@ -3139,8 +3159,11 @@ index_search(struct pine *state, MAILSTREAM *stream, int command_line, MSGNO_S *
     }
 
     prefetch = 0;
-    if(i > mn_get_total(msgmap)){
-      for(i = 1; i < sorted_msg && !ps_global->intr_pending; i++){
+    if(i * direction > searchbound){
+      for(i = otherbound;
+	i * direction < sorted_msg * direction && !ps_global->intr_pending;
+	i += direction ){
+
         if(msgline_hidden(stream, msgmap, i, 0))
 	  continue;
 
@@ -3194,7 +3217,7 @@ index_search(struct pine *state, MAILSTREAM *stream, int command_line, MSGNO_S *
     }
     else if(selected){
 	q_status_message1(SM_ORDER, 0, 3, _("Word found%s"),
-			  (i < sorted_msg) ? _(". Search wrapped to beginning") :
+			  (i * direction < sorted_msg * direction) ? _(". Search wrapped to beginning") :
 			   (i == sorted_msg) ? _(". Current line contains only match") : "");
 	mn_set_cur(msgmap, i);
     }

@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 341 2019-05-23 12:20:34
+Alpine Commit 342 2019-05-23 12:27:59
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -230,6 +230,9 @@ signed data after encryption. Reported by Holger Trapp.
 <LI> Add /auth=XYZ to the way to define a server. This allows users to  
 select the method to authenticate to an IMAP, SMTP or POP3 server.
 Examples are /auth=plain, or /auth=gssapi, etc.
+
+<LI> Add backward search in the index screen. Based on patch by Astyanax Foo, 
+submitted in 2009, but resubmitted by Erich Eckner on 2019.
 </UL>
 
 <P>
