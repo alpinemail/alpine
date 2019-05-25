@@ -1485,7 +1485,7 @@ if test "x$alpine_SSLTYPE" != "xnone" ; then
 #endif /* HAVE_STDINT_H */
 #include <openssl/ssl.h>
 	],[
-#if OPENSSL_VERSION_NUMBER < 0x20000000L
+#if OPENSSL_VERSION_NUMBER != 0x20000000L
 #error
 #endif
 	],

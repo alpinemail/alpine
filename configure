@@ -19224,7 +19224,7 @@ int
 main ()
 {
 
-#if OPENSSL_VERSION_NUMBER < 0x20000000L
+#if OPENSSL_VERSION_NUMBER != 0x20000000L
 #error
 #endif
 
