@@ -3120,7 +3120,7 @@ feature_list(int index)
 	{"disable-password-file-saving", NULL,
 	 F_DISABLE_PASSWORD_FILE_SAVING, h_config_disable_password_file_saving,
 	 PREF_MISC, 0},
-#endif
+#endif /* PASSFILE */
 	{"disable-regular-expression-matching-for-alternate-addresses", NULL,
 	 F_DISABLE_REGEX, h_config_disable_regex, PREF_MISC, 0},
 	{"disable-save-input-history", NULL,
