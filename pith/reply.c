@@ -3346,10 +3346,11 @@ char *
 generate_message_id(void)
 {
     static short osec = 0, cnt = 0;
-    char         idbuf[128];
+    char         idbuf[128], revisionbuf[128];
     char        *id;
     time_t       now;
     struct tm   *now_x;
+    char	*revision = NULL;
     char        *hostpart = NULL;
     char	*alpine_name = NULL;
     char	*alpine_version = NULL;
@@ -3365,23 +3366,26 @@ generate_message_id(void)
 	osec = now_x->tm_sec;
     }
 
+    get_alpine_revision_number(revisionbuf, sizeof(revisionbuf));
     if(F_ON(F_ROT13_MESSAGE_ID, ps_global)){
        hostpart       = rot13(ps_global->hostname);
        alpine_name    = rot13("alpine");
        alpine_version = rot5n(ALPINE_VERSION);
        system_os      = rot13(SYSTYPE);
+       revision	      = rot5n(revisionbuf);
     } else {
        hostpart	      = cpystr(ps_global->hostname);
        alpine_name    = cpystr("alpine");
        alpine_version = cpystr(ALPINE_VERSION);
        system_os      = cpystr(SYSTYPE);
+       revision	      = cpystr(revisionbuf);
     }
     
     if(!hostpart)
       hostpart = cpystr("huh");
 
-    snprintf(idbuf, sizeof(idbuf), "<%.6s.%.4s.%.20s.%02d%02d%02d%02d%02d%02d%X.%d@%.50s>",
-	    alpine_name, system_os, alpine_version, (now_x->tm_year) % 100, now_x->tm_mon + 1,
+    snprintf(idbuf, sizeof(idbuf), "<%.6s.%.4s.%.20s.%.10s.%02d%02d%02d%02d%02d%02d%X.%d@%.50s>",
+	    alpine_name, system_os, alpine_version, revision,(now_x->tm_year) % 100, now_x->tm_mon + 1,
 	    now_x->tm_mday, now_x->tm_hour, now_x->tm_min, now_x->tm_sec, 
 	    cnt, getpid(), hostpart);
     idbuf[sizeof(idbuf)-1] = '\0';
@@ -3392,6 +3396,7 @@ generate_message_id(void)
     if(alpine_name) fs_give((void **) & alpine_name);
     if(alpine_version) fs_give((void **)&alpine_version);
     if(system_os) fs_give((void **)&system_os);
+    if(revision) fs_give((void **)&revision);
 
     return(id);
 }
