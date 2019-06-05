@@ -5553,7 +5553,7 @@ Returns: none
 void
 phone_home(char *addr)
 {
-    char       tmp[MAX_ADDRESS];
+    char       tmp[MAX_ADDRESS], revision[128];
     ENVELOPE  *outgoing;
     BODY      *body;
 
@@ -5576,6 +5576,10 @@ phone_home(char *addr)
 	so_puts((STORE_S *)body->contents.text.data, "Document request: ");
 	so_puts((STORE_S *)body->contents.text.data, "Alpine-"); 
 	so_puts((STORE_S *)body->contents.text.data, ALPINE_VERSION);
+	get_alpine_revision_string(revision, sizeof(revision));
+	so_puts((STORE_S *)body->contents.text.data, " (");
+	so_puts((STORE_S *)body->contents.text.data, revision);
+	so_puts((STORE_S *)body->contents.text.data, ")");
 	if(ps_global->first_time_user)
 	  so_puts((STORE_S *)body->contents.text.data, " for New Users");
 
