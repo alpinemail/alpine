@@ -3205,6 +3205,7 @@ quit_screen(struct pine *pine_state)
     dprint((1, "\n\n    ---- QUIT SCREEN ----\n"));    
 
     if(F_ON(F_CHECK_MAIL_ONQUIT,ps_global)
+       && pine_state->mail_stream != NULL
        && new_mail(1, VeryBadTime, NM_STATUS_MSG | NM_DEFER_SORT) > 0
        && (quit = want_to(_("Quit even though new mail just arrived"), 'y', 0,
 			  NO_HELP, WT_NORM)) != 'y'){
