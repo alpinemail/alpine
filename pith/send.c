@@ -4331,7 +4331,7 @@ pine_rfc822_output_body(struct mail_bodystruct *body, soutr_t f, void *s)
 	       || !pine_write_body_header(&part->body,f,s)
 	       || !pine_rfc822_output_body (&part->body,f,s))
 	      return(0);
-#ifdef SMIME
+#if 0	/* temporariy disable this code */
 	    if(part == body->nested.part 
 		&& ps_global->smime 
 		&& ps_global->smime->do_sign
