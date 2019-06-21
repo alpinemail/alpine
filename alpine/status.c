@@ -235,7 +235,7 @@ pause_for_and_dq_cur_msg(void)
 	     * values for w. In those cases, reset w.
 	     */
 	    w = (w > 0 ? (w > 5 ? 5 : w) : 0);
-	    sleep(w);
+	    if(ps_global && !ps_global->initial_cmds) sleep(w);
 	    delay_cmd_cue(0);
 	}
 
@@ -258,7 +258,7 @@ pause_for_and_mark_specific_msg(SMQ_T *msg)
 	w = (w > 0) ? (w > 5 ? 5 : w): 0;
 	if(w){
 	    delay_cmd_cue(1);
-	    sleep(w);
+	    if (ps_global && !ps_global->initial_cmds) sleep(w);
 	    delay_cmd_cue(0);
 	}
 
@@ -1066,7 +1066,8 @@ output_message(SMQ_T *mq_entry, int ding)
 	      MoveCursor(ps_global->ttyo->screen_rows-FOOTER_ROWS(ps_global), 0);
 
 	    fflush(stdout);
-	    sleep(ps_global->status_msg_delay);
+	    if (ps_global && !ps_global->initial_cmds)
+		sleep(ps_global->status_msg_delay);
 	}
 
 	mq_entry->shown = 1;

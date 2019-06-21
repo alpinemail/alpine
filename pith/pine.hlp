@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 350 2019-06-05 12:46:29
+Alpine Commit 351 2019-06-21 11:25:44
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -238,6 +238,10 @@ submitted in 2009, but resubmitted by Erich Eckner on 2019.
      user agrees to save a certificate of another user, use the saved 
      certificate immediately to verify the smime message. Reported by 
      Stefan Mueller.
+
+<LI> Do not use a delay when printing messages to screen when the initial
+     keystroke sequence of commands is active. Based on a report from Holger
+     Trapp.
 </UL>
 
 <P>
