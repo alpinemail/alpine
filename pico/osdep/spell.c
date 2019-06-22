@@ -5,7 +5,7 @@ static char rcsid[] = "$Id: spell.c 854 2007-12-07 17:44:43Z hubert@u.washington
 /*
  * ========================================================================
  * Copyright 2006-2007 University of Washington
- * Copyright 2013-2018 Eduardo Chappa
+ * Copyright 2013-2019 Eduardo Chappa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

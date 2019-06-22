@@ -4,7 +4,7 @@ static char rcsid[] = "$Id: radio.c 769 2007-10-24 00:15:40Z hubert@u.washington
 
 /*
  * ========================================================================
- * Copyright 2013-2018 Eduardo Chappa
+ * Copyright 2013-2019 Eduardo Chappa
  * Copyright 2006-2007 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

@@ -5,7 +5,7 @@ static char rcsid[] = "$Id: confscroll.c 1169 2008-08-27 06:42:06Z hubert@u.wash
 /*
  * ========================================================================
  * Copyright 2006-2008 University of Washington
- * Copyright 2013-2018 Eduardo Chappa
+ * Copyright 2013-2019 Eduardo Chappa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
