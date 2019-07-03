@@ -51,7 +51,8 @@ typedef struct ldap_serv {
 		 ldaps,		/* Require LDAPS		*/
 		 type,		/* Search type (surname...)	*/
 		 srch,		/* Search rule (contains...)	*/
-		 scope;		/* Scope of search (base...)	*/
+     scope,		/* Scope of search (base...)	*/
+     norefer; /* Do not follow referrals */
 } LDAP_SERV_S;
 
 

@@ -4455,6 +4455,7 @@ There are also additional details on
 <li><a href="h_config_ldap_opts_ldaps">LDAP FEATURE: Require-LDAPS-On-Connection</a>
 <li><a href="h_config_ldap_opts_ref">LDAP FEATURE: Save-Search-Criteria-Not-Result</a>
 <li><a href="h_config_ldap_opts_impl">LDAP FEATURE: Use-Implicitly-From-Composer</a>
+<li><a href="h_config_ldap_opts_norefer">LDAP FEATURE: Dont-Follow-Referrals</a>
 <li><a href="h_config_ldap_binddn">LDAP OPTION: Bind-DN</a>
 <li><a href="h_config_ldap_cust">LDAP OPTION: Custom-Search-Filter</a>
 <li><a href="h_config_ldap_email_attr">LDAP OPTION: EmailAttribute</a>
@@ -15388,6 +15389,29 @@ Also see the LDAP feature
 <A HREF="h_config_ldap_opts_rhs">&quot;Lookup-Addrbook-Contents&quot;</A>
 and the Setup/Config feature
 <A HREF="h_config_add_ldap">&quot;<!--#echo var="FEAT_ldap-result-to-addrbook-add"-->&quot;</A>.
+<P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+======= h_config_ldap_opts_norefer =======
+<HTML>
+<HEAD>
+<TITLE>LDAP FEATURE: Dont-Follow-Referrals</TITLE>
+</HEAD>
+<BODY>
+<H1>LDAP FEATURE: Dont-Follow-Referrals</H1>
+
+Set this to avoid a second lookup of ref: attributes that come through
+on the initial search and instead use the initial search results returned.
+<P>
+Referrals in LDAP allow redirection of LDAP searches to alternate
+servers. This can be useful in large, distributed LDAP
+scenarios. However, some sites may not have referral URLs properly
+configured or the referral server may not be accessible to everyone
+who can do a query on the initial server.
+<P>
+If you are getting long hangs when attempting lookups despite having a
+timelimit set, try setting this feature.
 <P>
 &lt;End of help on this topic&gt;
 </BODY>

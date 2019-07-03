@@ -1140,13 +1140,14 @@ dir_config_edit(struct pine *ps, CONF_S **cl)
 }
 
 
-#define   LDAP_F_IMPL  0
-#define   LDAP_F_RHS   1
-#define   LDAP_F_REF   2
-#define   LDAP_F_NOSUB 3
-#define   LDAP_F_TLS   4
+#define   LDAP_F_IMPL    0
+#define   LDAP_F_RHS     1
+#define   LDAP_F_REF     2
+#define   LDAP_F_NOSUB   3
+#define   LDAP_F_TLS     4
 #define   LDAP_F_TLSMUST 5
-#define   LDAP_F_LDAPS 6
+#define   LDAP_F_LDAPS   6
+#define   LDAP_F_NOREFER 7
 bitmap_t  ldap_option_list;
 struct variable *ldap_srch_rule_ptr;
 
@@ -1353,6 +1354,8 @@ dir_edit_screen(struct pine *ps, LDAP_SERV_S *def, char *title, char **raw_serve
       setbitn(LDAP_F_TLS, ldap_option_list);
     if(def && def->tlsmust)
       setbitn(LDAP_F_TLSMUST, ldap_option_list);
+    if(def && def->norefer)
+      setbitn(LDAP_F_NOREFER, ldap_option_list);
     if(def && def->ldaps)
       setbitn(LDAP_F_LDAPS, ldap_option_list);
 
@@ -1537,6 +1540,9 @@ dir_edit_screen(struct pine *ps, LDAP_SERV_S *def, char *title, char **raw_serve
 	    break;
 	  case LDAP_F_LDAPS:
 	    ctmp->help      = h_config_ldap_opts_ldaps;
+	    break;
+    case LDAP_F_NOREFER:
+	    ctmp->help      = h_config_ldap_opts_norefer;
 	    break;
 	}
 
@@ -1958,7 +1964,7 @@ dir_edit_screen(struct pine *ps, LDAP_SERV_S *def, char *title, char **raw_serve
 	    }
 	}
 
-	snprintf(dir_tmp, sizeof(dir_tmp), "%s%s%s \"/base=%s/binddn=%s/impl=%d/rhs=%d/ref=%d/nosub=%d/tls=%d/tlsm=%d/ldaps=%d/type=%s/srch=%s%s/time=%s/size=%s/cust=%s/nick=%s/matr=%s/catr=%s/satr=%s/gatr=%s\"",
+	snprintf(dir_tmp, sizeof(dir_tmp), "%s%s%s \"/base=%s/binddn=%s/impl=%d/rhs=%d/ref=%d/nosub=%d/tls=%d/tlsm=%d/ldaps=%d/norefer=%d/type=%s/srch=%s%s/time=%s/size=%s/cust=%s/nick=%s/matr=%s/catr=%s/satr=%s/gatr=%s\"",
 		server ? server : "",
 		(portval >= 0 && port && *port) ? ":" : "",
 		(portval >= 0 && port && *port) ? port : "",
@@ -1970,7 +1976,8 @@ dir_edit_screen(struct pine *ps, LDAP_SERV_S *def, char *title, char **raw_serve
 		bitnset(LDAP_F_NOSUB, ldap_option_list) ? 1 : 0,
 		bitnset(LDAP_F_TLS, ldap_option_list) ? 1 : 0,
 		bitnset(LDAP_F_TLSMUST, ldap_option_list) ? 1 : 0,
-		bitnset(LDAP_F_LDAPS, ldap_option_list) ? 1 : 0,
+    bitnset(LDAP_F_LDAPS, ldap_option_list) ? 1 : 0,
+    bitnset(LDAP_F_NOREFER, ldap_option_list) ? 1 : 0,
 		srch_type ? srch_type : "",
 		srch_rule ? srch_rule : "",
 		custom_scope,
@@ -2460,7 +2467,8 @@ ldap_feature_list(int index)
 	{"disable-ad-hoc-space-substitution", NULL, LDAP_F_NOSUB},
 	{"attempt-tls-on-connection",         NULL, LDAP_F_TLS},
 	{"require-tls-on-connection",         NULL, LDAP_F_TLSMUST},
-	{"require-ldaps-on-connection",     NULL, LDAP_F_LDAPS}
+	{"require-ldaps-on-connection",       NULL, LDAP_F_LDAPS},
+	{"dont-follow-referrals",             NULL, LDAP_F_NOREFER}
     };
 
     return((index >= 0 &&

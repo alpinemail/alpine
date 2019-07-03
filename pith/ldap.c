@@ -705,6 +705,9 @@ try_password_again:
 
 	our_ldap_set_option(ld, LDAP_OPT_TIMELIMIT, &tl);
 	our_ldap_set_option(ld, LDAP_OPT_SIZELIMIT, &info->size);
+  if (info->norefer) {
+      our_ldap_set_option(ld, LDAP_OPT_REFERRALS, 0);
+  }
 
 	/*
 	 * If a custom filter has been passed in and it doesn't include a
@@ -1473,6 +1476,10 @@ break_up_ldap_server(char *serv_str)
 	/* get the ldaps parameter */
 	if((q = srchstr(tail, "/ldaps=1")) != NULL)
 	  info->ldaps = 1;
+
+	/* get the norefer parameter */
+	if((q = srchstr(tail, "/norefer=1")) != NULL)
+    info->norefer = 1;
 
 	/* get the search type value */
 	if((q = srchstr(tail, "/type=")) != NULL){
