@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 353 2019-06-30 20:21:37
+Alpine Commit 354 2019-07-03 17:30:21
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -1690,7 +1690,7 @@ a folder-collection, or a news or SMTP server).  This will
 disable certificate validation.  On the other hand, if you are attacked,
 you will get no warning if you do this.
 
-<P> When you get a error indicating a self-signed certficate from the 
+<P> When you get na error indicating a self-signed certficate from the 
 remote server, you can download and install the certificate for that 
 server. Avoid using the /NoValidate-Cert modifier. Alpine cannot help you 
 with this process because certificates are part of the system and are not 
@@ -21178,9 +21178,9 @@ service provider might track to which servers you are connecting securely.
 Encryption protocols are evolving to not only protect the security of your 
 data, but also your privacy.
 
-<P> Other type of errors can lead to insecure connections. An example is
+<P> Other types of errors can lead to insecure connections. An example is
 when the name of the server as provided by the user does not match the
-name of the name of the server in the certificate. 
+name of the server in the certificate. 
 <A href="h_tls_validation_failure">Read more</A> about security errors
 of this type and learn how to protect yourself against this type of
 errors.
