@@ -248,18 +248,43 @@ const SSL_METHOD *ssl_connect_mthd(int flag, int *min, int *max)
   if(client_request < *min || client_request > *max)
     return NIL;		/* out of range? bail out */
 
+  /* Some Linux distributors seem to believe that it is ok to disable some of
+   * these methods for their users, so we have to test that every requested
+   * method has actually been compiled in into their openssl/libressl library.
+   * Oh well...
+   */
 #ifndef OPENSSL_1_1_0
   if(client_request == SSL3_VERSION)
+#ifndef OPENSSL_NO_SSL3_METHOD
      return SSLv3_client_method();
+#else
+     return NIL;
+#endif /* OPENSSL_NO_SSL3_METHOD */
   else if(client_request == TLS1_VERSION)
+#ifndef OPENSSL_NO_TLS1_METHOD
      return TLSv1_client_method();
+#else
+     return NIL;
+#endif /* OPENSSL_NO_TLS1_METHOD */
   else if(client_request == TLS1_1_VERSION)
+#ifndef OPENSSL_NO_TLS1_1_METHOD
      return TLSv1_1_client_method();
+#else
+     return NIL;
+#endif /* OPENSSL_NO_TLS1_1_METHOD */
   else if(client_request == TLS1_2_VERSION)
+#ifndef OPENSSL_NO_TLS1_2_METHOD
      return TLSv1_2_client_method();
+#else
+     return NIL;
+#endif /* OPENSSL_NO_TLS1_2_METHOD */
 #ifdef TLS1_3_VERSION	/* this is only reachable if TLS1_3 support exists */
   else if(client_request == TLS1_3_VERSION)
+#ifndef OPENSSL_NO_TLS1_3_METHOD
      return TLS_client_method();
+#else
+     return NIL;
+#endif /* #ifndef OPENSSL_NO_TLS1_2_METHOD */
 #endif /* TLS1_3_VERSION */
 #endif /* ifndef OPENSSL_1_1_0 */
 
