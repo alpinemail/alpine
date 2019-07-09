@@ -1690,7 +1690,7 @@ a folder-collection, or a news or SMTP server).  This will
 disable certificate validation.  On the other hand, if you are attacked,
 you will get no warning if you do this.
 
-<P> When you get na error indicating a self-signed certficate from the 
+<P> When you get an error indicating a self-signed certficate from the 
 remote server, you can download and install the certificate for that 
 server. Avoid using the /NoValidate-Cert modifier. Alpine cannot help you 
 with this process because certificates are part of the system and are not 
