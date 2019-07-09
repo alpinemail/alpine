@@ -55,3 +55,5 @@ po/Makefile.in
 web/src/Makefile
 web/src/alpined.d/Makefile
 web/src/pubcookie/Makefile
+stamp-h1
+POTFILES
