@@ -1,5 +1,6 @@
 /* ========================================================================
  * Copyright 2008-2011 Mark Crispin
+ * Copyright 2019 Eduardo Chappa
  * ========================================================================
  */
 
@@ -9,7 +10,7 @@
  * Author:	Mark Crispin
  *
  * Date:	10 February 1992
- * Last Edited:	8 April 2011
+ * Last Edited:	July 10, 2019.
  *
  * Previous versions of this file were:
  *
@@ -1806,6 +1807,11 @@ SENDSTREAM *nntp_open_full (NETDRIVER *dv,char **hostlist,char *service,
     else if (extok) nntp_extensions (stream,(mb.secflag ? AU_SECURE : NIL) |
 				     (mb.authuser[0] ? AU_AUTHUSER : NIL));
   }
+  /* check one last time that we have a netstream before returning
+   * a stream that does not have it. Otherwise, nntp_mail will fail
+   * trying to dereference a null pointer.
+   */
+  if(stream && !stream->netstream) stream = nntp_close(stream);
   return stream;
 }
 
