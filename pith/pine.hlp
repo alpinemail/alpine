@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 359 2019-07-11 22:43:59
+Alpine Commit 360 2019-07-19 11:23:24
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -339,6 +339,10 @@ Bugs that have been addressed include:
    <LI> Alpine stops parsing the mailcap file when it finds an invalid entry.
         Reported by Matt Roberds to the Debian bug system at 
         <A HREF="https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=886370">https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=886370</A>.
+
+   <LI> Crash with error "Lock when already locked" when an attempt to check
+        for new mail on a locked stream that is being used for a save 
+        operation. Reported by Carlos E.R.
 </UL>
 
 <P>
