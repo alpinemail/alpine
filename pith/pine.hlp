@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 360 2019-07-19 11:23:24
+Alpine Commit 361 2019-07-31 22:42:27
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -242,6 +242,10 @@ submitted in 2009, but resubmitted by Erich Eckner on 2019.
 <LI> Do not use a delay when printing messages to screen when the initial
      keystroke sequence of commands is active. Based on a report from Holger
      Trapp.
+
+<LI> In PC-Alpine, when the decoded name of an attachment does not agree
+     with its encoded name, Alpine will offer to save the file using the
+     UTF8 encoded name.
 </UL>
 
 <P>

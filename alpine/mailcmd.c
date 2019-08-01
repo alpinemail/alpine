@@ -4286,12 +4286,18 @@ get_export_filename(struct pine *ps, char *filename, char *deefault,
 
 	rfc1522_decode_to_utf8((unsigned char *)tmp_20k_buf,
                                                   SIZEOF_20KBUF, filename);
+#ifndef _WINDOWS
+	/* In the Windows operating system we always return the UTF8 encoded name */ 
 	if(strcmp(tmp_20k_buf, filename)){
 	    opts[i].ch      = ctrl('N');
 	    opts[i].rval    = 40;
 	    opts[i].name    = "^N";
 	    opts[i++].label = "Name UTF8";
 	}
+#else
+        strncpy(filename, tmp_20k_buf, len);
+        filename[len-1] = '\0';
+#endif	/* _WINDOWS */
 
 	if(dir_hist || hist_len > 0){
 	    opts[i].ch      = ctrl('Y');
@@ -4840,6 +4846,7 @@ get_export_filename(struct pine *ps, char *filename, char *deefault,
 	      Writechar(BELL, 0);
 	    continue;
 	}
+#ifndef _WINDOWS
 	else if(r == 40){
 	    rfc1522_decode_to_utf8((unsigned char *)tmp_20k_buf,
                                                   SIZEOF_20KBUF, filename);
@@ -4847,6 +4854,7 @@ get_export_filename(struct pine *ps, char *filename, char *deefault,
 	    filename[len-1] = '\0';
 	    continue;
 	}
+#endif /* _WINDOWS */
 	else if(r != 0){
 	    Writechar(BELL, 0);
 	    continue;
