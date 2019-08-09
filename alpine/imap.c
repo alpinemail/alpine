@@ -1239,7 +1239,6 @@ mm_login_work(NETMBX *mb, char *user, char **pwd, long int trial,
 	if(rc == 1 || !user[0]) {
 	    ps_global->user_says_cancel = (rc == 1);
 	    user[0]   = '\0';
-	    pwd[0] = '\0';
 	}
     }
     else{
@@ -1248,7 +1247,6 @@ mm_login_work(NETMBX *mb, char *user, char **pwd, long int trial,
     }
 
     user[NETMAXUSER-1] = '\0';
-    pwd[NETMAXPASSWD-1] = '\0';
 
     if(!(user[0] || altuserforcache)){
 	ps_global->no_newmail_check_from_optionally_enter = 0;
@@ -1468,7 +1466,7 @@ mm_login_work(NETMBX *mb, char *user, char **pwd, long int trial,
         rc = optionally_enter(tmp, q_line, 0, NETMAXPASSWD,
 			      prompt, NULL, help, &flags);
 #endif /* !_WINDOWS */
-	*pwd = cpystr(tmp);
+        if(rc != 1) *pwd = cpystr(tmp);
 	ps_global->dont_use_init_cmds = save_dont_use;
 
         if(rc == 3) {
