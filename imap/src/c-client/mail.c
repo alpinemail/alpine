@@ -6240,10 +6240,10 @@ NETSTREAM *net_open (NETMBX *mb,NETDRIVER *dv,unsigned long port,
   NETSTREAM *stream = NIL;
   char tmp[MAILTMPLEN];
   unsigned long flags = mb->novalidate ? NET_NOVALIDATECERT : 0;
-  flags |= mb->tls1 || mb->tlsflag ? NET_TRYTLS1   : 0;
-  flags |= mb->tls1_1 ? NET_TRYTLS1_1 : 0;
-  flags |= mb->tls1_2 ? NET_TRYTLS1_2 : 0;
-  flags |= mb->tls1_3 ? NET_TRYTLS1_3 : 0;
+  flags |= mb->tls1 ? NET_TRYTLS1
+		: mb->tls1_1 ? NET_TRYTLS1_1
+		: mb->tls1_2 ? NET_TRYTLS1_2
+		: mb->tls1_3 ? NET_TRYTLS1_3 : 0;
   if (strlen (mb->host) >= NETMAXHOST) {
     sprintf (tmp,"Invalid host name: %.80s",mb->host);
     MM_LOG (tmp,ERROR);
