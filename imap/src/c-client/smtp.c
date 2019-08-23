@@ -363,6 +363,7 @@ void *smtp_challenge (void *s,unsigned long *len)
     sprintf (tmp,"SMTP SERVER BUG (invalid challenge, continuing): %.80s",stream->reply+4);
     mm_log (tmp,ERROR);
     ret = cpystr("");	/* This is silly: fake a reply, it will be ignored */
+    *len = 0L;
   }
   return ret;
 }
