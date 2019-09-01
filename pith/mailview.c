@@ -2080,7 +2080,7 @@ url_external_specific_handler(char *url, int len)
 		      }
 		      else
 			dprint((1,
-				   "* * * HANLDER TOO LONG: %.*s\n", n,
+				   "* * * HANDLER TOO LONG: %.*s\n", n,
 				   p ? p : "?"));
 
 		      n++;

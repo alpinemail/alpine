@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 365 2019-08-22 19:11:49
+Alpine Commit 366 2019-09-01 12:23:55
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -530,7 +530,7 @@ Additions include:
        be transformed to UTF-8 for further transformation through internal
        and user defined filters for saving.
 
-  <LI> Add command line argument -smimedir, which allows to specify
+  <LI> Add command line argument -smimedir, which allows users to specify
        the default path for a directory that contains the public, private, 
        and ca directories. This is useful in case a user has a backup of 
        old certificates that cannot be installed in the ~/.alpine-smime 
@@ -1788,7 +1788,7 @@ For example, if
 <P><CENTER><SAMP>$VAR</SAMP></CENTER><P>
 
 appears in the value of an Alpine configuration option it is looked up in the
-environent (using getenv(&quot;VAR&quot;)) and its
+envirom ent (using getenv(&quot;VAR&quot;)) and its
 looked-up value replaces the <SAMP>$VAR</SAMP> part of the option value.
 To include a literal dollar sign you may precede the dollar sign with another
 dollar sign.
@@ -4489,7 +4489,7 @@ There are also additional details on
 <li><a href="new_user_greeting">NEW USER GREETING</a>
 <li><a href="new_version_greeting">NEW VERSION GREETING</a>
 <li><a href="h_mainhelp_readingnews">News Reading</a>
-<li><a href="h_folder_subscribe">Newsgroup Subcribe Screen explained</a>
+<li><a href="h_folder_subscribe">Newsgroup Subscribe Screen explained</a>
 <li><a href="h_folder_postnews">Newsgroup selecting for Posting explained</a>
 <li><a href="h_common_nextnew">NextNew Command</a>
 <li><a href="h_abook_select_nick">Nickname Selection Explained</a>
@@ -5031,7 +5031,7 @@ either local or remote.
 For PC-Alpine, the personal exceptions configuration file is named
 <CODE>PINERCEX</CODE> and is in the same directory as the personal
 configuration file unless the personal configuration file is remote.
-In that case, it is in the local directory specfied by the
+In that case, it is in the local directory specified by the
 &quot;-aux local_directory&quot; command line argument.
 (In the case that the personal configuration is remote and there is no
 &quot;-aux&quot; command line argument, Alpine searches for
@@ -11753,7 +11753,7 @@ FOR MORE INFORMATION: See the section on
 ===== h_folder_subscribe =====
 <HTML>
 <HEAD>
-<TITLE>Newsgroup Subcribe Screen explained</TITLE>
+<TITLE>Newsgroup Subscribe Screen explained</TITLE>
 </HEAD>
 <BODY>
 <H1>FOLDER SUBSCRIBE HELP</H1>
@@ -13581,7 +13581,7 @@ Available commands include:
 <DT>Delete</DT>
 <DD>Mark the viewed attachment for Deletion.  The delete
 flag <EM>only</EM> has affect when saving the message to a folder.
-Attachments marked for deletion are exluded from the messsage when
+Attachments marked for deletion are excluded from the message when
 it is saved.  In addition, the delete mark <EM>only</EM> applies to
 this Alpine session.
 
@@ -13939,7 +13939,7 @@ deleted some text.
 You can include other text files with the 
 &quot;<A HREF="h_compose_readfile">Read File</A>&quot; command,
 which will prompt you for the name of the file to insert at the
-current cursor postion.
+current cursor position.
 
 <P>
 <UL>
@@ -20403,7 +20403,7 @@ the <A HREF="h_color_setup">Setup Kolor</A> screen.
 This gives the
 <a href="h_rules_score">score</a>
 of each message.
-This will be six columns wide to accomodate the widest possible score.
+This will be six columns wide to accommodate the widest possible score.
 You will probably want to use the <!--#echo var="VAR_index-format"--> fixed-field width feature
 to limit the width of the field to the widest score that
 you use (e.g. SCORE(3) if your scores are always between 0 and 999).
@@ -21048,7 +21048,7 @@ a SEARCH command correctly. If your filtering rules
 fail to filter some messages, that should have been filtered, then this
 option will make Alpine download all data necessary data to perform that 
 search. There is a performance penalty when using this option. Downloading 
-the data to perfom the search will take longer than requesting the IMAP
+the data to perform the search will take longer than requesting the IMAP
 server to perform the filtering, but the filtering will be done correctly.
 <P>
 </DD>
@@ -25789,7 +25789,7 @@ Sets the format of the command used to
 open a UNIX remote shell connection. The default is
 "%s %s -l %s exec /etc/r%sd". All four "%s" entries MUST exist in the
 provided command. The first is for the command's pathname, the second is
-for the host to connnect to, the third is for the user to connect as, and
+for the host to connect to, the third is for the user to connect as, and
 the fourth is for the connection method (typically <CODE>imap</CODE>).
 <P>
 <UL>   
@@ -25848,7 +25848,7 @@ When a new version of Alpine is run for the first time it offers a
 special explanatory screen to the user upon startup.  This option
 helps control when and if that special screen appears for users that
 have previously run Alpine.  It takes as its value an Alpine version
-number.  Alpine versions less than the specified value will supress this
+number.  Alpine versions less than the specified value will suppress this
 special screen while versions equal to or greater than that specified
 will behave normally.
 <P>
@@ -26655,7 +26655,7 @@ something is happening with a small animated display in the status
 message line near the bottom of the screen.
 This option sets how frequently the characters (for example, a spinning bar)
 in the active status message lines are updated.
-At most, it can be set to be udpated 20 times per second. 
+At most, it can be set to be updated 20 times per second. 
 
 <P>
 Setting this value to zero will prevent display of the animations
@@ -26754,7 +26754,7 @@ This requirement is not universal.
 If the system you are using supports it, it should work.
 (It is often the case that your home directory is in an NFS filesystem.
 If that is the case, you might try using a file in the &quot;/tmp&quot;
-filesystem, which is usually a local filesytem.)
+filesystem, which is usually a local filesystem.)
 Even when it is possible to use an NFS-mounted filesystem as a place to name
 the fifo (for example, your home directory), it will still be the case that
 the reader (probably the &quot;cat&quot; command) and the
@@ -29656,7 +29656,7 @@ configured
 <A HREF="h_config_smtp_server">&quot;<!--#echo var="VAR_smtp-server"-->&quot;</A>
 having the negotiation mechanism introduced in
 &quot;Extended SMTP&quot; (ESMTP) and the specific extension called
-&quot;Delivery Status Notification&quot; (DSN).  If the mail tranport agent you
+&quot;Delivery Status Notification&quot; (DSN).  If the mail transport agent you
 are using doesn't support DSN, a short warning will be shown to you on
 the message line at the bottom of the screen after you send your message,
 but your message will have been sent anyway.
@@ -30098,7 +30098,7 @@ Below are your options:
 <LI><B>A</B>: This determines if Alpine will include or not the 
 attachments sent to you in the message that you are replying to. The default 
 is to use the value of the configuration option 
-<A HREF="h_config_attach_in_reply"><!--#echo var="FEAT_include-attachments-in-reply"--></A> and can be overriden by using this command.
+<A HREF="h_config_attach_in_reply"><!--#echo var="FEAT_include-attachments-in-reply"--></A> and can be overridden by using this command.
 
 <LI><B>H</B>: This command determines if the headers of a message are
 included in the body of the message that is being replied to. By default 
@@ -31558,7 +31558,7 @@ match what you might type if there was a role match.)
 <P>
 If you are using the alternate form of the Compose command called
 &quot;Role&quot;, then all of your roles will be available to you,
-independent of the value of this feauture and of the values set for all of
+independent of the value of this feature and of the values set for all of
 Reply Use, Forward Use, and Compose Use.
 <P>
 <UL>   
@@ -32152,7 +32152,7 @@ UNIX Alpine only.
 If the terminal or terminal emulator you are using is capable of displaying
 colors, this option controls whether or not color will be used in Alpine.
 If you turn color on and things are set up correctly,
-you should see color appear on the screen immmediately.
+you should see color appear on the screen immediately.
 Modern terminal emulators are usually capable of displaying colors.
 <P>
 The available options include:
@@ -32499,7 +32499,7 @@ Message Index's &quot;E&nbsp;Export&quot; command.
 Normally, when a filename is supplied that lacks a leading &quot;path&quot;
 component, Alpine assumes the file exists in the user's home directory.
 Under Windows operating systems, this definition isn't always clear.  This 
-feature allows you to explictly set where Alpine should look for files
+feature allows you to explicitly set where Alpine should look for files
 without a leading path.
 
 <P>
@@ -33593,7 +33593,7 @@ in the MESSAGE INDEX screen.
 To change a color, highlight the color you want to change (for example,
 the Status Color) by moving
 the cursor into it.
-You may want to read the help text for the color to see a brief desription
+You may want to read the help text for the color to see a brief description
 of what you are coloring.
 Then press &quot;C&quot; for Change to set the color to something new.
 That will put you into a screen with two columns of colors, one for
