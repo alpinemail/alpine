@@ -516,6 +516,8 @@ display_color_codes(void)
     exit(1);
   }
 
+  if(ncolors & 1) ncolors--;	/* eliminate transparent colors at this time */
+
   fprintf(stdout, "%s", "The code of a color is the number in the same row plus\r\n");
   fprintf(stdout, "%s", "the number in the same column as that color.\r\n\r\n");
 
@@ -530,16 +532,14 @@ display_color_codes(void)
   }
 
   pico_toggle_color(1);
-  if(ncolors != 256){
+  if(ncolors < 256){
       for(k = -1; 16*k < ncolors; k++){
 	for(l = -1; l < ncolors; l++){
 	   if(k == -1){
-		if(ncolors == 8){
-		   if(l == -1)
-		      fprintf(stdout, "%s", "    ");
-	   	   else 
-		      fprintf(stdout, "%3d", l);
-		}
+		if(l == -1)
+		   fprintf(stdout, "%s", "    ");
+		else
+		   fprintf(stdout, "%3d", l);
 	   }
 	   else{
 		if(l == -1){
@@ -558,10 +558,9 @@ display_color_codes(void)
 	   }
 	}
 	pico_toggle_color(0);
-	if(k == 0)
+	if(k == -1)
 	  fprintf(stdout, " (%d colors)", ncolors);
-	if(k != -1 || ncolors == 8)
-	  fprintf(stdout, "%s", "\r\n");
+	fprintf(stdout, "%s", "\r\n");
       }
   } else {
       fprintf(stdout, "%s", "Codes for terminal with 256 colors:\r\n");

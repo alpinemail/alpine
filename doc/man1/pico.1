@@ -172,61 +172,62 @@ type of text that is being configured, for example "nt" stands for
 \fInormal text\fR, so that -ntfc represents the color of the normal text,
 while -ntbc represents the color of the background of normal text. Here
 is a complete list of the color options supported by Pico.
-.IP -color_codes
+.IP \fB-color_code\fR
 displays the number of colors supported by the terminal, and a 
 table showing the association of colors and numerical codes
-.IP -ncolors \fInumber\fR
+.IP \fB-ncolors\fB\ \fInumber\fR
 activates color support in Pico, and tells Pico how many colors to use.
 Depending on your terminal \fInumber\fR could be 8, 16, or 256.
-.IP -ntfc \fInumber\fR
+.IP \fB-ntfc\fB\ \fInum\fR
 specifies the number \fInum\fR of the color to be used to color normal text.
-.IP -ntbc \fInumber\fR
+.IP \fB-ntbc\fB\ \fInum\fR
 specifies the number \fInum\fR of the color of the background for normal text.
-.IP -rtfc \fInumber\fR 	
-number of the color of reverse text. Default: same as background color
-of normal text (if specified.)
-.IP -rtbc \fInumber\fR 	
-number of the color of the background of reverse text. Default: same as 
-color of normal text (if specified.)
-.IP -tbfc \fInumber\fR
-number of color of text of the title bar. Default: same as
-foreground color of reverse text.
-.IP -tbbc \fInumber\fR
-number of the color of background of the title bar.
-.IP -klfc \fInumber\fR 	
-number of the color of the text of the key label.
-.IP -klbc \fInumber\fR
-number of color of background of the key label.
-.IP -knfc \fInumber\fR
-number of color of text of the key name.
-.IP -knbc \fInumber\fR
-number of color of background of the key name.
-.IP -stfc \fInumber\fR
-number of color of text of the status line.
-.IP -stbc \fInumber\fR
-number of color of background of the status line.
-.IP -prfc \fInumber\fR
-number of color of text of a prompt.
-.IP -prbc \fInumber\fR
-number of color of background of a prompt.
-.IP -q1fc \fInumber\fR
-number of color of text of level one of quoted text.
-.IP -q1bc \fnumber\fR
-number of color of background of level one of quoted text. If the option
+.IP \fB-rtfc\fB\ \fInum\fR
+specifies the number \fInum\fR of the color of reverse text. Default: same
+as background color of normal text (if specified.)
+.IP \fB-rtbc\fB\ \fInum\fR
+specifies the number \fInum\fR of the color of the background of
+reverse text. Default: same as color of normal text (if specified.)
+.IP \fB-tbfc\fB\ \fInum\fR
+specifies the number \fInum\fR of then color of text of the title bar.
+Default: same as foreground color of reverse text.
+.IP \fB-tbbc\fB\ \fInum\fR
+specifies the number \fInum\fR of the color in the background of the title bar.
+.IP \fB-klfc\fB\ \fInum\fR
+specifies the number \fInum\fR of the color of the text of the key label.
+.IP \fB-klbc\fB\ \fInum\fR
+specifies the number \fInum\fR of the color in the background of the key label.
+.IP \fB-knfc\fB\ \fInum\fR
+specifies the number \fInum\fR of the color of the text of the key name.
+.IP \fB-knbc\fB\ \fInum\fR
+specifies the number \fInum\fR of the color of the background of the key name.
+.IP \fB-stfc\fB\ \fInum\fR
+specifies the number \fInum\fR of the color of the text of the status line.
+.IP \fB-stbc\fB\ \fInum\fR
+specifies the number \fInum\fR of the color of the background of the status line.
+.IP \fB-prfc\fB\ \fInum\fR
+specifies the number \fInum\fR of the color of the text of a prompt.
+.IP \fB-prbc\fB\ \fInum\fR
+specifies the number \fInum\fR of the color of the background of a prompt.
+.IP \fB-q1fc\fB\ \fInum\fR
+specifies the number \fInum\fR of the color of the text of level one of quoted text.
+.IP \fB-q1bc\fB\ \fInum\fR
+specifies the number \fInum\fR of the color of the background of level one of quoted text. If the option
 -q1bc is used, the default value of this option is the background color
 or normal text.
-.IP -q2fc \fInumber\fR
-number of color of text of level two of quoted text.
-.IP -q2bc \fInumber\fR
-number of color of background of level two of quoted text. If the option
+.IP \fB-q2fc\fB\ \fInum\fR
+specifies the number \fInum\fR of the color of text of level two of quoted text.
+.IP \fB-q2bc\fB\ \fInum\fR
+specifies the number \fInum\fR of the color of the background of level two of quoted text. If the option
 -q1bc is used, the default value of this option is the background color
 or normal text.
-.IP -q3fc \fInumber\fR
-number of color of text of level three of quoted text.
-.IP -sbfc \fInumber\fR
-number of color of text of signature block text.
-.IP -sbbc n\fIumber\fR
-number of color of background of signature block text.
+.IP \fB-q3fc\fB\ \fInum\fR
+specifies the number \fInum\fR of the color of text of level three of quoted text.
+.IP \fB-sbfc\fB\ \fInum\fR
+specifies the number \fInum\fR of the color of text of signature block text.
+.IP \fB-sbbc\fB\ \fInum\fR
+specifies the number \fInum\fR of the color of the background of signature
+block text.
 .PP
 .SH Bugs
 The manner in which lines longer than the display width are dealt
