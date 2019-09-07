@@ -914,7 +914,6 @@ char     **get_supported_options(void);
 unsigned   reset_startup_rule(MAILSTREAM *);
 void	   free_pinerc_lines(PINERC_LINE **);
 void	   panic1(char *, char *);
-int	   pith_ssl_encryption_version(char *);
 
 /* mandatory to implement prototypes */
 int	   set_input_timeout(int);

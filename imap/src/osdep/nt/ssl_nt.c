@@ -34,42 +34,10 @@
 #include <bio.h>
 #include <crypto.h>
 #include <rand.h>
-#ifndef TLS_client_method
-#ifdef TLSv1_2_client_method
-#define TLS_client_method TLSv1_2_client_method
-#elif defined(TLSv1_1_client_method)
-#define TLS_client_method TLSv1_1_client_method
-#else
-#define TLS_client_method TLSv1_client_method
-#endif /* TLSv1_2_client_method */
-#endif /* TLS_client_method */
 #ifdef OPENSSL_1_1_0
 #include <rsa.h>
 #include <bn.h>
-#ifdef TLSv1_client_method
-#undef TLSv1_client_method
-#endif /* TLSv1_client_method */
-#ifdef TLSv1_1_client_method
-#undef TLSv1_1_client_method   
-#endif /* TLSv1_1_client_method */
-#ifdef TLSv1_2_client_method
-#undef TLSv1_2_client_method
-#endif /* TLSv1_2_client_method */
-#ifdef DTLSv1_client_method
-#undef DTLSv1_client_method
-#endif /* DTLSv1_client_method */
-#ifdef DTLSv1_2_client_method
-#undef DTLSv1_2_client_method
-#endif /* DTLSv1_2_client_method */
-#define TLSv1_client_method   TLS_client_method
-#define TLSv1_1_client_method TLS_client_method
-#define TLSv1_2_client_method TLS_client_method
-#define DTLSv1_client_method  DTLS_client_method
-#define DTLSv1_2_client_method DTLS_client_method
-#endif /* OPENSSL_1_1_0 */  
-#ifndef DTLSv1_2_client_method 
-#define DTLSv1_2_client_method DTLSv1_client_method
-#endif /* DTLSv1_2_client_method */
+#endif /* OPENSSL_1_1_0 */
 #undef STRING
 #undef crypt
 
@@ -124,6 +92,39 @@ static long ssl_abort (SSLSTREAM *stream);
 
 static RSA *ssl_genkey (SSL_CTX_TYPE *con,int export,int keylength);
 
+typedef struct ssl_versions_s {
+	char *name;
+	int   version;
+} SSL_VERSIONS_S;
+
+int
+pith_ssl_encryption_version(char *s)
+{
+	SSL_VERSIONS_S ssl_versions[] = {
+		{ "no_min", 0 },
+	{ "ssl3",   SSL3_VERSION },
+	{ "tls1",   TLS1_VERSION },
+	{ "tls1_1", TLS1_1_VERSION },
+	{ "tls1_2", TLS1_2_VERSION },
+#ifdef TLS1_3_VERSION
+	{ "tls1_3", TLS1_3_VERSION },
+#endif /* TLS1_3_VERSION */
+	{ "no_max", 0 },	/* set this last in the list */
+	{ NULL, 0 },
+	};
+	int i;
+
+	if (s == NULL || *s == '\0')
+		return -1;
+
+	for (i = 0; ssl_versions[i].name != NULL; i++)
+		if (strcmp(ssl_versions[i].name, s) == 0)
+			break;
+
+	if (strcmp(s, "no_max") == 0) i--;
+
+	return ssl_versions[i].name != NULL ? ssl_versions[i].version : -1;
+}
 
 /* Secure Sockets Layer network driver dispatch */
 
@@ -206,50 +207,119 @@ SSLSTREAM *ssl_aopen (NETMBX *mb,char *service,char *usrbuf)
   return NIL;			/* don't use this mechanism with SSL */
 }
 
+typedef struct ssl_disable_s {
+	int   version;
+	int   disable_code;
+} SSL_DISABLE_S;
+
+SSL_DISABLE_S ssl_disable[] = {
+	{ SSL2_VERSION, SSL_OP_NO_SSLv2 },
+{ SSL3_VERSION, SSL_OP_NO_SSLv3 },
+{ TLS1_VERSION, SSL_OP_NO_TLSv1 },
+{ TLS1_1_VERSION, SSL_OP_NO_TLSv1_1 },
+{ TLS1_2_VERSION, SSL_OP_NO_TLSv1_2 },
+#ifdef TLS1_3_VERSION
+{ TLS1_3_VERSION, SSL_OP_NO_TLSv1_3 },
+#endif /* TLS1_3_VERSION */
+{ 0, 0 }
+};
+
+#define NUMBER_SSL_VERSIONS (sizeof(ssl_disable)/sizeof(ssl_disable[0]) - 1)
+
+/* returns the mask to disable a specific version.
+* If version not found, returns 0.
+*
+* Arguments: version, and direction.
+* If direction is -1, returns mask to disable versions less than given version.
+* If direction is +1, returns mask to disable versions bigger than given version.
+*/
+int ssl_disable_mask(int ssl_version, int direction)
+{
+	int rv = 0;
+	int i;
+	for (i = 0; ssl_disable[i].version != 0
+		&& ssl_disable[i].version != ssl_version; i++);
+	if (i == 0
+		|| i == NUMBER_SSL_VERSIONS - 1
+		|| ssl_disable[i].version == 0)
+		return rv;
+	i += direction; 	/* move in the direction */
+	for (; i >= 0 && i <= NUMBER_SSL_VERSIONS - 1; i += direction)
+		rv |= ssl_disable[i].disable_code;
+	return rv;
+}
+
+
 /* ssl_connect_mthd: returns a context pointer to the connection to
  * a ssl server
  */
-const SSL_METHOD *ssl_connect_mthd(int flag)
+const SSL_METHOD *ssl_connect_mthd(int flag, int *min, int *max)
 {
-  if (flag & NET_TRYTLS1)
-#ifndef OPENSSL_NO_TLS1_METHOD  
-     return TLSv1_client_method();   
+	int client_request;
+	client_request = (flag & NET_TRYTLS1) ? TLS1_VERSION
+		: (flag & NET_TRYTLS1_1) ? TLS1_1_VERSION
+		: (flag & NET_TRYTLS1_2) ? TLS1_2_VERSION
+#ifdef TLS1_3_VERSION
+		: (flag & NET_TRYTLS1_3) ? TLS1_3_VERSION
 #else
-     return TLS_client_method();
+		: (flag & NET_TRYTLS1_3) ? -2
+#endif
+		: 0;
+
+	*min = *(int *)mail_parameters(NULL, GET_ENCRYPTION_RANGE_MIN, NULL);
+	*max = *(int *)mail_parameters(NULL, GET_ENCRYPTION_RANGE_MAX, NULL);
+
+	/*
+	* if no special request, negotiate the maximum the client is configured
+	* to negotiate
+	*/
+	if (client_request == 0)
+		client_request = *max;
+
+	if (client_request < *min || client_request > *max)
+		return NIL;		/* out of range? bail out */
+
+						/* Some Linux distributors seem to believe that it is ok to disable some of
+						* these methods for their users, so we have to test that every requested
+						* method has actually been compiled in into their openssl/libressl library.
+						* Oh well...
+						*/
+#ifndef OPENSSL_1_1_0
+	if (client_request == SSL3_VERSION)
+#ifndef OPENSSL_NO_SSL3_METHOD
+		return SSLv3_client_method();
+#else
+		return NIL;
+#endif /* OPENSSL_NO_SSL3_METHOD */
+	else if (client_request == TLS1_VERSION)
+#ifndef OPENSSL_NO_TLS1_METHOD
+		return TLSv1_client_method();
+#else
+		return NIL;
 #endif /* OPENSSL_NO_TLS1_METHOD */
-     
-  else if(flag & NET_TRYTLS1_1)
+	else if (client_request == TLS1_1_VERSION)
 #ifndef OPENSSL_NO_TLS1_1_METHOD
-     return TLSv1_1_client_method(); 
+		return TLSv1_1_client_method();
 #else
-     return TLS_client_method();
+		return NIL;
 #endif /* OPENSSL_NO_TLS1_1_METHOD */
- 
-  else if(flag & NET_TRYTLS1_2)
+	else if (client_request == TLS1_2_VERSION)
 #ifndef OPENSSL_NO_TLS1_2_METHOD
-     return TLSv1_2_client_method();
+		return TLSv1_2_client_method();
 #else
-     return TLS_client_method();
+		return NIL;
 #endif /* OPENSSL_NO_TLS1_2_METHOD */
-
-  else if(flag & NET_TRYTLS1_3) 
-     return TLS_client_method();   
-     
-  else if(flag & NET_TRYDTLS1) 
-#ifndef OPENSSL_NO_DTLS1_METHOD 
-     return DTLSv1_client_method();  
+#ifdef TLS1_3_VERSION	/* this is only reachable if TLS1_3 support exists */
+	else if (client_request == TLS1_3_VERSION)
+#ifndef OPENSSL_NO_TLS1_3_METHOD
+		return TLS_client_method();
 #else
-     return DTLS_client_method();
-#endif /* OPENSSL_NO_DTLS1_METHOD */ 
- 
-  else if(flag & NET_TRYDTLS1_2)
-#ifndef OPENSSL_NO_DTLS1_METHOD 
-     return DTLSv1_2_client_method();
-#else
-     return DTLS_client_method();
-#endif /* OPENSSL_NO_DTLS1_METHOD */ 
+		return NIL;
+#endif /* #ifndef OPENSSL_NO_TLS1_2_METHOD */
+#endif /* TLS1_3_VERSION */
+#endif /* ifndef OPENSSL_1_1_0 */
 
-  else return SSLv23_client_method();
+	return SSLv23_client_method();
 }
 
 /* Start SSL/TLS negotiations
@@ -313,78 +383,87 @@ static SSLSTREAM *ssl_start (TCPSTREAM *tstream,char *host,unsigned long flags)
 static char *ssl_last_error = NIL;
 static char *ssl_last_host = NIL;
 
-static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags)
+
+static char *ssl_start_work(SSLSTREAM *stream, char *host, unsigned long flags)
 {
-  BIO *bio;
-  X509 *cert;
-  unsigned long sl,tl;
-  char *s,*t,*err,tmp[MAILTMPLEN], buf[256];
-  sslcertificatequery_t scq =
-    (sslcertificatequery_t) mail_parameters (NIL,GET_SSLCERTIFICATEQUERY,NIL);
-  sslclientcert_t scc =
-    (sslclientcert_t) mail_parameters (NIL,GET_SSLCLIENTCERT,NIL);
-  sslclientkey_t sck =
-    (sslclientkey_t) mail_parameters (NIL,GET_SSLCLIENTKEY,NIL);
-  if (ssl_last_error) fs_give ((void **) &ssl_last_error);
-  ssl_last_host = host;
-  if (!(stream->context = SSL_CTX_new (ssl_connect_mthd(flags))))
-    return "SSL context failed";
-  SSL_CTX_set_options (stream->context,0);
-				/* disable certificate validation? */
-  if (flags & NET_NOVALIDATECERT)
-    SSL_CTX_set_verify (stream->context,SSL_VERIFY_NONE,NIL);
-  else SSL_CTX_set_verify (stream->context,SSL_VERIFY_PEER,ssl_open_verify);
-				/* set default paths to CAs... */
-  SSL_CTX_set_default_verify_paths (stream->context);
-				/* ...unless a non-standard path desired */
-  if ((s = (char *) mail_parameters (NIL,GET_SSLCAPATH,NIL)) != NULL)
-    SSL_CTX_load_verify_locations (stream->context,NIL,s);
-				/* want to send client certificate? */
-  if (scc && (s = (*scc) ()) && (sl = strlen (s))) {
-    if ((cert = PEM_read_bio_X509 (bio = BIO_new_mem_buf (s,sl),NIL,NIL,NIL)) != NULL) {
-      SSL_CTX_use_certificate (stream->context,cert);
-      X509_free (cert);
-    }
-    BIO_free (bio);
-    if (!cert) return "SSL client certificate failed";
-				/* want to supply private key? */
-    if ((t = (sck ? (*sck) () : s)) && (tl = strlen (t))) {
-      EVP_PKEY *key;
-      if ((key = PEM_read_bio_PrivateKey (bio = BIO_new_mem_buf (t,tl),
-					 NIL,NIL,"")) != NULL) {
-	SSL_CTX_use_PrivateKey (stream->context,key);
-	EVP_PKEY_free (key);
-      }
-      BIO_free (bio);
-      memset (t,0,tl);		/* erase key */
-    }
-    if (s != t) memset (s,0,sl);/* erase certificate if different from key */
-  }
-
-				/* create connection */
-  if (!(stream->con = (SSL *) SSL_new (stream->context)))
-    return "SSL connection failed";
-  bio = BIO_new_socket (stream->tcpstream->tcpsi,BIO_NOCLOSE);
-  SSL_set_bio (stream->con,bio,bio);
-  SSL_set_connect_state (stream->con);
-  if (SSL_in_init (stream->con)) SSL_total_renegotiations (stream->con);
-				/* now negotiate SSL */
-  if (SSL_write (stream->con,"",0) < 0)
-    return ssl_last_error ? ssl_last_error : "SSL negotiation failed";
-				/* need to validate host names? */
-  if (!(flags & NET_NOVALIDATECERT) &&
-      (err = ssl_validate_cert (cert = SSL_get_peer_certificate (stream->con),
-				host))) {
-				/* application callback */
-    X509_NAME_oneline (X509_get_subject_name(cert), buf, sizeof(buf));
-    if (scq) return (*scq) (err,host,cert ? buf : "???") ? NIL : "";
-				/* error message to return via mm_log() */
-    sprintf (tmp,"*%.128s: %.255s",err,cert ? buf : "???");
-    return ssl_last_error = cpystr (tmp);
-  }
-  return NIL;
+	BIO *bio;
+	X509 *cert;
+	unsigned long sl, tl;
+	int min, max;
+	int masklow, maskhigh;
+	char *s, *t, *err, tmp[MAILTMPLEN], buf[256];
+	sslcertificatequery_t scq =
+		(sslcertificatequery_t)mail_parameters(NIL, GET_SSLCERTIFICATEQUERY, NIL);
+	sslclientcert_t scc =
+		(sslclientcert_t)mail_parameters(NIL, GET_SSLCLIENTCERT, NIL);
+	sslclientkey_t sck =
+		(sslclientkey_t)mail_parameters(NIL, GET_SSLCLIENTKEY, NIL);
+	if (ssl_last_error) fs_give((void **)&ssl_last_error);
+	ssl_last_host = host;
+	if (!(stream->context = SSL_CTX_new(ssl_connect_mthd(flags, &min, &max))))
+		return "SSL context failed";
+	SSL_CTX_set_options(stream->context, 0);
+	masklow = ssl_disable_mask(min, -1);
+	maskhigh = ssl_disable_mask(max, 1);
+	SSL_CTX_set_options(stream->context, masklow | maskhigh);
+	/* disable certificate validation? */
+	if (flags & NET_NOVALIDATECERT)
+		SSL_CTX_set_verify(stream->context, SSL_VERIFY_NONE, NIL);
+	else SSL_CTX_set_verify(stream->context, SSL_VERIFY_PEER, ssl_open_verify);
+	/* set default paths to CAs... */
+	SSL_CTX_set_default_verify_paths(stream->context);
+	/* ...unless a non-standard path desired */
+	if ((s = (char *)mail_parameters(NIL, GET_SSLCAPATH, NIL)) != NULL)
+		SSL_CTX_load_verify_locations(stream->context, NIL, s);
+	/* want to send client certificate? */
+	if (scc && (s = (*scc) ()) && (sl = strlen(s))) {
+		if ((cert = PEM_read_bio_X509(bio = BIO_new_mem_buf(s, sl), NIL, NIL, NIL)) != NULL) {
+			SSL_CTX_use_certificate(stream->context, cert);
+			X509_free(cert);
+		}
+		BIO_free(bio);
+		if (!cert) return "SSL client certificate failed";
+		/* want to supply private key? */
+		if ((t = (sck ? (*sck) () : s)) && (tl = strlen(t))) {
+			EVP_PKEY *key;
+			if ((key = PEM_read_bio_PrivateKey(bio = BIO_new_mem_buf(t, tl),
+				NIL, NIL, "")) != NULL) {
+				SSL_CTX_use_PrivateKey(stream->context, key);
+				EVP_PKEY_free(key);
+			}
+			BIO_free(bio);
+			memset(t, 0, tl);		/* erase key */
+		}
+		if (s != t) memset(s, 0, sl);/* erase certificate if different from key */
+	}
+
+	/* create connection */
+	if (!(stream->con = (SSL *)SSL_new(stream->context)))
+		return "SSL connection failed";
+	if (host && !SSL_set_tlsext_host_name(stream->con, host)) {
+		return "Server Name Identification (SNI) failed";
+	}
+	bio = BIO_new_socket(stream->tcpstream->tcpsi, BIO_NOCLOSE);
+	SSL_set_bio(stream->con, bio, bio);
+	SSL_set_connect_state(stream->con);
+	if (SSL_in_init(stream->con)) SSL_total_renegotiations(stream->con);
+	/* now negotiate SSL */
+	if (SSL_write(stream->con, "", 0) < 0)
+		return ssl_last_error ? ssl_last_error : "SSL negotiation failed";
+	/* need to validate host names? */
+	if (!(flags & NET_NOVALIDATECERT) &&
+		(err = ssl_validate_cert(cert = SSL_get_peer_certificate(stream->con),
+			host))) {
+		/* application callback */
+		X509_NAME_oneline(X509_get_subject_name(cert), buf, sizeof(buf));
+		if (scq) return (*scq) (err, host, cert ? buf : "???") ? NIL : "";
+		/* error message to return via mm_log() */
+		sprintf(tmp, "*%.128s: %.255s", err, cert ? buf : "???");
+		return ssl_last_error = cpystr(tmp);
+	}
+	return NIL;
 }
-
+
 /* SSL certificate verification callback
  * Accepts: error flag
  *	    X509 context

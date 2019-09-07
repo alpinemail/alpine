@@ -93,6 +93,41 @@ static long ssl_abort (SSLSTREAM *stream);
 
 static RSA *ssl_genkey (SSL_CTX_TYPE *con,int export,int keylength);
 
+typedef struct ssl_versions_s {
+        char *name;
+        int   version;
+} SSL_VERSIONS_S;
+
+int
+pith_ssl_encryption_version(char *s)
+{
+        SSL_VERSIONS_S ssl_versions[] = {
+        { "no_min", 0 },
+        { "ssl3",   SSL3_VERSION },
+        { "tls1",   TLS1_VERSION },
+        { "tls1_1", TLS1_1_VERSION },
+        { "tls1_2", TLS1_2_VERSION },
+#ifdef TLS1_3_VERSION
+        { "tls1_3", TLS1_3_VERSION },
+#endif /* TLS1_3_VERSION */
+        { "no_max", 0 },        /* set this last in the list */
+        { NULL, 0 },
+        };
+        int i;
+
+        if (s == NULL || *s == '\0')
+                return -1;
+
+        for (i = 0; ssl_versions[i].name != NULL; i++)
+                if (strcmp(ssl_versions[i].name, s) == 0)
+                        break;
+
+        if (strcmp(s, "no_max") == 0) i--;
+
+        return ssl_versions[i].name != NULL ? ssl_versions[i].version : -1;
+}
+
+
 
 /* Secure Sockets Layer network driver dispatch */
 
