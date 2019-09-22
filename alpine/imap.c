@@ -1459,6 +1459,7 @@ mm_login_work(NETMBX *mb, char *user, char **pwd, long int trial,
 	save_dont_use = ps_global->dont_use_init_cmds;
 	ps_global->dont_use_init_cmds = 1;
 	flags = F_ON(F_QUELL_ASTERISKS, ps_global) ? OE_PASSWD_NOAST : OE_PASSWD;
+	flags |= OE_KEEP_TRAILING_SPACE;
 #ifdef _WINDOWS
 	rc = os_login_dialog(mb, user, NETMAXUSER, tmp, NETMAXPASSWD, 0, 1,
 			     &preserve_password);

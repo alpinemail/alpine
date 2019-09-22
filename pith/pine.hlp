@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 368 2019-09-06 21:36:18
+Alpine Commit 369 2019-09-22 10:20:26
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -347,6 +347,9 @@ Bugs that have been addressed include:
    <LI> Crash with error "Lock when already locked" when an attempt to check
         for new mail on a locked stream that is being used for a save 
         operation. Reported by Carlos E.R.
+
+   <LI> Alpine removes trailing spaces from passwords, making a longin attempt
+        fail. Reported by R. Lyons.
 </UL>
 
 <P>
