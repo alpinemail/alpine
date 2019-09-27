@@ -312,7 +312,7 @@ int tcp_socket_open (int family,void *adr,size_t adrlen,unsigned short port,
 	/* This used to be a zero-byte read(), but that crashes Solaris */
 				/* get socket status */
 	if(FD_ISSET(sock,&rfds))
-	   while (((i = *ctr = read (sock,tmp,0)) < 0) && (errno == EINTR));
+	   while (((i = *ctr = read (sock,tmp,1)) < 0) && (errno == EINTR));
       }	
       if (i <= 0) {		/* timeout or error? */
 	i = i ? errno : ETIMEDOUT;/* determine error code */
