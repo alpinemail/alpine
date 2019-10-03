@@ -1603,7 +1603,9 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
 
     GLO_PRINTER			= cpystr(DF_DEFAULT_PRINTER);
     GLO_ELM_STYLE_SAVE		= cpystr(DF_ELM_STYLE_SAVE);
+#ifdef DF_ENCRYPTION_RANGE
     GLO_ENCRYPTION_RANGE	= cpystr(DF_ENCRYPTION_RANGE);
+#endif
     GLO_SAVE_BY_SENDER		= cpystr(DF_SAVE_BY_SENDER);
     GLO_HEADER_IN_REPLY		= cpystr(DF_HEADER_IN_REPLY);
     GLO_INBOX_PATH		= cpystr("inbox");
