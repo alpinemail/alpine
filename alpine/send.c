@@ -5556,6 +5556,7 @@ phone_home(char *addr)
     char       tmp[MAX_ADDRESS], revision[128];
     ENVELOPE  *outgoing;
     BODY      *body;
+    NETMBX     mb;
 
     outgoing = mail_newenvelope();
     if(!addr || !strindex(addr, '@')){
@@ -5583,8 +5584,12 @@ phone_home(char *addr)
 	if(ps_global->first_time_user)
 	  so_puts((STORE_S *)body->contents.text.data, " for New Users");
 
-	if(ps_global->VAR_INBOX_PATH && ps_global->VAR_INBOX_PATH[0] == '{')
-	  so_puts((STORE_S *)body->contents.text.data, " and IMAP");
+	if(ps_global->VAR_INBOX_PATH
+	   && ps_global->VAR_INBOX_PATH[0] == '{'
+	   && mail_valid_net_parse(ps_global->VAR_INBOX_PATH, &mb)){
+	   so_puts((STORE_S *)body->contents.text.data, " and ");
+	   so_puts((STORE_S *)body->contents.text.data, *mb.service ? mb.service : "UNKNOWN SERVICE");
+	}
 
 	if(ps_global->VAR_NNTP_SERVER && ps_global->VAR_NNTP_SERVER[0]
 	      && ps_global->VAR_NNTP_SERVER[0][0])

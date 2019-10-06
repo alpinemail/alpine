@@ -501,39 +501,63 @@ static int ssl_open_verify (int ok,X509_STORE_CTX *ctx)
 
 static char *ssl_validate_cert (X509 *cert,char *host)
 {
-  int i,n;
-  char *s=NULL,*t,*ret;
+  int i,j,n;
+  char *s=NULL,*t,*ret = NIL;
   void *ext;
   GENERAL_NAME *name;
   X509_NAME *cname;
   X509_NAME_ENTRY *e;
   char    buf[256];
 				/* make sure have a certificate */
-  if (!cert) ret = "No certificate from server";
-				/* and that it has a name */
-  else if (!(cname = X509_get_subject_name(cert))) ret = "No name in certificate";
-				/* locate CN */
-  else{
-     if((e = X509_NAME_get_entry(cname, X509_NAME_entry_count(cname)-1)) != NULL){
-       X509_NAME_get_text_by_OBJ(cname, X509_NAME_ENTRY_get_object(e), buf, sizeof(buf));
-       s = (char *) buf;
-     }
-     else s = NULL;
-  }
-  if (s != NULL) {
+  if (!cert) return "No certificate from server";
+				/* Method 1: locate CN */
+  if (cert->name == NIL)
+     ret = "No name in certificate";
+  else if ((s = strstr (cert->name,"/CN=")) != NIL) {
+     if (t = strchr (s += 4,'/')) *t = '\0';
 				/* host name matches pattern? */
-    ret = ssl_compare_hostnames (host,s) ? NIL :
+     ret = ssl_compare_hostnames (host,s) ? NIL :
       "Server name does not match certificate";
+     if (t) *t = '/';		/* restore smashed delimiter */
 				/* if mismatch, see if in extensions */
-    if (ret && (ext = X509_get_ext_d2i (cert,NID_subject_alt_name,NIL,NIL)) &&
+     if (ret && (ext = X509_get_ext_d2i (cert,NID_subject_alt_name,NIL,NIL)) &&
 	(n = sk_GENERAL_NAME_num (ext)))
-      /* older versions of OpenSSL use "ia5" instead of dNSName */
-      for (i = 0; ret && (i < n); i++)
-	if ((name = sk_GENERAL_NAME_value (ext,i)) &&
+       /* older versions of OpenSSL use "ia5" instead of dNSName */
+       for (i = 0; ret && (i < n); i++)
+	 if ((name = sk_GENERAL_NAME_value (ext,i)) &&
 	    (name->type = GEN_DNS) && (s = name->d.ia5->data) &&
 	    ssl_compare_hostnames (host,s)) ret = NIL;
   }
-  else ret = "Unable to locate common name in certificate";
+				/* Method 2, use Cname */
+  if(ret != NIL){
+     for(j = 0, ret = NIL; j < X509_NAME_entry_count(cname) && ret == NIL; j++){
+        if((e = X509_NAME_get_entry(cname, j)) != NULL){
+           X509_NAME_get_text_by_OBJ(cname, X509_NAME_ENTRY_get_object(e), buf, sizeof(buf));
+           s = (char *) buf;
+        }
+        else s = NIL;
+        if (s != NIL) {
+				/* host name matches pattern? */
+	   ret = ssl_compare_hostnames (host,s) ? NIL :
+		 "Server name does not match certificate";
+				/* if mismatch, see if in extensions */
+	   if (ret && (ext = X509_get_ext_d2i (cert,NID_subject_alt_name,NIL,NIL)) &&
+		(n = sk_GENERAL_NAME_num (ext)))
+	           /* older versions of OpenSSL use "ia5" instead of dNSName */
+	      for (i = 0; ret && (i < n); i++)
+		  if ((name = sk_GENERAL_NAME_value (ext,i)) &&
+		     (name->type = GEN_DNS) && (s = name->d.ia5->data) &&
+		     ssl_compare_hostnames (host,s)) ret = NIL;
+        }
+     }
+  }
+
+  if (ret == NIL && !cert->name && !(cname = X509_get_subject_name(cert)))
+	ret = "No name in certificate";
+
+  if (ret == NIL && s == NIL) 
+	ret = "Unable to locate common name in certificate";
+
   return ret;
 }
 
