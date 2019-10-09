@@ -504,7 +504,7 @@ static int ssl_open_verify (int ok,X509_STORE_CTX *ctx)
 
 static char *ssl_validate_cert (X509 *cert,char *host)
 {
-  int i,j,n;
+  int i,j,n, m = 0;
   char *s=NULL,*t,*ret = NIL;
   void *ext;
   GENERAL_NAME *name;
@@ -514,9 +514,11 @@ static char *ssl_validate_cert (X509 *cert,char *host)
 				/* make sure have a certificate */
   if (!cert) return "No certificate from server";
 				/* Method 1: locate CN */
+#ifndef OPENSSL_1_1_0
   if (cert->name == NIL)
      ret = "No name in certificate";
   else if ((s = strstr (cert->name,"/CN=")) != NIL) {
+     m++; /* count that we tried this method */
      if (t = strchr (s += 4,'/')) *t = '\0';
 				/* host name matches pattern? */
      ret = ssl_compare_hostnames (host,s) ? NIL :
@@ -531,8 +533,10 @@ static char *ssl_validate_cert (X509 *cert,char *host)
 	    (name->type = GEN_DNS) && (s = name->d.ia5->data) &&
 	    ssl_compare_hostnames (host,s)) ret = NIL;
   }
-				/* Method 2, use Cname */
-  if(ret != NIL){
+#endif /* OPENSSL_1_1_0 */
+				/* Method 2, use cname */
+  if(m == 0 || ret != NIL){
+     cname = X509_get_subject_name(cert);
      for(j = 0, ret = NIL; j < X509_NAME_entry_count(cname) && ret == NIL; j++){
         if((e = X509_NAME_get_entry(cname, j)) != NULL){
            X509_NAME_get_text_by_OBJ(cname, X509_NAME_ENTRY_get_object(e), buf, sizeof(buf));
@@ -555,7 +559,11 @@ static char *ssl_validate_cert (X509 *cert,char *host)
      }
   }
 
-  if (ret == NIL && !cert->name && !(cname = X509_get_subject_name(cert)))
+  if (ret == NIL
+#ifndef OPENSSL_1_1_0
+       && !cert->name
+#endif /* OPENSSL_1_1_0 */
+       && !X509_get_subject_name(cert))
 	ret = "No name in certificate";
 
   if (ret == NIL && s == NIL) 
