@@ -65,11 +65,13 @@ long auth_plain_client (authchallenge_t challenger,authrespond_t responder,
 				/* get initial (empty) challenge */
   if ((challenge = (*challenger) (stream,&clen)) != NULL) {
     fs_give ((void **) &challenge);
+#if 0
     if (clen) {			/* abort if challenge non-empty */
       mm_log ("Server bug: non-empty initial PLAIN challenge",WARN);
       (*responder) (stream,NIL,0);
       ret = LONGT;		/* will get a BAD response back */
     }
+#endif
     mm_login (mb,user, &pwd,*trial);
     if (!pwd) {		/* empty challenge or user requested abort */
       (*responder) (stream,NIL,0);

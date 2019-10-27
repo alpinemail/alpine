@@ -357,14 +357,12 @@ void *smtp_challenge (void *s,unsigned long *len)
   char tmp[MAILTMPLEN];
   void *ret = NIL;
   SENDSTREAM *stream = (SENDSTREAM *) s;
-  if (stream->replycode == SMTPAUTHREADY){
-    if(!(ret = rfc822_base64 ((unsigned char *) stream->reply + 4,
+  if ((stream->replycode == SMTPAUTHREADY) &&
+      !(ret = rfc822_base64 ((unsigned char *) stream->reply + 4,
 			     strlen (stream->reply + 4),len))) {
-      sprintf (tmp,"SMTP SERVER BUG (invalid challenge, continuing): %.80s",stream->reply+4);
-      mm_log (tmp,ERROR);
-      ret = cpystr("");	/* This is silly: fake a reply, it will be ignored */
-    }
-    *len = 0L;	/* This is even sillier, fake challenge is empty... */
+    sprintf (tmp,"SMTP SERVER BUG (invalid challenge, continuing): %.80s",stream->reply+4);
+    mm_log (tmp,ERROR);
+    ret = cpystr("");	/* This is silly: fake a reply, it will be ignored */
   }
   return ret;
 }
