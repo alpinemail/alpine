@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 375 2019-10-29 23:23:37
+Alpine Commit 376 2019-11-22 17:41:21
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -350,6 +350,9 @@ Bugs that have been addressed include:
 
    <LI> Alpine removes trailing spaces from passwords, making a longin attempt
         fail. Reported by R. Lyons.
+
+   <LI> Alpine crashes when opening a remote imap folder and computing scores.
+        Reported by Paul DeStefano.
 </UL>
 
 <P>

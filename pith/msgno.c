@@ -864,7 +864,7 @@ calculate_some_scores(MAILSTREAM *stream, SEARCHSET *searchset, int no_fetch)
 		 * we will actually have fetched this with
 		 * the envelope. Just making sure.
 		 */
-		if(hdrtok && no_fetch){
+		if(no_fetch){
 		    error++;
 		    break;
 		}
