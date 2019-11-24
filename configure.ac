@@ -85,6 +85,16 @@ if test x$enable_dmalloc = "xyes" ; then
   AC_DEFINE(ENABLE_DMALLOC, 1, [Define enable dmalloc debugging])
 fi
 
+dnl Do not build bundled tools (Default)
+alpine_c_client_bundled="no"
+AC_ARG_WITH(bundled-tools,
+  AS_HELP_STRING([--with-bundled-tools],[ Build additional tools (mtest, imapd, etc.) Default: --with-bundled-tools=no]),
+  [ 
+    if test "x$withval" = "xyes" ; then
+     alpine_c_client_bundled=""
+    fi
+  ])
+
 dnl set date and hostname
 ALPINE_datestamp=`date`
 AC_ARG_WITH(date-stamp,
@@ -1613,8 +1623,9 @@ if test "$alpine_with_ldap" = "yes" ; then
 fi
 
 dnl PAM support is needed to build c-client in some linux, and hence Alpine.
-if test "x$alpine_PAM" != "xnone" ; then
-  AC_SEARCH_LIBS(pam_start,pam,
+if test -z "$alpine_c_client_bundled" ; then
+  if test "x$alpine_PAM" != "xnone" ; then
+     AC_SEARCH_LIBS(pam_start,pam,
       [
 	LIBS="$LIBS -lpam"
 	AC_CHECK_HEADER([security/pam_appl.h],
@@ -1641,10 +1652,11 @@ if test "x$alpine_PAM" != "xnone" ; then
 	alpine_pam_none_reason="library files not found"
       ])
     if test -n "$alpine_pam_none_reason" ; then
-      AC_MSG_ERROR(No PAM support: $alpine_pam_none_reason)
+       AC_MSG_ERROR(Trying to build bundled tools but could not find libpam. Install it first and try again, or do not use --with-bundled-tools)
+    fi
   fi
 fi
-
+AC_SUBST([C_CLIENT_BUNDLED], $alpine_c_client_bundled)
 
 dnl provide KRB5 support?
 if test "x$alpine_GSSTYPE" != "xnone" ; then

@@ -657,6 +657,7 @@ PTHREAD_CFLAGS
 PTHREAD_LIBS
 PTHREAD_CC
 acx_pthread_config
+C_CLIENT_BUNDLED
 alpine_interactive_spellcheck
 ISPELLPROG
 alpine_simple_spellcheck
@@ -829,6 +830,7 @@ with_libiconv_prefix
 with_libintl_prefix
 enable_dmalloc
 with_dmalloc_dir
+with_bundled_tools
 with_date_stamp
 with_host_stamp
 with_ps_cmd
@@ -1605,6 +1607,8 @@ Optional Packages:
   --with-libintl-prefix[=DIR]  search for libintl in DIR/include and DIR/lib
   --without-libintl-prefix     don't search for libintl in includedir and libdir
   --with-dmalloc-dir=DIR  Root of dmalloc lib/include path
+  --with-bundled-tools    Build additional tools (mtest, imapd, etc.) Default:
+                          --with-bundled-tools=no
   --with-date-stamp=DATE  Set this as the date this program was built.
                           Default: output of `date`
   --with-host-stamp=HOST  Set name of computer for compilation. Default:
@@ -15214,6 +15218,18 @@ $as_echo "#define ENABLE_DMALLOC 1" >>confdefs.h
 
 fi
 
+alpine_c_client_bundled="no"
+
+# Check whether --with-bundled-tools was given.
+if test "${with_bundled_tools+set}" = set; then :
+  withval=$with_bundled_tools;
+    if test "x$withval" = "xyes" ; then
+     alpine_c_client_bundled=""
+    fi
+
+fi
+
+
 ALPINE_datestamp=`date`
 
 # Check whether --with-date-stamp was given.
@@ -19116,8 +19132,9 @@ $as_echo "#define ENABLE_LDAP /**/" >>confdefs.h
   fi
 fi
 
-if test "x$alpine_PAM" != "xnone" ; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing pam_start" >&5
+if test -z "$alpine_c_client_bundled" ; then
+  if test "x$alpine_PAM" != "xnone" ; then
+     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing pam_start" >&5
 $as_echo_n "checking for library containing pam_start... " >&6; }
 if ${ac_cv_search_pam_start+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -19208,9 +19225,11 @@ else
 fi
 
     if test -n "$alpine_pam_none_reason" ; then
-      as_fn_error $? "No PAM support: $alpine_pam_none_reason" "$LINENO" 5
+       as_fn_error or do not use --with-bundled-tools "Trying to build bundled tools but could not find libpam. Install it first and try again" "$LINENO" 5
+    fi
   fi
 fi
+C_CLIENT_BUNDLED=$alpine_c_client_bundled
 
 
 if test "x$alpine_GSSTYPE" != "xnone" ; then

@@ -266,6 +266,7 @@ EXTRALDFLAGS=
 
 EXTRASPECIALS=
 SPECIALS=
+BUNDLED=
 
 
 # Normal commands
@@ -290,12 +291,12 @@ BUILD=$(MAKE) build EXTRACFLAGS='$(EXTRACFLAGS)'\
  EXTRADRIVERS='$(EXTRADRIVERS)'\
  EXTRAAUTHENTICATORS='$(EXTRAAUTHENTICATORS)'\
  PASSWDTYPE=$(PASSWDTYPE) SSLTYPE=$(SSLTYPE) IP=$(IP)\
- EXTRASPECIALS='$(EXTRASPECIALS)'
+ EXTRASPECIALS='$(EXTRASPECIALS)' BUNDLED='$(BUNDLED)'
 
 
 # Make the IMAP Toolkit
 
-all:	c-client SPECIALS rebuild bundled
+all:	c-client SPECIALS rebuild bundled$(BUNDLED)
 
 c-client:
 	@echo Not processed yet.  In a first-time build, you must specify
@@ -684,7 +685,7 @@ an ua:
 	$(TOOLS)/$@ "$(LN)" src/tmail tmail
 	$(LN) $(TOOLS)/$@ .
 
-build:	OSTYPE rebuild rebuildclean bundled
+build:	OSTYPE rebuild rebuildclean bundled$(BUNDLED)
 
 OSTYPE:
 	@$(MAKE) ip$(IP)
@@ -696,7 +697,7 @@ OSTYPE:
 	 EXTRADRIVERS='$(EXTRADRIVERS)'\
 	 EXTRAAUTHENTICATORS='$(EXTRAAUTHENTICATORS)'\
 	 PASSWDTYPE=$(PASSWDTYPE) SSLTYPE=$(SSLTYPE) IP=$(IP)\
-	 $(SPECIALS) $(EXTRASPECIALS)
+	 $(SPECIALS) $(EXTRASPECIALS) BUNDLED='$(BUNDLED)'
 	echo $(BUILDTYPE) > OSTYPE
 	$(TOUCH) rebuild
 
@@ -710,8 +711,12 @@ rebuild:
 rebuildclean:
 	$(SH) -c '$(RM) rebuild || true'
 
+bundledno:
+	@echo Not building bundled tools.
+
 bundled:
 	@echo Building bundled tools...
+	@echo BUNDLED=$(BUNDLED)
 	$(CD) mtest;$(MAKE)
 	$(CD) ipopd;$(MAKE)
 	$(CD) imapd;$(MAKE)
