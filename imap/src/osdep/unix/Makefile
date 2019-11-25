@@ -33,7 +33,7 @@ EXTRADRIVERS=mbox
 PASSWDTYPE=std
 SSLTYPE=nopwd
 IP=4
-
+BUNDLED=
 
 # The optimization level here for GCC ports is set here for a reason.  It's
 # to get you to read this text.
@@ -493,6 +493,15 @@ isc:	# Interactive
 	 BASECFLAGS="-Xp -D_SYSV3" \
 	 BASELDFLAGS="-linet -lnsl_s -lgen -lx -lsec -liberty" \
 	 RANLIB=true
+
+lnpno:	# Linux disable support Pluggable Authentication modules
+	$(BUILD) `$(CAT) SPECIALS` OS=slx \
+	 SIGTYPE=psx CRXTYPE=nfs \
+	 SPOOLDIR=/var/spool \
+	 ACTIVEFILE=/var/lib/news/active \
+	 RSHPATH=/usr/bin/rsh \
+	 BASECFLAGS="$(GCCCFLAGS)" \
+	 BASELDFLAGS="-lcrypt"
 
 lnp:	# Linux Pluggable Authentication modules
 	$(BUILD) `$(CAT) SPECIALS` OS=slx \

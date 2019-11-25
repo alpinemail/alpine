@@ -15,7 +15,7 @@ dnl  */
 
 AC_PREREQ([2.69])
 
-AC_REVISION([Rev:27 by chappa@washington.edu])
+AC_REVISION([Rev:28 by chappa@washington.edu])
 
 dnl Alpine Version Number is in $srcdir/VERSION
 AC_INIT([alpine],[m4_esyscmd(tr -d \\n < VERSION)],[chappa@washington.edu])
@@ -84,16 +84,6 @@ AC_ARG_WITH(dmalloc-dir,
 if test x$enable_dmalloc = "xyes" ; then
   AC_DEFINE(ENABLE_DMALLOC, 1, [Define enable dmalloc debugging])
 fi
-
-dnl Do not build bundled tools (Default)
-alpine_c_client_bundled="no"
-AC_ARG_WITH(bundled-tools,
-  AS_HELP_STRING([--with-bundled-tools],[ Build additional tools (mtest, imapd, etc.) Default: --with-bundled-tools=no]),
-  [ 
-    if test "x$withval" = "xyes" ; then
-     alpine_c_client_bundled=""
-    fi
-  ])
 
 dnl set date and hostname
 ALPINE_datestamp=`date`
@@ -1184,6 +1174,16 @@ AC_ARG_WITH(c-client-target,
   ])
 
 
+dnl Do not build bundled tools (Default)
+alpine_c_client_bundled="no"
+AC_ARG_WITH(bundled-tools,
+  AS_HELP_STRING([--with-bundled-tools],[ Build additional tools (mtest, imapd, etc.) Default: --with-bundled-tools=no]),
+  [ 
+    if test "x$withval" = "xyes" ; then
+     alpine_c_client_bundled=""
+    fi
+  ])
+
 dnl Assume PAM is *not* required and only set the systems that need it.
 alpine_PAM="none"
 
@@ -1230,7 +1230,8 @@ case "$host" in
       alpine_PAM="yes"
     else
       systype="LNX"
-      AC_CHECK_LIB(pam, pam_start,
+      if test -z "$alpine_c_client_bundled" ; then
+        AC_CHECK_LIB(pam, am_start,
         [
           alpine_c_client_target="lnp"
 	  alpine_PAM="yes"
@@ -1242,6 +1243,13 @@ case "$host" in
 	    alpine_c_client_target="lnx"
 	  fi
         ])
+      else
+	  if test -f /etc/shadow ; then
+	    alpine_c_client_target="slx"
+	  else
+	    alpine_c_client_target="lnx"
+	  fi
+      fi
     fi
     ;;
   *-apple-darwin*)
@@ -1259,7 +1267,8 @@ case "$host" in
 	AC_DEFINE([APPLEKEYCHAIN], [1], [Use Apple OS X key chain for credential caching])
 	;;
     esac
-    AC_CHECK_LIB(pam, pam_start,
+    if test -z "$alpine_c_client_bundled" ; then
+      AC_CHECK_LIB(pam, pam_start,
       [
 	AC_CHECK_HEADER([security/pam_appl.h],
 	[
@@ -1280,6 +1289,9 @@ case "$host" in
       [
         alpine_c_client_target="osx"
       ])
+    else
+        alpine_c_client_target="osx"
+    fi
     ;;
   *-*-solaris*)
     if test x$GCC = "xyes" ; then
@@ -1656,6 +1668,17 @@ if test -z "$alpine_c_client_bundled" ; then
     fi
   fi
 fi
+
+if test -n "$alpine_c_client_bundled" ; then
+     AC_SEARCH_LIBS(crypt,crypt,
+      [
+	LIBS="$LIBS -lcrypt"
+      ],
+      [
+       AC_MSG_ERROR([crypt library not found.])
+      ])
+fi
+
 AC_SUBST([C_CLIENT_BUNDLED], $alpine_c_client_bundled)
 
 dnl provide KRB5 support?

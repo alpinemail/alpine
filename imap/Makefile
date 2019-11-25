@@ -353,11 +353,11 @@ gcs:	an
 	SPECIALS="SSLINCLUDE=/opt/csw/include/openssl SSLLIB=/opt/csw/lib SSLCERTS=/opt/csw/ssl/certs SSLKEYS=/opt/csw/ssl/certs"
 
 ldb:	an
-	$(BUILD) BUILDTYPE=lnp IP=$(IP6) \
+	$(BUILD) BUILDTYPE=lnp$(BUNDLED) IP=$(IP6) \
 	SPECIALS="GSSINCLUDE=/usr/include GSSLIB=/usr/lib MAILSPOOL=/var/mail"
 
 lfd:	an
-	$(BUILD) BUILDTYPE=lnp IP=$(IP6) \
+	$(BUILD) BUILDTYPE=lnp$(BUNDLED) IP=$(IP6) \
 	SPECIALS="GSSDIR=/usr/kerberos"
 
 ln8:	an
@@ -370,17 +370,17 @@ ln8:	an
 
 lr5:	an
 	$(TOUCH) ip6
-	$(BUILD) BUILDTYPE=lnp IP=$(IP6) \
+	$(BUILD) BUILDTYPE=lnp$(BUNDLED) IP=$(IP6) \
 	SPECIALS="GSSDIR=/usr/kerberos"
 
 lmd:	an
-	$(BUILD) BUILDTYPE=lnp IP=$(IP6) \
+	$(BUILD) BUILDTYPE=lnp$(BUNDLED) IP=$(IP6) \
 	SPECIALS="GSSINCLUDE=/usr/include GSSLIB=/usr/lib"
 
 # RHEL3 definitely has the IPv6 bug
 
 lrh:	lrhok an
-	$(BUILD) BUILDTYPE=lnp IP=$(IP6) \
+	$(BUILD) BUILDTYPE=lnp$(BUNDLED) IP=$(IP6) \
 	SPECIALS="GSSDIR=/usr/kerberos"
 
 lrhok:
@@ -404,7 +404,7 @@ lrhwarn:
 	@echo % make lr5
 
 lsu:	an
-	$(BUILD) BUILDTYPE=lnp IP=$(IP6) \
+	$(BUILD) BUILDTYPE=lnp$(BUNDLED) IP=$(IP6) \
 	SPECIALS="GSSDIR=/usr/kerberos"
 
 # iToy does not have Kerberos or PAM.  It doesn't have a
