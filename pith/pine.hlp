@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 378 2019-11-25 11:08:40
+Alpine Commit 379 2019-12-14 00:14:37
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -353,6 +353,9 @@ Bugs that have been addressed include:
 
    <LI> Alpine crashes when opening a remote imap folder and computing scores.
         Reported by Paul DeStefano.
+
+   <LI> When more than one server was given in the server-name configuration
+        option of rldap servers, none of them worked. Reported by Robert Wolf.
 </UL>
 
 <P>

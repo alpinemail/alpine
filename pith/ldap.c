@@ -398,7 +398,7 @@ ldap_lookup(LDAP_SERV_S *info, char *string, CUSTOM_FILT_S *cust,
 {
     char     ebuf[900];
     char     buf[900];
-    char    *serv, *base, *serv_errstr;
+    char    *serv, *base, *serv_errstr, *s, *t;
     char    *mailattr, *snattr, *gnattr, *cnattr;
     int      we_cancel = 0, we_turned_on = 0;
     LDAP_SERV_RES_S *serv_res = NULL;
@@ -526,9 +526,28 @@ ldap_lookup(LDAP_SERV_S *info, char *string, CUSTOM_FILT_S *cust,
     }
 #endif /* SMIME_SSLCERTS */
 
-    snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s://%s:%d", 
-		info->ldaps ? "ldaps" : "ldap", serv, info->port);
-    tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+    tmp_20k_buf[0] = '\0';
+    s = serv;
+    do {
+       if ((t = strchr(s, ' ')) != NULL) *t = '\0';
+       snprintf(tmp_20k_buf + strlen(tmp_20k_buf),
+		SIZEOF_20KBUF - strlen(tmp_20k_buf), "%s://%s",
+		info->ldaps ? "ldaps" : "ldap", s);
+       if (strchr(s, ':') == NULL){
+          snprintf(tmp_20k_buf + strlen(tmp_20k_buf),
+		SIZEOF_20KBUF - strlen(tmp_20k_buf),
+	        "%s%d", ":", info->port);
+       }
+       if(t != NULL){
+	  *t = ' ';
+	  for( ; *t == ' '; t++);
+          snprintf(tmp_20k_buf + strlen(tmp_20k_buf),
+		SIZEOF_20KBUF - strlen(tmp_20k_buf), "%s", " ");
+       }
+       s = t;
+    } while (s != NULL);
+
+    tmp_20k_buf[SIZEOF_20KBUF - 1] = '\0';
 
     if(ldap_initialize(&ld, tmp_20k_buf) != LDAP_SUCCESS) 
 #endif
