@@ -15,7 +15,7 @@ dnl  */
 
 AC_PREREQ([2.69])
 
-AC_REVISION([Rev:28 by chappa@washington.edu])
+AC_REVISION([Rev:29 by chappa@washington.edu])
 
 dnl Alpine Version Number is in $srcdir/VERSION
 AC_INIT([alpine],[m4_esyscmd(tr -d \\n < VERSION)],[chappa@washington.edu])
@@ -1572,7 +1572,7 @@ fi
 
 dnl Crypto support is needed 
 if test "x$alpine_SSLTYPE" != "xnone" ; then
-  if test "x$alpine_SSLVERSION" = "xold" -o "x$alpine_SSLPROVIDER" = "xlibressl" ; then
+  if test "x$alpine_SSLVERSION" = "xold" ; then
      AC_SEARCH_LIBS(SSLeay,crypto,, [ alpine_CRYPTO="none" ])
   else
      AC_SEARCH_LIBS(OpenSSL_version_num,crypto,, [ alpine_CRYPTO="none" ])
@@ -1595,7 +1595,7 @@ fi
 
 dnl provide SSL support?
 if test "x$alpine_SSLTYPE" != "xnone" ; then
-  if test "x$alpine_SSLVERSION" = "xold" -o "x$alpine_SSLPROVIDER" = "xlibressl" ; then
+  if test "x$alpine_SSLVERSION" = "xold" ; then
      AC_SEARCH_LIBS(SSL_library_init,ssl,,[ alpine_SSLTYPE="none" ])
      if test "x$alpine_SSLTYPE" = "xnone" ; then
         AC_MSG_ERROR(No library containing SSL_library_init found in your path)
