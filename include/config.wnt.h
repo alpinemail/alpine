@@ -537,6 +537,9 @@
 /* Enable S/MIME if LibreSSL */
 #ifdef ENABLE_WINDOWS_LIBRESSL
 #define SMIME
+/* Location of certificates in the system */
+#define SMIME_SSLCERTS "C:\\libressl\\ssl\\certs"
+
 /* Default configuration value */
 #define DF_PRIVATEKEY_DIR "alpine-smime\\private"
 
@@ -554,6 +557,8 @@
 
 /* Name of default certificate authority container */
 #define DF_CA_CONTAINER "CAContainer"
+//#else
+#undef DF_ENCRYPTION_RANGE
 #endif /* ENABLE_WINDOWS_LIBRESSL */
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */

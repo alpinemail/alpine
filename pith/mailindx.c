@@ -4961,7 +4961,7 @@ date_str(char *datesrc, IndexColType type, int v, char *str, size_t str_len,
 
 	/* (if message dated this month or last month...) */
 	if((d.year == now.year && d.month >= now.month - 6) ||
-	   (d.year == now.year - 1 && d.month == 12 && now.month == 6)){
+	   (d.year == now.year - 1 && d.month == 12 && now.month <= 6)){
 
 	    daydiff = day_of_year(&now) - day_of_year(&d);
 

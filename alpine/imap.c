@@ -591,7 +591,6 @@ mm_login_oauth2(NETMBX *mb, char *user, OAUTH2_S *login, long int trial,
 		      altuserforcache ? altuserforcache : user, hostlist,
 		      (mb->sslflag||mb->tlsflag), 0, 0, OA2NAME);
 #ifdef	LOCAL_PASSWD_CACHE
-#ifdef	PASSFILE
     /* if requested, remember it on disk for next session */
     if(save_password && F_OFF(F_DISABLE_PASSWORD_FILE_SAVING,ps_global))
 	    set_passfile_passwd_auth(ps_global->pinerc, token,
@@ -599,7 +598,6 @@ mm_login_oauth2(NETMBX *mb, char *user, OAUTH2_S *login, long int trial,
 			(mb->sslflag||mb->tlsflag),
 			(preserve_password == -1 ? 0
 			 : (preserve_password == 0 ? 2 :1)), OA2NAME);
-#endif	/* PASSFILE */
 #endif	/* LOCAL_PASSWD_CACHE */
 
     ps_global->no_newmail_check_from_optionally_enter = 0;
@@ -1496,7 +1494,6 @@ mm_login_work(NETMBX *mb, char *user, char **pwd, long int trial,
 		      altuserforcache ? altuserforcache : user, hostlist,
 		      (mb->sslflag||mb->tlsflag), 0, 0);
 #ifdef	LOCAL_PASSWD_CACHE
-#ifdef  PASSFILE
     /* if requested, remember it on disk for next session */
       if(save_password && F_OFF(F_DISABLE_PASSWORD_FILE_SAVING,ps_global))
       set_passfile_passwd(ps_global->pinerc, *pwd,
@@ -1504,7 +1501,6 @@ mm_login_work(NETMBX *mb, char *user, char **pwd, long int trial,
 			(mb->sslflag||mb->tlsflag),
 			(preserve_password == -1 ? 0
 			 : (preserve_password == 0 ? 2 :1)));
-#endif	/* PASSFILE */
 #endif	/* LOCAL_PASSWD_CACHE */
 
     ps_global->no_newmail_check_from_optionally_enter = 0;

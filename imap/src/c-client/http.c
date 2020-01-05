@@ -357,7 +357,6 @@ void
 http_add_header_data(HTTPSTREAM *stream, char *hdata)
 {
   char *hname, *h;
-  size_t hlen;
   int found = 1;
 
   if(!stream || !hdata || !*hdata) return;
@@ -534,7 +533,7 @@ http_add_header_data(HTTPSTREAM *stream, char *hdata)
 HTTP_PARAM_LIST_S *
 http_parse_token_list(char *h, int num)
 {
-  char *s = h, *t, *u, c, d;
+  char *s = h, *t, c;
   HTTP_PARAM_LIST_S *rv = NIL;
 
   if(!s || !*s || num == 0) return NIL;
@@ -652,7 +651,7 @@ PARAMETER *
 http_parse_parameter(char *s, int flag)
 {
   PARAMETER *p;
-  char *t, *u, c, d;
+  char *t, *u, c;
 
   /* Step 1:
    * separate the parameters into a list separated by ";"
@@ -996,7 +995,6 @@ http_post_param2(char *url, HTTP_PARAM_S *param)
 char *
 http_get_param(char *base_url, HTTP_PARAM_S *param)
 {
-  HTTPSTREAM *stream;
   char *url, *reply;
 
   url = http_get_param_url(base_url, param);
@@ -1054,7 +1052,6 @@ long
 http_send (HTTPSTREAM *stream, HTTP_REQUEST_S *req)
 {
   long ret;
-  int len;
   char *s = NULL;
 
   if (!stream->netstream) 
@@ -1085,7 +1082,6 @@ http_status_line_get(char *status_line)
    HTTP_STATUS_S *rv = NULL;
    char *version, *s;
    int status;
-   int len;
 
    if(!status_line) return NIL;
    
@@ -1121,7 +1117,6 @@ long
 http_reply (HTTPSTREAM *stream)
 {
   int in_header = 1;
-  HTTP_STATUS_S reply_status;
   unsigned long size;
 
   if (stream->response) fs_give ((void **) &stream->response);

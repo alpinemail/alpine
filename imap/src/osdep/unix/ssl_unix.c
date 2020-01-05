@@ -163,9 +163,9 @@ void ssl_onceonlyinit (void)
     if (stat ("/dev/urandom",&sbuf)) {
       strcpy(tmp, "SSLXXXXXX");
       while ((fd = mkstemp(tmp)) < 0) sleep (1);
-      unlink (tmp);		/* don't need the file */
       fstat (fd,&sbuf);		/* get information about the file */
       close (fd);		/* flush descriptor */
+      unlink (tmp);		/* don't need the file */
 				/* not great but it'll have to do */
       sprintf (tmp + strlen (tmp),"%.80s%lx%.80s%lx%lx%lx%lx%lx",
 	       tcp_serveraddr (),(unsigned long) tcp_serverport (),

@@ -1,0 +1,5 @@
+This implementation of LibreSSL does not support TLS1_3 yet. When it does, 
+we will compile with those bits to add support for this protcol. A good 
+read for this is
+
+https://github.com/libressl-portable/portable/issues/228

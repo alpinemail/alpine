@@ -36,7 +36,7 @@ AUTHENTICATOR auth_oa2 = {
  */
 char *oauth2_generate_state(void)
 {
-  char rv[36];
+  char rv[37];
   int i;
 
   rv[0] = '\0';

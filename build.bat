@@ -41,7 +41,7 @@ goto ldapincludewnt
 :yeslibresslwnt
 echo including LIBRESSL functionality
 set libresslflags=-I\"%ALPINE_LIBRESSL%\"\include -I\"%ALPINE_LIBRESSL%\"\include\openssl -DENABLE_WINDOWS_LIBRESSL
-set libressllibes=\"%ALPINE_LIBRESSL%\"\x86\libcrypto-41.lib \"%ALPINE_LIBRESSL%\"\x86\libssl-43.lib \"%ALPINE_LIBRESSL%\"\x86\libtls-15.lib
+set libressllibes=\"%ALPINE_LIBRESSL%\"\x86\libcrypto-45.lib \"%ALPINE_LIBRESSL%\"\x86\libssl-47.lib \"%ALPINE_LIBRESSL%\"\x86\libtls-19.lib
 set libresslextralibes=
 :ldapincludewnt
 if not defined ALPINE_LDAP set ALPINE_LDAP=%cd%\ldap
@@ -75,8 +75,8 @@ set libresslextralibes="crypt32.lib"
 goto ldapincludew2k
 :yeslibresslw2k
 echo including LIBRESSL functionality
-set libresslflags=-I\"%ALPINE_LIBRESSL%\"\include -I\"%ALPINE_LIBRESSL%\"\include\openssl -DENABLE_WINDOWS_LIBRESSL
-set libressllibes=\"%ALPINE_LIBRESSL%\"\x86\libcrypto-41.lib \"%ALPINE_LIBRESSL%\"\x86\libssl-43.lib \"%ALPINE_LIBRESSL%\"\x86\libtls-15.lib
+set libresslflags=-I\"%ALPINE_LIBRESSL%\"\include -I\"%ALPINE_LIBRESSL%\"\include\openssl -DENABLE_WINDOWS_LIBRESSL 
+set libressllibes=\"%ALPINE_LIBRESSL%\"\x86\libcrypto-45.lib \"%ALPINE_LIBRESSL%\"\x86\libssl-47.lib \"%ALPINE_LIBRESSL%\"\x86\libtls-19.lib
 set libresslextralibes=
 :ldapincludew2k
 if not defined ALPINE_LDAP set ALPINE_LDAP=%cd%\ldap

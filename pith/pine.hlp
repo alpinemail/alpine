@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 380 2019-12-19 08:22:29
+Alpine Commit 381 2020-01-04 20:07:10
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -33910,7 +33910,15 @@ That is a separate and independent feature.
 <BODY>
 <H1>FEATURE: <!--#echo var="FEAT_disable-password-file-saving"--></H1>
 
-This feature changes the behavior of Alpine when a login name and password combination
+<P> This feature disables caching of passwords, even if your version of Alpine allows
+saving passwords. For MAC OS users saving passwords is done using the Apple Key Chain, for
+Windows users caching passwords is done using the internal Windows Credentials, and for
+other users this is done by using the password file. In this feature, the phrase
+&quot;password file&quot; is a misnomer and represents the way in which your system
+stores passwords.
+
+<P>
+Specifically, this feature changes the behavior of Alpine when a login name and password combination
 for a specific server is not found in the password file. The default behavior is that
 Alpine will ask the user if they wish to save this information in the password file for future
 use. It is assumed that if a user created a password file it is because they intend
@@ -33918,6 +33926,12 @@ to use it, but in some instances a user might want to save some passwords and no
 In this case, enabling this feature will make Alpine not add any more passwords to the
 password file and will only use the passwords that it already saved. If you wish to allow
 Alpine to save more passwords in the password file, disable this feature.
+
+<P> Regardless of which method Alpine uses to store passwords, this is done in a secure
+way when compiled with OpenSSL or LibreSSL. This is very likely to be your version, and
+you can check this by reading the encryption features
+<A HREF="X-Alpine-Config:">supported</A> by Alpine.
+
 <P>
 <UL>   
 <LI><A HREF="h_finding_help">Finding more information and requesting help</A>

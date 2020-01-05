@@ -3116,11 +3116,11 @@ feature_list(int index)
 	{"disable-password-caching", NULL,
 	 F_DISABLE_PASSWORD_CACHING, h_config_disable_password_caching,
 	 PREF_MISC, 0},
-#ifdef PASSFILE
+#ifdef LOCAL_PASSWD_CACHE
 	{"disable-password-file-saving", NULL,
 	 F_DISABLE_PASSWORD_FILE_SAVING, h_config_disable_password_file_saving,
 	 PREF_MISC, 0},
-#endif /* PASSFILE */
+#endif /* LOCAL_PASSWD_CACHE */
 	{"disable-regular-expression-matching-for-alternate-addresses", NULL,
 	 F_DISABLE_REGEX, h_config_disable_regex, PREF_MISC, 0},
 	{"disable-save-input-history", NULL,
@@ -8205,8 +8205,6 @@ get_supported_options(void)
 #ifdef TLS1_3_VERSION
       strcat(tmp, "TLSv1.3, ");
 #endif /* TLS1_3_VERSION */
-      strcat(tmp, "DTLSv1, ");
-      strcat(tmp, "DTLSv1.2, ");
       tmp[strlen(tmp)-2] = '.';
       tmp[strlen(tmp)-1] = '\0';
     }
