@@ -1,6 +1,12 @@
+ltmain.sh
+install-sh
+mkinstalldirs
+missing
+depcomp
 config.log
 .deps
 rem
+m4/*
 web/bin
 web/lib/
 *~
@@ -13,6 +19,7 @@ an
 alpine/alpine
 alpine/rpdump
 alpine/rpload
+c-client
 imap/OSTYPE
 imap/SPECIALS
 imap/c-client/

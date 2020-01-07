@@ -1670,10 +1670,7 @@ if test -z "$alpine_c_client_bundled" ; then
 fi
 
 if test -n "$alpine_c_client_bundled" ; then
-     AC_SEARCH_LIBS(crypt,crypt,
-      [
-	LIBS="$LIBS -lcrypt"
-      ],
+     AC_SEARCH_LIBS(crypt,crypt,,
       [
        AC_MSG_ERROR([crypt library not found.])
       ])
