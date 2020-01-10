@@ -883,7 +883,7 @@ install-dvi: install-dvi-recursive
 
 install-dvi-am:
 
-install-exec-am:
+install-exec-am: install-exec-local
 
 install-html: install-html-recursive
 
@@ -923,7 +923,7 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-man
+uninstall-am: uninstall-local uninstall-man
 
 uninstall-man: uninstall-man1
 
@@ -939,14 +939,14 @@ uninstall-man: uninstall-man1
 	distclean-tags distcleancheck distdir distuninstallcheck dvi \
 	dvi-am html html-am info info-am install install-am \
 	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-man1 \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	installdirs-am maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-generic mostlyclean-libtool pdf pdf-am \
-	ps ps-am tags tags-am uninstall uninstall-am uninstall-man \
-	uninstall-man1
+	install-exec install-exec-am install-exec-local install-html \
+	install-html-am install-info install-info-am install-man \
+	install-man1 install-pdf install-pdf-am install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
+	uninstall-am uninstall-local uninstall-man uninstall-man1
 
 
 .PHONY: c-client.d c-client gssapi_proxy.l
@@ -963,6 +963,12 @@ gssapi_proxy.l:
 
 clean-local:
 	cd imap && $(MAKE) clean
+
+install-exec-local:
+	cd imap && $(MAKE) install-mailutil BUNDLED="$(C_CLIENT_BUNDLED)" DESTDIR="$(DESTDIR)" bindir="$(bindir)" mandir="$(mandir)"
+
+uninstall-local:
+	cd imap && $(MAKE) uninstall-mailutil BUNDLED="$(C_CLIENT_BUNDLED)" DESTDIR="$(DESTDIR)" bindir="$(bindir)" mandir="$(mandir)"
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

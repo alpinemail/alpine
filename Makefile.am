@@ -38,3 +38,9 @@ clean-local:
 man_MANS = doc/man1/alpine.1 doc/man1/pico.1 doc/man1/pilot.1 doc/man1/rpdump.1 doc/man1/rpload.1
 
 ACLOCAL_AMFLAGS = --install -I m4
+
+install-exec-local:
+	cd imap && $(MAKE) install-mailutil BUNDLED="$(C_CLIENT_BUNDLED)" DESTDIR="$(DESTDIR)" bindir="$(bindir)" mandir="$(mandir)"
+
+uninstall-local:
+	cd imap && $(MAKE) uninstall-mailutil BUNDLED="$(C_CLIENT_BUNDLED)" DESTDIR="$(DESTDIR)" bindir="$(bindir)" mandir="$(mandir)"

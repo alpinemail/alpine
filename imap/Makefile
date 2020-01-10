@@ -282,6 +282,7 @@ SH=sh
 SYSTEM=unix
 TOOLS=tools
 TOUCH=touch
+INSTALL=install
 
 
 # Primary build command
@@ -726,6 +727,23 @@ bundled:
 	$(CD) dmail;$(MAKE) || true
 	$(CD) tmail;$(MAKE) || true
 
+install-mailutil: bundled$(BUNDLED)
+	@echo Installing mailutil...
+	@echo BUNDLED=$(BUNDLED)
+	if test x"$(BUNDLED)" = x""; then \
+          $(INSTALL) -d $(DESTDIR)$(bindir); \
+          $(INSTALL) mailutil/mailutil $(DESTDIR)$(bindir)/mailutil; \
+	  $(INSTALL) -d $(DESTDIR)$(mandir)/man1; \
+	  $(INSTALL) src/mailutil/mailutil.1 $(DESTDIR)$(mandir)/man1/mailutil.1; \
+        fi
+
+uninstall-mailutil:
+	@echo Uninstalling mailutil...
+	@echo BUNDLED=$(BUNDLED)
+	if test x"$(BUNDLED)" = x""; then \
+          $(RM) $(DESTDIR)$(bindir)/mailutil; \
+	  $(RM) $(DESTDIR)$(mandir)/man1/mailutil.1; \
+        fi
 
 sysexitwarn:
 	@echo +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
