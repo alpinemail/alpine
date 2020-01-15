@@ -228,14 +228,16 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user,
    char *s = NULL;
    JSON_S *json = NULL;
 
-   if(oauth2->param[OA2_Id].value == NULL 
-      || oauth2->param[OA2_Secret].value == NULL){
-    /*
-     * We need to implement client-side entering client_id and
-     * client_secret, and other parameters. In the mean time, bail out.
-     */
-     return;
+   if(oauth2->param[OA2_Id].value == NULL || oauth2->param[OA2_Secret].value == NULL){
+     oauth2clientinfo_t ogci =
+		(oauth2clientinfo_t) mail_parameters (NIL, GET_OA2CLIENTINFO, NIL);
+
+     if(ogci) (*ogci)(oauth2->name, &oauth2->param[OA2_Id].value,
+				&oauth2->param[OA2_Secret].value);
    }
+
+   if(oauth2->param[OA2_Id].value == NULL || oauth2->param[OA2_Secret].value == NULL)
+      return;
 
    /* first check if we have a refresh token, and in that case use it */
    if(oauth2->param[OA2_RefreshToken].value){

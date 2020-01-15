@@ -271,6 +271,8 @@ CONF_TXT_T cf_text_personal_print_cat[] =	"Which category default print command 
 
 CONF_TXT_T cf_text_standard_printer[] =	"The system wide standard printers";
 
+CONF_TXT_T cf_text_xoauth2_info[] = "Your client-id and client-secret information to authenticate using XOAUTH2";
+
 CONF_TXT_T cf_text_last_time_prune_quest[] =	"Set by Alpine; controls beginning-of-month sent-mail pruning.";
 
 CONF_TXT_T cf_text_last_version_used[] =	"Set by Alpine; controls display of \"new version\" message.";
@@ -758,6 +760,8 @@ static struct variable variables[] = {
 	NULL,			cf_text_personal_print_command},
 {"personal-print-category",		0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0,
 	NULL,			cf_text_personal_print_cat},
+{"xoauth2-info",			0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0,
+	"XOAUTH2 Info",		cf_text_xoauth2_info},
 {"patterns",				1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0,
 	NULL,			cf_text_old_patterns},
 {"patterns-roles",			0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0,
@@ -2537,6 +2541,8 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     if(!strucmp(VAR_ELM_STYLE_SAVE, "yes"))
       set_variable(V_SAVE_BY_SENDER, "yes", 1, 1, Main);
     obs_save_by_sender = !strucmp(VAR_SAVE_BY_SENDER, "yes");
+
+    set_current_val(&vars[V_XOAUTH2_INFO], TRUE, TRUE);
 
     set_current_pattern_vals(ps);
 

@@ -33,7 +33,7 @@ static char rcsid[] = "$Id: arg.c 900 2008-01-05 01:13:26Z hubert@u.washington.e
 #include "imap.h"
 
 #include "arg.h"
-
+#include "xoauth2conf.h"
 
 int  process_debug_str(char *);
 void args_add_attach(PATMT **, char *, int);
@@ -80,7 +80,10 @@ static char args_err_d_error[] =		N_("-d argument \"%s\": %s");
 static char args_err_internal[] =		"%s";
 static char args_err_missing_copyprc[] =	N_("missing argument for option \"-copy_pinerc\"\nUsage: pine -copy_pinerc <local_pinerc> <remote_pinerc>");
 static char args_err_missing_copyabook[] =	N_("missing argument for option \"-copy_abook\"\nUsage: pine -copy_abook <local_abook> <remote_abook>");
-
+static char args_err_missing_server_name[] =	N_("missing server name. Example: -xoauth2-server Gmail");
+static char args_err_missing_client_id[] =	N_("missing client-id name. Example: -xoauth2-client-id 760.someserver.com");
+static char args_err_missing_client_secret[] =	N_("missing client-secret name. Example: -xoauth2-client-secret V56i0fa_");
+static char args_err_missing_xoauth_option[] =  N_("at least one of the arguments -xoauth2-server, or -xoauth2-client-id, or -xoauth2-client-secret is missing.");
 
 static char *args_pine_args[] = {
 N_("Possible Starting Arguments for Alpine program:"),
@@ -173,6 +176,10 @@ N_(" -install \tPrompt for some basic setup information"),
 N_(" -uninstall \tRemove traces of Alpine from Windows system settings"),
 N_(" -registry <cmd>\tWhere cmd is set,noset,clear,clearsilent,dump"),
 #endif
+N_(" -xoauth2-server <value>"),
+N_(" -xoauth2-client-id <value>"),
+N_(" -xoauth2-client-secret <value>"),
+N_("\tNote: All of -xoauth options above must be used, if any of them is used"),
 " -<option>=<value>   Assign <value> to the pinerc option <option>",
 "\t\t     e.g. -signature-file=sig1",
 "\t\t     e.g. -color-style=no-color",
@@ -210,6 +217,9 @@ pine_args(struct pine *pine_state, int argc, char **argv, ARGDATA_S *args)
     char *sort                = NULL;
     char *pinerc_file         = NULL;
     char *lc		      = NULL;
+    char *xoauth2_server      = NULL;
+    char *xoauth2_client_id   = NULL;
+    char *xoauth2_client_secret = NULL;
     int   do_help             = 0;
     int   do_conf             = 0;
     int   usage               = 0;
@@ -541,6 +551,48 @@ Loop: while(--ac > 0)
 	      }
 	      else if(strcmp(*av, "version") == 0){
 		  do_version = 1;
+		  goto Loop;
+	      }
+	      else if(strcmp(*av, "xoauth2-server") == 0){
+		  if(--ac){
+		      if((str = *++av) != NULL){
+			  if(xoauth2_server)
+			     fs_give((void **) &xoauth2_server);
+			  xoauth2_server = cpystr(str);
+		      }
+		  }
+		  else{
+		      display_args_err(_(args_err_missing_server_name), NULL, 1);
+		      ++usage;
+		  }
+		  goto Loop;
+	      }
+	      else if(strcmp(*av, "xoauth2-client-id") == 0){
+		  if(--ac){
+		      if((str = *++av) != NULL){
+			  if(xoauth2_client_id)
+			     fs_give((void **) &xoauth2_client_id);
+			  xoauth2_client_id = cpystr(str);
+		      }
+		  }
+		  else{
+		      display_args_err(_(args_err_missing_client_id), NULL, 1);
+		      ++usage;
+		  }
+		  goto Loop;
+	      }
+	      else if(strcmp(*av, "xoauth2-client-secret") == 0){
+		  if(--ac){
+		      if((str = *++av) != NULL){
+			  if(xoauth2_client_secret)
+			     fs_give((void **) &xoauth2_client_secret);
+			  xoauth2_client_secret = cpystr(str);
+		      }
+		  }
+		  else{
+		      display_args_err(_(args_err_missing_client_secret), NULL, 1);
+		      ++usage;
+		  }
 		  goto Loop;
 	      }
 #ifdef	_WINDOWS
@@ -890,11 +942,31 @@ Loop: while(--ac > 0)
 	exit(-1);
     }
 
+    if((xoauth2_server || xoauth2_client_id || xoauth2_client_secret)
+	&& !(xoauth2_server && xoauth2_client_id && xoauth2_client_secret)){
+	display_args_err(_(args_err_missing_xoauth_option), NULL, 1);
+	++usage;
+    }
+
     if(do_help || usage)
       args_help(); 
 
     if(usage)
       exit(-1);
+
+    if(xoauth2_server){
+      char *tmp1, *tmp2;
+      tmp2 = xoauth_config_line(xoauth2_server, xoauth2_client_id, xoauth2_client_secret);
+      if(tmp2){
+        tmp1 = fs_get((strlen(ps_global->vars[V_XOAUTH2_INFO].name) + strlen(tmp2) + 2)*sizeof(char));
+	if(tmp1){
+	  sprintf(tmp1,"%s=%s", ps_global->vars[V_XOAUTH2_INFO].name, tmp2);
+          pinerc_cmdline_opt(tmp1);
+	  fs_give((void **) &tmp1);
+	}
+	fs_give((void **) &tmp2);
+      }
+    }
 
     if(do_version){
 	extern char datestamp[], hoststamp[];

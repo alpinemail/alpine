@@ -41,6 +41,7 @@ static char rcsid[] = "$Id: alpine.c 1266 2009-07-14 18:39:12Z hubert@u.washingt
 #include "context.h"
 #include "mailview.h"
 #include "imap.h"
+#include "xoauth2conf.h"
 #include "radio.h"
 #include "folder.h"
 #include "send.h"
@@ -63,6 +64,7 @@ static char rcsid[] = "$Id: alpine.c 1266 2009-07-14 18:39:12Z hubert@u.washingt
 #include "after.h"
 #include "smime.h"
 #include "newmail.h"
+#include "xoauth2conf.h"
 #ifndef _WINDOWS
 #include "../pico/osdep/raw.h"	/* for STD*_FD */
 #endif
@@ -341,6 +343,7 @@ main(int argc, char **argv)
     mail_parameters(NULL, SET_FREEELTSPAREP,    (void *) free_pine_elt);
     mail_parameters(NULL, SET_FREEBODYSPAREP,   (void *) free_body_sparep);
     mail_parameters(NULL, SET_OA2CLIENTGETACCESSCODE, (void *) oauth2_get_access_code);
+    mail_parameters(NULL, SET_OA2CLIENTINFO, (void *) oauth2_get_client_info);
 
     init_pinerc(pine_state, &init_pinerc_debugging);
 
@@ -2362,6 +2365,10 @@ choose_setup_cmd(int cmd, MSGNO_S *msgmap, SCROLL_S *sparms)
 	srv->cmd = 'c';
 	break;
 
+      case MC_XOAUTH2 :
+	srv->cmd = 'u';
+	break;
+
       case MC_SIG :
 	srv->cmd = 's';
 	break;
@@ -2567,6 +2574,11 @@ setup_menu(struct pine *ps)
 	so_puts(store, _("    Setup for using S/MIME to verify signed messages, decrypt\n"));
 	so_puts(store, _("    encrypted messages, and to sign or encrypt outgoing messages.\n"));
     }
+
+    so_puts(store, "\n");
+    so_puts(store, _("(U) xoaUth2:\n"));
+    so_puts(store, _("    Set client-id and client-secret to use the XOAUTH2\n"));
+    so_puts(store, _("    authenticator.\n"));
 
     so_puts(store, "\n");
     so_puts(store, _("(Z) RemoteConfigSetup:\n"));
@@ -2799,6 +2811,12 @@ do_setup_task(int command)
         /*----- CONFIGURE OPTIONS -----*/
       case 'c':
 	option_screen(ps_global, edit_exceptions);
+	ps_global->mangled_screen = 1;
+	break;
+
+        /*----- XOAUTH2 CLIENT CONFIGURATION -----*/
+      case 'u':
+	alpine_xoauth2_configuration(ps_global, edit_exceptions);
 	ps_global->mangled_screen = 1;
 	break;
 

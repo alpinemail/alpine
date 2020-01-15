@@ -46,7 +46,7 @@ HFILES=	../include/system.h ../include/general.h \
 	conftype.h context.h dispfilt.h flagmaint.h folder.h headers.h help.h imap.h \
 	init.h kblock.h keymenu.h ldapconf.h listsel.h mailcmd.h mailindx.h mailpart.h \
 	mailview.h newmail.h newuser.h pattern.h pipe.h print.h radio.h remote.h \
-	reply.h roleconf.h \
+	reply.h roleconf.h xoauth2conf.h \
 	send.h setup.h signal.h status.h takeaddr.h talk.h titlebar.h
 
 OFILES=	addrbook.obj adrbkcmd.obj after.obj alpine.obj arg.obj busy.obj colorconf.obj \
@@ -56,7 +56,7 @@ OFILES=	addrbook.obj adrbkcmd.obj after.obj alpine.obj arg.obj busy.obj colorcon
 	newuser.obj pattern.obj pipe.obj \
 	print.obj radio.obj remote.obj reply.obj roleconf.obj \
 	send.obj setup.obj signal.obj smime.obj status.obj \
-	takeaddr.obj titlebar.obj
+	takeaddr.obj titlebar.obj xoauth2conf.obj
 
 OURLIBS= ../c-client/cclient.lib osdep/libalpineosd.lib osdep/mswin.res \
 	../pith/osdep/libpithosd.lib ../pith/charconv/libpithcc.lib ../regex/libregex.lib ../pith/libpith.lib \

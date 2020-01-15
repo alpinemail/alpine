@@ -215,6 +215,7 @@ struct key_menu {
 #define	MC_DECRYPT	802
 #define MC_QUOTA	803
 #define MC_ADDHEADER	804
+#define MC_XOAUTH2	805
 
 
 /* Commands for S/MIME screens */

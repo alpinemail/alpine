@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2018 Eduardo Chappa
+ * Copyright 2016-2020 Eduardo Chappa
  *
  * Last Edited: July 21, 2018 Eduardo Chappa <chappa@washington.edu>
  *
@@ -156,6 +156,8 @@
 #define SET_IDSTREAM  (long) 168
 #define GET_OA2CLIENTGETACCESSCODE (long) 169
 #define SET_OA2CLIENTGETACCESSCODE (long) 170
+#define GET_OA2CLIENTINFO (long) 171
+#define SET_OA2CLIENTINFO (long) 172
 
 	/* 2xx: environment */
 #define GET_USERNAME (long) 201
@@ -1939,7 +1941,7 @@ typedef struct OA2_serverparam_s {
 } OAUTH2_SERVER_METHOD_S;
 
 typedef struct oauth2_s {
-   char *name;                          /* provider name */
+   unsigned char *name;                          /* provider name */
    char *host[OAUTH2_TOT_EQUIV];        /* servers for which this data applies  */
    OAUTH2_PARAM_S param[OA2_End];	/* parameters name and values for this server */
 		/* servers, methods and parameters to retrieve access code and tokens */
@@ -1949,3 +1951,5 @@ typedef struct oauth2_s {
 } OAUTH2_S;
 
 typedef char *(*oauth2getaccesscode_t) (char *url, OAUTH2_S *, int *);
+typedef void *(*oauth2clientinfo_t)(char *name, char **id, char **secret);
+

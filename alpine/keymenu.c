@@ -994,7 +994,7 @@ struct key choose_setup_keys[] =
 	{"Z",N_("RemoteConfigSetup"),{MC_REMOTE,1,{'z'}},KS_NONE},
 	/* TRANSLATORS: configure S/MIME */
 	{"M",N_("S/Mime"),{MC_SECURITY,1,{'m'}},KS_NONE},
-	NULL_MENU,
+	{"U",N_("xoaUth2"),{MC_XOAUTH2,1,{'u'}},KS_NONE},
 	PREVPAGE_MENU,
 	NEXTPAGE_MENU,
 	NULL_MENU,

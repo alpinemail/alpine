@@ -91,6 +91,8 @@ static copyuid_t mailcopyuid = NIL;
 static appenduid_t mailappenduid = NIL;
 
 static oauth2getaccesscode_t oauth2getaccesscode = NIL;
+
+static oauth2clientinfo_t oauth2clientinfo = NIL;
 				/* free elt extra stuff callback */
 static freeeltsparep_t mailfreeeltsparep = NIL;
 				/* free envelope extra stuff callback */
@@ -672,6 +674,11 @@ void *mail_parameters (MAILSTREAM *stream,long function,void *value)
     oauth2getaccesscode = (oauth2getaccesscode_t) value;
   case GET_OA2CLIENTGETACCESSCODE:
     ret = (void *) oauth2getaccesscode;
+    break;
+  case SET_OA2CLIENTINFO:
+    oauth2clientinfo = (oauth2clientinfo_t) value;
+  case GET_OA2CLIENTINFO:
+    ret = (void *) oauth2clientinfo;
     break;
   default:
     if ((r = smtp_parameters (function,value)) != NULL) ret = r;

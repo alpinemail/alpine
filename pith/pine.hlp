@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 384 2020-01-10 10:32:45
+Alpine Commit 385 2020-01-15 12:40:59
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -15928,6 +15928,66 @@ as for individual entries for filling in the full name.
 
 For help with editing and navigation commands, check the Help for the
 Nickname: field.
+
+<P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+======= h_config_xoauth2_client_id =======
+<HTML>
+<HEAD>
+<TITLE>Client-Id Explained</TITLE>
+</HEAD>
+<BODY>
+<H1>Client-Id Explained</H1>
+
+If you have registered Alpine with your service provider to use the
+XOAUTH2 authenticator, or someone has shared a client-id with you, use this
+field to input this field. Remember that in order to use the XOAUTH2 authentication
+method, you must have a pair of client-id and client-secret. You must have
+both in order for this authenticator to work.
+
+<P>
+The Client-Id field is a string that your provider generates for the program
+being registered. However, some providers allow different users to register
+the same program. Users of the Mutt email program already do this to use
+XOAUTH2 authentication in Gmail.
+
+<P>
+Some providers generate an extremely long client-id string. If this is your 
+case, you might have to divide that string into pieces and paste each of those
+pieces  into this field.
+<P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+======= h_config_xoauth2_client_secret =======
+<HTML>
+<HEAD>
+<TITLE>Client-Secret Explained</TITLE>
+</HEAD>
+<BODY>
+<H1>Client-Secret Explained</H1>
+
+If you have registered Alpine with your service provider to use the
+XOAUTH2 authenticator, or someone has shared a client-secret with you, use this
+field to input this field. Remember that in order to use the XOAUTH2 authentication
+method, you must have a pair of client-id and client-secret. You must have
+both in order for this authenticator to work.
+
+<P> The client-secret field is supposed to be kept secret, that is not 
+shared with any of the users, but due to the open source nature of Alpine, 
+it is not possible to keep it secret in any meaningful way. The intention 
+of this field is so that only the coders of an app can use the codes given 
+to them and authenticate their users to the services they are requesting. 
+This means that other coders would not be able to impresonate that app, 
+and use it to steal data from those users. In the case of Alpine this is 
+not possible, as Alpine does not steal data from its users, so users are safe
+sharing client-secrets. Just make sure you obtain your copy of Alpine from
+a reputable provider or compile the source code by yourself. The official
+source code of this project is located at
+
+<P><CENTER><A HREF="http://repo.or.cz/alpine.git">http://repo.or.cz/alpine.git</A>.</CENTER>
 
 <P>
 &lt;End of help on this topic&gt;
