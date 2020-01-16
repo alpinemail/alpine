@@ -253,6 +253,23 @@ Use configuration exceptions in
 Exceptions are used to override your default pinerc
 settings for a particular platform, can be a local file or
 a remote folder.
+.IP \fB-xoauth2-server\ \fIServerName\fR 20
+Name of the service that XOAUTH2 authentication will be attempted.
+The only service supported as of this writing is Gmail. Note that
+all of the options -xoauth2-server, -xoauth2-client-id and 
+-xoauth2-client-secret must be used simultaneously. Example:
+-xoauth2-server Gmail.
+.IP \fB-xoauth2-client-id\ \fIClient-Id\fR 20
+String that identifies Alpine with the service provider that provides
+XOAUTH2 authentication. Note that
+all of the options -xoauth2-server, -xoauth2-client-id and 
+-xoauth2-client-secret must be used simultaneously.
+.IP \fB-xoauth2-client-secret\ \fIClient-Secret\fR 20
+Secret string that identifies the Alpine with 
+the service provider that provides XOAUTH2 authentication.
+Note that
+all of the options -xoauth2-server, -xoauth2-client-id and 
+-xoauth2-client-secret must be used simultaneously.
 .IP \fB-z\fR 20
 Enable ^Z and SIGTSTP so alpine may be suspended.
 .IP \fI-option\=\fIvalue\fR 20
