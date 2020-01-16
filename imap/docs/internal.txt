@@ -626,7 +626,7 @@ void INIT (STRING *s,STRINGDRIVER *d,void *data,unsigned long size);
 	data	pointer to driver-dependent data, from which the
 		 driver can determine string data
 	size	size of the string
- This call initializes the string stucture.
+ This call initializes the string structure.
 
 
 unsigned long SIZE (STRING *s);
@@ -723,7 +723,7 @@ char mail_string_next (STRING *s);
 void mail_string_setpos (STRING *s,unsigned long i);
 
      These three functions are the init, next, and setpos string
-structure access methods for the build-in mail_string string driver.
+structure access methods for the built-in mail_string string driver.
 mail_string is a basic string driver for a char* string.  See the
 documentation below on "String Structures" for more information.
 
@@ -742,7 +742,7 @@ statement
 	#include "linkage.c"
 which will include the "system standard driver linkage" defined when
 c-client was built.  By using linkage.c instead of explicit mail_link()
-calls, you are guaranteed that you will have a consistant linkage among
+calls, you are guaranteed that you will have a consistent linkage among
 all software built on this system.
 
 
@@ -925,7 +925,7 @@ fetch an operational parameter and SET_xxx to set the parameter:
 	bit.  Defaults to non-NIL, since this is usually bad news.
 
  GET_LISTMAXLEVEL / SET_LISTMAXLEVEL
-	 The maximum depth of recusion that LIST will go on a *
+	 The maximum depth of recursion that LIST will go on a *
 	wildcard.  Defaults to 20.
 
  GET_ANONYMOUSHOME / SET_ANONYMOUSHOME
@@ -1143,7 +1143,7 @@ long mail_rename (MAILSTREAM *stream,char *old,char *newname);
 It returns T if successful, NIL if unsuccessful.  If unsuccessful, an
 error message is returned via the mm_log() callback.
 
-     It is an error to reanme a mailbox that does not exist, or rename
+     It is an error to rename a mailbox that does not exist, or rename
 a mailbox to a name that already exists.  It is permitted to rename
 INBOX; a new empty INBOX is created in its place.
 
@@ -1609,7 +1609,7 @@ unsigned int seen : 1;	message read
 unsigned int unseen : 1;
 			message not read
 
-     The following auxillary structures are used by search programs:
+     The following auxiliary structures are used by search programs:
 	SEARCHHEADER:	header line searching
 char *line;		header line field name
 char *text;		text header line
@@ -1725,7 +1725,7 @@ and end of the expunge to ensure synchronization.  The status of the
 expunge is passed to the application via the mm_log() facility.
 
       Note that the decrementing of msgno's for subsequent messages
-happens immediately; for example, if three consequtive messages starting
+happens immediately; for example, if three consecutive messages starting
 at msgno 5 are expunged, mm_expunged() will be called with a msgno of 5
 three times.
 
@@ -2709,7 +2709,7 @@ possibly shown to the user.
 
 	ERROR	An error event.  This event should be displayed to
 		the user, or at least logged someplace.  This is a
-		serious error condition occured that aborted the
+		serious error condition occurred that aborted the
 		requested operation and possibly also aborted the mail
 		stream.  This ranges from normal error conditions such
 		as "Can't open mailbox", "too many login failures, go
@@ -2793,7 +2793,7 @@ function has to output its own.
 			     Driver interface
 
      When writing a new driver for the c-client, you must provide a
-DRIVER stucture giving a dispatch vector between MAIL and the driver.
+DRIVER structure giving a dispatch vector between MAIL and the driver.
 The DRIVER dispatch vector is described in mail.h.
 
 char *name;
@@ -2974,7 +2974,7 @@ void mail_lock (MAILSTREAM *stream);
 lock if the stream is already locked.
 
       This is mainly used to catch errors due to a callback function
-(e.g. mm_exists) inadvertantly recursing back to the MAIL routines and
+(e.g. mm_exists) inadvertently recursing back to the MAIL routines and
 establishing an infinite recursion.  Normally, drivers will set the lock
 prior to calling one of the callback functions above or, more likely, in
 the beginning of the driver's non-reentrant "do operation" section.  In the

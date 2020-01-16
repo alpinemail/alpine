@@ -877,7 +877,7 @@ load_key(PERSONAL_CERT *pc, char *pass, int flag)
 /*
  * This newer version is from Adrian Vogel. It looks for the email
  * address not only in the email address field, but also in an
- * X509v3 extension field, Subject Altenative Name.
+ * X509v3 extension field, Subject Alternative Name.
  */
 char **
 get_x509_subject_email(X509 *x)

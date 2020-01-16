@@ -72,7 +72,7 @@
 #define	OSB_POST_CLOSE	0x0008
 
 /*
- * stucture required for the pipe commands...
+ * structure required for the pipe commands...
  */
 typedef struct pipe_s {
     pid_t    pid;				/* child's process id       */

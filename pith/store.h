@@ -56,7 +56,7 @@ typedef struct store_object {
 #define	so_puts(so, s)		((*(so)->puts)((so), (s)))
 
 
-/* exported protoypes */
+/* exported prototypes */
 STORE_S	*so_get(SourceType, char *, int);
 int	 so_give(STORE_S **);
 int	 so_nputs(STORE_S *, char *, long);

@@ -187,7 +187,7 @@ static KEYMENU menu_scroll[] = {
 #define	OVERLAP	2		/* displayed page overlap */
 
 /*
- * scrollw - takes beginning row and ending row to diplay an array
+ * scrollw - takes beginning row and ending row to display an array
  *           of text lines.  returns either 0 if scrolling terminated
  *           normally or the value of a ctrl character typed to end it.
  *
@@ -210,7 +210,7 @@ wscrollw(int begrow, int endrow, char *utf8textp[], int textlen)
     dlines = endrow - begrow - 1;
     while(!done) {
         /*
-         * diplay a page loop ...
+         * display a page loop ...
          */
 	if(prevoffset != loffset){
        	    for(i = 0; i < dlines; i++){
@@ -374,7 +374,7 @@ rebindfunc(int (*a)(int, int), int (*b)(int, int))
 
     while(kp->k_fp != NULL){		/* go thru whole list, and */
 	if(kp->k_fp == a)
-	  kp->k_fp = b;			/* replace all occurances */
+	  kp->k_fp = b;			/* replace all occurrences */
 	kp++;
     }
 }

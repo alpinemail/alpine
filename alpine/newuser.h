@@ -21,7 +21,7 @@
 #include "../pith/state.h"
 
 
-/* exported protoypes */
+/* exported prototypes */
 void	    new_user_or_version(struct pine *);
 
 

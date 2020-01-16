@@ -2447,7 +2447,7 @@ delete:
 
 	/*
 	 * Delay setting the displayed value until "var.current_val" is set
-	 * in case current val get's changed due to a special case above.
+	 * in case current val gets changed due to a special case above.
 	 */
 	if(newval){
 	    if(*newval)
@@ -4518,7 +4518,7 @@ clear_feature(char ***l, char *f)
 
     /*
      * this is helpful to keep the array from growing if a feature
-     * get's set and unset repeatedly
+     * gets set and unset repeatedly
      */
     if(!f)
       fs_resize((void **)l, count * sizeof(char *));
@@ -6011,7 +6011,7 @@ unexpected_pinerc_change(void)
 
 
   Args: cmd - what type of scroll operation.
-	scroll_pos - paramter for operation.  
+	scroll_pos - parameter for operation.  
 			used as position for SCROLL_TO operation.
 
   Returns: TRUE - did the scroll operation.

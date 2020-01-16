@@ -22,7 +22,7 @@
 #include "../pith/store.h"
 
 
-/* exported protoypes */
+/* exported prototypes */
 char	   *rfc2231_get_param(PARAMETER *, char *, char **, char **);
 int	    rfc2231_output(STORE_S *, char *, char *, char *, char *);
 PARMLIST_S *rfc2231_newparmlist(PARAMETER *);

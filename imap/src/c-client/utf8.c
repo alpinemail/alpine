@@ -347,7 +347,7 @@ static const SCRIPT utf8_scvalid[] = {
   {"Chinese Simplified","China, Singapore",SC_CHINESE_SIMPLIFIED},
   {"Chinese Traditional","Taiwan, Hong Kong, Macao",SC_CHINESE_TRADITIONAL},
   {"Cyrillic",NIL,SC_CYRILLIC},
-  {"Cyrillic Ukranian",NIL,SC_UKRANIAN},
+  {"Cyrillic Ukrainian",NIL,SC_UKRANIAN},
   {"Greek",NIL,SC_GREEK},
   {"Hebrew",NIL,SC_HEBREW},
   {"Japanese",NIL,SC_JAPANESE},
@@ -898,7 +898,7 @@ unsigned long utf8_rmapsize (SIZEDTEXT *text,unsigned short *rmap,
 
 /* Convert UCS-4 to charset using rmap
  * Accepts: source UCS-4 character(s)
- *	    numver of UCS-4 characters
+ *	    number of UCS-4 characters
  *	    conversion rmap
  *	    pointer to returned sized text
  *	    substitute character if not in rmap, else NIL to return failure
@@ -918,7 +918,7 @@ long ucs4_rmaptext (unsigned long *ucs4,unsigned long len,unsigned short *rmap,
 
 /* Return size of UCS-4 string converted to other CS via rmap
  * Accepts: source UCS-4 character(s)
- *	    numver of UCS-4 characters
+ *	    number of UCS-4 characters
  *	    conversion rmap
  *	    substitute character if not in rmap, else NIL to return failure
  * Returns: length if success, negative if failure (no-convert)

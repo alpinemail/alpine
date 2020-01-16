@@ -175,7 +175,7 @@ unsigned long unix_crlfcpy (char **dst,unsigned long *dstl,char *src,
     break;
   case '\012':			/* line feed? */
     *d++ ='\015';		/* yes, prepend a CR, drop into default case */
-  default:			/* ordinary chararacter */
+  default:			/* ordinary character */
     *d++ = *src++;		/* just copy character */
     break;
   }
@@ -202,7 +202,7 @@ unsigned long unix_crlflen (STRING *s)
     break;
   case '\012':			/* line feed? */
     i++;
-  default:			/* ordinary chararacter */
+  default:			/* ordinary character */
     break;
   }
   SETPOS (s,pos);		/* restore old position */

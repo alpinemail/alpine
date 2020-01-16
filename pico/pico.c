@@ -1256,7 +1256,7 @@ doubleclick = (lrow == row && lcol == col
 		       && time(0) < (lastcalled + 2));
 	lastcalled  = time(0);
 #endif
-	lheader	    = FALSE;	/* Rember mouse down position. */
+	lheader	    = FALSE;	/* Remember mouse down position. */
 	levent	    = mevent;
 	lrow	    = row;
 	lcol	    = col;

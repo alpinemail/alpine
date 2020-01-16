@@ -20,7 +20,7 @@
 
 #ifdef KEYBOARD_LOCK
 
-/* exported protoypes */
+/* exported prototypes */
 int	    lock_keyboard(void);
 
 #endif	/* KEYBOARD_LOCK */

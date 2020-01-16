@@ -22,7 +22,7 @@
 #include "../pith/repltype.h"
 
 
-/* exported protoypes */
+/* exported prototypes */
 char	*detoken(ACTION_S *, ENVELOPE *, int, int, int, REDRAFT_POS_S **, int *);
 char	*detoken_src(char *, int, ENVELOPE *, ACTION_S *, REDRAFT_POS_S **, int *);
 

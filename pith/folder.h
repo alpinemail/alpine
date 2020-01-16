@@ -58,7 +58,7 @@ typedef struct _existdata {
 #define	FEX_ISDIR	0x0002		/* file_exists: name is a dir	    */
 #define	FEX_ISMARKED	0x0004		/* file_exists: is interesting	    */
 #define	FEX_UNMARKED	0x0008		/* file_exists: known UNinteresting */
-#define	FEX_ERROR	0x1000		/* file_exists: error occured	    */
+#define	FEX_ERROR	0x1000		/* file_exists: error occurred	    */
 
 #define	BFL_NONE	0x00		/* build_folder_list: no flag */
 #define	BFL_FLDRONLY	0x01		/* ignore directories	      */
@@ -82,7 +82,7 @@ typedef struct _existdata {
 #define	UFU_ANNOUNCE	0x02		/* announce increases with q_status */
 
 
-/* exported protoypes */
+/* exported prototypes */
 char	   *folder_lister_desc(CONTEXT_S *, FDIR_S *);
 void	    reset_context_folders(CONTEXT_S *);
 FDIR_S	   *next_folder_dir(CONTEXT_S *, char *, int, MAILSTREAM **);

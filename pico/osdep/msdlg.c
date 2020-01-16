@@ -152,7 +152,7 @@ mswin_usedialog (void)
 	button_list -- pointer to array of mDlgButton's.  input chars matching
                        those in list return value from list.  Nearly identical
 		       to Pine's ESCKEY structure.
-        help   -- Arrary of strings for help text in bottom screen lines
+        help   -- Array of strings for help text in bottom screen lines
         flags  -- flags
 
   Result:  editing input string
@@ -359,7 +359,7 @@ mswin_dialog_proc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	    
 	case IDCANCEL:
 	    /*
-	     * Cancel operation.  Don't retreive new text.
+	     * Cancel operation.  Don't retrieve new text.
 	     */
 	    gOEInfo.result = 1;
 	    EndDialog (hDlg, gOEInfo.result);
@@ -387,7 +387,7 @@ mswin_dialog_proc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	default:
 	    /*
 	     * Search button list for button with this ID.  If found
-	     * return it's result code.  Retreive text.
+	     * return it's result code.  Retrieve text.
 	     */
 	    if (  wParam >= BTN_FIRSTID && 
 		  wParam < BTN_FIRSTID + (WPARAM) gOEInfo.button_count) {
@@ -547,7 +547,7 @@ mswin_yesno_lptstr(LPTSTR prompt)
 			   mstructure.
 	dflt		-- Value returned when "Enter" is pressed.
         on_ctrl_C	-- Value returned to cancel dialog (ESC).
-        help		-- Arrary of strings for help text in bottom screen 
+        help		-- Array of strings for help text in bottom screen 
 			   lines
         flags		-- flags
 
@@ -557,7 +557,7 @@ mswin_yesno_lptstr(LPTSTR prompt)
 	or one of the other return values defined in button_list.
 		
 		
-Note:  To prcess keyboard in put we use a custom dialog control
+Note:  To process keyboard input we use a custom dialog control
        which is invisible but always has the input focus.
 
 ----------------------------------------------------------------------*/
@@ -987,7 +987,7 @@ BuildButtonList(HWND hDlg, MDlgButton *built_in, int biCount, MDlgButton *button
 	w = bwidth;				/* Original button width. */
 	cols = 1 + ((biCount + btnCount) - 1) / rows;	/* Calc num cols. */
 
-	/* Need to srink button width? */
+	/* Need to shrink button width? */
 	if (2 * margine + bwidth * cols + BSPACE * (cols - 1) > rDlg.right) {
 	    w = ((rDlg.right - (2 * margine)) - (BSPACE * (cols-1))) / cols;
 	}

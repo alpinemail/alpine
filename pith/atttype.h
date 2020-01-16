@@ -41,7 +41,7 @@ typedef	struct parmlist {
 } PARMLIST_S;
 
 
-/* exported protoypes */
+/* exported prototypes */
 
 
 #endif /* PITH_ATTTYPE_INCLUDED */

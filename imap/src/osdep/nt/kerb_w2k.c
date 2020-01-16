@@ -205,7 +205,7 @@ char *kerberos_login (char *user,char *authuser,int argc,char *argv[]);
 #define STRING WINSTRING	/* conflict with mail.h */
 #include <NTSecAPI.h>
 
-/* GSSAPI build-in object identifiers */
+/* GSSAPI built-in object identifiers */
 
 static gss_OID_desc oids[] = {	/* stupid C language makes this necessary */
   {10,"\052\206\110\206\367\022\001\002\001\004"},
@@ -230,7 +230,7 @@ static gss_cred_id_t gss_default_cred = NIL;
 
 /* GSSAPI import name (convert to full service principal name)
  * Accepts: pointer to return minor status
- *	    buffer containining input name
+ *	    buffer containing input name
  *	    type of input name
  *	    pointer to return output internal name
  * Returns: major status, always

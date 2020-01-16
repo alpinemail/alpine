@@ -75,7 +75,7 @@ typedef struct reply_s {
 #define FS_CONVERT_QUOTES 1
 
 
-/* exported protoypes */
+/* exported prototypes */
 
 
 #endif /* PITH_REPLTYPE_INCLUDED */

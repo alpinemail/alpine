@@ -5,7 +5,7 @@
 #
 #	build CC=txtcc gul
 #
-# As of Pine4.03, this moves about 675k per process into sharable memory
+# As of Pine4.03, this moves about 675k per process into shareable memory
 #
 # Corey Satten, corey@cac.washington.edu, 9/11/98
 

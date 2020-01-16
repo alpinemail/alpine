@@ -62,7 +62,7 @@ int              our_ldap_set_lderrno(LDAP *, int, char *, char *);
  * Args  string -- the string to use in the lookup
  *
  * Returns     NULL -- lookup failed
- *          Address -- A single address is returned if lookup was successfull.
+ *          Address -- A single address is returned if lookup was successful.
  */
 ADDRESS *
 wp_lookups(char *string, WP_ERR_S *wp_err, int recursing)

@@ -68,10 +68,10 @@ int scandir (char *dirname,struct direct ***namelist,select_t select,
   return nitems;		/* and size */
 }
 
-/* Alphabetic file name comparision
+/* Alphabetic file name comparison
  * Accepts: first candidate directory entry
  *	    second candidate directory entry
- * Returns: negative if d1 < d2, 0 if d1 == d2, postive if d1 > d2
+ * Returns: negative if d1 < d2, 0 if d1 == d2, positive if d1 > d2
  */
 
 int alphasort (void *d1,void *d2)

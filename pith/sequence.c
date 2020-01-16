@@ -352,7 +352,7 @@ build_sequence(MAILSTREAM *stream, MSGNO_S *msgmap, long int *count)
   Args: map -- message number struct of to build selected messages in
 
   OK folks, here's the tradeoff: either all the functions have to
-  know if the user want's to deal with the "current" hilited message
+  know if the user wants to deal with the "current" hilited message
   or the list of currently "selected" messages, *or* we just
   wrap the call to these functions with some glue that tweeks
   what these functions see as the "current" message list, and let them

@@ -150,7 +150,7 @@ end_screen(char *message, int exit_val)
 
  Result:  terminal size is discovered and set pine state
           termcap entry is fetched and stored in local variables
-          make sure terminal has adequate capabilites
+          make sure terminal has adequate capabilities
           evaluate scrolling situation
           returns status of indicating the state of the screen/termcap entry
 
@@ -361,7 +361,7 @@ MoveCursor(int row, int col)
 /*----------------------------------------------------------------------
     Write a character to the screen, keeping track of cursor position
 
- Input:  charater to write
+ Input:  character to write
 
  Result: character output
          cursor position variables updated

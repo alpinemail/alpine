@@ -652,7 +652,7 @@ void trmint ()
 int pass_login (char *t,int argc,char *argv[])
 {
   char tmp[MAILTMPLEN];
-				/* flush old passowrd */
+				/* flush old password */
   if (pass) fs_give ((void **) &pass);
   if (!(t && *t)) {		/* if no password given */
     PSOUT ("-ERR Missing password argument\015\012");

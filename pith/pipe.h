@@ -22,7 +22,7 @@
 #include "../pith/osdep/pipe.h"
 
 
-/* exported protoypes */
+/* exported prototypes */
 int	 pipe_putc(int, PIPE_S *);
 int	 pipe_puts(char *, PIPE_S *);
 char	*pipe_gets(char *, int, PIPE_S *);

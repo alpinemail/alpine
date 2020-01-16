@@ -85,7 +85,7 @@ struct date {
 #define BUILDER_FOOTER_MANGLED		0x4
 
 
-/* exported protoypes */
+/* exported prototypes */
 char	   *rplstr(char *, size_t, int, char *);
 void	    sqzspaces(char *);
 void	    sqznewlines(char *);

@@ -979,7 +979,7 @@ long tenex_append (MAILSTREAM *stream,char *mailbox,append_t af,void *data)
 	ret = NIL;		/* mark failure */
 	break;
       }
-      mail_date (tmp,&elt);	/* write preseved date */
+      mail_date (tmp,&elt);	/* write preserved date */
     }
     else internal_date (tmp);	/* get current date in IMAP format */
     i = GETPOS (message);	/* remember current position */

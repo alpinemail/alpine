@@ -632,7 +632,7 @@ pipe_callback(PIPE_S *syspipe, int flags, void *data)
 	    if(!child_signalled){
 		if(setjmp(child_state) == 0){
 		    child_jump = 1;	/* prepare to wake up */
-		    sleep(600);		/* give it 5mins to happend */
+		    sleep(600);		/* give it 5mins to happen */
 		}
 		else
 		  our_sigunblock(SIGCHLD);

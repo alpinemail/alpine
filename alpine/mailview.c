@@ -3340,7 +3340,7 @@ scrolltool(SCROLL_S *sparms)
 		ClearLine(1);
 		break;
 	    }
-	    /* else no reformatting neccessary, fall thru to repaint */
+	    /* else no reformatting necessary, fall thru to repaint */
 
 
             /*-------------- refresh -------------*/
@@ -4157,7 +4157,7 @@ format_scroll_text(void)
  *              of the file is the one first in the text_lines buffer.
  *
  *   NOTE: talk about massive potential for tuning...
- *         Goes without saying this is still under constuction
+ *         Goes without saying this is still under construction
  */
 void
 ScrollFile(long int line)
@@ -4180,7 +4180,7 @@ ScrollFile(long int line)
 	 * BOGUS: this is painfully crude right now, but I just want to get
 	 * it going. 
 	 *
-	 * possibly in the near furture, an array of indexes into the 
+	 * possibly in the near future, an array of indexes into the 
 	 * file that are the offset for the beginning of each line will
 	 * speed things up.  Of course, this
 	 * will have limits, so maybe a disk file that is an array
@@ -5440,7 +5440,7 @@ mswin_readscrollbuf(n)
 
 
   Args: cmd - what type of scroll operation.
-	scroll_pos - paramter for operation.  
+	scroll_pos - parameter for operation.  
 			used as position for SCROLL_TO operation.
 
   Returns: TRUE - did the scroll operation.

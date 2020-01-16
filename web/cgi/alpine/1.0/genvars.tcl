@@ -86,7 +86,7 @@ set folder_vars {
     {feat enable-dot-folders "Enable Hidden Folders"}
     {feat enable-lame-list-mode "Enable Lame List Mode"}
     {feat try-alternative-authentication-driver-first "Try Alternative Authentication First"}
-    {feat quell-empty-directories "Do Not Display Empty Directores"}
+    {feat quell-empty-directories "Do Not Display Empty Directories"}
 }
 
 set address_vars {

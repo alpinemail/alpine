@@ -28,7 +28,7 @@
 #define MAX_BM			150  /* max length of busy message */
 
 
-/* exported protoypes */
+/* exported prototypes */
 RETSIGTYPE  hup_signal(void);
 RETSIGTYPE  child_signal(int);
 void	    user_input_timeout_exit(int);

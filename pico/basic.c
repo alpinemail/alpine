@@ -277,9 +277,9 @@ backline(int f, int n)
 
 
 /*
- * go back to the begining of the current paragraph
+ * go back to the beginning of the current paragraph
  * here we look for a <NL><NL> or <NL><TAB> or <NL><SPACE>
- * combination to delimit the begining of a paragraph	
+ * combination to delimit the beginning of a paragraph	
  */
 int
 gotobop(int f, int n)
@@ -346,7 +346,7 @@ gotobop(int f, int n)
 /* 
  * go forword to the end of the current paragraph
  * here we look for a <NL><NL> or <NL><TAB> or <NL><SPACE>
- * combination to delimit the begining of a paragraph
+ * combination to delimit the beginning of a paragraph
  */
 int
 gotoeop(int f, int n)
@@ -616,7 +616,7 @@ scrollback(int n, int movedot)
     else {
 	/* Requested not to move dot, but we do need to keep in on
 	 * the screen.  Verify that it is still in the range of lines
-	 * visable in the window.  Loop from the first line to the
+	 * visible in the window.  Loop from the first line to the
 	 * last line, until we reach the end of the buffer or the end
 	 * of the window.  If we find the dot, then we don't need
 	 * to move it. */
@@ -769,7 +769,7 @@ setmark(int f, int n)
 
 /*
  * Swap the values of "." and "mark" in the current window. This is pretty
- * easy, bacause all of the hard work gets done by the standard routine
+ * easy, because all of the hard work gets done by the standard routine
  * that moves the mark about. The only possible error is "no mark". Bound to
  * "C-X C-X".
  */
@@ -812,7 +812,7 @@ setimark(int f, int n)
 
 /*
  * Swap the values of "." and "mark" in the current window. This is pretty
- * easy, bacause all of the hard work gets done by the standard routine
+ * easy, because all of the hard work gets done by the standard routine
  * that moves the mark about. The only possible error is "no mark". Bound to
  * "C-X C-X".
  */

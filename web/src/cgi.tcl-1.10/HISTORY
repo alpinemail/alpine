@@ -45,7 +45,7 @@ Date	Version	Description
 		Added utf.cgi example to demonstrate UTF works for
 		mel@redolive.com.
 
-10/16/02 1.8.0	To accomodate open-ended forms in echo, modified cgi_input so
+10/16/02 1.8.0	To accommodate open-ended forms in echo, modified cgi_input so
 		that it accepts multiple values even in variables that don't
 		end with "List".  This opens a possible ambiguity (see
 		documentation) but only one that would've existed before had
@@ -91,7 +91,7 @@ Date	Version	Description
 		Added end tags for XHTML support.
 
 		Added cgi_link_url/label per John Koontz and rewrote cgi_link
-		to accomodate them.  Also added his cgi_button_link
+		to accommodate them.  Also added his cgi_button_link
 		temporarily.  Will experiment with this to test merit.
 
 11/3/00 1.4.3   Removed HTML formatted manual.  It lags the text version and
@@ -569,7 +569,7 @@ Date	Version	Description
 		Added support to suppress binary upload when using Expect.
 
 1/31/97 0.4.8	Andreas Kupries <a.kupries@westend.com> needed dynamic control
-		of ouput.  Added user-defineable cgi_puts.
+		of output.  Added user-defineable cgi_puts.
 
 		Josh Lubell <lubell@cme.nist.gov> reported binary file upload
 		was losing chars on large files.  Fixed.
@@ -583,7 +583,7 @@ Date	Version	Description
 
 		Add some more bulletproofing to catch broken boundary defns...
 
-		Evidentally QUERY_STRING doesn't have to be set even with GET.
+		Evidently QUERY_STRING doesn't have to be set even with GET.
 		CGI spec is vague enough to permit this.
 
 12/16/96 0.4.6	Giorgetti Federico <gio@egeo.unipg.it> noted text file upload
@@ -592,7 +592,7 @@ Date	Version	Description
 12/10/96 0.4.5	Added support for binary file upload if using Expect extension.
 
 		Removed check for missing filenames in file upload.  This
-		can evidentally happen.  It is now the programmer's
+		can evidently happen.  It is now the programmer's
 		reptysponsibility to check for the length if null filenames are
 		unwanted.
 

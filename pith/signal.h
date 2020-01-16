@@ -18,7 +18,7 @@
 #define PITH_SIGNAL_INCLUDED
 
 
-/* exported protoypes */
+/* exported prototypes */
 
 /* currently mandatory to implement stubs */
 

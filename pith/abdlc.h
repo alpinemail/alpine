@@ -21,7 +21,7 @@
 #include "../pith/adrbklib.h"
 
 
-/* exported protoypes */
+/* exported prototypes */
 DL_CACHE_S    *get_dlc(long);
 void           warp_to_dlc(DL_CACHE_S *, long);
 void           warp_to_beginning(void);

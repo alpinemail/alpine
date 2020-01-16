@@ -80,7 +80,7 @@ For a list of configuration options and default Alpine settings type:
 Note, the included UW IMAP Toolkit used for mailbox access does not
 make use of GNU autotools.  However, in most cases Alpine's configure
 script should set the appropriate make target and options.  The
-targetted OS can be set from Alpine's configure command line, but in
+targeted OS can be set from Alpine's configure command line, but in
 rare cases more significant manual intervention may be required.  If
 problems are encountered, see imap/README for more details.
 

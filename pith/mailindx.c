@@ -4181,7 +4181,7 @@ index_data_env(INDEXDATA_S *idata, ENVELOPE *env)
     idata->date	      = (char *) env->date;
     idata->newsgroups = env->newsgroups;
 
-    idata->valid_to = 1;	/* signal that everythings here */
+    idata->valid_to = 1;	/* signal that everything is here */
     idata->valid_cc = 1;
     idata->valid_sender = 1;
     idata->valid_news = 1;

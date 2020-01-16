@@ -5343,7 +5343,7 @@ container_t mail_thread_prune_dummy_work (container_t msg,container_t ane)
 
 /* Test that purported mother is not a child of purported daughter
  * Accepts: mother
- *	    purported daugher
+ *	    purported daughter
  * Returns: T if circular parentage exists, else NIL
  */
 
@@ -6080,7 +6080,7 @@ void mail_free_searchpgmlist (SEARCHPGMLIST **pgl)
 
 
 /* Mail garbage collect namespace
- * Accepts: poiner to namespace
+ * Accepts: pointer to namespace
  */
 
 void mail_free_namespace (NAMESPACE **n)

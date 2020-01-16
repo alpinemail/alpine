@@ -122,7 +122,7 @@ typedef struct header_s {
 				}
 
 
-/* exported protoypes */
+/* exported prototypes */
 int	 format_message(long, ENVELOPE *, BODY *, HANDLE_S **, int, gf_io_t);
 int	 format_attachment_list(long int, BODY *, HANDLE_S **, int, int, gf_io_t);
 char	*format_body(long int, BODY *, HANDLE_S **, HEADER_S *, int, int, gf_io_t);

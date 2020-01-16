@@ -21,7 +21,7 @@
 #include "adrbklib.h"
 
 
-/* exported protoypes */
+/* exported prototypes */
 void	addrbook_new_disp_form(PerAddrBook *, char **, int, int (*)(PerAddrBook *, int *));
 long	first_selectable_line(long);
 int	line_is_selectable(long);

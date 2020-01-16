@@ -39,7 +39,7 @@ elaboration of this step:
 
       pkg_mkIndex cgi.tcl*
 
-  1c) Test if the package comand works by trying:
+  1c) Test if the package command works by trying:
 
       package require cgi
 

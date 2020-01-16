@@ -61,7 +61,7 @@ extern char *sys_errlist[];
 
 #undef utime
 
-/* Amiga has its own wierd utime() with an incompatible struct utimbuf that
+/* Amiga has its own weird utime() with an incompatible struct utimbuf that
  * does not match with the traditional time_t [2].
  */
 

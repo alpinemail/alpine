@@ -249,8 +249,8 @@ struct pine {
     bitmap_t     feature_list;		/* a bitmap of all the features */
     char       **feat_list_back_compat;
 
-    SPEC_COLOR_S *hdr_colors;		/* list of configed colors for view */
-    SPEC_COLOR_S *index_token_colors;	/* list of configed colors for index */
+    SPEC_COLOR_S *hdr_colors;		/* list of configured colors for view */
+    SPEC_COLOR_S *index_token_colors;	/* list of configured colors for index */
 
     short	 init_context;
 
@@ -389,7 +389,7 @@ extern struct pine *ps_global;
 extern char         tmp_20k_buf[];
 
 
-/* exported protoypes */
+/* exported prototypes */
 struct pine  *new_pine_struct(void);
 void          free_pine_struct(struct pine **);
 void          free_pinerc_strings(struct pine **);

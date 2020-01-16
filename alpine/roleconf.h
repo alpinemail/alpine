@@ -24,7 +24,7 @@
 #include "../pith/msgno.h"
 
 
-/* exported protoypes */
+/* exported prototypes */
 int         role_select_screen(struct pine *, ACTION_S **, int);
 void        role_config_screen(struct pine *, long, int);
 void	    role_take(struct pine *, MSGNO_S *, int);

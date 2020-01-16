@@ -28,7 +28,7 @@
 #define AB_COMMENT_STR			_("Comment")
 
 
-/* exported protoypes */
+/* exported prototypes */
 void       view_abook_entry(struct pine *, long);
 void       edit_entry(AdrBk *, AdrBk_Entry *, a_c_arg_t, Tag, int, int *, char *);
 int        ab_add_abook(int, int);

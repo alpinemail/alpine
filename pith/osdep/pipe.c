@@ -89,7 +89,7 @@ RETSIGTYPE pipe_alarm(int);
 	stdout/stderr.  *NOTE*  Having neither of the above set means 
 	we're not setting up any pipes, just forking the child and exec'ing
 	the command.  Also, this takes precedence over any named outfile.
-    PIPE_STDERR means we're to tie the childs stderr to the same place
+    PIPE_STDERR means we're to tie the child's stderr to the same place
 	stdout is going.  *NOTE* This only makes sense then if PIPE_READ
 	or an outfile is provided.  Also, this takes precedence over any
 	named errfile.

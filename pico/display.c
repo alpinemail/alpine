@@ -957,7 +957,7 @@ updext(void)
       lbound = w;
 
 
-    /* scan through the line outputing characters to the virtual screen
+    /* scan through the line outputting characters to the virtual screen
      * once we reach the left edge
      */
     vtmove(currow, -lbound);		/* start scanning offscreen */
@@ -3732,7 +3732,7 @@ update_scroll (void)
 	   
 	
     /*
-     * Count the number of lines in the current bufer.  Done when:
+     * Count the number of lines in the current buffer.  Done when:
      *
      *      when told to recount:           curbp->b_linecnt == -1
      *      when the top line changed:      curwp->w_linep != last_top_line

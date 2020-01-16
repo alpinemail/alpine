@@ -77,7 +77,7 @@ extern OPT_SCREEN_S *opt_screen;
 extern EditWhich ew;
 
 
-/* exported protoypes */
+/* exported prototypes */
 int	 conf_scroll_screen(struct pine *, OPT_SCREEN_S *, CONF_S *, char *, char *, int, int *);
 void     standard_radio_setup(struct pine *, CONF_S **, struct variable *, CONF_S **);
 int      standard_radio_var(struct pine *, struct variable *);

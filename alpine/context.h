@@ -44,7 +44,7 @@ typedef struct context_screen {
 } CONT_SCR_S;
 
 
-/* exported protoypes */
+/* exported prototypes */
 void        context_config_screen(struct pine *, CONT_SCR_S *, int);
 CONTEXT_S  *context_select_screen(struct pine *, CONT_SCR_S *, int);
 

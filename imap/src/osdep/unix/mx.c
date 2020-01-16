@@ -1119,10 +1119,10 @@ int mx_select (struct direct *name)
 }
 
 
-/* MX file name comparision
+/* MX file name comparison
  * Accepts: first candidate directory entry
  *	    second candidate directory entry
- * Returns: negative if d1 < d2, 0 if d1 == d2, postive if d1 > d2
+ * Returns: negative if d1 < d2, 0 if d1 == d2, positive if d1 > d2
  */
 
 int mx_numsort (const void *d1,const void *d2)

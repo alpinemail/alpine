@@ -23,7 +23,7 @@
 #define	PL_COMMAQUOTE	0x02		/* backslash quotes comma        */
 
 
-/* exported protoypes */
+/* exported prototypes */
 char	  **parse_list(char *, int, int, char **);
 char      **copy_list_array(char **);
 void        free_list_array(char ***);

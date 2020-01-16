@@ -253,7 +253,7 @@ WPEval $compose_args {
 	cgi_exit
       }
 
-      # process action specfied by compose_args
+      # process action specified by compose_args
       switch $mode {
 	reply -
 	replyall {

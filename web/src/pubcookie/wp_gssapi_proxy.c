@@ -147,7 +147,7 @@ int cmd_write_nil() {
 
 /*
  * service principal in argv[1]
- * reqested username in argv[2]
+ * requested username in argv[2]
  */
   
 int main(int argc,char *argv[])

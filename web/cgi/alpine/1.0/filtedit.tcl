@@ -661,11 +661,11 @@ cgi_html {
 			  }
 			  cgi_table_row {
 			    wpGetVarAs setkeywords setkeywords
-			    freetext_cell "Set these Keywoards" setkeywords $setkeywords
+			    freetext_cell "Set these Keywords" setkeywords $setkeywords
 			  }
 			  cgi_table_row {
 			    wpGetVarAs clearkeywords clearkeywords
-			    freetext_cell "Clear these Keywoards" clearkeywords $clearkeywords
+			    freetext_cell "Clear these Keywords" clearkeywords $clearkeywords
 			  }
 			}
 		      }

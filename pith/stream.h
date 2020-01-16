@@ -407,7 +407,7 @@ extern MAILSTATUS *pine_cached_status;
 #define	pine_fetchheader_lines_not(S,N,M,F)  pine_fetch_header(S,N,M,F,FT_NOT)
 
 
-/* exported protoypes */
+/* exported prototypes */
 MAILSTREAM    *pine_mail_open(MAILSTREAM *, char *, long, long *);
 long	       pine_mail_create(MAILSTREAM *, char *);
 long	       pine_mail_delete(MAILSTREAM *, char *);

@@ -208,7 +208,7 @@ TCPSTREAM *tcp_open (char *host,char *service,unsigned long port)
 				&cleanup)) && !silent)
 	  mm_log (tmp,WARN);
 	(*bn) (BLOCK_NONE,NIL);
-      } while ((sock < 0) && s);/* repeat until success or no more addreses */
+      } while ((sock < 0) && s);/* repeat until success or no more addresses */
     }
     ip_nametoaddr (NIL,NIL,NIL,NIL,NIL,&cleanup);
   }

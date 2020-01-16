@@ -500,7 +500,7 @@ void newsrc_check_uid (unsigned char *state,unsigned long uid,
   while (*state) {		/* until run out of state string */
 				/* collect a number */
     for (i = 0; isdigit (*state); i = i*10 + (*state++ - '0'));
-    if (*state != '-') j = i;	/* coerce single mesage into range */
+    if (*state != '-') j = i;	/* coerce single message into range */
     else {			/* have a range */
       for (j = 0; isdigit (*++state); j = j*10 + (*state - '0'));
       if (!j) j = i;		/* guard against -0 */

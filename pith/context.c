@@ -48,7 +48,7 @@ char    *context_percent_quote(char *);
  *            quote a literal '[' or ']' in a context name.
  *
  *         3) an empty view in context implies a view of '*', so that's 
- *            what get's put in the view string
+ *            what gets put in the view string
  *
  *   The 2nd,3rd,4th, and 5th args all have length at least len.
  *

@@ -33,7 +33,7 @@
 #define ANC_AFTERCOMMA      0x1
 
 
-/* exported protoypes */
+/* exported prototypes */
 int            cur_is_open(void);
 void	       init_disp_form(PerAddrBook *, char **, int);
 void	       init_abook_screen(void);

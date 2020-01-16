@@ -41,7 +41,7 @@ extern char	 *peSocketName;
 extern STRLIST_S *peCertHosts;
 
 /*
- * Protoypes for various functions
+ * Prototypes for various functions
  */
 
 /* alpined.c */

@@ -12,7 +12,7 @@
  */
 
 /*
- * Program:	UTF-8 auxillary routines (c-client and MIME2 support)
+ * Program:	UTF-8 auxiliary routines (c-client and MIME2 support)
  *
  * Author:	Mark Crispin
  *		Networks and Distributed Computing

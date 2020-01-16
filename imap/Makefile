@@ -231,7 +231,7 @@ IP6=6
 # -DY4KBUGFIX
 #	Turn on the Y4K bugfix (yes, that's year 4000).  It isn't well-known,
 #	but century years evenly divisible by 4000 are *not* leap years in the
-#	Gregorian calendar.  A lot of "Y2K compilant" software does not know
+#	Gregorian calendar.  A lot of "Y2K compliant" software does not know
 #	about this rule.  Remember to turn this on sometime in the next 2000
 #	years.
 #
@@ -248,7 +248,7 @@ IP6=6
 #	calendar.  Leap years are every 4 years, including century years.
 #	My apologies to those in the English-speaking world who object to
 #	the reform of September 2, 1752 -> September 14, 1752, since this
-#	code still uses January 1 (which Julius Ceasar decreed as the start
+#	code still uses January 1 (which Julius Caesar decreed as the start
 #	of the year, which since 153 BCE was the day that Roman consuls
 #	took office), rather than the traditional March 25 used by the
 #	British.  As of 2005, the Julian calendar and the Gregorian calendar

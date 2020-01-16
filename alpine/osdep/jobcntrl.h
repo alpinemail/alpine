@@ -17,7 +17,7 @@
 #define PINE_OSDEP_JOBCNTRL_INCLUDED
 
 
-/* exported protoypes */
+/* exported prototypes */
 int	have_job_control(void);
 void	stop_process(void);
 

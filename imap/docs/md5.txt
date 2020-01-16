@@ -25,7 +25,7 @@ RFC 1939, the standard document for the POP3 protocol.
 challenge; the client responds with an MD5 checksum of the challenge
 plus the password; the server in compares the client's response with
 its own calculated value of the checksum.  If the client's response
-matches the server's calulated value, the client is authenticated.
+matches the server's calculated value, the client is authenticated.
 
      Unlike plaintext passwords, this form of authentication is
 believed to be secure against the session being monitored; "sniffing"

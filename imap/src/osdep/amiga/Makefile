@@ -62,7 +62,7 @@ CREATEPROTO=unixproto
 EMPTYPROTO=unixproto
 
 
-# Commands possibly overriden by the individual port
+# Commands possibly overridden by the individual port
 
 ARRC=ar rc
 CC=cc

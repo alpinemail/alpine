@@ -1766,7 +1766,7 @@ save_msg_stream(CONTEXT_S *context, char *folder, int *we_opened)
 
 
 /*----------------------------------------------------------------------
-    Offer to create a non-existant folder to copy message[s] into
+    Offer to create a non-existent folder to copy message[s] into
 
    Args: context -- context to create folder in
 	 folder -- name of folder to create

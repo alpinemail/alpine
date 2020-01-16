@@ -48,7 +48,7 @@ void
 preamble(FILE *ofp)
 {
     fprintf(ofp, "\n\t\t/*\n");
-    fprintf(ofp, "\t\t * AUTMATICALLY GENERATED FILE!\n");
+    fprintf(ofp, "\t\t * AUTOMATICALLY GENERATED FILE!\n");
     fprintf(ofp, "\t\t * DO NOT EDIT!!\n");
     fprintf(ofp, "\t\t * See help_c_gen.c.\n\t\t */\n\n\n");
     fprintf(ofp, "#include <stdio.h>\n#include \"headers.h\"\n#include \"helptext.h\"\n\n");

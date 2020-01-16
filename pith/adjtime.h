@@ -28,7 +28,7 @@ typedef struct our_time_val {
 } TIMEVAL_S;
 
 
-/* exported protoypes */
+/* exported prototypes */
 time_t        get_adj_time(void);
 time_t        get_adj_name_file_mtime(char *);
 

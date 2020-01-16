@@ -1663,7 +1663,7 @@ expunge_and_close(MAILSTREAM *stream, char **final_msg, long unsigned int flags)
         }
 
 	/*
-	 * Make darn sure any mm_log fallout caused above get's seen...
+	 * Make darn sure any mm_log fallout caused above gets seen...
 	 */
 	if(!no_close){
 	    flush_status_messages(1);

@@ -31,7 +31,7 @@
 #define	SM_INFO		0x10			/* Handy, but discardable    */
 
 
-/* exported protoypes */
+/* exported prototypes */
 void	q_status_message1(int, int, int, char *, void *);
 void	q_status_message2(int, int, int, char *, void *, void *);
 void	q_status_message3(int, int, int, char *, void *, void *, void *);

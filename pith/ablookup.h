@@ -80,7 +80,7 @@ typedef struct completelist {
 } COMPLETE_S;
 
 
-/* exported protoypes */
+/* exported prototypes */
 char          *get_nickname_from_addr(ADDRESS *, char *, size_t);
 char          *get_fcc_from_addr(ADDRESS *, char *, size_t);
 int            get_contactinfo_from_addr(ADDRESS *, char **, char **, char **, char **);

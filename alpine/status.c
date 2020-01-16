@@ -1107,7 +1107,7 @@ output_message_modal(SMQ_T *mq_entry, int ding)
 	char	 *p, *q, *s, *t;
 	SCROLL_S  sargs;
 	
-	/* Count the number of modal messsages and add up their lengths. */
+	/* Count the number of modal messages and add up their lengths. */
 	for(m = mq_entry->next; m != mq_entry; m = m->next)
 	  if((m->flags & SM_MODAL) && !m->shown){
 	      i++;

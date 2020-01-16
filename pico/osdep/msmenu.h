@@ -28,7 +28,7 @@
 
 /*
  * Menu key definitions.
- * Should be same values as in resouce.h
+ * Should be same values as in resource.h
  * These are all in a range from KS_RANGESTART to KS_RANGEEND
  * with no holes.
  */

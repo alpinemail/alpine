@@ -39,7 +39,7 @@ typedef enum {GoodTime = 0, BadTime, VeryBadTime, DoItNow} CheckPointTime;
 #define IT_MCLOSED 1
 
 
-/* exported protoypes */
+/* exported prototypes */
 long	new_mail(int, CheckPointTime, int);
 void	format_new_mail_msg(char *, long, ENVELOPE *, char *, char *, char *, char *, size_t);
 void	check_point_change(MAILSTREAM *);

@@ -302,7 +302,7 @@ setup_pwdcert(void **pwdcert)
 	     }
 	   }
 	 }
-	 if(pc->keytext != NULL)	/* we should go straigth here */
+	 if(pc->keytext != NULL)	/* we should go straight here */
 	   text = pc->keytext;
     } else if (ps_global->smime->privatetype == Keychain){
 	   pathkey[0] = '\0';	/* no apple key chain support yet */

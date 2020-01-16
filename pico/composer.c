@@ -539,7 +539,7 @@ HeaderEditor(int f, int n)
 	     *       since we left...
 	     */
 
-	    /* fix postition */
+	    /* fix position */
 	    if(curwp->w_doto < headents[ods.cur_e].prwid)
 	      ods.p_ind = 0;
 	    else if(curwp->w_doto < ods.p_ind + headents[ods.cur_e].prwid)
@@ -3493,7 +3493,7 @@ InvertPrompt(int entry, int state)
       (*term.t_rev)(1);
 
     while(*bufp && *(bufp + 1))
-      pputc(*bufp++, 1);			/* putc upto last char */
+      pputc(*bufp++, 1);			/* putc up to last char */
 
     if(state)
       (*term.t_rev)(0);
@@ -4106,7 +4106,7 @@ KillHeaderLine(struct hdr_line *l, int append)
  *              functions.
  *
  *	returns:
- *		TRUE if something good happend
+ *		TRUE if something good happened
  *		FALSE otherwise
  */
 int
@@ -4498,7 +4498,7 @@ packheader(void)
         count = 0;
         while(line != NULL){
             /*
-             * add one for possible concatination of a ' ' character ...
+             * add one for possible concatenation of a ' ' character ...
              */
 	    p = ucs4_to_utf8_cpystr(line->text);
 	    if(p){
@@ -4816,7 +4816,7 @@ mark_sticky(struct headerentry *h)
 #undef	HeaderEditor
 
 /*
- * Wraper function for the real header editor. 
+ * Wrapper function for the real header editor. 
  * Does the important tasks of:
  *	1) verifying that we _can_ edit the headers.
  *	2) acting on the result code from the header editor.

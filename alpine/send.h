@@ -34,7 +34,7 @@
 #define PS_STICKY_TO		0x02
 
 
-/* exported protoypes */
+/* exported prototypes */
 void	    compose_screen(struct pine *); 
 void	    alt_compose_screen(struct pine *);
 void	    compose_mail(char *, char *, ACTION_S *, PATMT *, gf_io_t);

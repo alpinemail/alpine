@@ -92,7 +92,7 @@ they are such.
 
 10. Thou shalt use the LIST "*" wildcard only with great care.  If
 thou doth not fully comprehend the danger of "*", thou shalt use only
-"%" and forget about the existance of "*".
+"%" and forget about the existence of "*".
 
 Honor these commandments, and keep them holy in thy heart, so that thy
 users shalt maximize their pleasure, and the server administrators

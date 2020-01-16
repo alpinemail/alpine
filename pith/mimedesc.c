@@ -487,7 +487,7 @@ static struct set_names {
     {"ISO-8859-14",		"Latin 8 (Celtic)"},
     {"ISO-8859-15",		"Latin 9 (Euro)"},
     {"KOI8-R",			"Latin & Russian"},
-    {"KOI8-U",			"Latin & Ukranian"},
+    {"KOI8-U",			"Latin & Ukrainian"},
     {"VISCII",			"Latin & Vietnamese"},
     {"GB2312",			"Latin & Simplified Chinese"},
     {"BIG5",			"Latin & Traditional Chinese"},
@@ -506,7 +506,7 @@ static struct set_names {
 
 
 /*----------------------------------------------------------------------
-  Return a nicely formatted discription of the type of the part
+  Return a nicely formatted description of the type of the part
  ----*/
 
 char *
@@ -736,7 +736,7 @@ fcc_size_guess(struct mail_bodystruct *body)
 	     * is a per-line increase in that because of the CRLFs and
 	     * because the number of characters in the line might not
 	     * be a factor of 3. So push it up by 3/2 instead. This still
-	     * won't catch all the cases. In particular, attachements with
+	     * won't catch all the cases. In particular, attachments with
 	     * lots of short lines (< 10) will expand by more than that,
 	     * but that's ok since this is an optimization. That's why
 	     * so_cs_puts uses the 3/2 factor when it does a resize, so

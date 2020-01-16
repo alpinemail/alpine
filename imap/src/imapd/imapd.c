@@ -1913,7 +1913,7 @@ void trmint (void)
 
 /* The routines on this and the next page eschew the use of non-syscall libc
  * routines (especially stdio) for a reason.  Also, these hideous #if
- * condtionals need to be replaced.
+ * conditionals need to be replaced.
  */
 
 #ifndef unix
@@ -3606,7 +3606,7 @@ void pbody (BODY *body)
 }
 
 /* Print parameter list
- * Accepts: paramter
+ * Accepts: parameter
  */
 
 void pparam (PARAMETER *param)
@@ -4001,7 +4001,7 @@ long nameok (char *ref,char *name)
 /* Convert possible BBoard name to actual name
  * Accepts: command
  *	    mailbox name
- * Returns: maibox name
+ * Returns: mailbox name
  */
 
 char *bboardname (char *cmd,char *name)

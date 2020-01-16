@@ -70,7 +70,7 @@ directory arranged, for the most part, by function.
 
       session/
 	Alpine session management scripts used to login, establish
-	an alpine session, logout and aquire IMAP server credentials
+	an alpine session, logout and acquire IMAP server credentials
 	as needed.  These scripts are distinct from the alpine/
 	scripts in order to properly scope the session key.
 
@@ -164,7 +164,7 @@ configurations, Web Alpine installation must be done by hand and
 requires several steps.  To illustrate the procedure, a generic Fedora
 Core 8 system with standard httpd package installed is used as an
 example.  On other systems, the general ideas are the same but the
-specific file locations and server configuation settings will likely
+specific file locations and server configuration settings will likely
 vary.  Note also that your system may have an additional security
 layer installed, such as selinux, that may require extra configuration
 that is beyond the scope of this explanation.

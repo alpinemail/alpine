@@ -79,7 +79,7 @@ trans_euc_to_2022_jp(unsigned char *src)
 
     /*
      * Worst possible increase is every other character an 8-bit character.
-     * In that case, each of those gets 6 extra charactes for the escape
+     * In that case, each of those gets 6 extra characters for the escape
      * sequences. We're not too concerned about the extra length because
      * these are relatively short strings.
      */
@@ -140,7 +140,7 @@ trans_euc_to_2022_jp(unsigned char *src)
  *
  *   RFC 1522 support is *very* loosely based on code contributed
  *   by Lars-Erik Johansson <lej@cdg.chalmers.se>.  Thanks to Lars-Erik,
- *   and appologies for taking such liberties with his code.
+ *   and apologies for taking such liberties with his code.
  */
 
 #define	RFC1522_INIT	"=?"

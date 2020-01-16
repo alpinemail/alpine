@@ -353,7 +353,7 @@ void mm_login_oauth2(NETMBX *, char *, OAUTH2_S *, long int, char *, char *);
  *
  * 3. When saving this information we use the password caching facilities,
  *    but we must do it in a different format so that old information and
- *    new information are not mixed. In order to accomodate this for new
+ *    new information are not mixed. In order to accommodate this for new
  *    authentication methods, we save the information in the same fields,
  *    but this time we modify it slightly, so that old functions fail to
  *    understand the new information and so not modify it nor use it. The
@@ -371,7 +371,7 @@ void mm_login_oauth2(NETMBX *, char *, OAUTH2_S *, long int, char *, char *);
  *    authenticator is "XOAUTH2\001imap.gmail.com".
  *    In addition, the password field is not used to encode the password
  *    anymore, it is used to save login information needed in a format that
- *    the caller function chooses, but that must be preceeded by the 
+ *    the caller function chooses, but that must be preceded by the 
  *    "authenticator_method separator" code as above.
  */
 void
@@ -666,9 +666,9 @@ mm_login_oauth2(NETMBX *mb, char *user, OAUTH2_S *login, long int trial,
 }
 
 /*----------------------------------------------------------------------
-         recieve notification from IMAP
+         receive notification from IMAP
 
-  Args: stream  --  Mail stream message is relavant to 
+  Args: stream  --  Mail stream message is relevant to 
         string  --  The message text
         errflg  --  Set if it is a serious error
 
@@ -1596,7 +1596,7 @@ mm_login_alt_cue(NETMBX *mb)
 /*----------------------------------------------------------------------
        Receive notification of an error writing to disk
       
-  Args: stream  -- The stream the error occured on
+  Args: stream  -- The stream the error occurred on
         errcode -- The system error code (errno)
         serious -- Flag indicating error is serious (mail may be lost)
 
@@ -1860,7 +1860,7 @@ pine_tcptimeout(long int elapsed, long int sincelast, char *host)
 	flush_status_messages(0);	/* make sure it's seen */
     }
 
-    mark_status_dirty();		/* make sure it get's cleared */
+    mark_status_dirty();		/* make sure it gets cleared */
 
     resume_busy_cue((rv == 1) ? 3 : 0);
     ps_global->tcptimeout = 0;
@@ -2982,7 +2982,7 @@ read_passfile(pinerc, l)
     }
 
     /* 
-     * if password file is encrypted we attemtp to decrypt. We ask the 
+     * if password file is encrypted we attempt to decrypt. We ask the 
      * user for the password to unlock the password file. If the user 
      * enters the password and it unlocks the file, use it and keep saving 
      * passwords in it. If the user enters the wrong passwords and does 

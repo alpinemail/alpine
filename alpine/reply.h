@@ -24,7 +24,7 @@
 #include "../pith/store.h"
 
 
-/* exported protoypes */
+/* exported prototypes */
 int	    reply(struct pine *, ACTION_S *);
 int	    confirm_role(long, ACTION_S **);
 int	    reply_to_all_query(int *);

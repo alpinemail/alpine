@@ -34,7 +34,7 @@
 #include <io.h>
 #include <conio.h>
 #include <process.h>
-#undef ERROR			/* quell conflicting defintion warning */
+#undef ERROR			/* quell conflicting definition warning */
 #include <windows.h>
 #include <lm.h>
 #undef ERROR

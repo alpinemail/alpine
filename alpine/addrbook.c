@@ -543,7 +543,7 @@ get_abook_display_line(long int global_row, int continuation, char **s_hilite,
       *retcol = 0;	/* default */
 
     if(s_hilite){
-      *s_hilite = NULL;	/* NULL in these means to hilight whole line */
+      *s_hilite = NULL;	/* NULL in these means to highlight whole line */
       *e_hilite = NULL;
     }
 

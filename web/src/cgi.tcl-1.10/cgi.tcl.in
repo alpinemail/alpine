@@ -2327,7 +2327,7 @@ proc cgi_cookie_get {args} {
 
 proc cgi_cookie_encode {in} {
     regsub -all " " $in "+" in
-    regsub -all "%" $in "%25" in   ;# must preceed other subs that produce %
+    regsub -all "%" $in "%25" in   ;# must precede other subs that produce %
     regsub -all ";" $in "%3B" in
     regsub -all "," $in "%2C" in
     regsub -all "\n" $in "%0D%0A" in

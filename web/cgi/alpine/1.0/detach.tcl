@@ -164,7 +164,8 @@ WPEval $detach_vars {
 
   close $cfd
 
-  # prepare to clean up if the brower never redirects
+
+  # prepare to clean up if the browser never redirects
 
   cgi_http_head {
     # redirect to the place we stuffed the detach info.  use the ip address

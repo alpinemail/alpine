@@ -60,7 +60,7 @@
 extern char meta_prefix[];
 
 
-/* exported protoypes */
+/* exported prototypes */
 char       *read_remote_pinerc(PINERC_S *, ParsePinerc);
 REMDATA_S  *rd_create_remote(RemType, char *, char *, unsigned *, char *, char *);
 REMDATA_S  *rd_new_remdata(RemType, char *, char *);

@@ -48,7 +48,7 @@ struct flag_screen {
 #define	CMD_FLAG_UNKN	2
 
 
-/* exported protoypes */
+/* exported prototypes */
 int	flag_maintenance_screen(struct pine *, struct flag_screen *);
 
 

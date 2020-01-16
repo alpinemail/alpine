@@ -920,7 +920,7 @@ stayopen_list_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags)
 
 	    /*
 	     * Delay setting the displayed value until "var.current_val" is set
-	     * in case current val get's changed due to a special case above.
+	     * in case current val gets changed due to a special case above.
 	     */
 	    if(newval){
 		if(*newval)

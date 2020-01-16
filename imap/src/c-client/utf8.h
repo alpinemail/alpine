@@ -406,7 +406,7 @@
  * values.  Although this made sense, it was confusing with the "max ku" and
  * "max ten" values used in the double-byte tables; there are 1-origin, but
  * the calculated values used for "ku" and "ten" are 0-origin (derived by
- * substracting the "base").  What this all meant is that for double byte
+ * subtracting the "base").  What this all meant is that for double byte
  * characters the limit test is of the form (value < max_ku), but for single
  * byte characters (which used the same cell to hold the max ku) the limit
  * test was (value <= max_ku).

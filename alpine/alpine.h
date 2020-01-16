@@ -21,7 +21,7 @@
 #include "../pith/state.h"
 
 
-/* exported protoypes */
+/* exported prototypes */
 void	      main_menu_screen(struct pine *);
 unsigned long pine_gets_bytes(int);
 void	      quit_screen(struct pine *);

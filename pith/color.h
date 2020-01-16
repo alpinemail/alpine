@@ -78,7 +78,7 @@ typedef struct spec_color_s {
 #define DEFAULT_IND_OP_BACK_RGB		"255,255,255"
 
 
-/* exported protoypes */
+/* exported prototypes */
 char	*color_embed(char *, char *);
 int	 colorcmp(char *, char *);
 int	 color_a_quote(long, char *, LT_INS_S **, void *);

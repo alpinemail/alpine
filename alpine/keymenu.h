@@ -242,7 +242,7 @@ struct key_menu {
  * label (the Save part) but the actual command (the S) will stay
  * the same, so it will be very difficult to come up with mnemonic
  * labels. The mnemonic isn't necessary, just nice. You can see that
- * we have stretched to the edge of the usefullness of mnemonics with
+ * we have stretched to the edge of the usefulness of mnemonics with
  * cases like K Kolor (instead of Color) and X eXceptions (because E
  * already meant something else).
  */
@@ -674,7 +674,7 @@ extern struct key_menu	cancel_keymenu,
 extern struct key rev_msg_keys[];
 
 
-/* exported protoypes */
+/* exported prototypes */
 void	    draw_cancel_keymenu(void);
 void	    end_keymenu(void);
 int	    menu_command(UCS, struct key_menu *);

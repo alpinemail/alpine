@@ -64,7 +64,7 @@ int  check_point(MAILSTREAM *, CheckPointTime, int);
 
   Limit frequency of checks because checks use some resources. That is
   they generate an IMAP packet or require locking the local mailbox.
-  (Acutally the lock isn't required, a stat will do, but the current
+  (Actually the lock isn't required, a stat will do, but the current
    c-client mail code locks before it stats.)
 
   Returns >= 0 only if there is a change in the given mail stream. Otherwise

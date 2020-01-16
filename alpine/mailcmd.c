@@ -189,7 +189,7 @@ static ESCKEY_S sel_opts3[] = {
 
 static ESCKEY_S sel_opts4[] = {
     {'a', 'a', "A", N_("select All")},
-    /* TRANSLATORS: select currrently highlighted message Thread */
+    /* TRANSLATORS: select currently highlighted message Thread */
     {'c', 'c', "C", N_("select Curthrd")},
     {'n', 'n', "N", N_("Number")},
     {'d', 'd', "D", N_("Date")},
@@ -229,7 +229,7 @@ static ESCKEY_S sel_opts5[] = {
 
 static ESCKEY_S sel_opts6[] = {
     {'a', 'a', "A", N_("select All")},
-    /* TRANSLATORS: select currrently highlighted message Thread */
+    /* TRANSLATORS: select currently highlighted message Thread */
     {'c', 'c', "C", N_("select Curthrd")},
     {'n', 'n', "N", N_("Number")},
     {'d', 'd', "D", N_("Date")},
@@ -1240,7 +1240,7 @@ get_out:
 	/*
 	 * Right now the way zoom is implemented is sort of silly.
 	 * There are two per-message flags where just one and a 
-	 * global "zoom mode" flag to suppress messags from the index
+	 * global "zoom mode" flag to suppress messages from the index
 	 * should suffice.
 	 */
 	if(any_messages(msgmap, NULL, "to Zoom on")){
@@ -1996,7 +1996,7 @@ the_maint_screen:
 	}
     }
 
-    /* reaquire the elt pointer */
+    /* reacquire the elt pointer */
     mc = (state->mail_stream
 	  && (rawno = mn_m2raw(msgmap, mn_get_cur(msgmap))) > 0L
 	  && rawno <= state->mail_stream->nmsgs)
@@ -3807,7 +3807,7 @@ cmd_export(struct pine *state, MSGNO_S *msgmap, int qline, int aopt)
 	if(!bezerk_delimiter(env, mc, pc, leading_nl)
 	   || !format_message(mn_m2raw(msgmap, i), env, b, NULL,
 			      FM_NEW_MESS | FM_NOWRAP, pc)){
-	    orig_errno = errno;		/* save incase things are really bad */
+	    orig_errno = errno;		/* save in case things are really bad */
 	    failure    = 1;		/* pop out of here */
 	    break;
 	}
@@ -3998,7 +3998,7 @@ cmd_export(struct pine *state, MSGNO_S *msgmap, int qline, int aopt)
 	    else{
 		if(saved)
 		  q_status_message2(SM_ORDER, 0, 3,
-			/* TRANSLATORS: Saved <how many> attachements to <directory name> */
+			/* TRANSLATORS: Saved <how many> attachments to <directory name> */
 			_("Saved %s attachments to %s"),
 			long2string((long) saved), dir);
 		else
@@ -5044,7 +5044,7 @@ build_updown_cmd(char *cmd, size_t cmdlen, char *prefix, char *cfg_str, char *fn
     int   fname_found = 0;
 
     if(prefix && *prefix){
-	/* loop thru replacing all occurances of _FILE_ */
+	/* loop thru replacing all occurrences of _FILE_ */
 	p = strncpy(cmd, prefix, cmdlen);
 	cmd[cmdlen-1] = '\0';
 	while((p = strstr(p, "_FILE_")))
@@ -5053,7 +5053,7 @@ build_updown_cmd(char *cmd, size_t cmdlen, char *prefix, char *cfg_str, char *fn
 	fputs(cmd, stdout);
     }
 
-    /* loop thru replacing all occurances of _FILE_ */
+    /* loop thru replacing all occurrences of _FILE_ */
     p = strncpy(cmd, cfg_str, cmdlen);
     cmd[cmdlen-1] = '\0';
     while((p = strstr(p, "_FILE_"))){

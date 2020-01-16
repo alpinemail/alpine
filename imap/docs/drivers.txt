@@ -114,14 +114,14 @@ prefix of the mailbox name.  On UNIX, the following rules apply:
 
 Prefix		Interpretation of Suffix
 ------		------------------------
-/		[black box] preceeds a user name; "/foo/bar" means
+/		[black box] precedes a user name; "/foo/bar" means
 		 "black box user foo's mailbox bar"
-		[not black box] preceeds an absolute path name.
-~		[not black box] preceeds a user name; "~foo/bar" means
+		[not black box] precedes an absolute path name.
+~		[not black box] precedes a user name; "~foo/bar" means
 		 "UNIX user foo's mailbox bar"
-#ftp/		preceeds UNIX user ftp's mailbox name
-#public/	preceeds UNIX user imappublic's mailbox name
-#shared/	preceeds UNIX user imapshared's mailbox name
+#ftp/		precedes UNIX user ftp's mailbox name
+#public/	precedes UNIX user imappublic's mailbox name
+#shared/	precedes UNIX user imapshared's mailbox name
 
 All other names are interpreted in the context of the UNIX user's home
 directory (not black box), the black box user's black box directory

@@ -221,7 +221,7 @@ typedef struct pico_struct {
     int   (*tty_fix)();			/* Let Pine fix tty state */
     long  (*newmail)();			/* Pine's report_new_mail */
     long  (*msgntext)();		/* callback to get msg n's text */
-    int   (*upload)();			/* callback to rcv uplaoded text */
+    int   (*upload)();			/* callback to rcv uploded text */
     char *(*ckptdir)();			/* callback for checkpoint file dir */
     int   (*exittest)();		/* callback to verify exit request */
     char *(*canceltest)();		/* callback to verify cancel request */

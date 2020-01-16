@@ -82,7 +82,7 @@ typedef	struct handle_s {
 typedef	int	(*url_tool_t)(char *);
 
 
-/* exported protoypes */
+/* exported prototypes */
 HANDLE_S   *get_handle(HANDLE_S *, int);
 void	    init_handles(HANDLE_S **);
 HANDLE_S   *new_handle(HANDLE_S **);

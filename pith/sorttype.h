@@ -27,7 +27,7 @@ typedef enum {SortSubject = 0, SortArrival, SortFrom, SortTo,
 	      SortSubject2, SortScore, SortThread, EndofList}   SortOrder;
 
 
-/* exported protoypes */
+/* exported prototypes */
 
 
 #endif /* PITH_SORTTYPE_INCLUDED */

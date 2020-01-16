@@ -298,7 +298,7 @@ crlf_proc(int state)
 
 
 /*
- *  Set up the tty driver to hanle interrupt char
+ *  Set up the tty driver to handle interrupt char
  *
  * Args: state -- True to turn on interrupt char, false to not
  *

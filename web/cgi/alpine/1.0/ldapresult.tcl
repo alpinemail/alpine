@@ -211,7 +211,7 @@ WPEval $ldap_vars {
 
 	    if {$qn == -1 && [catch {WPCmd PELdap query $dir $srchstr $ldapfilt} qn]} {
 	      cgi_division align=center "style=\"background-color:white; border: 1px solid goldenrod; margin: 10; padding: 4\"" {
-		cgi_puts "A problem has occured while trying to search the directory server."
+		cgi_puts "A problem has occurred while trying to search the directory server."
 		cgi_br
 		cgi_br
 		cgi_puts [cgi_italic [cgi_bold "$qn"]]
@@ -244,7 +244,7 @@ WPEval $ldap_vars {
 	      }
 	    } elseif {[catch {WPCmd PELdap results $qn} results]} {
 	      cgi_division align=center "style=\"background-color:white; border: 1px solid goldenrod; margin: 10; padding: 4\"" {
-		cgi_puts "A problem has occured while trying to retrieve the results of your directory search."
+		cgi_puts "A problem has occurred while trying to retrieve the results of your directory search."
 		cgi_br
 		cgi_br
 		cgi_puts [cgi_italic [cgi_bold "$results"]]

@@ -90,7 +90,7 @@
 +                 p += strlen(p);
 +                 stack_str[stack][0] = '\0';
 +             }
-+             if(two_underline) { /* In case '_' occured near end of line */
++             if(two_underline) { /* In case '_' occurred near end of line */
 +                 strcpy(p, "<\\underline>");
 +                 p += strlen(p);
 +             }

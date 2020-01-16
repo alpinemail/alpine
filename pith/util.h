@@ -51,7 +51,7 @@ typedef struct screen_position {
 #define SCREEN_FUN_NULL ((void (*)(struct pine *)) NULL)
 
 
-/* exported protoypes */
+/* exported prototypes */
 int           *cpyint(int);
 
 /* currently mandatory to implement stubs */

@@ -13,7 +13,7 @@ cgi_eval {
 
     cgi_imglink ball $NIST_IMAGES/ball.gif alt=ball
     cgi_imglink birdies $NIST_IMAGES/brd-ln.gif alt=birdies
-    cgi_imglink daemon $NIST_IMAGES/bsd_daemon.gif "alt=Kirk McKusick's BSD deamon"
+    cgi_imglink daemon $NIST_IMAGES/bsd_daemon.gif "alt=Kirk McKusick's BSD daemon"
 
     # use white background because some of these images require it
     cgi_body bgcolor=#ffffff text=#00b0b0 {

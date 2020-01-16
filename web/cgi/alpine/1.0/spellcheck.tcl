@@ -243,7 +243,7 @@ WPEval $query_vars {
 	      if {[info exists problem] || $badcount <= 0} {
 		cgi_table align=center valign=top height="100%" {
 		  cgi_table_row {
-		    cgi_table_data align=center valign=bottom heigh="20%" {
+		    cgi_table_data align=center valign=bottom height="20%" {
 		      if {[info exists problem]} {
 			cgi_puts "Problem detected: $problem"
 		      } else {

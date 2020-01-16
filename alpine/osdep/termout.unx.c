@@ -74,7 +74,7 @@ static char rcsid[] = "$Id: termout.unx.c 955 2008-03-06 23:52:36Z hubert@u.wash
 This code used to pay attention to the "am" auto margin and "xn"
 new line glitch fields, but they were so often incorrect because many
 terminals can be configured to do either that we've taken it out. It
-now assumes it dosn't know where the cursor is after outputing in the
+now assumes it doesn't know where the cursor is after outputting in the
 80th column.
 */
 
@@ -117,7 +117,7 @@ extern char    *tgoto(char *, int, int);
 
  Result:  terminal size is discovered and set in pine state
           termcap entry is fetched and stored
-          make sure terminal has adequate capabilites
+          make sure terminal has adequate capabilities
           evaluate scrolling situation
           returns status of indicating the state of the screen/termcap entry
 
@@ -673,9 +673,9 @@ EndScroll(void)
    Args:  lines -- number of lines to scroll, positive forward
 
  Result: Screen scrolls
-         returns 0 if scroll succesful, -1 if not
+         returns 0 if scroll successful, -1 if not
 
- positive lines goes foward (new lines come in at bottom
+ positive lines goes forward (new lines come in at bottom
  Leaves cursor at the place to insert put new text
 
  0,0 is the upper left

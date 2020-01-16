@@ -68,7 +68,7 @@ FILE *netmsg_slurp (NETSTREAM *stream,unsigned long *size,unsigned long *hsiz)
       return NIL;
     }
   }
-  *size = 0;			/* initially emtpy */
+  *size = 0;			/* initially empty */
   if (hsiz) *hsiz = 0;
   while ((s = net_getline (stream)) != NULL) {
     if (*s == '.') {		/* possible end of text? */

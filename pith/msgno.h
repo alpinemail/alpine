@@ -181,7 +181,7 @@ typedef struct msg_nos {
 #define	MI_CLOSING	0x04
 
 
-/* exported protoypes */
+/* exported prototypes */
 void	    msgno_init(MSGNO_S **, long, SortOrder, int);
 void        msgno_reset_isort(MSGNO_S *);
 void	    msgno_give(MSGNO_S **);

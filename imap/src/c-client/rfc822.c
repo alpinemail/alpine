@@ -1396,7 +1396,7 @@ char *rfc822_skip_comment (char **s,long trim)
     sprintf (tmp,"Unterminated comment: %.80s",*s);
     MM_LOG (tmp,PARSE);
     **s = '\0';			/* nuke duplicate messages in case reparse */
-    return NIL;			/* this is wierd if it happens */
+    return NIL;			/* this is weird if it happens */
   case ' ':			/* whitespace isn't significant */
     break;
   default:			/* random character */
@@ -1432,7 +1432,7 @@ static long rfc822_output_char (RFC822BUFFER *buf,int c)
 
 static long rfc822_output_data (RFC822BUFFER *buf,char *string,long len)
 {
-  while (len) {			/* until request satified */
+  while (len) {			/* until request satisfied */
     long i;
     if ((i = min (len,buf->end - buf->cur)) != 0L) {
       memcpy (buf->cur,string,i);
@@ -2231,7 +2231,7 @@ unsigned char *rfc822_8bit (unsigned char *src,unsigned long srcl,
  * versions of c-client prior to imap-2005, they did not provide any
  * buffer checking at all.
  *
- * As a half-hearted attempt, these new compatability functions for the
+ * As a half-hearted attempt, these new compatibility functions for the
  * legacy interfaces limit what they write to size SENDBUFLEN and will
  * fatal() if more than that is written.  However, that isn't good enough
  * since several of these functions *append* to the buffer, and return an

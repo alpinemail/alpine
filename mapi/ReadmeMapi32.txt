@@ -10,7 +10,7 @@ Unicode support will have to change for that to happen.
 	         pmapi32 for Alpine 2.11
 
 This distribution comes with two other files, instmapi.exe and
-pmapi32.dll, for use with Aline.  It is recommended that these files
+pmapi32.dll, for use with Alpine.  It is recommended that these files
 be put in your pine directory (generally C:\Program Files\Alpine).
 
 pmapi32.dll - a Simple MAPI dynamically linked library.  pmapi32.dll

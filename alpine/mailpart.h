@@ -29,7 +29,7 @@
 #define DA_DIDPROMPT    0x08            /* Already prompted to view att     */
 
 
-/* exported protoypes */
+/* exported prototypes */
 void	    attachment_screen(struct pine *);
 void	    write_attachment(int, long, ATTACH_S *, char *);
 int         write_attachment_to_file(MAILSTREAM *, long, ATTACH_S *, int, char *);

@@ -287,7 +287,7 @@ pico_file_browse(PICO *pdata, char *dir, size_t dirlen, char *fn, size_t fnlen,
 /*
  * FileBrowse - display contents of given directory dir
  *
- *	    intput:  
+ *	    input:  
  *		     dir points to initial dir to browse.
  *                   dirlen- buffer size of dir
  *		     fn  initial file name.
@@ -1855,7 +1855,7 @@ getfcells(char *dname, int fb_flags)
 
 	/*
 	 * Filter dot files?  Always filter ".", never filter "..",
-	 * and sometimes fitler ".*"...
+	 * and sometimes filter ".*"...
 	 */
 	if(*np == '.' && (!(*(np+1) == '.' && *(np+2) == '\0')
 			  && !(*(np+1) == '\0' && (fb_flags&FB_SAVE)))

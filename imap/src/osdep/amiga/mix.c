@@ -975,7 +975,7 @@ long mix_ping (MAILSTREAM *stream)
       }
     }
     if (sysibx) mail_close (sysibx);
-				/* reenable APPENDUID/COPYUID */
+				/* re-enable APPENDUID/COPYUID */
     mail_parameters (NIL,SET_APPENDUID,(void *) au);
     mail_parameters (NIL,SET_COPYUID,(void *) cu);
     snarfing = NIL;		/* no longer snarfing */
@@ -1163,7 +1163,7 @@ int mix_select (struct direct *name)
 }
 
 
-/* MIX msg file name comparision
+/* MIX msg file name comparison
  * Accepts: first candidate directory entry
  *	    second candidate directory entry
  * Returns: -1 if d1 < d2, 0 if d1 == d2, 1 d1 > d2
@@ -1884,7 +1884,7 @@ FILE *mix_parse (MAILSTREAM *stream,FILE **idxf,long iflags,long sflags)
 			return NIL;
 		      }
 		      prevuid = uid;
-		      ++nmsgs;	/* this is another mesage */
+		      ++nmsgs;	/* this is another message */
 				/* within current known range of messages? */
 		      while (nmsgs <= stream->nmsgs) {
 				/* yes, get corresponding elt */
@@ -2156,7 +2156,7 @@ char *mix_meta_slurp (MAILSTREAM *stream,unsigned long *seq)
   char *s;
   char *ret = NIL;
   if (fstat (LOCAL->mfd,&sbuf))
-    MM_LOG ("Error obtaining size of mix metatdata file",ERROR);
+    MM_LOG ("Error obtaining size of mix metadata file",ERROR);
   if (sbuf.st_size > LOCAL->buflen) {
 				/* should be just a few dozen bytes */
     if (sbuf.st_size > METAMAX) fatal ("absurd mix metadata file size");
@@ -2199,7 +2199,7 @@ long mix_meta_update (MAILSTREAM *stream)
      *
      * If more stuff gets added to the metadata, or if you change the value
      * of NUSERFLAGS, MAXUSERFLAG or CHUNKSIZE, be sure to recalculate the
-     * above assertation.
+     * above assertion.
      */
     sprintf (LOCAL->buf,SEQFMT,LOCAL->metaseq = mix_modseq (LOCAL->metaseq));
     sprintf (LOCAL->buf + strlen (LOCAL->buf),MTAFMT,

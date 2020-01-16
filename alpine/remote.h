@@ -21,7 +21,7 @@
 #include "../pith/remote.h"
 
 
-/* exported protoypes */
+/* exported prototypes */
 char       *rd_metadata_name(void);
 
 

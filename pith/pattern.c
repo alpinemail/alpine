@@ -6132,7 +6132,7 @@ calc_extra_hdrs(void)
 	  pat;
 	  pat = next_pattern(&pstate)){
 	  /*
-	   * This section wouldn't be necessary if sender was retreived
+	   * This section wouldn't be necessary if sender was retrieved
 	   * from the envelope. But if not, we do need to add it.
 	   */
 	  if(pat->patgrp && pat->patgrp->sender)
@@ -7688,12 +7688,12 @@ process_filter_patterns(MAILSTREAM *stream, MSGNO_S *msgmap, long int recent)
 			if(exbits & (MSG_EX_FILTONCE | MSG_EX_FILEONCE |
 			             MSG_EX_PEND_EXLD)){
 			    if(exbits & MSG_EX_FILTONCE){
-				/* convert to permament */
+				/* convert to permanent */
 				exbits ^= MSG_EX_FILTONCE;
 				exbits |= MSG_EX_FILTERED;
 			    }
 
-			    /* convert to permament */
+			    /* convert to permanent */
 			    if(exbits & MSG_EX_FILEONCE){
 				exbits ^= MSG_EX_FILEONCE;
 				exbits |= MSG_EX_FILED;

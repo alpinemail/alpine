@@ -30,7 +30,7 @@ set keywords.
 * config file whether or not there is any need for one.		     *
 *								     *
 *  This information is subject to change without notice.  Commands   *
-* may be added, removed, or altered.  The behavior of comamnds may   *
+* may be added, removed, or altered.  The behavior of commands may   *
 * change.  Do not use any of this information without consulting me  *
 * first.  c-client's defaults have been carefully chosen to be right *
 * for general-purpose and most special-purpose configurations.  If   *
@@ -469,7 +469,7 @@ matter.  Unrecognized commands are ignored.
 
 30) set disable-automatic-shared-namespaces <number>
    Never look up the "ftp", "imappublic", and "imapshared" users as
-   posssible home directories for the #ftp, #public, and #shared
+   possible home directories for the #ftp, #public, and #shared
    namespaces.  On some systems (reportedly including AIX 4.3.3)
    getpwnam() of an unknown user name is horrendously slow.
 
@@ -510,7 +510,7 @@ matter.  Unrecognized commands are ignored.
    By default, the servers (ipop[23]d and imapd) will do gethostbyaddr()
    on the local and remote sockets so that imapd can identify itself
    properly (this is important when the same CPU hosts multiple virtual
-   hosts on different IP addresss) and also includes the client's name
+   hosts on different IP address) and also includes the client's name
    when it writes to the syslog.  There are also client gethostbyaddr()
    calls, used primarily by authentication mechanisms.
 

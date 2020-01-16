@@ -18,7 +18,7 @@
 #define PITH_ESCAPES_INCLUDED
 
 
-/* exported protoypes */
+/* exported prototypes */
 int	 match_escapes(char *);
 
 

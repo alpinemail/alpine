@@ -3841,7 +3841,7 @@ pine_send(ENVELOPE *outgoing, struct mail_bodystruct **body,
 
 #if	defined(BACKGROUND_POST) && defined(SIGCHLD)
 	    /*
-	     * If requested, launch backgroud posting...
+	     * If requested, launch background posting...
 	     */
 	    if(background_requested && !(call_mailer_flags & CM_VERBOSE)){
 		ps_global->post = (POST_S *)fs_get(sizeof(POST_S));
@@ -5670,7 +5670,7 @@ outgoing2strings(METAENV *header, struct mail_bodystruct *bod, void **text,
 	       All parts in the body passed in here that are not already
 	       in the attachments list are added to the end of the attachments
 	       list. Attachment items not in the body list will be taken care
-	       of in strings2outgoing, but they are unlikey to occur
+	       of in strings2outgoing, but they are unlikely to occur
 	    */
 
 	    for(part = bod->nested.part->next; part != NULL; part = part->next) {

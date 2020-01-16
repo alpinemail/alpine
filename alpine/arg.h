@@ -44,7 +44,7 @@ typedef struct argdata {
 } ARGDATA_S;
 
 
-/* exported protoypes */
+/* exported prototypes */
 void	    pine_args(struct pine *, int, char **, ARGDATA_S *);
 void        display_args_err(char *, char **, int);
 void        args_help(void);

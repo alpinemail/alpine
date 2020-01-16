@@ -64,7 +64,7 @@ set _wp(defconf)	$_wp(conffile)
 # place for library files used by CGI scripts
 set _wp(lib)		[file join $_wp(fileroot) lib]
 
-# directory used temporarily to stage attatched and detached files
+# directory used temporarily to stage attached and detached files
 # this directory is owned by wwwrun:www
 set _wp(detachpath)	[file join $_wp(fileroot) detach]
 

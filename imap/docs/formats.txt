@@ -17,7 +17,7 @@
 
 
      When a mailbox storage technology uses local files and
-directories directly, the file(s) and directories are layed out in a
+directories directly, the file(s) and directories are laid out in a
 mailbox format.
 
 I. Flat-File Formats
@@ -166,7 +166,7 @@ Soapbox on File/Message Formats
 too much effort into file/message formats, you are correct.
 
      There's a general reason why file/message formats are a bad idea.
-Just about every filesystem in existance serializes file creation and
+Just about every filesystem in existence serializes file creation and
 deletions because these manipulate the free space map.  This turns out
 to be an enormous problem when you start creating/deleting more than a
 few messages per second; you spend all your time thrashing in the
@@ -209,7 +209,7 @@ So what does this all mean?
 
      A database (such as used by Exchange) is really a much better
 approach if you want to move away from flat files.  mx and especially
-Cyrus take a tenative step in that direction; mx failed mostly because
+Cyrus take a tentative step in that direction; mx failed mostly because
 it didn't go anywhere near far enough.  Cyrus goes much further, and
 scores remarkable benefits from doing so.
 

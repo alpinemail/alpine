@@ -140,7 +140,7 @@ flag_search(MAILSTREAM *stream, int flags, MsgNo set_start, MSGNO_S *set_msgmap,
 	  }
 
 	/*
-	 * No search-worthy messsages?, prod the server for
+	 * No search-worthy messages?, prod the server for
 	 * any flag updates and clear the searched bits...
 	 */
 	if(full_set){

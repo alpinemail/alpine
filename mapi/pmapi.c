@@ -2899,7 +2899,7 @@ void ErrorBoxFunc(char *msg)
 
   Result: Alloc'd unique string is returned
 
-Uniqueness is gaurenteed by using the host name, process id, date to the
+Uniqueness is guaranteed by using the host name, process id, date to the
 second and a single unique character
 *----------------------------------------------------------------------*/
 char *

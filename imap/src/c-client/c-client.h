@@ -44,7 +44,7 @@ extern "C" {
 #include "smtp.h"		/* SMTP sending routines */
 #include "nntp.h"		/* NNTP sending routines */
 #include "utf8.h"		/* Unicode and charset routines */
-#include "utf8aux.h"		/* Unicode auxillary routines */
+#include "utf8aux.h"		/* Unicode auxiliary routines */
 #include "misc.h"		/* miscellaneous utility routines */
 
 #ifdef __cplusplus		/* undo the C++ mischief */

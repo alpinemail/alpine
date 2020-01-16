@@ -620,7 +620,7 @@ optionally_enter(char *utf8string, int y_base, int x_base, int utf8string_size,
 	  case ctrl('H'):
             /*   Try and do this with by telling the terminal to delete a
                  a character. If that fails, then repaint the rest of the
-                 line, acheiving the same much less efficiently
+                 line, achieving the same much less efficiently
              */
 	    if(field_pos <= 0)
 	      goto bleep;

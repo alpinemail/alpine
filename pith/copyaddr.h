@@ -18,7 +18,7 @@
 #define PITH_COPYADDR_INCLUDED
 
 
-/* exported protoypes */
+/* exported prototypes */
 ADDRESS      *copyaddr(ADDRESS *);
 ADDRESS      *copyaddrlist(ADDRESS *);
 

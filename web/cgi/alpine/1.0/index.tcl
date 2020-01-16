@@ -475,7 +475,7 @@ if {$queryexpunge == 1 || [string compare [string tolower $queryexpunge] expunge
 		source [WPTFScript auth]
 		set nopage 1
 	      } else {
-		lappend newmail [list "Existance test failed: $reason"]
+		lappend newmail [list "Existence test failed: $reason"]
 	      }
 	    } elseif {$reason == 0} {
 	      if {$create == 1 || [string compare create [string tolower $create]] == 0} {
@@ -1486,7 +1486,7 @@ if {![info exists nopage]} {
 
 	cgi_table cellspacing=0 cellpadding=0 width="100%" class="itable" {
 	  if {$messagecount < 1} {
-	    # special case for mailbox with no messges
+	    # special case for mailbox with no messages
 	    cgi_table_row {
 	      cgi_table_data class=body valign=middle height=[expr {($ppg + 1) * $indexheight}] {
 		cgi_center {

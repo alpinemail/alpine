@@ -18,7 +18,7 @@
 #define PINE_INIT_INCLUDED
 
 
-/* exported protoypes */
+/* exported prototypes */
 int	init_mail_dir(struct pine *);
 int	expire_sent_mail(void);
 

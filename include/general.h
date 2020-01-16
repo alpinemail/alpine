@@ -26,7 +26,7 @@
  */
 
 
-/* Might as well be consistant */
+/* Might as well be consistent */
 #undef	FALSE
 #define FALSE   0                       /* False, no, bad, etc.         */
 #undef	TRUE

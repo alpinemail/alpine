@@ -11,7 +11,7 @@ REM
 REM 
 REM ========================================================================
 
-REM Program:	Authenticator Linkage Generator auxillary for DOS
+REM Program:	Authenticator Linkage Generator auxiliary for DOS
 REM
 REM Author:	Mark Crispin
 REM		Networks and Distributed Computing

@@ -66,7 +66,7 @@
 extern int treat_color_vars_as_text;
 
 
-/* exported protoypes */
+/* exported prototypes */
 void     color_config_screen(struct pine *, int);
 int	 color_setting_tool(struct pine *, int, CONF_S **, unsigned);
 char    *sampleexc_text(struct pine *, struct variable *);

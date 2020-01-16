@@ -585,7 +585,7 @@ long nntp_status (MAILSTREAM *stream,char *mbx,long flags)
     status.uidvalidity = stream->uid_validity;
 				/* pass status to main program */
     mm_status (stream,mbx,&status);
-    ret = T;			/* succes */
+    ret = T;			/* success */
   }
 				/* flush temporary stream */
   if (tstream) mail_close (tstream);

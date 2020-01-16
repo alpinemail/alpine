@@ -69,7 +69,7 @@ static char rcsid[] = "$Id: termin.unx.c 1025 2008-04-08 22:59:38Z hubert@u.wash
 /*======================================================================
        Things having to do with reading from the tty driver and keyboard
           - initialize tty driver and reset tty driver
-          - read a character from terminal with keyboard escape seqence mapping
+          - read a character from terminal with keyboard escape sequence mapping
           - initialize keyboard (keypad or such) and reset keyboard
           - prompt user for a line of input
           - read a command from keyboard with timeouts.

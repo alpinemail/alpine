@@ -335,7 +335,7 @@ broken servers use the SSLv23 server method, and this flag works around that
 problem.  WARNING: use of this flag will cause TLS negotiation to fail with
 a server which uses the proper TLSv1 server method.  Additionally, there are
 known security risks in SSLv2; so users should be suspicious if this switch
-suddenly becomes necesary.
+suddenly becomes necessary.
 
 The silly mailbox flag combination /ssl/tls is now rejected as an invalid
 remote specification.  Previous versions tried to negotiate TLS over an SSL
@@ -595,7 +595,7 @@ no longer builds on those platforms.
 
 Updated: 7 January 2003
 
-imap-2002b is a maintenace release, released concurrently with Pine 4.52,
+imap-2002b is a maintenance release, released concurrently with Pine 4.52,
 and contains only bugfixes.  Programs written for imap-2002 will build with
 this version without modification.
 
@@ -631,7 +631,7 @@ you will be asked to confirm to continue the build.
 
 ORDEREDSUBJECT threading has been changed in accordance with draft 12 of the
 IMAP threading specification.  Previously, each non-root message in an
-ORDEREDSUBJECT thread has been a child of the message immediately preceeding
+ORDEREDSUBJECT thread has been a child of the message immediately preceding
 it in the thread.  Draft 12 changes this so that the second message in the
 thread is the child of the first (root) message, and all subsequent messages
 are siblings of the first message.  This is significant in MUAs which display
@@ -810,7 +810,7 @@ by the /ssl switch in the mailbox name.
 
 With SSL connections, the server certificate is validated by the client code
 on UNIX, and Windows 2000 unless /novalidate-cert is specified.  Server
-certificates are currently is not validated on Windows 9x, Windows Millenium,
+certificates are currently is not validated on Windows 9x, Windows Millennium,
 or Windows NT 4; this is an artifact of the operating system and not the port
 (e.g. client code using the NT port will validate certificates if running on
 Windows 2000).  On UNIX, the server certificate must be signed by a trusted

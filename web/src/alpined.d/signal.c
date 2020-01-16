@@ -54,7 +54,7 @@ init_signals(void)
     signal(SIGHUP,  hup_signal);
     signal(SIGTERM, term_signal);
 
-    /* prepare for unforseen problems */
+    /* prepare for unforeseen problems */
     signal(SIGILL,  auger_in_signal);
     signal(SIGTRAP, auger_in_signal);
 #ifdef	SIGEMT

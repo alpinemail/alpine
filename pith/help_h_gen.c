@@ -36,7 +36,7 @@ void
 preamble(FILE *ofp)
 {
     fprintf(ofp, "\n\t\t/*\n");
-    fprintf(ofp, "\t\t * AUTMATICALLY GENERATED FILE!\n");
+    fprintf(ofp, "\t\t * AUTOMATICALLY GENERATED FILE!\n");
     fprintf(ofp, "\t\t * DO NOT EDIT!!\n");
     fprintf(ofp, "\t\t * See help_h_gen.c.\n\t\t */\n\n\n");
     fprintf(ofp, "#ifndef PITH_HELPTEXT_INCLUDED\n");

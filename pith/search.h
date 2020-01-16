@@ -18,7 +18,7 @@
 #define PITH_SEARCH_INCLUDED
 
 
-/* exported protoypes */
+/* exported prototypes */
 SEARCHSET    *build_searchset(MAILSTREAM *);
 int           in_searchset(SEARCHSET *, unsigned long);
 

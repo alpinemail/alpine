@@ -18,7 +18,7 @@
 #define PITH_TEMPFILE_INCLUDED
 
 
-/* exported protoypes */
+/* exported prototypes */
 char	     *tempfile_in_same_dir(char *, char *, char **);
 int	      in_dir(char *, char *);
 

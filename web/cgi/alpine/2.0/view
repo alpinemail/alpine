@@ -165,7 +165,7 @@ WPEval $view_args {
       # local libraries
       cgi_script type=text/javascript language="JavaScript" src="lib/common.js" {}
       cgi_script type=text/javascript language="JavaScript" src="lib/mailbox.js" {}
-      # page specfic JS
+      # page specific JS
       cgi_javascript {
 	cgi_puts "YAHOO.alpine.cgi_root = '$_wp(serverpath)';"
 	cgi_puts "YAHOO.alpine.app_root = '$_wp(serverpath)/$_wp(appdir)/$_wp(ui2dir)';"

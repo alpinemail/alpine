@@ -18,7 +18,7 @@ This product is in part based on MicroEMACS 3.6, written by Dave G.
 Conroy; modified by Steve Wilhite, and George Jones; and greatly
 modified by Daniel Lawrence.
 
-Some of the code dealing with temporary files in this product was dervived
+Some of the code dealing with temporary files in this product was derived
 from 4.3 BSD code, which was developed by the University of California.
 
 

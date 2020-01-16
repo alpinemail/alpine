@@ -245,7 +245,7 @@ typedef struct index_data {
 typedef enum {NoKW, KW, KWInit} SubjKW;
 
 
-/* exported protoypes */
+/* exported prototypes */
 
 
 #endif /* PITH_INDXTYPE_INCLUDED */

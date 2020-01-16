@@ -348,7 +348,7 @@ void mm (MAILSTREAM *stream,long debug)
 	for(i = 0; i < 3; ++i) {
 	  puts(nstypes[i]);
 	  for(ns = nslist[i]; ns; ns = ns->next)
-	    printf(" namespace = %s, delimeter = %c\n", ns->name, ns->delimiter);
+	    printf(" namespace = %s, delimiter = %c\n", ns->name, ns->delimiter);
 	}
       }
       break;

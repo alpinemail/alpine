@@ -66,7 +66,7 @@ Caesar).
 
      Months in the Julian calendar were 30 or 31 days in length and
 every fourth year was made a leap year (having 366 days) by adding a day
-to the end of the year.  This leap year rule was not consistantly
+to the end of the year.  This leap year rule was not consistently
 applied until 8 CE.  The year-ending month of February, never a popular
 month, was presently shortened so that Julius Caesar and Emperor
 Augustus could each have long months named after them.
@@ -124,7 +124,7 @@ calendar.  This suggestion was adopted over the next 500 years and
 subsequently followed in the Gregorian calendar.
 
      For the benefit of those who seek religious significance to the
-calendar millenium, note that year 1 is too late by at least 4 years.
+calendar millennium, note that year 1 is too late by at least 4 years.
 Herod the Great, named in the Christian Bible as having all children in
 Bethlehem put to death in an attempt to kill the infant Jesus, died in 4
 BCE.
@@ -190,7 +190,7 @@ centuries yet.
      There is code in c-client to support the modified Gregorian
 calendar, although it is currently disabled.  Sometime in the next
 2000 years, someone will need to enable this code so that c-client is
-Y4K compiliant.  Then, 18,000 years from now, someone will have to
+Y4K compliant.  Then, 18,000 years from now, someone will have to
 tear into c-client's code to fix the Y20K bug.
 
 
@@ -237,7 +237,7 @@ adjustments will be necessary at that time.
 
      Hence my use of "or so" in predicting the years that the calendar
 will fall behind.  The actual point may be anywhere from decades (in the
-case of Y3.3K) to millenia (in the case of Y40K) off from these predictions.
+case of Y3.3K) to millennia (in the case of Y40K) off from these predictions.
 
 
 MEANINGS OF DAY NAMES

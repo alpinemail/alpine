@@ -32,7 +32,7 @@
 #define	disallow_talk(p)	tty_chmod((p), TALK_BIT|GM_BIT, TMD_CLEAR)
 
 
-/* exported protoypes */
+/* exported prototypes */
 
 
 #endif /* PITH_TALK_INCLUDED */

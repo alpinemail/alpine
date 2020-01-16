@@ -22,7 +22,7 @@
 #include "../pith/osdep/pipe.h"
 
 
-/* exported protoypes */
+/* exported prototypes */
 int	 raw_pipe_getc(unsigned char *);
 void	 prime_raw_pipe_getc(MAILSTREAM *, long, long, long);
 PIPE_S	*cmd_pipe_open(char *, char **, int, gf_io_t *);

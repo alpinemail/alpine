@@ -40,7 +40,7 @@ typedef struct list_selection {
 } LIST_SEL_S;
 
 
-/* exported protoypes */
+/* exported prototypes */
 int         select_from_list_screen(LIST_SEL_S *, unsigned long, char *, char *, HelpType, char *, LIST_SEL_S *);
 
 

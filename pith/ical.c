@@ -34,7 +34,7 @@ ICAL_PARAMETER_S *ical_parameter_cpy(ICAL_PARAMETER_S *param);
 char *ical_get_value(char **);
 unsigned char *ical_decode(char *, unsigned short);
 
-/* pase component */
+/* parse component */
 void	*ical_parse_vcalendar(char **);
 void	*ical_parse_vevent(char **);
 void	*ical_parse_vtodo(char **);
@@ -251,7 +251,7 @@ ical_decode(char *text, unsigned short encoding)
 
 /* Return code:
     0 - if no errors
-   -1 - if an error occured
+   -1 - if an error occurred
    Args: a pointer to the text. If there is an error, the text is not modified.
  */
 int
@@ -637,7 +637,7 @@ ical_cline_cpy(ICLINE_S *icl)
   return rv;
 }
 
-/* Given a \r\n-ending line (called *text), isolate the ocurrence 
+/* Given a \r\n-ending line (called *text), isolate the occurrence 
  * of the token in that line.
  * Return the token, and modify the pointer to *text to point to the
  * end of the token. Modify sep to contain the character following

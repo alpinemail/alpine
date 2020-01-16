@@ -349,7 +349,7 @@ CONF_TXT_T cf_text_stat_msg_delay[] =	"The number of seconds to sleep after writ
 
 CONF_TXT_T cf_text_busy_cue_rate[] =	"Number of times per-second to update busy cue messages";
 
-CONF_TXT_T cf_text_psleep[] =	"UNIX ONLY (except MAC OSX): When an attachment is opened, this variable controls the number\n#of seconds to wait between checks if the user has ended viewing the attachment.\n#minimun value: 60 seconds, maximum value: 600 seconds (10 minutes). Default: 60 seconds";
+CONF_TXT_T cf_text_psleep[] =	"UNIX ONLY (except MAC OSX): When an attachment is opened, this variable controls the number\n#of seconds to wait between checks if the user has ended viewing the attachment.\n#minimum value: 60 seconds, maximum value: 600 seconds (10 minutes). Default: 60 seconds";
 
 CONF_TXT_T cf_text_mailcheck[] =	"The approximate number of seconds between checks for new mail";
 
@@ -2491,7 +2491,7 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
 	   && strncmp(VAR_LAST_VERS_USED, ps->vers_internal, 4) >= 0)){
 	ps->show_new_version = 0;
     }
-    /* Otherwise just do lexicographic comparision... */
+    /* Otherwise just do lexicographic comparison... */
     else if(VAR_LAST_VERS_USED
 	    && strcmp(VAR_LAST_VERS_USED, ps->vers_internal) >= 0){
 	ps->show_new_version = 0;

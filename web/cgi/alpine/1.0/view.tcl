@@ -364,7 +364,7 @@ if {[info exists errstr]} {
   if {![info exists nopage]} {
     switch -exact -- [WPCmd PEMailbox state] {
       readonly {
-	lappend newmail [list [cgi_span "style=color: black; margin: 2 ; border: 1px solid red; background-color: pink; font-weight: bold" "Deleted messages may reapper because [WPCmd PEMailbox mailboxname] is Read Only"]]
+	lappend newmail [list [cgi_span "style=color: black; margin: 2 ; border: 1px solid red; background-color: pink; font-weight: bold" "Deleted messages may reappear because [WPCmd PEMailbox mailboxname] is Read Only"]]
       }
       closed {
 	lappend newmail [list [cgi_span "style=color: black; border: 1px solid red; background-color: pink; font-weight: bold" "Message body may be blank because [WPCmd PEMailbox mailboxname] is Closed"]]

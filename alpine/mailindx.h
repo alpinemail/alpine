@@ -91,7 +91,7 @@ typedef enum {MsgIndex, MultiMsgIndex, ZoomIndex, ThreadIndex} IndexType;
 extern struct index_state *current_index_state;
 
 
-/* exported protoypes */
+/* exported prototypes */
 void		 mail_index_screen(struct pine *);
 struct key_menu *do_index_border(CONTEXT_S *, char *, MAILSTREAM *, MSGNO_S *, IndexType, int *, int);
 void		*stop_threading_temporarily(void);

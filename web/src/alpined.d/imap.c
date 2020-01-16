@@ -153,9 +153,9 @@ mm_log(char *string, long errflg)
 
 
 /*----------------------------------------------------------------------
-         recieve notification from IMAP
+         receive notification from IMAP
 
-  Args: stream  --  Mail stream message is relavant to 
+  Args: stream  --  Mail stream message is relevant to 
         string  --  The message text
         errflag --  Set if it is a serious error
 
@@ -344,7 +344,7 @@ mm_login_work(NETMBX *mb, char *user, char **passwd, long trial, char *usethispr
 /*----------------------------------------------------------------------
        Receive notification of an error writing to disk
       
-  Args: stream  -- The stream the error occured on
+  Args: stream  -- The stream the error occurred on
         errcode -- The system error code (errno)
         serious -- Flag indicating error is serious (mail may be lost)
 

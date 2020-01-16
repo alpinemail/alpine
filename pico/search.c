@@ -100,7 +100,7 @@ EXTRAKEYS    menu_srchopt[] = {
 
 /*	string search input parameters	*/
 
-#define	PTBEG	1	/* leave the point at the begining on search */
+#define	PTBEG	1	/* leave the point at the beginning on search */
 #define	PTEND	2	/* leave the point at the end on search */
 
 #define NPMT (2*NLINE+32)
@@ -394,7 +394,7 @@ forwsearch(int f, int n)
 
     /*
      * This code is kind of dumb.  What I want is successive C-W 's to 
-     * move dot to successive occurences of the pattern.  So, if dot is
+     * move dot to successive occurrences of the pattern.  So, if dot is
      * already sitting at the beginning of the pattern, then we'll move
      * forward a char before beginning the search.  We'll let the
      * automatic wrapping handle putting the dot back in the right 
@@ -1320,7 +1320,7 @@ forscan(int *wrapt,	/* boolean indicating search wrapped */
 		curwp->w_dotp = matchline;
 		curwp->w_doto = matchoff - 1;
 	    }
-	    else {		/* at begining of string */
+	    else {		/* at beginning of string */
 		curwp->w_dotp = lastline;
 		curwp->w_doto = lastoff;
 	    }

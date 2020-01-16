@@ -338,7 +338,7 @@ HTTP HEADERS
 cgi_http_head cmds
 
 CGI scripts must produce various headers to explain how the remainder
-of the output is to be interpreted.  No other output may preceed this!
+of the output is to be interpreted.  No other output may precede this!
 
 With no argument, an HTML content type is produced if the script is
 running in the CGI environment.  This means that most people need not
@@ -963,7 +963,7 @@ The present implementation supports binary upload if you are using Tcl
 using a version of Tcl earlier than 8.1 with Expect but want to
 suppress binary loading, create the global variable
 _cgi(no_binary_upload).  (The reason you might want to suppress binary
-loading is that it is noticably slower.)
+loading is that it is noticeably slower.)
 
 **************************************************
 EXPORT
@@ -1187,7 +1187,7 @@ cgi_term text
 cgi_term_definition text
 
 cgi_term and cgi_term_definition are usually paired up (although they
-need not be) to creates terms and defintions.  They do not have to
+need not be) to creates terms and definitions.  They do not have to
 appear in a list container, but usually appear in a cgi_definition_list.
 
 ** List containers

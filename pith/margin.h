@@ -18,7 +18,7 @@
 #define PITH_MARGIN_INCLUDED
 
 
-/* exported protoypes */
+/* exported prototypes */
 int	*format_view_margin(void);
 int	*non_messageview_margin(void);
 

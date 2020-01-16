@@ -25,7 +25,7 @@
  *      There are very limited number of flat ctrl-key bindings left, and 
  *      most of them are slated for yet-to-be implemented functions, like
  *      invoking an alternate editor in the composer and necessary funcs
- *      for imlementing attachment handling.  We really want to avoid 
+ *      for implementing attachment handling.  We really want to avoid 
  *      going to multiple keystroke functions. -mss
  *
  */

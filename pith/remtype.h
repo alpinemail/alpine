@@ -55,7 +55,7 @@ typedef struct remote_data {
 } REMDATA_S;
 
 
-/* exported protoypes */
+/* exported prototypes */
 
 
 #endif /* PITH_REMTYPE_INCLUDED */

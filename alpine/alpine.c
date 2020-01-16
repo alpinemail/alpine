@@ -482,7 +482,7 @@ main(int argc, char **argv)
      *
      * We can't use gettext calls before we do this stuff so it doesn't
      * help to translate strings that come before this in the program.
-     * Maybe we could rearrange things to accomodate that.
+     * Maybe we could rearrange things to accommodate that.
      */
     setlocale(LC_MESSAGES, "");
     bindtextdomain(PACKAGE, LOCALEDIR);
@@ -1242,7 +1242,7 @@ main(int argc, char **argv)
 	      /*
 	       * As with almost all the folder vars in the pinerc,
 	       * we subvert the collection "breakout" here if the
-	       * folder name given looks like an asolute path on
+	       * folder name given looks like an absolute path on
 	       * this system...
 	       */
 	      cntxt = (is_absolute_path(args.data.folder))
@@ -1642,7 +1642,7 @@ here.
 This functions handling of new mail, redrawing, errors and such can 
 serve as a template for the other screen that do much the same thing.
 
-There is a loop that fetchs and executes commands until a command to leave
+There is a loop that fetches and executes commands until a command to leave
 this screen is given. Then the name of the next screen to display is
 stored in next_screen member of the structure and this function is exited
 with a return.

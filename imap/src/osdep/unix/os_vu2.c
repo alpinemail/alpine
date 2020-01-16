@@ -52,7 +52,7 @@ extern int errno;		/* just in case */
 #define FD_ZERO(p)	bzero((char *)(p), sizeof(*(p)))
 
 
-/* Old Ultrix has its own wierd inet_addr() that returns a in_addr struct. */
+/* Old Ultrix has its own weird inet_addr() that returns a in_addr struct. */
 
 /* Portable inet_addr () that returns a u_long
  * Accepts: dotted host string

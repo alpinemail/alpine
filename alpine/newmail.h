@@ -17,7 +17,7 @@
 #ifndef ALPINE_NEWMAIL_INCLUDED
 #define ALPINE_NEWMAIL_INCLUDED
 
-/* exported protoypes */
+/* exported prototypes */
 void	 newmail_status_message(MAILSTREAM *, long, long);
 
 #endif /* ALPINE_NEWMAIL_INCLUDED */

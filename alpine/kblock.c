@@ -112,7 +112,7 @@ lock_keyboard(void)
 
     for(i = 0; i < times; i++){
 	pw[0] = '\0';
-	while(1){			/* input pasword to use for locking */
+	while(1){			/* input password to use for locking */
 	    int rc;
 	    char prompt[50];
 

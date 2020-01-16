@@ -27,7 +27,7 @@ typedef int (*percent_done_t)();    /* returns %done for progress status msg */
 #endif
 
 
-/* exported protoypes */
+/* exported prototypes */
 
 
 /* currently mandatory to implement stubs */

@@ -9,7 +9,7 @@
 #include "../../../pith/imap.h"
 
 
-/* exported protoypes */
+/* exported prototypes */
 long    alpine_tcptimeout(long, long);
 long    alpine_sslcertquery(char *, char *, char *);
 void    alpine_sslfailure(char *, char *, unsigned long);

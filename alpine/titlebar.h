@@ -34,7 +34,7 @@ typedef enum {TitleBarNone = 0, FolderName, MessageNumber, MsgTextPercent,
 		ThrdMsgNum, ThrdMsgPercent} TitleBarType;
 
 
-/* exported protoypes */
+/* exported protoyypes */
 void	    end_titlebar(void);
 void	    push_titlebar_state(void);
 void	    pop_titlebar_state(void);

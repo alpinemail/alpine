@@ -68,7 +68,7 @@ WPEval $select_vars {
 		cgi_table_row {
 		  cgi_table_data {
 		    cgi_center {
-		      cgi_puts "[cgi_nl][cgi_nl]This page provides a way to search for specific messsages within the currently open folder, [cgi_bold [WPCmd PEMailbox mailboxname]].  Simply fill in the criteria below and click the assoicated [cgi_italic Search] button. All messages matching the criteria will be marked with a check in the box next to their line in the Message List.[cgi_nl][cgi_nl]"
+		      cgi_puts "[cgi_nl][cgi_nl]This page provides a way to search for specific messages within the currently open folder, [cgi_bold [WPCmd PEMailbox mailboxname]].  Simply fill in the criteria below and click the associated [cgi_italic Search] button. All messages matching the criteria will be marked with a check in the box next to their line in the Message List.[cgi_nl][cgi_nl]"
 		      cgi_puts "Click [cgi_italic Cancel] to return to the Message List without searching.[cgi_nl]"
 		    }
 		  }

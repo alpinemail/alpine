@@ -67,7 +67,7 @@ struct passwd *checkpw (struct passwd *pw,char *pass,int argc,char *argv[])
      *  max	number of days a password is valid if positive
      *  warn	number of days of password expiration warning
      *  expire	date account expires if positive
-     *  inact	number of days an accout can be inactive (not checked!)
+     *  inact	number of days an account can be inactive (not checked!)
      * The expiration day is the *last* day that the password or account
      * is valid.
      */

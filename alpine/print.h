@@ -21,7 +21,7 @@
 #include "../pith/state.h"
 
 
-/* exported protoypes */
+/* exported prototypes */
 char	*printer_name(char *);
 #ifndef DOS
 void	 select_printer(struct pine *, int);

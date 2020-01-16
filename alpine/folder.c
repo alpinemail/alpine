@@ -24,7 +24,7 @@ static char rcsid[] = "$Id: folder.c 1144 2008-08-14 16:53:34Z hubert@u.washingt
 This puts up a list of all the folders in the users mail directory on
 the screen spacing it nicely. The arrow keys move from one to another
 and the user can delete the folder or select it to change to or copy a
-message to. The dispay lets the user scroll up or down a screen full,
+message to. The display lets the user scroll up or down a screen full,
 or search for a folder name.
  ====*/
 
@@ -126,7 +126,7 @@ typedef struct _folder_screen {
 
 
 /*
- * Struct mananging folder_lister metadata as it get's passed
+ * Struct mananging folder_lister metadata as it gets passed
  * in and back up thru scrolltool
  */
 typedef struct _folder_proc {
@@ -1187,7 +1187,7 @@ exit_collection_add(struct headerentry *he, void (*redraw_pico)(void), int allow
 	 * of the path so we can test for the directory existence.  The
 	 * second's to make sure the server (and any requested service)
 	 * name we were given exists.  It should be handled by the folder
-	 * existence test futher below, but it doesn't work with news...
+	 * existence test further below, but it doesn't work with news...
 	 *
 	 * Update. Now we are stripping the delimiter in the tmpnodel version
 	 * so that we can pass that to folder_exists. Cyrus does not answer

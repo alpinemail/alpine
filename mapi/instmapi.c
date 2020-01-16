@@ -31,7 +31,7 @@
 
 /* this program consists of two parts: 
  * (1) Updating the registry, 
- * most particulary the string of DLLPath in the key
+ * most particularly the string of DLLPath in the key
  * HKLM\Software\Clients\PC-Pine.
  * (2) Deciding whether or not to copy pmapi32.dll into the system
  * directory.  Starting with Windows 2000, Internet Explorer 5.0

@@ -38,7 +38,7 @@ static char rcsid[] = "$Id: init.c 101 2006-08-10 22:53:04Z mikes@u.washington.e
 /* these are used to report folder directory creation problems */
 CONF_TXT_T init_md_exists[] =	"The \"%s\" subdirectory already exists, but it is not writable by Alpine so Alpine cannot run.  Please correct the permissions and restart Alpine.";
 
-CONF_TXT_T init_md_file[] =	"Alpine requires a directory called \"%s\" and usualy creates it.  You already have a regular file by that name which means Alpine cannot create the directory.  Please move or remove it and start Alpine again.";
+CONF_TXT_T init_md_file[] =	"Alpine requires a directory called \"%s\" and usually creates it.  You already have a regular file by that name which means Alpine cannot create the directory.  Please move or remove it and start Alpine again.";
 
 CONF_TXT_T init_md_create[] =	"Creating subdirectory \"%s\" where Alpine will store its mail folders.";
 

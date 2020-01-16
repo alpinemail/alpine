@@ -24,7 +24,7 @@
 #include "../pith/bldaddr.h"
 
 
-/* exported protoypes */
+/* exported prototypes */
 #ifdef	ENABLE_LDAP
 void	    directory_config(struct pine *, int);
 int	    ldap_radiobutton_tool(struct pine *, int, CONF_S **, unsigned);

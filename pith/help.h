@@ -49,7 +49,7 @@ extern int       rmhifirst, rmhilast;
 extern int       rm_not_right_now;
 
 
-/* exported protoypes */
+/* exported prototypes */
 HelpType    help_name2section(char *, int);
 void        debugjournal_to_file(FILE *);
 void	    add_review_message(char *, int);

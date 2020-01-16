@@ -50,7 +50,7 @@ typedef struct rfc2369_s {
 } RFC2369_S;
 
 
-/* exported protoypes */
+/* exported prototypes */
 char	  **rfc2369_hdrs(char **);
 int	    rfc2369_parse_fields(char *, RFC2369_S *);
 

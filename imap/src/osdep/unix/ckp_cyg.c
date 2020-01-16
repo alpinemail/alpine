@@ -27,7 +27,7 @@
  */
 
 /* This module is against my better judgement.  If you want to run an imapd
- * or ipop[23]d you should use the native NT or W2K ports intead of this
+ * or ipop[23]d you should use the native NT or W2K ports instead of this
  * Cygwin port.  There is no surety that this module works right or will work
  * right in the future.
  */

@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 385 2020-01-15 12:40:59
+Alpine Commit 386 2020-01-15 21:41:23
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -266,7 +266,7 @@ Bugs that have been addressed include:
         view certificate information of other certificate authorities.
 
    <LI> Crash in the S/MIME configuration screen when a user turned off S/MIME, and
-        then reenabled it. Also crash when attempting to enter the S/MIME 
+        then re-enabled it. Also crash when attempting to enter the S/MIME 
         configuration screen if S/MIME was turned off.
 
    <LI> Deactivate some color code from Pico (as standalone editor in the
@@ -1103,7 +1103,7 @@ Bugs addressed in the 2.00 release included:
    <LI> Make a default save folder of &quot;inbox&quot; always mean the real
 	inbox, not the inbox in the primary collection
    <LI> Address book entries with lots of addresses would be truncated when
-	entered in the composer with a screen size wider than 270 or so charcters
+	entered in the composer with a screen size wider than 270 or so characters
    <LI> Some fields in the index screen were truncated when the screen width was
 	wider than 256 characters
    <LI> Crash when TABing to next folder, the next folder with new mail is a POP
@@ -1193,7 +1193,7 @@ Bugs addressed in the 1.10(962) release included:
    <LI> After calling the file browser to attach a file in the composer, a resize
 	of the window when back in the composer would redraw the last screen that
 	had been shown in the browser instead of the current composer screen
-   <LI> Possible crash in index screen when encountering unparseable addresses
+   <LI> Possible crash in index screen when encountering unparsable addresses
 	or when using one of the PRIORITY tokens or the HEADER token in the
 	<a href="h_config_index_format"><!--#echo var="VAR_index-format"--></a>
    <LI> Problems with Header Color editing if the configuration option
@@ -1508,7 +1508,7 @@ username/password that users are accostumed to, and it needs to be set up
 by the user. This text will help you understand this authentication method.
 
 <P>
-The most important difference between this method and other autentication
+The most important difference between this method and other authentication
 methods is what happens if someone steals your credentials. This method is
 attached to three components: Your username, your password and your email
 program.
@@ -1707,7 +1707,7 @@ a folder-collection, or a news or SMTP server).  This will
 disable certificate validation.  On the other hand, if you are attacked,
 you will get no warning if you do this.
 
-<P> When you get an error indicating a self-signed certficate from the 
+<P> When you get an error indicating a self-signed certificate from the 
 remote server, you can download and install the certificate for that 
 server. Avoid using the /NoValidate-Cert modifier. Alpine cannot help you 
 with this process because certificates are part of the system and are not 
@@ -15943,7 +15943,7 @@ Nickname: field.
 
 If you have registered Alpine with your service provider to use the
 XOAUTH2 authenticator, or someone has shared a client-id with you, use this
-field to input this field. Remember that in order to use the XOAUTH2 authentication
+field to input this value. Remember that in order to use the XOAUTH2 authentication
 method, you must have a pair of client-id and client-secret. You must have
 both in order for this authenticator to work.
 
@@ -15971,7 +15971,7 @@ pieces  into this field.
 
 If you have registered Alpine with your service provider to use the
 XOAUTH2 authenticator, or someone has shared a client-secret with you, use this
-field to input this field. Remember that in order to use the XOAUTH2 authentication
+field to input this value. Remember that in order to use the XOAUTH2 authentication
 method, you must have a pair of client-id and client-secret. You must have
 both in order for this authenticator to work.
 
@@ -24024,7 +24024,7 @@ Here is a list of many of the possible character sets:
 <TR> <TD>ISO-8859-15</TD> <TD>8 bit European "Latin 9" character set</TD> </TR>
 <TR> <TD>ISO-8859-16</TD> <TD>8 bit European "Latin 10" character set</TD> </TR>
 <TR> <TD>KOI8-R</TD> <TD>8 bit Latin and Russian</TD> </TR>
-<TR> <TD>KOI8-U</TD> <TD>8 bit Latin and Ukranian</TD> </TR>
+<TR> <TD>KOI8-U</TD> <TD>8 bit Latin and Ukrainian</TD> </TR>
 <TR> <TD>WINDOWS-1251</TD> <TD>8 bit Latin and Russian</TD> </TR>
 <TR> <TD>TIS-620</TD> <TD>8 bit Latin and Thai</TD> </TR>
 <TR> <TD>VISCII</TD> <TD>8 bit Latin and Vietnamese</TD> </TR>
@@ -24248,7 +24248,7 @@ PC Alpine only.
 <P>
 This option specifies a list of dictionaries you will use with
 aspell. A sample entry is &quot;en_US&quot; for american english, or
-&quot;en_GB&quot; for brittish english.
+&quot;en_GB&quot; for british english.
 
 <P>
 <UL>   
@@ -25896,7 +25896,7 @@ Sets the format of the command used to
 open a UNIX secure shell connection. The default is
 "%s %s -l %s exec /etc/r%sd". All four "%s" entries MUST exist in the
 provided command. The first is for the command's pathname, the second is
-for the host to connnect to, the third is for the user to connect as, and
+for the host to connect to, the third is for the user to connect as, and
 the fourth is for the connection method (typically <CODE>imap</CODE>).
 <P>
 <UL>   
@@ -26239,7 +26239,7 @@ Once Alpine has opened a connection to a particular folder, it will attempt
 to keep that connection open in case you use it again.
 In order to do this,
 Alpine will attempt to use the <!--#echo var="VAR_max-remote-connections"--> (the value of
-this option) IMAP connections you have alloted for this purpose.
+this option) IMAP connections you have allotted for this purpose.
 <P>
 For example, suppose the value of this option is set to &quot;2&quot;.
 If your INBOX is accessed on a remote server using the IMAP protocol, that
@@ -26394,7 +26394,7 @@ displayed items are scrolled down or up by a single line.
 
 <P>
 This option allows you to tell Alpine the number of lines from the top and
-bottom screen edge that line-by-line paging should occcur.  For example,
+bottom screen edge that line-by-line paging should occur.  For example,
 setting this value to one (1) will cause Alpine to scroll the display
 vertically when you move to select an item on the display's top or
 bottom edge.
@@ -27939,7 +27939,7 @@ the way to configure Alpine to recognize URLs other than the built-in set.
 It can also be used to override Alpine's built-in handlers.
 For example, you could specify &quot;news&quot; in the <VAR>scheme-list</VAR>,
 and Alpine would use (provided it passed all other criteria) the associated
-viewer when it encounterd a URL of the form &quot;news:comp.mail.pine&quot;.
+viewer when it encountered a URL of the form &quot;news:comp.mail.pine&quot;.
 
 </DD>
 </DL>
@@ -31043,14 +31043,14 @@ This feature controls an aspect of Alpine's message sending.  When enabled,
 Alpine will send a VERB (i.e., VERBose) command early in the posting process
 intended to cause the SMTP server to provide a more detailed account of
 the transaction.  This feature is typically only useful to system
-administrators and other support personel as an aid in troublshooting
+administrators and other support personnel as an aid in troublshooting
 problems.
 <P>
 Note, this feature relies on a specific capability of the system's mail
 transport agent or configured 
 <A HREF="h_config_smtp_server">&quot;<!--#echo var="VAR_smtp-server"-->&quot;</A>.  
 It is possible that this
-feature will cause problems for some tranport agents, and may result in
+feature will cause problems for some transport agents, and may result in
 sending failure.  In addition, as the verbose output comes from the mail
 transport agent, it is likely to vary from one system to another. 
 <P><UL>

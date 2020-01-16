@@ -31,7 +31,7 @@
 #define	HLPD_FROMHELP	0x08
 
 
-/* exported protoypes */
+/* exported prototypes */
 int	    url_local_helper(char *);
 int	    url_local_config(char *);
 void	    init_helper_getc(char **);

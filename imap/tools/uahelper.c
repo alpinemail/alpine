@@ -66,7 +66,7 @@ char *fndws (s)
 }
 
 
-/* Find end of commend
+/* Find end of comment
  * Accepts: string
  * Returns: -1 if end of comment found, else 0
  */

@@ -59,7 +59,7 @@ extern void (*pith_opt_paint_index_hline)(MAILSTREAM *, long, ICE_S *);
 
 /*
  * optional hook in mailview.c:format_message to allow for inserting an
- * [editorial commment] in message text to indicate the message contains
+ * [editorial comment] in message text to indicate the message contains
  * list-management pointers
  */
 extern int  (*pith_opt_rfc2369_editorial)(long, HANDLE_S **, int, int, gf_io_t);

@@ -1255,8 +1255,9 @@ Alpine Configuration
    that is not set, _PC-Alpine_ will look for the local file "PINERCEX" in
    the same local directory that the regular config file is located in. If
    the regular config file is remote then _PC-Alpine_ looks in the local
-   directory specfied by the "-aux local_directory" command line argument,
-   or the directory ${HOME}\ALPINE, or in <ALPINE.EXE directory>.
+   directory specified by the "-aux local_directory" command line
+   argument, or the directory ${HOME}\ALPINE, or in <ALPINE.EXE
+   directory>.
 
    The syntax of a non-list configuration variable is this:
 
@@ -1517,7 +1518,7 @@ General Configuration Variables
           status message line near the bottom of the screen. This option
           sets how frequently the characters (for example, a spinning bar)
           in the active status message lines are updated. At most, it can
-          be set to be udpated 20 times per second.
+          be set to be updated 20 times per second.
           Setting this value to zero will prevent display of the
           animations altogether.
           The option busy-cue-spinner-only can be used to remove the
@@ -1533,7 +1534,7 @@ General Configuration Variables
           displaying colors, this variable controls whether or not color
           will be used in _Alpine_. If you turn color on and things are
           set up correctly, you should see color appear on the screen
-          immmediately. Modern terminal emulators are usually capable of
+          immediately. Modern terminal emulators are usually capable of
           displaying colors.
           This variable may be set to any of the following values:
 
@@ -2015,7 +2016,7 @@ General Configuration Variables
           Normally, when a filename is supplied that lacks a leading
           "path" component, _Alpine_ assumes the file exists in the user's
           home directory. Under Windows operating systems, this definition
-          isn't always clear. This feature allows you to explictly set
+          isn't always clear. This feature allows you to explicitly set
           where _Alpine_ should look for files without a leading path.
           NOTE: this feature's value is ignored if either use-current-dir
           feature is set or the PINERC has a value for the operating-dir
@@ -2778,8 +2779,8 @@ General Configuration Variables
           opened a connection to a particular folder, it will attempt to
           keep that connection open in case you use it again. In order to
           do this, _Alpine_ will attempt to use the Max-Remote-Connections
-          (the value of this option) IMAP connections you have alloted for
-          this purpose.
+          (the value of this option) IMAP connections you have allotted
+          for this purpose.
           For example, suppose the value of this option is set to "2". If
           your INBOX is accessed on a remote server using the IMAP
           protocol, that doesn't count as one of the remote connections
@@ -2836,7 +2837,7 @@ General Configuration Variables
           This option helps control when and if that special screen
           appears for users that have previously run _Alpine_. It takes as
           its value a _Alpine_ version number. _Alpine_ versions less than
-          the specified value will supress this special screen while
+          the specified value will suppress this special screen while
           versions equal to or greater than that specified will behave
           normally.
    _newmail-fifo-path_
@@ -2869,7 +2870,7 @@ General Configuration Variables
           supports it, it should work. (It is often the case that your
           home directory is in an NFS filesystem. If that is the case, you
           might try using a file in the "/tmp" filesystem, which is
-          usually a local filesytem.) Even when it is possible to use an
+          usually a local filesystem.) Even when it is possible to use an
           NFS-mounted filesystem as a place to name the fifo (for example,
           your home directory), it will still be the case that the reader
           (probably the "cat" command) and the writer (_Alpine_) of the
@@ -3390,7 +3391,7 @@ General Configuration Variables
           connection. The default is "%s %s -l %s exec /etc/r%sd". All
           four "%s" entries MUST exist in the provided command. The first
           is for the command's pathname, the second is for the host to
-          connnect to, the third is for the user to connect as, and the
+          connect to, the third is for the user to connect as, and the
           fourth is for the connection method (typically imap).
    _rsh-open-timeout_
           Sets the time in seconds that _Alpine_ will attempt to open a
@@ -3896,7 +3897,7 @@ m+4TJybNGNfAgOctSkEyY/OCb49fRRQTCBZVIhzLGGmpYmkO55HbIA==
           to the status line whenever a status message is printed and
           pause there for this many seconds. It will probably only be
           useful if the show-cursor feature is also turned on. Setting
-          this option to a postive number can only be used to _increase_
+          this option to a positive number can only be used to _increase_
           the status message delay. This may be useful for Braille
           displays, or other non-traditional displays.
           If it is set to a negative number the interpretation is a bit
@@ -4627,7 +4628,7 @@ Configuration Features
           was a role match.)
           If you are using the alternate form of the Compose command
           called "Role", then all of your roles will be available to you,
-          independent of the value of this feauture and of the values set
+          independent of the value of this feature and of the values set
           for all of Reply Use, Forward Use, and Compose Use.
    _continue-tab-without-confirm_
           Normally, when you use the TAB NextNew command and there is a
@@ -5426,7 +5427,7 @@ John: on a job well done!
           early in the posting process intended to cause the server SMTP
           to provide a more detailed account of the transaction. This
           feature is typically only useful to system administrators and
-          other support personel as an aid in troublshooting problems.
+          other support personnel as an aid in troublshooting problems.
           Note, this feature relies on a specific capability of the
           system's mail transport agent or configured smtp-server.
    _expanded-view-of-addressbooks_
@@ -7791,7 +7792,7 @@ Tokens for Index and Replying
 
    SCORE
           This gives the score of each message. This will be six columns
-          wide to accomodate the widest possible score. You will probably
+          wide to accommodate the widest possible score. You will probably
           want to use the Index-Format fixed-field width feature to limit
           the width of the field to the widest score that you use (e.g.
           SCORE(3) if your scores are always between 0 and 999). If you
@@ -9521,7 +9522,7 @@ Patterns
                               mail/local-folder
 
    The easiest way to fill in the "Folder" field is to use the "T" command
-   which is available when the "Folder" line is hilighted, or to use the
+   which is available when the "Folder" line is highlighted, or to use the
    "Take" command with the configuration feature "enable-rules-under-take"
    turned on.
 
@@ -11180,7 +11181,7 @@ Using Environment Variables
                                     $VAR
 
    appears in the value of a _Alpine_ configuration option it is looked up
-   in the environent (using getenv("VAR")) and its looked-up value
+   in the environment (using getenv("VAR")) and its looked-up value
    replaces the $VAR part of the option value. To include a literal dollar
    sign you may precede the dollar sign with another dollar sign. In other
    words, if the text
@@ -12019,7 +12020,7 @@ International Character Sets
    ISO-8859-15  8 bit European "Latin 9" character set
    ISO-8859-16  8 bit European "Latin 10" character set
    KOI8-R       8 bit Latin and Russian
-   KOI8-U       8 bit Latin and Ukranian
+   KOI8-U       8 bit Latin and Ukrainian
    WINDOWS-1251 8 bit Latin and Russian
    TIS-620      8 bit Latin and Thai
    VISCII       8 bit Latin and Vietnamese

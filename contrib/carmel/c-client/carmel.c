@@ -183,7 +183,7 @@ carmel_isvalid (name)
   
     close(fd);
   
-    for(p = carmel_20k_buf; *p && !isspace(*p); p++); /* frist word */
+    for(p = carmel_20k_buf; *p && !isspace(*p); p++); /* first word */
     for(; *p && isspace(*p); p++);  /* space */
     lcase(p);                       /* lower case the "index" */
     if(!*p || strncmp(p, "index", 5))  
@@ -402,7 +402,7 @@ carmel_create(stream, mailbox)
 /*----------------------------------------------------------------------
     Delete a carmel mailbox, and it's carmel2 index
 
-Args: stream --  unsed here
+Args: stream --  unused here
       mailbox -- FQN of mailbox to delete
 
 Returns: NIL -- if delete fails 
@@ -1042,7 +1042,7 @@ Args:  local -- Fake CARMELLOCAL structure
        e       -- envelope
        mc      -- MESSAGECACHE entry
 
-Retuns: -1 on failure
+Returns: -1 on failure
   ----*/
 long
 carmel_copy(local, mailbox, e, mc)

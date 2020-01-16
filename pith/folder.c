@@ -553,7 +553,7 @@ init_folders(struct pine *ps)
 
     /*
      * Build context that's a list of folders the user's defined
-     * as receiveing new messages.  At some point, this should
+     * as receiving new messages.  At some point, this should
      * probably include adding a prefix with the new message count.
      * fake new context...
      */
@@ -1529,7 +1529,7 @@ default_save_context(CONTEXT_S *cntxt)
 /*
  * folder_complete - foldername completion routine
  *
- *   Result: returns 0 if the folder doesn't have a any completetion
+ *   Result: returns 0 if the folder doesn't have a any completion
  *		     1 if the folder has a completion (*AND* "name" is
  *		       replaced with the completion)
  *
@@ -1861,7 +1861,7 @@ folder_is_target_of_nick(char *longname, CONTEXT_S *cntxt)
 
   **** WARNING ****
   DON'T count on the folder pointer being valid after this returns
-  *** ALL FOLDER ELEMENT READS SHOULD BE THRU folder_entry() ***
+  *** ALL FOLDER ELEMENT READS SHOULD BE THROUGH folder_entry() ***
 
   ----*/
 int

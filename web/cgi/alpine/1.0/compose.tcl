@@ -676,7 +676,7 @@ WPEval $compose_vars {
 
 		      if {0 && [info exists charset]} {
 			cgi_text "form_charset=$charset" type=hidden notab
-			# character encoding suport: the idea is to plant a known
+			# character encoding support: the idea is to plant a known
 			# char in the given charset and see what comes back to
 			# post.tcl from the browser.  Why is it again the @#*$!
 			# browser can't just tell us?

@@ -22,7 +22,7 @@
 #include "../pith/state.h"
 
 
-/* exported protoypes */
+/* exported prototypes */
 void	    option_screen(struct pine *, int);
 int         litsig_text_tool(struct pine *, int, CONF_S **, unsigned);
 char	   *pretty_var_name(char *);

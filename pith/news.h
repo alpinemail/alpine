@@ -28,7 +28,7 @@
 #define	IS_NEWS(S)	((S) ? ns_test((S)->mailbox, "news") : 0)
 
 
-/* exported protoypes */
+/* exported prototypes */
 int         ns_test(char *, char *);
 int         news_in_folders(struct variable *);
 int	    news_grouper(char *, char **, char **, char **, void (*)(void));

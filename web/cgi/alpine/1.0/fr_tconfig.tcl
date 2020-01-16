@@ -17,7 +17,7 @@
 #	     in webpine-lite pages.
 #            This page assumes that it was loaded by conf_process.tcl
 
-#  Intput:
+#  Input:
 set frame_vars {
 }
 

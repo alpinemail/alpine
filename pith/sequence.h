@@ -21,7 +21,7 @@
 #include "../pith/msgno.h"
 
 
-/* exported protoypes */
+/* exported prototypes */
 char	  *selected_sequence(MAILSTREAM *, MSGNO_S *, long *, int);
 char	  *currentf_sequence(MAILSTREAM *, MSGNO_S *, long, long *, int, char **, char **);
 char	  *invalid_elt_sequence(MAILSTREAM *, MSGNO_S *);

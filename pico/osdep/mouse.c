@@ -263,7 +263,7 @@ mouseexist(void)
 }
 
 /* 
- * checkmouse - Check mouse and return maped command.
+ * checkmouse - Check mouse and return mapped command.
  *
  *	EXPORTED to pico.
  *      NOTE: "down", "xxx", and "yyy" aren't used under windows.
@@ -299,7 +299,7 @@ checkmouse (unsigned long *ch, int ddd, int xxx, int yyy)
     
     /* 
      * If there is a tracking function it gets all the mouse events
-     * reguardless of where they occur.
+     * regardless of where they occur.
      */
     if (mtrack != NULL) {
 	r = mtrack (mouse.event, mrow, mcol, mouse.button, mouse.keys);

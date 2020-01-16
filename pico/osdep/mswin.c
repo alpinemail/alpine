@@ -60,7 +60,7 @@
 #define FDEBUG		/* Standard file debugging. */
 
 #undef SDEBUG		/* Verbose debugging of startup and windows handling*/
-#undef CDEBUG		/* Verbose debugging of character input timeing. */
+#undef CDEBUG		/* Verbose debugging of character input timing. */
 
 #undef OWN_DEBUG_FILE	/* Define if we want to write to our own debug file,
 			 * not pine's. */
@@ -120,7 +120,7 @@
 
 /* My Timer Message */
 #define MY_TIMER_ID	33
-/* timeout period in miliseconds. */
+/* timeout period in milliseconds. */
 #define MY_TIMER_PERIOD (UINT)((IDLE_TIMEOUT + 1)*1000)
 /***** We use variable my_timer_period now instead so that we can set
        it differently when in pine and when in regular old pico.
@@ -245,7 +245,7 @@ typedef	int			(*FileDropCallBackProc)();
 typedef short			CORD;
 
 /* NOTE:  There is currently code that assumes that CHAR and CharAttrib
- *	are one byte in size.  All this code is flaged with a preceeding
+ *	are one byte in size.  All this code is flagged with a preceding
  *	assert () */
 
 /* Struct that defines command menu entries. */
@@ -274,12 +274,12 @@ typedef struct tagTTYINFO {
     CARETS	cCaretStyle;	/* Current caret's style */
     int		scrollRange;	/* Current scroll bar range. */
     long	scrollPos;	/* Current scroll position. */
-    long	scrollTo;	/* Possition of last scroll to. */
+    long	scrollTo;	/* Position of last scroll to. */
     HFONT	hTTYFont;
     LOGFONT	lfTTYFont;
-    DWORD	rgbFGColor;	/* Normal forground color. */
+    DWORD	rgbFGColor;	/* Normal foreground color. */
     DWORD	rgbBGColor;	/* Normal background color. */
-    DWORD	rgbRFGColor;	/* Reverse forground color. */
+    DWORD	rgbRFGColor;	/* Reverse foreground color. */
     DWORD	rgbRBGColor;	/* Reverse background color */
     unsigned	screenDirty:1;	/* TRUE if screen needs update. */
     unsigned	eraseScreen:1;	/* TRUE if need to erase whole screen */
@@ -822,7 +822,7 @@ wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
      */
     _set_invalid_parameter_handler (mswin_invalidparameter);
 
-#ifdef OWN_DEBUG_FILE	/* Want to write to seperate memdebug.txt file. */
+#ifdef OWN_DEBUG_FILE	/* Want to write to separate memdebug.txt file. */
     mswin_debugfile = fopen ("memdebug.txt", "w");
     fprintf (mswin_debugfile, "Beginning of mswin debug log\n");
     if (mswin_debugfile != NULL) {
@@ -1488,7 +1488,7 @@ PWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	break;
 	
     case WM_QUERYENDSESSION:
-	/* Returns non-zero if I can exit, otherwize zero, and the end
+	/* Returns non-zero if I can exit, otherwise zero, and the end
 	 * session operation stops. */
 	return ((LRESULT)ConfirmExit ());
 	
@@ -1847,7 +1847,7 @@ ResetTTYFont (HWND hWnd, PTTYINFO pTTYInfo, LOGFONT *newFont)
 
 #ifdef SDEBUG
     if (mswin_debug >= 5)
-	fprintf (mswin_debugfile, "ResetTTYFont:::  entered, curent window size X %d, Y %d\n",
+	fprintf (mswin_debugfile, "ResetTTYFont:::  entered, current window size X %d, Y %d\n",
 		pTTYInfo->xSize, pTTYInfo->ySize);
 #endif
 
@@ -2343,7 +2343,7 @@ AboutToSizeTTY (HWND hWnd, WINDOWPOS *winPos)
 	    (winPos->flags & (SWP_NOSIZE | SWP_NOMOVE)) == 0) {
 #ifdef SDEBUG
 	if (mswin_debug >= 5)
-	    fprintf (mswin_debugfile, "AboutToSizeTTY:::  substitue pos (%d, %d), size (%d, %d)\n",
+	    fprintf (mswin_debugfile, "AboutToSizeTTY:::  substitute pos (%d, %d), size (%d, %d)\n",
 		    pTTYInfo->xDesPos, pTTYInfo->yDesPos,
 		    pTTYInfo->xDesSize, pTTYInfo->yDesSize);
 #endif
@@ -2593,7 +2593,7 @@ MoveTTY (HWND hWnd, int xPos, int yPos)
  *      stream.
  *
  *	Scrolling in the TTY window is complicated by the way pine
- *      process events.  Normal windows applications are entirly event
+ *      process events.  Normal windows applications are entirely event
  *      driven.  The top level does nothing but dispatch events.  In
  *      pine, the top level implements the logic.  Events are only
  *      dispatched by the lowest levels.
@@ -3662,7 +3662,7 @@ WriteTTYChar (HWND hWnd, TCHAR ch)
  *
  *  Description:
  *     It is a simple utility function that simply performs the
- *     MPI and invokes the dialog box with a DWORD paramter.
+ *     MPI and invokes the dialog box with a DWORD parameter.
  *
  *  Parameters:
  *     similar to that of DialogBoxParam() with the exception
@@ -3936,7 +3936,7 @@ SelectTTYFont (HWND hWnd)
 
 
 /*
- * Set a specific color (forground, background, reverse, normal) to
+ * Set a specific color (foreground, background, reverse, normal) to
  * the color specified by name.
  */
 LOCAL void
@@ -4005,7 +4005,7 @@ ScanInt (char *str, int min, int max, int *val)
  * Convert a RGB string to a color ref.  The string should look like:
  *    rrr,ggg,bbb
  * where rrr, ggg, and bbb are numbers between 0 and 255 that represent
- * red, gree, and blue values.  Must be comma seperated.
+ * red, gree, and blue values.  Must be comma separated.
  * Returns:
  *	TRUE	- Successfully converted string.
  *	FALSE	- Bad format, 'cf' unchanged.
@@ -4206,7 +4206,7 @@ TBShow (HWND hWnd)
 
 
     /*
-     * Make procinstance for dialog funciton.
+     * Make procinstance for dialog function.
      */
     HideCaret (hWnd);
     if (gToolBarProc == NULL)
@@ -5559,7 +5559,7 @@ MSWIconPaint(int row, HDC hDC)
       ;
 
     if(pIcon){
-	/* Invalidate rectange covering singel character. */
+	/* Invalidate rectangle covering single character. */
 	DrawIconEx(hDC, 0, (row * gpTTYInfo->yChar) + gpTTYInfo->yOffset,
 		   pIcon->hIcon, 2 * gpTTYInfo->xChar, gpTTYInfo->yChar,
 		   0, NULL, DI_NORMAL);
@@ -5925,7 +5925,7 @@ mswin_setwindow(char *fontName_utf8, char *fontSize_utf8, char *fontStyle_utf8,
 	ppi = GetDeviceCaps(hDC, LOGPIXELSY);
 	ReleaseDC(ghTTYWnd, hDC);
 
-	/* Default height, then examin the requested fontSize. */
+	/* Default height, then examine the requested fontSize. */
 	newFont.lfHeight = -MulDiv(12, ppi, 72);
 	if(ScanInt(fontSize_utf8, FONT_MIN_SIZE, FONT_MAX_SIZE, &newHeight)){
 	    newHeight = abs(newHeight);
@@ -6114,7 +6114,7 @@ mswin_showwindow()
 
 
 /*
- * Retreive the current font name, font size, and window position
+ * Retrieve the current font name, font size, and window position
  * These get stored in the pinerc file and will be passed to
  * mswin_setwindow() when pine starts up.  See pinerc for comments
  * on the format.
@@ -6325,7 +6325,7 @@ mswin_setscrollpos (long pos)
 
 
 /*
- * retreive the current scroll postion.
+ * retrieve the current scroll position.
  */
 long
 mswin_getscrollpos (void)
@@ -6683,8 +6683,8 @@ mswin_setclosetext (char *pCloseText)
 
 
 /*
- * Called when upper layer is in a busy loop.  Allows us to yeild to
- * Windows and perhaps process some events.  Does not yeild control
+ * Called when upper layer is in a busy loop.  Allows us to yield to
+ * Windows and perhaps process some events.  Does not yield control
  * to other applications.
  */
 int
@@ -7113,7 +7113,7 @@ mswin_outc (char c)
 	gpTTYInfo->pCellWidth[offset] = wcellwidth((UCS)c) * gpTTYInfo->xChar;
 	gpTTYInfo->pAttrib[offset] = gpTTYInfo->curAttrib;
 	
-	/* Invalidate rectange covering singel character. */
+	/* Invalidate rectangle covering single character. */
 	rect.left = (gpTTYInfo->nColumn * gpTTYInfo->xChar) +
 		gpTTYInfo->xOffset;
 	rect.right = rect.left + gpTTYInfo->xChar;
@@ -7566,7 +7566,7 @@ mswin_newmailtext (char *t_utf8)
 	 * Change the appearance of minimized icon so user knows there's new
 	 * mail waiting for them.  On win 3.1 systems we redraw the icon.
 	 * on win95 systems we update the icon in the task bar,
-	 * and possibly udpate the small icon in the taskbar tool tray.
+	 * and possibly update the small icon in the taskbar tool tray.
 	 */
 	t_lptstr = utf8_to_lptstr(t_utf8);
 	UpdateTrayIcon(NIM_MODIFY, ghNewMailIcon, t_lptstr);
@@ -7820,7 +7820,7 @@ mswin_setwindowmenu (int menu)
 LOCAL HDC	P_PrintDC;	/* Printer device context. */
 LOCAL int	P_PageRows;	/* Number of rows we put on a page. */
 LOCAL int	P_PageColumns;	/* Number of columns we put on a page. */
-LOCAL int	P_RowHeight;	/* Hight of a row in printer pixels. */
+LOCAL int	P_RowHeight;	/* Height of a row in printer pixels. */
 LOCAL int	P_CurRow;	/* Current row, starting at zero */
 LOCAL int	P_CurCol;	/* Current col, starting at zero. */
 LOCAL int	P_TopOffset;	/* Top Margin offset, in pixels. */
@@ -7833,7 +7833,7 @@ LPTSTR		P_LineText;	/* Pointer to line buffer. */
 
 /*
  * Define the margin as number of lines at top and bottom of page.
- * (might be better to define as a percent of verticle page size)
+ * (might be better to define as a percent of vertical page size)
  */
 #define VERTICLE_MARGIN		3	/* lines at top and bottom of page. */
 #define HORIZONTAL_MARGIN	1	/* margine at left & right in chars */
@@ -8120,7 +8120,7 @@ mswin_print_ready(WINHAND hWnd, LPTSTR docDesc)
     /*
      * Start page.
      * Must select font for each page or it returns to default.
-     * Windows seems good about maping selected font to a font that
+     * Windows seems good about mapping selected font to a font that
      * will actually print on the printer.
      */
     StartPage (P_PrintDC);
@@ -8193,7 +8193,7 @@ mswin_print_done(void)
 
 
 /*
- * Return ponter to a text string that describes the erorr.
+ * Return pointer to a text string that describes the error.
  */
 char *
 mswin_print_error(int error_code)
@@ -8311,7 +8311,7 @@ LOCAL TCHAR gLastDir[PATH_MAX];
  * Keep track of the last dir visited.  Most of the time pine just passes us
  * the "home directory", which usually is not where the user wants to start.
  * Assume that the first time we are called we are being passed the home
- * direcory.
+ * directory.
  */
 static void
 FillInitialDir (LPCTSTR *iDir, LPTSTR targDir)
@@ -9792,7 +9792,7 @@ EditCopy (void)
 
 
 /*
- * Called in responce to "Copy Append" menu command, when there is an active
+ * Called in response to "Copy Append" menu command, when there is an active
  * Windows selection on the screen.
  */
 LOCAL void
@@ -10002,7 +10002,7 @@ EditCancelPaste (void)
 
 /*
  * Get the next byte from the paste buffer.  If all bytes have been
- * retreived, free the paste buffer.
+ * retrieved, free the paste buffer.
  * Map all CRLF sequence to a single CR.
  */
 LOCAL UCS
@@ -10502,7 +10502,7 @@ mswin_shell_exec(char *command_utf8, HINSTANCE *pChildProc)
 
 	/*
 	 * HACK -- since star is very unlikely to actually appear
-	 * in a command name thats launched via a shell command line,
+	 * in a command name that's launched via a shell command line,
 	 * a leading one indicates special handling.
 	 */
 	if(command_lpt[0] == '*'){
@@ -10659,7 +10659,7 @@ static struct mswin_reg_key mswin_pine_regs[] = {
 
 
 /*
- *  data: unitialized buffer, could be null
+ *  data: uninitialized buffer, could be null
  */
 int
 mswin_reg(int op, int tree, char *data_utf8, size_t size)
@@ -11814,7 +11814,7 @@ format_newmail_string(LPTSTR orig_lptstr, int format_len)
 
     /*
      * Fill up string till we reach the format_len, we can backtrack
-     * if we need elipses.
+     * if we need ellipsis.
      */
     for(i = 0, colLen = 0;
 	i < format_len && colLen < format_len && orig_lptstr && orig_lptstr[i];
@@ -12021,7 +12021,7 @@ CQAvailable (void)
  *		Add 'c' to the end of the character queue.
  *
  *  Parameters:
- *		return true if successfull.
+ *		return true if successful.
  *
 /*--------------------------------------------------------------------------*/
 
@@ -12048,7 +12048,7 @@ CQAdd (UCS c, BOOL fKeyControlDown)
  *		there is no other 'c' in the queue
  *
  *  Parameters:
- *		return true if successfull.
+ *		return true if successful.
  *
 /*--------------------------------------------------------------------------*/
 
@@ -12170,7 +12170,7 @@ MQAvailable (void)
  *		Add 'c' to the end of the character queue.
  *
  *  Parameters:
- *		return true if successfull.
+ *		return true if successful.
  *
 /*--------------------------------------------------------------------------*/
 
@@ -12289,10 +12289,10 @@ ExplainSystemErr()
 
 
 /*
- * Called by mswin to scroll text in window in responce to the scrollbar.
+ * Called by mswin to scroll text in window in response to the scrollbar.
  *
  *  Args: cmd - what type of scroll operation.
- * 	scroll_pos - paramter for operation.
+ * 	scroll_pos - parameter for operation.
  *			used as position for SCROLL_TO operation.
  *
  *  Returns: TRUE - did the scroll operation.
@@ -12412,7 +12412,7 @@ pscreen_offset_from_cord(int row, int col, PTTYINFO pTTYInfo)
     /*
      * Start with col (all chars single width) and go from there.
      * We need to find the offset that makes the string col wide.
-     * Hopefully we won't ever get a rectange that causes us to
+     * Hopefully we won't ever get a rectangle that causes us to
      * draw half characters, but in case we do we need to err on the
      * side of too much width instead of not enough. It's a little
      * tricky because we want to include following zero-width

@@ -782,7 +782,7 @@ typedef struct smime_stuff {
 #endif /* SMIME */
 
 
-/* exported protoypes */
+/* exported prototypes */
 
 
 #endif /* PITH_CONFTYPE_INCLUDED */

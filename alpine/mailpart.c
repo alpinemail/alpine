@@ -910,7 +910,7 @@ attachment_screen(struct pine *ps)
 /*----------------------------------------------------------------------
   allocate and attach a fresh attachment line struct
 
-  Args: current -- display line to attache new struct to
+  Args: current -- display line to attach new struct to
 
   Returns: newly alloc'd attachment display line
   ----*/

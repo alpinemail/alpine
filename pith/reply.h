@@ -46,7 +46,7 @@
 #include "../pith/addrstring.h"
 
 
-/* exported protoypes */
+/* exported prototypes */
 int	    reply_harvest(struct pine *, long, char *, ENVELOPE *, ADDRESS **,
 			  ADDRESS **, ADDRESS **, ADDRESS **,int *);
 ADDRESS    *reply_cp_addr(struct pine *, long, char *, char *,

@@ -6802,7 +6802,7 @@ _("\n \"^G\" for help specific to each item. \"^X\" to make the query, or \"^C\"
 	    if(categories > 0 || *sq->custom)
 	      filter = (CUSTOM_FILT_S *)fs_get(sizeof(CUSTOM_FILT_S));
 
-	    /* combine the configed filters with this filter */
+	    /* combine the configured filters with this filter */
 	    if(*sq->custom){
 		string = "";
 		filter->filt = sq->custom;

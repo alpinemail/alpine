@@ -60,7 +60,7 @@ it and to be efficient for use by the program.
       Routines and data structures
       ----------------------------
 
-C-CLIENT INTERFACE FUCTIONS
+C-CLIENT INTERFACE FUNCTIONS
   carmel2_valid       - check to see if a mailbox is valid for carmel2 mail files
   carmel2_isvalid     - actual work of checking
   carmel2_find        - generate list of carmel2 mailboxes
@@ -105,7 +105,7 @@ SUPPORT FUNCTIONS
 
   carmel_readmsg     - Read a message file into memory, header text or both
   carmel_spool_mail  - Get new mail out of spoold mail file
-  carmel_copy_msg_file - Make copy of messsage file when copying (unused)
+  carmel_copy_msg_file - Make copy of message file when copying (unused)
   
   carmel2_lock        - Lock a carmel index for read or write
   carmel2_unlock      - Unlock a carmel index
@@ -749,7 +749,7 @@ carmel2_fetchflags(stream, sequence)
   Carmel mail fetch message structure
  Args: stream -- stream to get structure for
        msgno  -- Message number to fetch data for
-       body   -- Pointer to place to return body strucuture, may be NULL
+       body   -- Pointer to place to return body structure, may be NULL
 
 If the request is the for the same msgno as last time, the saved copy
 of the envelope and/or body structure is returned.
@@ -878,7 +878,7 @@ Args: stream --
       msgno
 
 Returns: pointer to text of mail header. Returned string is null terminated
-         and consists of internel storage. It will be valid till the next
+         and consists of internal storage. It will be valid till the next
          call to mail_fetchheader() or mail_fetchtext(). An empty
          string is returned if the fetch fails.
  ----*/
@@ -906,7 +906,7 @@ Args: stream --
       msgno
 
 Returns: pointer to text of mail message. Returned string is null terminated
-         and consists of internel storage. It will be valid till the next
+         and consists of internal storage. It will be valid till the next
          call to mail_fetchheader() or mail_fetchtext(). An empty
          string is returned if the fetch fails.
  ----*/
@@ -1964,7 +1964,7 @@ Args: stream
       file_size   -- The file size if known (saves a stat)
       file        -- name of the file to read
 
-Returns buffer with text stored in internel buffer. The Carmel2 format
+Returns buffer with text stored in internal buffer. The Carmel2 format
 buffers the text of the current message and header in an internal
 buffer. The buffer never shrinks and is expanded as needed, up to a
 maximum. The text in the buffer is in CRLF format and is read in line
@@ -2560,7 +2560,7 @@ carmel2_copy_msg_file(stream, orig_file_number, new_mailbox)
     char *file_name;
     int   wide, e, new_file_num, n, orig_fd, new_fd;
 
-    /*---- Open the orginal file ----*/
+    /*---- Open the original file ----*/
     wide = 0;
     file_name = (*LOCAL->calc_paths)(CalcPathCarmel2Data,
                                      new_mailbox,orig_file_number);
@@ -2628,7 +2628,7 @@ Args: stream --  Mail stream we're operating on
       file   --  Mail file name
       write  --  Flag indicating we want write access
 
-Retuns: -1 if lock fails, 0 if it succeeds
+Returns: -1 if lock fails, 0 if it succeeds
 
 - There are two locks. Plain locks and write locks. They are created
   about the same way, but have different names. The time out on the write
@@ -2636,13 +2636,13 @@ Retuns: -1 if lock fails, 0 if it succeeds
 
 - Hitching (links in file system) post locking is used so it will work
   across NFS. Flock() could be used as it has two advantages. First it
-  is more efficient, second the locks will disolve automatically when the 
+  is more efficient, second the locks will dissolve automatically when the 
   process dies. The efficiency is not of great concern, and the
   process should not (theoretically) die unless it crashes due to a bug
   or it is abnormally terminated. The advantage of locking across NFS
   is considered greater than the advantages of flock().
 
-- The mod time of the lock file is updated everytime mail_check()
+- The mod time of the lock file is updated every time mail_check()
   or mail_ping() is called and the mod time on the lock file is recorded.
   This is so it can be determined that the lock file is current.
 
@@ -2650,7 +2650,7 @@ Retuns: -1 if lock fails, 0 if it succeeds
   encountered it is assumed the lock is old and should be overridden
   (because the process crashed or was killed). 
 
-- Everytime the mod time on the lock file is updated (on calls to
+- Every time the mod time on the lock file is updated (on calls to
   mail_check() and mail_ping()), the mod time of the lock file is
   checked against the record of what it was last set to. If the mod times 
   don't match the lock has been broken and overridden. Then the original
@@ -3911,10 +3911,10 @@ struct time_zone_names {
 /*----------------------------------------------------------------------
    Parse a date string into into a structure
  
-Args: mc -- mesage cache to with structure to receive data
+Args: mc -- message cache to with structure to receive data
       given_date -- full header with date string somewhere to be found
 
-This parses a number of date formats and produces a cannonical date in
+This parses a number of date formats and produces a canonical date in
 a structure. The basic format is:
    
  dd mm yy hh:mm:ss.t tz   
@@ -4037,7 +4037,7 @@ carmel2_rfc822_date(mc, given_date)
         while(*p && (*p == '-' || *p == ',' || isspace(*p)))
           p++;
     } else {
-        /* Something wierd, skip it and try to resynch */
+        /* Something weird, skip it and try to resynch */
         while(*p && !isspace(*p) && *p != ',' && *p != '-')
           p++;
         while(*p && (isspace(*p) || *p == ',' || *p == '-'))

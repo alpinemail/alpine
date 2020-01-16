@@ -55,7 +55,7 @@ if {[catch {WPCmd PEInfo set suspended_composition} msgdata] == 0} {
     if {[string compare BADPASSWD [string range $errstr 0 8]] == 0
 	&& [catch {WPCmd PEInfo set suspended_composition $msgdata} errstr] == 0} {
 	set oncancel "page=compose&restore=1&cid=$cid"
-	set conftext "Send Messsage?"
+	set conftext "Send Message?"
 	set reason "The server used to send this message requires authentication.[cgi_nl][cgi_nl]Enter Username and Password to connect to $server"
 	_cgi_set_uservar params [WPPercentQuote [list [list server $server] [list page dosend] [list postpost $postpost]]]
 	set src auth

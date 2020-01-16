@@ -11,7 +11,7 @@ REM
 REM 
 REM ========================================================================
 
-REM Program:	Driver Linkage Generator auxillary for NT/Win9x
+REM Program:	Driver Linkage Generator auxiliary for NT/Win9x
 REM
 REM Author:	Mark Crispin
 REM		Networks and Distributed Computing

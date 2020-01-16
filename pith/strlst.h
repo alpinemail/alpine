@@ -18,7 +18,7 @@
 #define PITH_STRLST_INCLUDED
 
 
-/* exported protoypes */
+/* exported prototypes */
 STRINGLIST *new_strlst(char **);
 void	    free_strlst(STRINGLIST **);
 

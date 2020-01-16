@@ -376,13 +376,13 @@ typedef int gid_t;
 
 
 #if defined(PASSFILE) && defined(APPLEKEYCHAIN)
-#  error "Cant define both PASSFILE and APPLEKEYCHAIN"
+#  error "Cannot define both PASSFILE and APPLEKEYCHAIN"
 #endif
 #if defined(PASSFILE) && defined(WINCRED)
-#  error "Cant define both PASSFILE and WINCRED"
+#  error "Cannot define both PASSFILE and WINCRED"
 #endif
 #if defined(APPLEKEYCHAIN) && defined(WINCRED)
-#  error "Cant define both APPLEKEYCHAIN and WINCRED"
+#  error "Cannot define both APPLEKEYCHAIN and WINCRED"
 #endif
 
 #if defined(PASSFILE) || defined(APPLEKEYCHAIN) || defined(WINCRED)

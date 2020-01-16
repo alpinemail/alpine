@@ -90,7 +90,7 @@ WPEval $wp_vars {
     WPCmd PEMessage $uid select [expr [lsearch $uidList $uid] >= 0]
   }
 
-  # sourced "page" get's CGI parms from environment
+  # sourced "page" gets CGI parms from environment
   if {[catch {WPTFScript $page} source]} {
     switch -regexp -- $page {
       addredit {

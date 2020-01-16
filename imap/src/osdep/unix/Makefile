@@ -37,7 +37,7 @@ BUNDLED=
 
 # The optimization level here for GCC ports is set here for a reason.  It's
 # to get you to read this text.
-# The general concensus seems to be that -O2 is the one to use.
+# The general consensus seems to be that -O2 is the one to use.
 # Over the years, I've been told to use many different settings, including -O6.
 # In recent versions of GCC [as of 2/2005], -O6 generates bad code that, among
 # other ill effects, causes infinite loops.
@@ -130,7 +130,7 @@ CREATEPROTO=unixproto
 EMPTYPROTO=unixproto
 
 
-# Commands possibly overriden by the individual port
+# Commands possibly overridden by the individual port
 
 ARRC=ar rc
 CC=cc

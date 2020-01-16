@@ -33,7 +33,7 @@ typedef struct append_package {
 } APPENDPACKAGE;
 
 
-/* exported protoypes */
+/* exported prototypes */
 
 
 #endif /* PITH_SAVETYPE_INCLUDED */

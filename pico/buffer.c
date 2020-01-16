@@ -88,7 +88,7 @@ bfind(char *bname, int cflag, int bflag)
                 }
 		/* find the place in the list to insert this buffer */
 		if (bheadp == NULL || strcmp(bheadp->b_bname, bname) > 0) {
-			/* insert at the begining */
+			/* insert at the beginning */
 	                bp->b_bufp = bheadp;
         	        bheadp = bp;
         	} else {
@@ -347,7 +347,7 @@ sgetline(char **ibuf, int *nchars, char *obuf, int blen)
 	    }
 	}
     }
-    *bufp = '\0';			/* end retured line */
+    *bufp = '\0';			/* end returned line */
     *ibuf = (*cbuf == CR) ? ++cbuf : cbuf;
     *ibuf = (*cbuf == LF) ? ++cbuf : cbuf;
     return(retval);

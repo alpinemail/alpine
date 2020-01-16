@@ -100,7 +100,7 @@ static char rcsid[] = "$Id: alpined.c 1266 2009-07-14 18:39:12Z hubert@u.washing
 #define	FAKE_SCREEN_LENGTH	24
 
 /*
- * Aribtrary minimum display width (in characters)
+ * Arbitrary minimum display width (in characters)
  */
 #define	MIN_SCREEN_COLS		20
 
@@ -120,7 +120,7 @@ static char rcsid[] = "$Id: alpined.c 1266 2009-07-14 18:39:12Z hubert@u.washing
 
 
 /*
- * Posting error lenght max
+ * Posting error length max
  */
 #define	WP_MAX_POST_ERROR	128
 
@@ -5596,7 +5596,7 @@ PEMailboxCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST
 	     * Returns: list of lists where:
 	     *		*  the first element is the name of the
 	     *		   field which may be "From", "Subject"
-	     *		   "Date" or the emtpy string.
+	     *		   "Date" or the empty string.
 	     *		*  the second element which is either
 	     *		   the percentage width or empty string
 	     */
@@ -5721,7 +5721,7 @@ PEMailboxCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST
 
 			if(tomove && pseudo_selected(stream, msgmap)){
 
-			    /* save delted to Trash */
+			    /* save deleted to Trash */
 			    n = save(ps_global, stream,
 				     cp, ps_global->VAR_TRASH_FOLDER,
 				     msgmap, SV_FOR_FILT | SV_FIX_DELS);
@@ -5893,7 +5893,7 @@ PEMailboxCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST
 		    /*
 		     * CMD: messagecount
 		     *
-		     * Returns: count of messsages in open mailbox
+		     * Returns: count of messages in open mailbox
 		     */
 		    Tcl_SetResult(interp,
 				  long2string(mn_get_total(sp_msgmap(ps_global->mail_stream))),
@@ -5919,7 +5919,7 @@ PEMailboxCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST
 		    /*
 		     * CMD: selected
 		     *
-		     * Returns: count of selected messsages in open mailbox
+		     * Returns: count of selected messages in open mailbox
 		     */
 
 		    Tcl_SetResult(interp,
@@ -5931,7 +5931,7 @@ PEMailboxCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST
 		    /*
 		     * CMD: searched
 		     *
-		     * Returns: count of searched messsages in open mailbox
+		     * Returns: count of searched messages in open mailbox
 		     */
 
 		    Tcl_SetResult(interp,
@@ -8098,7 +8098,7 @@ peMessageStatus(Tcl_Interp *interp, imapuid_t uid, int objc, Tcl_Obj **objv)
 int
 peMessageCharset(Tcl_Interp *interp, imapuid_t uid, int objc, Tcl_Obj **objv)
 {
-    /* everthing coming out of pith better be utf-8 */
+    /* everything coming out of pith better be utf-8 */
     Tcl_SetResult(interp, "UTF-8", TCL_STATIC);
     return(TCL_OK);
 }
@@ -14558,7 +14558,7 @@ PEClistCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST o
 			sh_ctxt->var.i = 1;
 			/* this for loop assumes that there are only two variable lists,
 			 * folder-collections and news-collections, a little more will
-			 * have to be done if we want to accomodate for the INHERIT
+			 * have to be done if we want to accommodate for the INHERIT
 			 * option introduced in 4.30.
 			 */
 			for(tctxt = nsh_ctxt->next; tctxt; tctxt = tctxt->next)

@@ -31,7 +31,7 @@
 /*	Configuration options	*/
 
 #define CVMVAS  1	/* arguments to page forward/back in pages	*/
-#define	NFWORD	1	/* forward word jumps to begining of word	*/
+#define	NFWORD	1	/* forward word jumps to beginning of word	*/
 #define	TYPEAH	0	/* type ahead causes update to be skipped	*/
 #define	REVSTA	1	/* Status line appears in reverse video		*/
 
@@ -319,7 +319,7 @@ typedef struct  {
         int     (*k_fp)();              /* Routine to handle it         */
 }       KEYTAB;
 
-/*      sturcture used for key menu painting         */
+/*      structure used for key menu painting         */
 
 typedef struct {
 	char	*name;			/* key to display (UTF-8)		*/

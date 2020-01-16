@@ -19,7 +19,7 @@
 
 #include "../pith/pattern.h"
 
-/* exported protoypes */
+/* exported prototypes */
 void	pattern_filter_command(char **, SEARCHSET *, MAILSTREAM *, long, INTVL_S *);
 
 

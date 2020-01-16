@@ -107,7 +107,7 @@ typedef struct selected_s {
 
 
 /*------------------------------
-    Stucture to keep track of the various folder collections being
+    Structure to keep track of the various folder collections being
     dealt with.
   ----*/
 typedef struct context {
@@ -158,7 +158,7 @@ typedef struct context {
 			  ((X)->dir->status & CNTXT_PARTFIND) == 0)
 
 
-/* exported protoypes */
+/* exported prototypes */
 
 
 #endif /* PITH_FOLDERTYPE_INCLUDED */

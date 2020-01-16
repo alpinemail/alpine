@@ -21,7 +21,7 @@
 #include "../pith/status.h"
 
 
-/* exported protoypes */
+/* exported prototypes */
 int	    messages_queued(long *);
 char	   *last_message_queued(void);
 void	    flush_ordered_messages(void);

@@ -79,7 +79,7 @@ rfc1738_scan(char *line, int *len)
 	    break;
 
 	/*
-	 * Make sure everyhing up to the colon is a known scheme...
+	 * Make sure everything up to the colon is a known scheme...
 	 */
 	if(start && (n = colon - start) && !isdigit((unsigned char) *start)
 	   && (((n == 2
@@ -173,7 +173,7 @@ rfc1738_scan(char *line, int *len)
  *
  * NOTE: we have a problem matching closing parens when users 
  *       bracket the url in parens.  So, lets try terminating our
- *	 match on any closing paren that doesn't have a coresponding
+ *	 match on any closing paren that doesn't have a corresponding
  *       open-paren.
  */
 char *
@@ -496,7 +496,7 @@ web_host_scan(char *line, int *len)
 /*
  * mail_addr_scan -- Scan the given line for possible RFC822 addr-spec's
  *
- * NOTE: Well, OK, not strictly addr-specs since there's alot of junk
+ * NOTE: Well, OK, not strictly addr-specs since there's a lot of junk
  *	 we're tying to sift thru and we'd like to minimize false-pos
  *	 matches.
  */
@@ -538,7 +538,7 @@ mail_addr_scan(char *line, int *len)
 	    break;
 
 	/*
-	 * Make sure everyhing up to the colon is a known scheme...
+	 * Make sure everything up to the colon is a known scheme...
 	 */
 	if(start && (amp - start) > 0){
 	    /*

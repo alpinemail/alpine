@@ -85,7 +85,7 @@ typedef struct pine_thrd {
 	 && ps_global->thread_disp_style != THREAD_NONE)
 
 
-/* exported protoypes */
+/* exported prototypes */
 PINETHRD_S   *fetch_thread(MAILSTREAM *, unsigned long);
 PINETHRD_S   *fetch_head_thread(MAILSTREAM *);
 void	      set_flags_for_thread(MAILSTREAM *, MSGNO_S *, int, PINETHRD_S *, int);

@@ -2721,7 +2721,7 @@ Args:  stream  -- Mail stream to fetch text from
        ret_charset -- If we translate to another charset return that
                       new charset here
 
-Returns:  true if OK, false if problem occured while filtering
+Returns:  true if OK, false if problem occurred while filtering
 
 If the text is richtext, it will be converted to plain text, since there's
 no rich text editing capabilities in Pine (yet).
@@ -3258,7 +3258,7 @@ copy_body(struct mail_bodystruct *new_body, struct mail_bodystruct *old_body)
 /*----------------------------------------------------------------------
     Copy the MIME parameter list
  
- Allocates storage for new part, and returns pointer to new paramter
+ Allocates storage for new part, and returns pointer to new parameter
 list. If old_p is NULL, NULL is returned.
  ----*/
 PARAMETER *
@@ -3339,7 +3339,7 @@ reply_in_reply_to(ENVELOPE *env)
 
   Result: Alloc'd unique string is returned
 
-Uniqueness is gaurenteed by using the host name, process id, date to the
+Uniqueness is guaranteed by using the host name, process id, date to the
 second and a single unique character
 *----------------------------------------------------------------------*/
 char *

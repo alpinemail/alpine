@@ -141,7 +141,7 @@
 typedef long MsgNo;
 
 
-/* exported protoypes */
+/* exported prototypes */
 long	    count_flagged(MAILSTREAM *, long);
 MsgNo	    first_sorted_flagged(unsigned long, MAILSTREAM *, long, int);
 MsgNo	    next_sorted_flagged(unsigned long, MAILSTREAM *, long, int *);

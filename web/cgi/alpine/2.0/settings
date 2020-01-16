@@ -289,10 +289,10 @@ WPEval $settings_args {
 	      cgi_table_data class="body" {
 		set as_attach [WPCmd PEInfo feature forward-as-attachment]
 		cgi_radio_button forwardAs=inline id="forward_inline" [set_checked [expr {$as_attach == 0}]]
-		cgi_put " <label for=forward_inline>Forward messsages inline</label>"
+		cgi_put " <label for=forward_inline>Forward messages inline</label>"
 		cgi_br
 		cgi_radio_button forwardAs=attached id="forward_attachment" [set_checked $as_attach]
-		cgi_put " <label for=forward_attachment>Forward messsages as attachments</label>"
+		cgi_put " <label for=forward_attachment>Forward messages as attachments</label>"
 	      }
 	    }
 	    cgi_table_row {

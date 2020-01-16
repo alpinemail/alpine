@@ -18,7 +18,7 @@
 #define PITH_URL_INCLUDED
 
 
-/* exported protoypes */
+/* exported prototypes */
 char	   *rfc1738_scan(char *, int *);
 char	   *rfc1738_str(char *);
 unsigned long rfc1738_num(char **);

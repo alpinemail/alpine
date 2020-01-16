@@ -2775,7 +2775,7 @@ void imap_capability (MAILSTREAM *stream)
 /* IMAP set ACL
  * Accepts: mail stream
  *	    mailbox name
- *	    authentication identifer
+ *	    authentication identifier
  *	    new access rights
  * Returns: T on success, NIL on failure
  */
@@ -2794,7 +2794,7 @@ long imap_setacl (MAILSTREAM *stream,char *mailbox,char *id,char *rights)
 /* IMAP delete ACL
  * Accepts: mail stream
  *	    mailbox name
- *	    authentication identifer
+ *	    authentication identifier
  * Returns: T on success, NIL on failure
  */
 
@@ -2825,7 +2825,7 @@ long imap_getacl (MAILSTREAM *stream,char *mailbox)
 /* IMAP list rights
  * Accepts: mail stream
  *	    mailbox name
- *	    authentication identifer
+ *	    authentication identifier
  * Returns: T on success with data returned via callback, NIL on failure
  */
 
@@ -4450,7 +4450,7 @@ void imap_parse_unsolicited (MAILSTREAM *stream,IMAPPARSEDREPLY *reply)
       while (ac->rights && s && (*s == ' ') && s++ &&
 	     (ac = ac->next = mail_newacllist ()));
       if (!ac->rights || (s && *s)) {
-	sprintf (LOCAL->tmp,"Invalid ACL identifer/rights for %.80s",
+	sprintf (LOCAL->tmp,"Invalid ACL identifier/rights for %.80s",
 		 (char *) t);
 	mm_notify (stream,LOCAL->tmp,WARN);
 	stream->unhealthy = T;
@@ -4499,7 +4499,7 @@ void imap_parse_unsolicited (MAILSTREAM *stream,IMAPPARSEDREPLY *reply)
       fs_give ((void **) &id);	/* free identifier */
     }
     else {
-      sprintf (LOCAL->tmp,"Missing LISTRIGHTS identifer for %.80s",(char *) t);
+      sprintf (LOCAL->tmp,"Missing LISTRIGHTS identifier for %.80s",(char *) t);
       mm_notify (stream,LOCAL->tmp,WARN);
       stream->unhealthy = T;
     }
@@ -4887,7 +4887,7 @@ THREADNODE *imap_parse_thread (MAILSTREAM *stream,unsigned char **txtptr)
 				/* skip past any space */
       if (**txtptr == ' ') ++*txtptr;
     }
-    ++*txtptr;			/* skip pase end of thread */
+    ++*txtptr;			/* skip past end of thread */
     parent = NIL;		/* close this thread */
   }
   return ret;			/* return parsed thread */

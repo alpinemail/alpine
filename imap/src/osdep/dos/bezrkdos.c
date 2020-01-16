@@ -791,7 +791,7 @@ long bezerk_parse (MAILSTREAM *stream)
 				/* note offset of message */
     elt->private.msg.full.offset =
       (s = ((*t == '\015') ? (t + 2) : (t + 1))) - tmp;
-				/* generate plausable IMAPish date string */
+				/* generate plausible IMAPish date string */
     db[2] = db[6] = db[20] = '-'; db[11] = ' '; db[14] = db[17] = ':';
 				/* dd */
     db[0] = t[ti - 2]; db[1] = t[ti - 1];

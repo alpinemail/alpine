@@ -701,7 +701,7 @@ void mh_load_message (MAILSTREAM *stream,unsigned long msgno,long flags)
 	}
 	nlseen = T;		/* note newline seen */
 	break;
-      default:			/* ordinary chararacter */
+      default:			/* ordinary character */
 	i++;
 	nlseen = NIL;
 	break;
@@ -1200,10 +1200,10 @@ int mh_select (struct direct *name)
 }
 
 
-/* MH file name comparision
+/* MH file name comparison
  * Accepts: first candidate directory entry
  *	    second candidate directory entry
- * Returns: negative if d1 < d2, 0 if d1 == d2, postive if d1 > d2
+ * Returns: negative if d1 < d2, 0 if d1 == d2, positive if d1 > d2
  */
 
 int mh_numsort (const void *d1,const void *d2)

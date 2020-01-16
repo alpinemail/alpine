@@ -136,7 +136,7 @@ A file number is set to the current modseq when it is created.  If a copy
 or append causes the file to exceed the compiled-in file size limit, a new
 file is started and the metadata is updated accordingly.
 
-Preceeding each message is per-message record with the following format:
+Preceding each message is per-message record with the following format:
    	Key	Payload
 	---	-------
 					;; per-message record
@@ -225,7 +225,7 @@ Then the index and status files are closed.
 Shared expunge presents a problem due to the requirements of the IMAP
 protocol.  You can't "burp" away a message until you are certain that
 no sharers have a pointer to any longer.  Consequently, for the nonce
-"burping" out expunged data be defered to an exclusive expunge as in
+"burping" out expunged data be deferred to an exclusive expunge as in
 mbx format.
 
 If shared burping is ever implemented, then care will be needed not to

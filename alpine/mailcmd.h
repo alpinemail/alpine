@@ -64,7 +64,7 @@ typedef enum {DontAskPreserve, NoPreserve, Preserve, RetNoPreserve, RetPreserve}
 typedef enum {View, MsgIndx, ThrdIndx} CmdWhere;
 
 
-/* exported protoypes */
+/* exported prototypes */
 int	    alpine_get_data_prompt(char *, char *, size_t);
 int	    alpine_get_password(char *, char *, size_t);
 int	    alpine_smime_confirm_save(char *);

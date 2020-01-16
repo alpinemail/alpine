@@ -27,7 +27,7 @@
 #define	LEGAL_NOTICE \
    "For Copyright information press \"?\""
 
-/* exported protoypes */
+/* exported prototypes */
 int               init_username(struct pine *);
 int               init_userdir(struct pine *);
 int               init_hostname(struct pine *);  

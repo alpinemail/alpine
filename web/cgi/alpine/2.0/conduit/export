@@ -141,7 +141,7 @@ WPEval $export_vars {
     exec /bin/chmod [cgi_tmpfile_permissions] $dfile
   }
 
-  # prepare to clean up if the brower never redirects
+  # prepare to clean up if the browser never redirects
   if {[info exists redirect]} {
     set redirect "${redirect}${safegivenname}?h=${rhandle}"
   } else {

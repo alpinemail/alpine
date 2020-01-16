@@ -117,7 +117,7 @@ if {[string compare save [string tolower $op]] == 0} {
 		source [WPTFScript auth]
 		set nopage 1
 	      } else {
-		statmsg "Existance test failed: $reason"
+		statmsg "Existence test failed: $reason"
 	      }
 	    } elseif {$reason == 0} {
 	      if {$create == 1 || [string compare create [string tolower $create]] == 0} {
@@ -157,7 +157,7 @@ if {[string compare save [string tolower $op]] == 0} {
 	}
       }
     } else {
-      statmsg "Cannot Save to emtpy folder name"
+      statmsg "Cannot Save to empty folder name"
     }
   }
 }

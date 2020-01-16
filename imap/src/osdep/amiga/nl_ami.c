@@ -84,7 +84,7 @@ unsigned long strcrlflen (STRING *s)
     break;
   case '\012':			/* line feed? */
     i++;
-  default:			/* ordinary chararacter */
+  default:			/* ordinary character */
     break;
   }
   SETPOS (s,pos);		/* restore old position */

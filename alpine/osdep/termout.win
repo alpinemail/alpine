@@ -34,7 +34,7 @@ NewLine()
  Input:  character to output
          termcap escape sequences
 
- Result: charcter is inserted if possible
+ Result: character is inserted if possible
          return -1 if it can't be done
   ----------------------------------------------------------------------*/
 InsertChar(c)
@@ -95,9 +95,9 @@ DeleteChar(n)
  Input:  number of lines to scroll, positive forward
 
  Result: Screen scrolls
-         returns 0 if scroll succesful, -1 if not
+         returns 0 if scroll successful, -1 if not
 
- positive lines goes foward (new lines come in at bottom
+ positive lines goes forward (new lines come in at bottom
  Leaves cursor at the place to insert put new text
 
  0,0 is the upper left

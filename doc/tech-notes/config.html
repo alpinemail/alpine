@@ -49,7 +49,7 @@ If that is not set, <EM>PC-Alpine</EM> will look for
 the local file &quot;<CODE>PINERCEX</CODE>&quot;
 in the same local directory that the regular config file is located in.
 If the regular config file is remote then <EM>PC-Alpine</EM> looks in the
-local directory specfied by the &quot;-aux local_directory&quot; command
+local directory specified by the &quot;-aux local_directory&quot; command
 line argument, or the directory <CODE>${HOME}&#92;ALPINE</CODE>, or
 in <CODE>&lt;ALPINE.EXE </CODE>directory<CODE>&gt;</CODE>.
 <P>
@@ -419,7 +419,7 @@ something is happening with a small animated display in the status
 message line near the bottom of the screen.
 This option sets how frequently the characters (for example, a spinning bar)
 in the active status message lines are updated.
-At most, it can be set to be udpated 20 times per second. 
+At most, it can be set to be updated 20 times per second. 
 
 <P>
 Setting this value to zero will prevent display of the animations
@@ -448,7 +448,7 @@ If the terminal or terminal emulator you are using is capable of displaying
 colors, this variable controls whether or not
 color will be used in <EM>Alpine</EM>.
 If you turn color on and things are set up correctly,
-you should see color appear on the screen immmediately.
+you should see color appear on the screen immediately.
 Modern terminal emulators are usually capable of displaying colors.
 <P>
 This variable may be set to any of the following values:
@@ -1100,7 +1100,7 @@ Message Index's &quot;E Export&quot; command.
 Normally, when a filename is supplied that lacks a leading &quot;path&quot;
 component, <EM>Alpine</EM> assumes the file exists in the user's home directory.
 Under Windows operating systems, this definition isn't always clear.  This 
-feature allows you to explictly set where <EM>Alpine</EM> should look for files
+feature allows you to explicitly set where <EM>Alpine</EM> should look for files
 without a leading path.
 
 <P>
@@ -2171,7 +2171,7 @@ Once <EM>Alpine</EM> has opened a connection to a particular folder, it will att
 to keep that connection open in case you use it again.
 In order to do this,
 <EM>Alpine</EM> will attempt to use the Max-Remote-Connections (the value of
-this option) IMAP connections you have alloted for this purpose.
+this option) IMAP connections you have allotted for this purpose.
 <P>
 For example, suppose the value of this option is set to &quot;2&quot;.
 If your INBOX is accessed on a remote server using the IMAP protocol, that
@@ -2241,7 +2241,7 @@ HREF="config-notes.html#mime.types">MIME.Types File</A>.  <P>
 special explanatory screen to the user upon startup.  This option
 helps control when and if that special screen appears for users that
 have previously run <EM>Alpine</EM>.  It takes as its value a <EM>Alpine</EM> version
-number.  <EM>Alpine</EM> versions less than the specified value will supress this
+number.  <EM>Alpine</EM> versions less than the specified value will suppress this
 special screen while versions equal to or greater than that specified
 will behave normally. <P>
 
@@ -2281,7 +2281,7 @@ This requirement is not universal.
 If the system you are using supports it, it should work.
 (It is often the case that your home directory is in an NFS filesystem.
 If that is the case, you might try using a file in the &quot;/tmp&quot;
-filesystem, which is usually a local filesytem.)
+filesystem, which is usually a local filesystem.)
 Even when it is possible to use an NFS-mounted filesystem as a place to name
 the fifo (for example, your home directory), it will still be the case that
 the reader (probably the &quot;cat&quot; command) and the
@@ -3026,7 +3026,7 @@ It is not possible to have a literal backslash followed by an expanded token.
 open a UNIX remote shell connection. The default is
 "%s %s -l %s exec /etc/r%sd". All four "%s" entries MUST exist in the
 provided command. The first is for the command's pathname, the second is
-for the host to connnect to, the third is for the user to connect as, and
+for the host to connect to, the third is for the user to connect as, and
 the fourth is for the connection method (typically <CODE>imap</CODE>).
 <P>
 
@@ -3753,7 +3753,7 @@ It will probably only be useful if the
 <A HREF="#show-cursor"><EM>show-cursor</EM></A>
 feature is
 also turned on.
-Setting this option to a postive number can only be used to
+Setting this option to a positive number can only be used to
 <EM>increase</EM> the status message delay.
 This may be useful for Braille displays, or other non-traditional displays.
 <P>
@@ -4767,7 +4767,7 @@ match what you might type if there was a role match.)
 <P>
 If you are using the alternate form of the Compose command called
 &quot;Role&quot;, then all of your roles will be available to you,
-independent of the value of this feauture and of the values set for all of
+independent of the value of this feature and of the values set for all of
 Reply Use, Forward Use, and Compose Use.
 <P>
 
@@ -5941,7 +5941,7 @@ This feature is displayed as &quot;Enable Unix Pipe Command&quot;.
 early in the posting process
 intended to cause the server SMTP to provide a more detailed account of
 the transaction.  This feature is typically only useful to system
-administrators and other support personel as an aid in troublshooting
+administrators and other support personnel as an aid in troublshooting
 problems.
  
 Note, this feature relies on a specific capability of the system's mail
@@ -9265,7 +9265,7 @@ the Setup Kolor screen.
 This gives the
 score
 of each message.
-This will be six columns wide to accomodate the widest possible score.
+This will be six columns wide to accommodate the widest possible score.
 You will probably want to use the Index-Format fixed-field width feature
 to limit the width of the field to the widest score that
 you use (e.g. SCORE(3) if your scores are always between 0 and 999).
@@ -11496,7 +11496,7 @@ Here are some samples of specific folder names:
 <P>
 The easiest way to fill in the &quot;Folder&quot; field is to use
 the &quot;T&quot; command which is available when the &quot;Folder&quot; line is
-hilighted, or to use the &quot;Take&quot; command with the configuration
+highlighted, or to use the &quot;Take&quot; command with the configuration
 feature
 <A HREF="#enable-rules-under-take">&quot;enable-rules-under-take&quot;</A>
 turned on.

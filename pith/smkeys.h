@@ -69,7 +69,7 @@ typedef struct personal_cert {
 #define SM_NORMALCERT	0x1	/* look in normal user defined directory */
 #define SM_BACKUPCERT	0x2	/* look in backup directory */
 
-/* exported protoypes */
+/* exported prototypes */
 int	       add_certs_in_dir(X509_LOOKUP *lookup, char *path, char *ext, CertList **cdata);
 X509_STORE    *get_ca_store(void);
 void	       free_x509_store(X509_STORE **);

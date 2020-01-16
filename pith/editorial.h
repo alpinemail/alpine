@@ -22,7 +22,7 @@
 #include "../pith/filter.h"
 
 
-/* exported protoypes */
+/* exported prototypes */
 char	*format_editorial(char *, int, int, HANDLE_S **, gf_io_t);
 
 

@@ -51,7 +51,7 @@
 #define	MIME_VCALENDAR_A(a)	MIME_VCALENDAR((a)->body->type, (a)->body->subtype)
 
 
-/* exported protoypes */
+/* exported prototypes */
 
 
 #endif /* PITH_MAILPART_INCLUDED */

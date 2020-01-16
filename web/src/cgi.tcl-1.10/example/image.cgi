@@ -13,7 +13,7 @@ cgi_eval {
     Prototype Kilogram. It is made of 90% platinum, 10% iridium. It
     was assigned to the US in 1889 and is periodically recertified and
     traceable to [italic "The Kilogram"] held at
-    [url "Bureau International des Poids et Mesures" http://www.bipm.fr" $TOP]
+    [url "Bureau International des Poids et Measures" http://www.bipm.fr" $TOP]
     in France.)"
 
     # ignore the junk above this line - the crucial stuff is below

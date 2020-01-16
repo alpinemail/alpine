@@ -28,7 +28,7 @@
 #define IC_CLEAR_WIDTHS_DONE  0x02
 
 
-/* exported protoypes */
+/* exported prototypes */
 void	  clear_index_cache_ent(MAILSTREAM *, long, unsigned);
 void	  clear_index_cache(MAILSTREAM *, unsigned);
 void	  clear_index_cache_for_thread(MAILSTREAM *, PINETHRD_S *, MSGNO_S *);

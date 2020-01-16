@@ -24,7 +24,7 @@
 #include "../pith/conf.h"
 
 
-/* exported protoypes */
+/* exported prototypes */
 void	    folder_screen(struct pine *);
 void	    folder_config_screen(struct pine *, int);
 int	    folders_for_goto(struct pine *, CONTEXT_S **, char *, int);

@@ -238,7 +238,7 @@ postponed_stream(MAILSTREAM **streamp, char *mbox, char *type, int checknmsgs)
      *
      * The "mbox" is assumed to be local if we're given what looks
      * like an absolute path.  This is different from Goto/Save
-     * where we do alot of work to interpret paths relative to the
+     * where we do a lot of work to interpret paths relative to the
      * server.  This reason is to support all the pre-4.00 pinerc'
      * that specified a path and because there's yet to be a way
      * in c-client to specify otherwise in the face of a remote
@@ -714,7 +714,7 @@ redraft_work(MAILSTREAM **streamp, long int cont_msg, ENVELOPE **outgoing,
 
 	    /*
 	     * If empty is not the normal default, make the outgoing
-	     * reply_to be an emtpy address. If it is default, leave it
+	     * reply_to be an empty address. If it is default, leave it
 	     * as NULL and the default will be used.
 	     */
 	    if(hdr_is_in_list("reply-to", *custom)){
@@ -2318,7 +2318,7 @@ wrapup_fcc(char *fcc, CONTEXT_S *fcc_cntxt, METAENV *header, struct mail_bodystr
 
 Args: fcc -- the name of the fcc to create.  It can't be NULL.
       fcc_cntxt -- Returns the context the fcc is in.
-      force -- supress user option prompt
+      force -- suppress user option prompt
 
 Returns allocated storage object on success, NULL on failure
   ----*/
@@ -2330,7 +2330,7 @@ open_fcc(char *fcc, CONTEXT_S **fcc_cntxt, int force, char *err_prefix, char *er
     ps_global->mm_log_error = 0;
 
     /* 
-     * check for fcc's existance...
+     * check for fcc's existence...
      */
     TIME_STAMP("open_fcc start", 1);
     if(!is_absolute_path(fcc) && context_isambig(fcc)
@@ -3662,7 +3662,7 @@ post_rfc822_output(char *tmp,
 
 /*
  * posting_characterset- determine what transliteration is reasonable
- *                       for posting the given non-ascii messsage data.
+ *                       for posting the given non-ascii message data.
  *
  *       preferred_charset is the charset the original data was labeled in.
  *                         If we can keep that we do.
@@ -5564,7 +5564,7 @@ mta_handoff(METAENV *header, struct mail_bodystruct *body,
      * Precedence is in that order.
      * Said differently, the order goes something like what's below.
      * 
-     * NOTE: the fixed/command-line/user precendence handling is also
+     * NOTE: the fixed/command-line/user precedence handling is also
      *	     indicated by what's pointed to by ps_global->VAR_*, but since
      *	     that also includes the global defaults, it's not sufficient.
      */

@@ -135,7 +135,7 @@ WPEval $ae_vars {
 
 
 		if {$take == 1} {
-		  lappend tmptxt "Edit the new entry below as neccessary (note, some are required).  To create a list entry, simply add each desired address to the [cgi_italic Addresses] field separated by a comma."
+		  lappend tmptxt "Edit the new entry below as necessary (note, some are required).  To create a list entry, simply add each desired address to the [cgi_italic Addresses] field separated by a comma."
 		  lappend tmptxt "When finished, click [cgi_italic Save] to update your address book, or [cgi_italic Cancel] to return to the message view."
 		} elseif {$add == 1} {
 		  lappend tmptxt "The address book entry editor is used to create a new address book entry.  Fill in the fields as desired below (note, some are required).  To create a list entry, simply add each desired address to the [cgi_italic Addresses] field separated by a comma."

@@ -21,7 +21,7 @@
 #define RAWFIELD "-RAW-FIELD-"
 
 
-/* exported protoypes */
+/* exported prototypes */
 char	     *addr_string(ADDRESS *, char *, size_t);
 char	     *addr_string_mult(ADDRESS *, char *, size_t);
 char	     *simple_addr_string(ADDRESS *, char *, size_t);

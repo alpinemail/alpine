@@ -39,7 +39,7 @@
 #define SSCP_ANSWER_IS_YES	0x4
 
 
-/* exported protoypes */
+/* exported prototypes */
 char	   *save_get_default(struct pine *, ENVELOPE *, long, char *, CONTEXT_S **);
 void        save_get_fldr_from_env(char *, int, ENVELOPE *, struct pine *, long, char *);
 long	    save(struct pine *, MAILSTREAM *, CONTEXT_S *, char *, MSGNO_S *, int);

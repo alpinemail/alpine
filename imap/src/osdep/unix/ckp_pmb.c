@@ -109,7 +109,7 @@ struct passwd *checkpw (struct passwd *pw,char *pass,int argc,char *argv[])
      * pam_unix.so.1
      */
     /*
-     * This pam_open_session() call is inconsistant with how we handle other
+     * This pam_open_session() call is inconsistent with how we handle other
      * platforms, where we don't write [uw]tmp records.  However, unlike our
      * code on other platforms, pam_acct_mgmt() will check those records for
      * inactivity and deny the authentication.

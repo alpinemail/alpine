@@ -36,7 +36,7 @@
 #define OUR_PKCS7_ENCLOSURE_SUBTYPE "x-pkcs7-enclosure"
 
 
-/* exported protoypes */
+/* exported prototypes */
 int	       smime_validate_cert(X509 *cert, long *error);
 int	       encrypt_file(char *fp, char *text, PERSONAL_CERT *pc);
 char 	      *decrypt_file(char *fp, int *rv, PERSONAL_CERT *pc);

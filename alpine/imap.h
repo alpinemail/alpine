@@ -21,7 +21,7 @@
 #include "../pith/imap.h"
 
 
-/* exported protoypes */
+/* exported prototypes */
 void pine_parse_quota (MAILSTREAM *, unsigned char *, QUOTALIST *);
 QUOTALIST *pine_quotalist_copy (QUOTALIST  *);
 void   *pine_block_notify(int, void *);

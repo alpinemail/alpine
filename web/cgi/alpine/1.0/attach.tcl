@@ -82,7 +82,7 @@ if {$cancel == 1 || [string compare cancel [string tolower $cancel]] == 0 || [st
 
       set fsize [file size [lindex $file 0]]
       if {$fsize <= 0} {
-	WPCmd PEInfo statmsg "Attachment $jsnative empty or nonexistant"
+	WPCmd PEInfo statmsg "Attachment $jsnative empty or nonexistent"
       }
     } else {
       WPCmd PEInfo statmsg "Requested attachment does not exist"

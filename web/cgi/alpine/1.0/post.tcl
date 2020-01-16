@@ -227,7 +227,7 @@ switch -exact -- $fccattach {
 if {0 && [string length $form_charset]} {
   # messy charset heuristics
   # idea is to look for planted HTML entities and see if known
-  # encoding transliterations have occured. inspired by:
+  # encoding transliterations have occurred. inspired by:
   # <http://www.cs.tut.fi/~jkorpela/chars.html#encinfo>
 
   # test for:
@@ -288,7 +288,7 @@ if {0 && [string length $form_charset]} {
   lappend msgdata [list postoption [list charset "UTF-8"]]
 }
 
-# pass on text fomat=flowed?
+# pass on text format=flowed?
 if {[string length $form_flowed]} {
   lappend msgdata [list postoption [list flowed yes]]
 }

@@ -6,7 +6,7 @@
 #define _WEB_ALPINE_SIGNAL_INCLUDED
 
 
-/* exported protoypes */
+/* exported prototypes */
 void	init_signals(void);
 
 

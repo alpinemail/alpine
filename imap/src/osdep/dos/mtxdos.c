@@ -656,7 +656,7 @@ long mtx_append (MAILSTREAM *stream,char *mailbox,append_t af,void *data)
 	ret = NIL;		/* mark failure */
 	break;
       }
-      mail_date (tmp,&elt);	/* write preseved date */
+      mail_date (tmp,&elt);	/* write preserved date */
     }
     else internal_date (tmp);	/* get current date in IMAP format */
 				/* write header */
@@ -754,7 +754,7 @@ long mtx_parse (MAILSTREAM *stream)
     }
 
     *s++ = '\0'; *t++ = '\0';	/* tie off fields */
-				/* intantiate an elt for this message */
+				/* instantiate an elt for this message */
     (elt = mail_elt (stream,++nmsgs))->valid = T;
     elt->private.uid = ++stream->uid_last;
 				/* note file offset of header */

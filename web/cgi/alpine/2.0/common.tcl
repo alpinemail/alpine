@@ -742,7 +742,7 @@ proc setCurrentFolder {_c _f _u} {
     # verify $c $f (and $u if present) exists
     if {!($c == 0 && 0 == [string compare -nocase inbox $f])} {
       if {[catch {WPCmd PEFolder exists $c $f} result]} {
-	WPCmd PEInfo statmsg "Cannot test $f for existance: $result"
+	WPCmd PEInfo statmsg "Cannot test $f for existence: $result"
       } elseif {$result <= 0} {
 	WPCmd PEInfo statmsg "Folder $f in collection $c does not exist"
       }

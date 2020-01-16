@@ -118,7 +118,7 @@ extern MMLOGIN_S  *cert_failure_list;
 #endif
 
 
-/* exported protoypes */
+/* exported prototypes */
 char   *imap_referral(MAILSTREAM *, char *, long);
 long    imap_proxycopy(MAILSTREAM *, char *, char *, long);
 char   *cached_user_name(char *);

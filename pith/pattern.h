@@ -344,7 +344,7 @@ typedef struct pat_state {
 extern PAT_HANDLE **cur_pat_h;
 
 
-/* exported protoypes */
+/* exported prototypes */
 void	    role_process_filters(void);
 int         add_to_pattern(PAT_S *, long);
 char       *add_pat_escapes(char *);

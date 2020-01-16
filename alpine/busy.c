@@ -149,7 +149,7 @@ void	done_busy_cue(void *);
  *   Returns:  0 If busy cue was already set up before we got here
  *             1 If busy cue was not already set up.
  *
- *   NOTE: busy_cue and cancel_busy_cue MUST be called symetrically in the
+ *   NOTE: busy_cue and cancel_busy_cue MUST be called symmetrically in the
  *         same lexical scope.
  */
 int

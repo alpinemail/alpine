@@ -21,7 +21,7 @@ Size   Where   What
  3       c     Initial account set up
 10       c     Kiss of death to steal write access from another running Pine
  6       C     Full IMAP searching in Carmel (not used by Pine yet)
- 6       c     Carmel driver performance enhancments (for folders > 500 msgs)
+ 6       c     Carmel driver performance enhancements (for folders > 500 msgs)
  6*      ci    Auto updating deleted status for folder open by several users
  3       C     Doesn't incorporate new mail on start up like other IMAPware
  6       I/C   Handling of non-FQN's via IMAP (will solve ECS problems above)

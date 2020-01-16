@@ -2415,7 +2415,7 @@ pine_imap_envelope(MAILSTREAM *stream, long unsigned int rawno, ENVELOPE *env)
 
 
 /*----------------------------------------------------------------------
-     Scroll to specified postion.
+     Scroll to specified position.
 
 
   Args: pos - position to scroll to.
@@ -2529,8 +2529,8 @@ index_scroll_down(long int scroll_count)
     }
 
     /*
-     * If not multiple selection, see if selected message visable.  if not
-     * set it to last visable message. 
+     * If not multiple selection, see if selected message visible.  if not
+     * set it to last visible message. 
      */
     if(mn_total_cur(current_index_state->msgmap) == 1L) {
 	j = 0L;
@@ -2602,8 +2602,8 @@ index_scroll_up(long int scroll_count)
 
     
     /*
-     * If not multiple selection, see if selected message visable.  if not
-     * set it to last visable message. 
+     * If not multiple selection, see if selected message visible.  if not
+     * set it to last visible message. 
      */
     if(mn_total_cur(current_index_state->msgmap) == 1L) {
 	j = 0L;

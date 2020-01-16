@@ -46,7 +46,7 @@ The following are known problems/deficiencies in the imap-2007 toolkit:
       DNS and/or the server's host table.  A workaround exists (see the
       top-level Makefile for details) but is not recommended and can not
       be used at all with Kerberos.
-   . At the insistance of the security gurus, SSL certification validation
+   . At the insistence of the security gurus, SSL certification validation
       is now on by default.  This means that you must now use the new
       /novalidate-cert switch if establishing an SSL connection to a server
       with a self-signed certificate; i.e. if "imap.example.com" has a

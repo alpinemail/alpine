@@ -55,7 +55,7 @@ typedef struct pine_elt {
 } PINELT_S;
 
 
-/* exported protoypes */
+/* exported prototypes */
 void	    msgno_free_exceptions(PARTEX_S **);
 
 

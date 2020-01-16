@@ -41,7 +41,7 @@ is 32 bits wide. The superset comes about from the handling of
 escape sequences and error conditions. Besides the 21 bits of UCS-4
 characters other values that might be returned are values like KEY_UP,
 KEY_RESIZE, F1-F12, PF1-PF12, NO_OP_COMMAND, NO_OP_IDLE, BADESC, KEY_JUNK,
-and NODATA. The way that read_char and GetKey work are slightly differnt
+and NODATA. The way that read_char and GetKey work are slightly different
 from each other. GetKey has some special bits (CTRL, FUNC, MENU) that
 it might OR together with a character and some of the return values
 are possible in only one or the other function.

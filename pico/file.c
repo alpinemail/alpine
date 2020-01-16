@@ -557,7 +557,7 @@ readin(char fname[],		/* name of file to read */
  * Update the remembered file name and clear the
  * buffer changed flag. This handling of file names
  * is different from the earlier versions, and
- * is more compatable with Gosling EMACS than
+ * is more compatible with Gosling EMACS than
  * with ITS EMACS. Bound to "C-X C-W".
  */
 int
@@ -795,7 +795,7 @@ filewrite(int f, int n)
 
 /*
  * Save the contents of the current
- * buffer in its associatd file. No nothing
+ * buffer in its associated file. No nothing
  * if nothing has changed (this may be a bug, not a
  * feature). Error if there is no remembered file
  * name for the buffer. Bound to "C-X C-S". May

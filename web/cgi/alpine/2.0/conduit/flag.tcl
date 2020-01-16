@@ -59,7 +59,7 @@ WPEval $flag_args {
 
 	foreach eu $u {
 	  if {[catch {WPCmd PEMessage $eu flag $flag $state} result]} {
-	    set result "FALURE: setting $eu to $setting : $result"
+	    set result "FAILURE: setting $eu to $setting : $result"
 	    break
 	  }
 	}
@@ -69,7 +69,7 @@ WPEval $flag_args {
 	}
       }
     } else {
-      set result "FAILURE: unkown flag ($f) or state ($s)"
+      set result "FAILURE: unknown flag ($f) or state ($s)"
     }
 
     cgi_puts $result

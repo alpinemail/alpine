@@ -29,7 +29,7 @@ typedef	struct keywords {
 } KEYWORD_S;
 
 
-/* exported protoypes */
+/* exported prototypes */
 KEYWORD_S  *init_keyword_list(char **);
 KEYWORD_S  *new_keyword_s(char *, char *);
 void	    free_keyword_list(KEYWORD_S **);

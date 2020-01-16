@@ -3131,7 +3131,7 @@ pine_rfc822_cat(char *src, const char *specials, gf_io_t pc)
 
   Result: A formatted, malloced string is returned.
 
-The resuling lines formatted are 80 columns wide.
+The resulting lines formatted are 80 columns wide.
   ----------------------------------------------------------------------*/
 void
 format_newsgroup_string(char *field_name, char *newsgrps, int flags, gf_io_t pc)

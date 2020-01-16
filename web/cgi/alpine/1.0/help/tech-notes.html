@@ -23,7 +23,7 @@
 <h2>Why Web Alpine</h2>
 
 Web Alpine was originally conceived as a means of providing reliable,
-ubiquitous, and consistent access to UW email facilites via the Interactive
+ubiquitous, and consistent access to UW email facilities via the Interactive
 Message Access Protocol (IMAP).  As with Pine, it is intended to present a
 simple, approachable interface that can be easily navigated with
 minimal familiarity.  It is also intended to be as efficient as
@@ -101,7 +101,7 @@ built into Alpine, as well as many of the features and functions.
 <p>
 The Web Alpine application consists of three main components; the CGI scripts that generate pages containing the user's email data,
 a serverette running on the http server spanning the life of the user's session, and a couple of libraries
-to aid page generation and serverette communciation.
+to aid page generation and serverette communication.
 
 <p>
 Web Alpine is packaged as part of the Alpine Distribution and it's source resides
@@ -166,7 +166,7 @@ the provide, and breakdown as follows:
  <td></td>
  <td></td>
  <td valign=top>Contains source files for Web Alpine's binary components which will be linked
- against the <tt>pith/</tt> libarary components.
+ against the <tt>pith/</tt> library components.
  </td>
  </td>
 </tr>
@@ -231,7 +231,7 @@ that defines where the Web Alpine application was unpacked on your system, and
 <dd>
 which defines where browsers can find Web Alpine's CGI scripts.  This is set to
 the null string if the server's DocumentRoot is synonymous with the root of
-Web Alpine's CGI directory.  Othewise, it's typically set to the Alias accessed
+Web Alpine's CGI directory.  Otherwise, it's typically set to the Alias accessed
 subdirectory in the web server's configuration.
 
 </dd>
@@ -264,7 +264,7 @@ a particular user.
 <h3>User Configuration</h3>
 <p>
 Since no user-initiated local file or mailbox access is permitted by (much less compiled into) the <tt>alpined</tt>,
-user configuration and data files are stored using Pine's remote pinerc and address book capabilites.  The configuration
+user configuration and data files are stored using Pine's remote pinerc and address book capabilities.  The configuration
 settings in <tt>web/config/</tt> are used to set per-user defaults and direct Web Alpine toward the user's configuration
 settings on the IMAP server.  Similarly, the default addressbook is stored as an IMAP folder on the server as well.
 Concurrent Web Alpine, Unix Pine and PC-Pine users that would like a consistent mail environment can easily configure their
@@ -324,7 +324,7 @@ templates which were fleshed out via requests to the <tt>alpined</tt> serverette
 may draw on its cache of IMAP data, make new requests of the IMAP server, post messages via SMTP or
 the local mail queue, formulate LDAP queries, or perform other tasks as required.
  <table width="75%" align=center bgcolor="#dddddd"><tr><td>
-Note: Web Alpine sessions run as long as the user's browser requests pages.  In the absense of user interaction
+Note: Web Alpine sessions run as long as the user's browser requests pages.  In the absence of user interaction
 Web Alpine will self-refresh every few minutes to mainain the session.  Sessions only end when the user logs out
 or closes the browser.
  </td></tr></table>
@@ -440,7 +440,7 @@ loop as we roll in many of the features Pine users have come to appreciate.
 Performance in terms of both user perceived response time and users per web server are 
 always a concern, but must, of course, be balanced against additional maintenance and complexity costs.
 Less obvious complicating factors must be considered, such as <tt>alpined</tt> process partitioning
-and session-key containing cookie exposure in the face of malicous HTML attachments.
+and session-key containing cookie exposure in the face of malicious HTML attachments.
 We plan, of course, to continue exploring various methods to improve performance.
 
 <h2>Appendix: Installation Tests</h2>

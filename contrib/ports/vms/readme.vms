@@ -30,7 +30,7 @@ Using
   All the user needs is the PINE.EXE; Pine reads the mail from the user's
 VMS/MAIL files and send outgoing mail either via mail routines using some
 foreign protocol or via direct SMTP to some SMTP server (I preffer this
-metod). You use the latter by defining SMTP-SERVER field with some host.
+method). You use the latter by defining SMTP-SERVER field with some host.
 If you do not set it you must define PINE_MAIL_PROTOCOL to the prefix of
 the foreign protocol used. For example, if you use SMTP% you have to define
 it to SMTP.

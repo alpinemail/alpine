@@ -24,7 +24,7 @@
 #include "../pith/smime.h"
 
 
-/* exported protoypes */
+/* exported prototypes */
 int    smime_get_passphrase(void);
 int    smime_certificate_error_ask(int error);
 void   smime_info_screen(struct pine *ps);

@@ -40,7 +40,7 @@ struct global_sort_data {
 extern struct global_sort_data g_sort;
 
 
-/* exported protoypes */
+/* exported prototypes */
 char	*sort_name(SortOrder);
 void	 sort_folder(MAILSTREAM *, MSGNO_S *, SortOrder, int, unsigned);
 int	 decode_sort(char *, SortOrder *, int *);

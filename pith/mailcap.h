@@ -24,7 +24,7 @@ typedef struct mcap_cmd {
 } MCAP_CMD_S;
 
 
-/* exported protoypes */
+/* exported prototypes */
 char       *mc_conf_path(char *, char *, char *, int, char *);
 int	    mailcap_can_display(int, char *, BODY *, int);
 MCAP_CMD_S *mailcap_build_command(int, char *, BODY *, char *, int *, int);

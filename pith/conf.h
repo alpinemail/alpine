@@ -836,7 +836,7 @@ struct sm_folder {
 #define	CONF_TXT_T	char
 
 
-/* exported protoypes */
+/* exported prototypes */
 void       init_init_vars(struct pine *);
 void       init_pinerc(struct pine *, char **);
 void       init_vars(struct pine *, void (*)(struct pine *, char **));

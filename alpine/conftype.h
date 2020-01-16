@@ -142,7 +142,7 @@ typedef struct conf_screen {
 } OPT_SCREEN_S;
 
 
-/* exported protoypes */
+/* exported prototypes */
 
 
 #endif /* PINE_CONFTYPE_INCLUDED */
