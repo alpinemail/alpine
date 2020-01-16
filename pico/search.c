@@ -620,7 +620,7 @@ replace_pat(UCS *defpat, int *wrapt, int bsearch)
 	  case (CTRL|'X'):        /* toggle replace all option */
 	    if (repl_all){
 		repl_all = FALSE;
-		/* TRANSLATORS: abbreviation for Replace All occurences */
+		/* TRANSLATORS: abbreviation for Replace All occurrences */
 		menu_pat[0].label = N_("Repl All");
 	    }
 	    else{
@@ -1192,7 +1192,7 @@ forscan(int *wrapt,	/* boolean indicating search wrapped */
 	LINE *limitp,	/* stop searching if reached */
 	int limito,	/* stop searching if reached */
 	int leavep)	/* place to leave point
-				PTBEG = begining of match
+				PTBEG = beginning of match
 				PTEND = at end of match		*/
 
 {
@@ -1314,7 +1314,7 @@ forscan(int *wrapt,	/* boolean indicating search wrapped */
 		  goto fail;
 	    }
 
-	    /* A SUCCESSFULL MATCH!!! */
+	    /* A SUCCESSFUL MATCH!!! */
 	    /* reset the global "." pointers */
 	    if (leavep == PTEND) {	/* at end of string */
 		curwp->w_dotp = matchline;

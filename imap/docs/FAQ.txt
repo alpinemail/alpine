@@ -1,5 +1,5 @@
 
-              Panda IMAP Frequently Asked Questions
+              [blue.gif] _Panda IMAP Frequently Asked Questions_
 
 Table of Contents
 
@@ -129,8 +129,9 @@ Table of Contents
           + 4.7 How can I make the server syslogs go to someplace other
             than the mail syslog?
      * 5. Security Questions
-          + 5.1 I see that the IMAP server allows access to arbitary files
-            on the system, including /etc/passwd! How do I disable this?
+          + 5.1 I see that the IMAP server allows access to arbitrary
+            files on the system, including /etc/passwd! How do I disable
+            this?
           + 5.2 I've heard that IMAP servers are insecure. Is this true?
           + 5.3 How do I know that I have the most secure version of the
             server?
@@ -355,15 +356,15 @@ What is Panda IMAP?
 1. General/Software Feature Questions
      __________________________________________________________________
 
-   1.1 Can I set up a POP or IMAP server on UNIX/Linux/OSF/etc.?
+   _1.1 Can I set up a POP or IMAP server on UNIX/Linux/OSF/etc.?_
 
           Yes. Refer to the UNIX specific notes in files CONFIG and BUILD.
 
    Back to top
      __________________________________________________________________
 
-   1.2 I am currently using qpopper as my POP3 server on UNIX. Do I need
-   to replace it with ipop3d in order to run imapd?
+   _1.2 I am currently using qpopper as my POP3 server on UNIX. Do I need
+   to replace it with ipop3d in order to run imapd?_
 
           Not necessarily.
 
@@ -389,8 +390,8 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   1.3 Can I set up a POP or IMAP server on Windows XP, 2000, NT, Me, 98,
-   or 95?
+   _1.3 Can I set up a POP or IMAP server on Windows XP, 2000, NT, Me, 98,
+   or 95?_
 
           Yes. Refer to the NT specific notes in files CONFIG and BUILD.
           Also, for DOS-based versions of Windows (Windows Me, 98, and 95)
@@ -407,16 +408,16 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   1.4 Can I set up a POP or IMAP server on Windows 3.1 or DOS?
-   1.5 Can I set up a POP or IMAP server on Macintosh?
-   1.6 Can I set up a POP or IMAP server on VAX/VMS?
+   _1.4 Can I set up a POP or IMAP server on Windows 3.1 or DOS?_
+   _1.5 Can I set up a POP or IMAP server on Macintosh?_
+   _1.6 Can I set up a POP or IMAP server on VAX/VMS?_
 
           Yes, it's just a small matter of programming.
 
    Back to top
      __________________________________________________________________
 
-   1.7 Can I set up a POP or IMAP server on TOPS-20?
+   _1.7 Can I set up a POP or IMAP server on TOPS-20?_
 
           You have a TOPS-20 system? Cool.
 
@@ -437,9 +438,9 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   1.8 Are hierarchical mailboxes supported?
-   1.9 Are "dual-use" mailboxes supported?
-   1.10 Can I have a mailbox that has both messages and sub-mailboxes?
+   _1.8 Are hierarchical mailboxes supported?_
+   _1.9 Are "dual-use" mailboxes supported?_
+   _1.10 Can I have a mailbox that has both messages and sub-mailboxes?_
 
           Yes. However, there is one important caveat.
 
@@ -475,7 +476,7 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   1.11 What is the difference between "mailbox" and "folder"?
+   _1.11 What is the difference between "mailbox" and "folder"?_
 
           The term "mailbox" is IMAP-speak for what a lot of software
           calls a "folder" or a "mail folder". However, "folder" is often
@@ -495,7 +496,7 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   1.12 What is the status of internationalization?
+   _1.12 What is the status of internationalization?_
 
           The IMAP toolkit is partially internationalized and
           multilingualized.
@@ -529,14 +530,14 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   1.13 Can I use SSL?
+   _1.13 Can I use SSL?_
 
           Yes. See the answer to the How do I configure SSL? question.
 
    Back to top
      __________________________________________________________________
 
-   1.14 Can I use TLS and the STARTTLS facility?
+   _1.14 Can I use TLS and the STARTTLS facility?_
 
           Yes. See the answer to the How do I configure TLS and the
           STARTTLS facility? question.
@@ -544,7 +545,7 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   1.15 Can I use CRAM-MD5 authentication?
+   _1.15 Can I use CRAM-MD5 authentication?_
 
           Yes. See the answer to the How do I configure CRAM-MD5
           authentication? question.
@@ -552,7 +553,7 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   1.16 Can I use APOP authentication?
+   _1.16 Can I use APOP authentication?_
 
           Yes. See the How do I configure APOP authentication? question.
 
@@ -561,7 +562,7 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   1.17 Can I use Kerberos V5?
+   _1.17 Can I use Kerberos V5?_
 
           Yes. See the answer to the How do I configure Kerberos V5?
           question.
@@ -569,7 +570,7 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   1.18 Can I use PAM for plaintext passwords?
+   _1.18 Can I use PAM for plaintext passwords?_
 
           Yes. See the answer to the How do I configure PAM for plaintext
           passwords? question.
@@ -577,7 +578,7 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   1.19 Can I use Kerberos 5 for plaintext passwords?
+   _1.19 Can I use Kerberos 5 for plaintext passwords?_
 
           Yes. See the answer to the How do I configure Kerberos 5 for
           plaintext passwords? question.
@@ -585,7 +586,7 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   1.20 Can I use AFS for plaintext passwords?
+   _1.20 Can I use AFS for plaintext passwords?_
 
           Yes. See the answer to the How do I configure AFS for plaintext
           passwords? question.
@@ -593,7 +594,7 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   1.21 Can I use DCE for plaintext passwords?
+   _1.21 Can I use DCE for plaintext passwords?_
 
           Yes. See the answer to the How do I configure DCE for plaintext
           passwords? question.
@@ -601,7 +602,7 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   1.22 Can I use the CRAM-MD5 database for plaintext passwords?
+   _1.22 Can I use the CRAM-MD5 database for plaintext passwords?_
 
           Yes. See the answer to the How do I configure the CRAM-MD5
           database for plaintext passwords? question.
@@ -609,7 +610,7 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   1.23 Can I disable plaintext passwords?
+   _1.23 Can I disable plaintext passwords?_
 
           Yes. See the answer to the How do I disable plaintext passwords?
           question.
@@ -617,8 +618,8 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   1.24 Can I disable plaintext passwords on unencrypted sessions, but
-   allow them on encrypted sessions?
+   _1.24 Can I disable plaintext passwords on unencrypted sessions, but
+   allow them on encrypted sessions?_
 
           Yes. See the answer to the How do I disable plaintext passwords
           on unencrypted sessions, but allow them in SSL or TLS sessions?
@@ -627,7 +628,7 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   1.25 Can I use virtual hosts?
+   _1.25 Can I use virtual hosts?_
 
           Yes. See the answer to the How do I configure virtual hosts?
           question.
@@ -635,21 +636,21 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   1.26 Can I use RPOP authentication?
+   _1.26 Can I use RPOP authentication?_
 
           There is no support for RPOP authentication.
 
    Back to top
      __________________________________________________________________
 
-   1.27 Can I use Kerberos V4?
+   _1.27 Can I use Kerberos V4?_
 
           Kerberos V4 is not supported.
 
    Back to top
      __________________________________________________________________
 
-   1.28 Is there support for S/Key or OTP?
+   _1.28 Is there support for S/Key or OTP?_
 
           There is currently no support for S/Key or OTP. There may be an
           OTP SASL authenticator available from third parties.
@@ -657,7 +658,7 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   1.29 Is there support for NTLM or SPA?
+   _1.29 Is there support for NTLM or SPA?_
 
           There is currently no support for NTLM or SPA, nor are there any
           plans to add such support. In general, I avoid vendor-specific
@@ -670,7 +671,7 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   1.30 Is there support for mh?
+   _1.30 Is there support for mh?_
 
           Yes, but only as a legacy format. Your mh format INBOX is
           accessed by the name "#mhinbox", and all other mh format
@@ -686,7 +687,7 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   1.31 Is there support for qmail and the maildir format?
+   _1.31 Is there support for qmail and the maildir format?_
 
           There is no support for qmail or the maildir format in our
           distribution, nor are there any plans to add such support.
@@ -695,14 +696,14 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   1.32 Is there support for the Cyrus mailbox format?
+   _1.32 Is there support for the Cyrus mailbox format?_
 
           No.
 
    Back to top
      __________________________________________________________________
 
-   1.33 Is this software Y2K compliant?
+   _1.33 Is this software Y2K compliant?_
 
           Please read the files Y2K and calendar.txt.
 
@@ -712,22 +713,22 @@ What is Panda IMAP?
 2. What Do I Need to Build This Software?
      __________________________________________________________________
 
-   2.1 What do I need to build this software with SSL on UNIX?
+   _2.1 What do I need to build this software with SSL on UNIX?_
 
           You need to build and install OpenSSL first.
 
    Back to top
      __________________________________________________________________
 
-   2.2 What do I need to build this software with Kerberos V on UNIX?
+   _2.2 What do I need to build this software with Kerberos V on UNIX?_
 
           You need to build and install MIT Kerberos first.
 
    Back to top
      __________________________________________________________________
 
-   2.3 What do I need to use a C++ compiler with this software to build my
-   own application?
+   _2.3 What do I need to use a C++ compiler with this software to build
+   my own application?_
 
           If you are building an application using the c-client library,
           use the new c-client.h file instead of including the other
@@ -739,7 +740,7 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   2.4 What do I need to build this software on Windows?
+   _2.4 What do I need to build this software on Windows?_
 
           You need Microsoft Visual C++ 6.0, Visual C++ .NET, or Visual C#
           .NET (which you can buy from any computer store), along with the
@@ -752,7 +753,7 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   2.5 What do I need to build this software on DOS?
+   _2.5 What do I need to build this software on DOS?_
 
           It's been several years since we last attempted to do this. At
           the time, we used Microsoft C.
@@ -760,14 +761,14 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   2.6 Can't I use Borland C to build this software on the PC?
+   _2.6 Can't I use Borland C to build this software on the PC?_
 
           Probably not. If you know otherwise, please let us know.
 
    Back to top
      __________________________________________________________________
 
-   2.7 What do I need to build this software on the Mac?
+   _2.7 What do I need to build this software on the Mac?_
 
           It has been several years since we last attempted to do this. At
           the time, we used Symantec THINK C; but today you'll need a C
@@ -776,7 +777,7 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   2.8 What do I need to build this software on VMS?
+   _2.8 What do I need to build this software on VMS?_
 
           You need the VMS C compiler, and either the Multinet or Netlib
           TCP.
@@ -784,21 +785,21 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   2.9 What do I need to build this software on TOPS-20?
+   _2.9 What do I need to build this software on TOPS-20?_
 
           You need the TOPS-20 KCC compiler.
 
    Back to top
      __________________________________________________________________
 
-   2.10 What do I need to build this software on Amiga or OS/2?
+   _2.10 What do I need to build this software on Amiga or OS/2?_
 
           We don't know.
 
    Back to top
      __________________________________________________________________
 
-   2.11 What do I need to build this software on Windows CE?
+   _2.11 What do I need to build this software on Windows CE?_
 
           This port is incomplete. Someone needs to finish it.
 
@@ -808,10 +809,10 @@ What is Panda IMAP?
 3. Build and Configuration Questions
      __________________________________________________________________
 
-   3.1 How do I configure the IMAP and POP servers on UNIX?
-   3.2 I built and installed the servers according to the BUILD
+   _3.1 How do I configure the IMAP and POP servers on UNIX?_
+   _3.2 I built and installed the servers according to the BUILD
    instructions. It can't be that easy. Don't I need to write a config
-   file?
+   file?_
 
           For ordinary "vanilla" UNIX systems, this software is plug and
           play; just build it, install it, and you're done. If you have a
@@ -826,10 +827,10 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   3.3 How do I make the IMAP and POP servers look for INBOX at some place
-   other than the mail spool directory?
-   3.4 How do I make the IMAP server look for secondary folders at some
-   place other than the user's home directory?
+   _3.3 How do I make the IMAP and POP servers look for INBOX at some
+   place other than the mail spool directory?_
+   _3.4 How do I make the IMAP server look for secondary folders at some
+   place other than the user's home directory?_
 
           Please read the file CONFIG for discussion of this and other
           issues.
@@ -837,8 +838,8 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   3.5 How do I configure SSL?
-   3.6 How do I configure TLS and the STARTTLS facility?
+   _3.5 How do I configure SSL?_
+   _3.6 How do I configure TLS and the STARTTLS facility?_
 
           imap-2010 supports SSL and TLS client functionality on UNIX and
           32-bit Windows for IMAP, POP3, SMTP, and NNTP; and SSL and TLS
@@ -850,13 +851,13 @@ What is Panda IMAP?
 
           SSL is supported via undocumented Microsoft interfaces in
           Windows 9x and NT4; and via standard interfaces in Windows 2000,
-          Windows Millenium, and Windows XP.
+          Windows Millennium, and Windows XP.
 
    Back to top
      __________________________________________________________________
 
-   3.7 How do I build/install OpenSSL and obtain/create certificates for
-   use with SSL?
+   _3.7 How do I build/install OpenSSL and obtain/create certificates for
+   use with SSL?_
 
           If you need help in doing this, try the contacts mentioned in
           the OpenSSL README. We do not offer support for OpenSSL or
@@ -865,8 +866,8 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   3.8 How do I configure CRAM-MD5 authentication?
-   3.9 How do I configure APOP authentication?
+   _3.8 How do I configure CRAM-MD5 authentication?_
+   _3.9 How do I configure APOP authentication?_
 
           CRAM-MD5 authentication is enabled in the IMAP and POP3 client
           code on all platforms. Read md5.txt to learn how to set up
@@ -877,7 +878,7 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   3.10 How do I configure Kerberos V5?
+   _3.10 How do I configure Kerberos V5?_
 
           imap-2010 supports client and server functionality on UNIX and
           32-bit Windows.
@@ -894,7 +895,7 @@ What is Panda IMAP?
 
  make lnp EXTRAAUTHENTICATORS=gss
 
-          To build with Kerberos V5 on Windows 9x, Windows Millenium, and
+          To build with Kerberos V5 on Windows 9x, Windows Millennium, and
           NT4, use the "makefile.ntk" file instead of "makefile.nt":
 
 
@@ -903,11 +904,12 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   3.11 How do I configure PAM for plaintext passwords?
+   _3.11 How do I configure PAM for plaintext passwords?_
 
           On Linux systems, use the lnp port, e.g.
 
  make lnp
+
 
           On Solaris systems and other systems with defective PAM
           implementations, build with PASSWDTYPE=pmb, e.g.
@@ -924,9 +926,9 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   3.12 It looks like all I have to do to make the server use Kerberos is
+   _3.12 It looks like all I have to do to make the server use Kerberos is
    to build with PAM on my Linux system, and set it up in PAM for Kerberos
-   passwords. Right?
+   passwords. Right?_
 
           Yes and no.
 
@@ -940,7 +942,7 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   3.13 How do I configure Kerberos 5 for plaintext passwords?
+   _3.13 How do I configure Kerberos 5 for plaintext passwords?_
 
           Build with PASSWDTYPE=gss, e.g.
 
@@ -953,16 +955,17 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   3.14 How do I configure AFS for plaintext passwords?
+   _3.14 How do I configure AFS for plaintext passwords?_
 
           Build with PASSWDTYPE=afs, e.g
 
  make sol PASSWDTYPE=afs
 
+
    Back to top
      __________________________________________________________________
 
-   3.15 How do I configure DCE for plaintext passwords?
+   _3.15 How do I configure DCE for plaintext passwords?_
 
           Build with PASSWDTYPE=dce, e.g
 
@@ -971,7 +974,7 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   3.16 How do I configure the CRAM-MD5 database for plaintext passwords?
+   _3.16 How do I configure the CRAM-MD5 database for plaintext passwords?_
 
           The CRAM-MD5 password database is automatically used for
           plaintext password if it exists.
@@ -983,7 +986,7 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   3.17 How do I disable plaintext passwords?
+   _3.17 How do I disable plaintext passwords?_
 
           Server-level plaintext passwords can be disabled by setting
           PASSWDTYPE=nul, e.g.
@@ -1000,8 +1003,8 @@ What is Panda IMAP?
 
    Back to top
 
-   3.18 How do I disable plaintext passwords on unencrypted sessions, but
-   allow them in SSL or TLS sessions?
+   _3.18 How do I disable plaintext passwords on unencrypted sessions, but
+   allow them in SSL or TLS sessions?_
 
           Do not set PASSWDTYPE=nul or SSLTYPE=unix. Set SSLTYPE=nopwd
           instead, e.g.
@@ -1024,7 +1027,7 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   3.19 How do I configure virtual hosts?
+   _3.19 How do I configure virtual hosts?_
 
           This is automatic, but with certain restrictions.
 
@@ -1048,12 +1051,13 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   3.20 Why do I get compiler warning messages such as:
+   _3.20 Why do I get compiler warning messages such as:_
  passing arg 3 of `scandir' from incompatible pointer type
  Pointers are not assignment-compatible.
  Argument #4 is not the correct type.
 
-   during the build?
+
+   _during the build?_
 
           You can safely ignore these messages.
 
@@ -1072,14 +1076,14 @@ What is Panda IMAP?
    Back to top
      __________________________________________________________________
 
-   3.21 Why do I get compiler warning messages such as
+   _3.21 Why do I get compiler warning messages such as_
  Operation between types "void(*)(int)" and "void*" is not allowed.
  Function argument assignment between types "void*" and "void(*)(int)" is not al
 lowed.
  Pointers are not assignment-compatible.
  Argument #5 is not the correct type.
 
-   during the build?
+   _during the build?_
 
           You can safely ignore these messages.
 
@@ -1095,16 +1099,17 @@ lowed.
        object or to void, allowing a function to be inspected or
        modified (for example, by a debugger) (6.3.4).
 
+
           It may be just a "common extension", but this facility is relied
           upon heavily by c-client.
 
    Back to top
      __________________________________________________________________
 
-   3.22 Why do I get linker warning messages such as:
+   _3.22 Why do I get linker warning messages such as:_
 mtest.c:515: the `gets' function is dangerous and should not be used.
 
-   during the build? Isn't this a security bug?
+   _during the build? Isn't this a security bug?_
 
           You can safely ignore this message.
 
@@ -1138,10 +1143,10 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   3.23 Why do I get linker warning messages such as:
+   _3.23 Why do I get linker warning messages such as:_
  auth_ssl.c:92: the `tmpnam' function is dangerous and should not be used.
 
-   during the build? Isn't this a security bug?
+   _during the build? Isn't this a security bug?_
 
           You can safely ignore this message.
 
@@ -1160,9 +1165,9 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   3.24 OK, suppose I see a warning message about a function being
+   _3.24 OK, suppose I see a warning message about a function being
    "dangerous and should not be used" for something other than this gets()
-   or tmpnam() call?
+   or tmpnam() call?_
 
           Please forward the details for investigation.
 
@@ -1172,7 +1177,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
 4. Operational Questions
      __________________________________________________________________
 
-   4.1 How can I enable anonymous IMAP logins?
+   _4.1 How can I enable anonymous IMAP logins?_
 
           Create the file /etc/anonymous.newsgroups. At the present time,
           this file should be empty. This will permit IMAP logins as
@@ -1183,7 +1188,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   4.2 How do I set up an alert message that each IMAP user will see?
+   _4.2 How do I set up an alert message that each IMAP user will see?_
 
           Create the file /etc/imapd.alert with the text of the message.
           This text should be kept to one line if possible. Note that this
@@ -1194,10 +1199,10 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   4.3 How does the c-client library choose which of its several
+   _4.3 How does the c-client library choose which of its several
    mechanisms to use to establish an IMAP connection to the server? I
    noticed that it can connect on port 143, port 993, via rsh, and via
-   ssh.
+   ssh._
 
           c-client chooses how to establish an IMAP connection via the
           following rules:
@@ -1214,9 +1219,9 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   4.4 I am using a TLS-capable IMAP server, so I don't need to use /ssl
+   _4.4 I am using a TLS-capable IMAP server, so I don't need to use /ssl
    to get encryption. However, I want to be certain that my session is TLS
-   encrypted before I send my password. How to I do this?
+   encrypted before I send my password. How to I do this?_
 
           Use the /tls option in the mailbox name. This will cause an
           error message and the connection to fail if the server does not
@@ -1225,15 +1230,15 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   4.5 How do I use one of the alternative formats described in the
+   _4.5 How do I use one of the alternative formats described in the
    formats.txt document? In particular, I hear that mix format will give
-   me better performance and allow shared access.
+   me better performance and allow shared access._
 
           The rumors about mix format being preferred are true. It is
           faster than the traditional UNIX mailbox format and permits
           shared access.
 
-          However, and this is very important, note that using an
+          However, and this is _very important_, note that using an
           alternative mailbox format is an advanced facility, and only
           expert users should undertake it. If you don't understand any of
           the following notes, you may not be enough of an expert yet, and
@@ -1246,9 +1251,9 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
           written in these formats.
 
           Another problem is that the certain formats, including mix and
-          mbx, use advanced file access and locking techniques that do not
-          work reliably with NFS. NFS is not a real filesystem. Use IMAP
-          instead of NFS for distributed access.
+          mbx, use advanced file access and locking techniques that do
+          _not_ work reliably with NFS. NFS is not a real filesystem. Use
+          IMAP instead of NFS for distributed access.
 
           Each of the following steps are in escalating order of
           involvement. The further you go down this list, the more deeply
@@ -1307,7 +1312,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   4.6 How do I set up shared mailboxes?
+   _4.6 How do I set up shared mailboxes?_
 
           At the simplest level, a shared mailbox is one which has UNIX
           file and directory protections which permit multiple users to
@@ -1344,19 +1349,19 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
           #shared/ refers to an IMAP toolkit convention called "shared"
           files, and is equivalent to the home directory for UNIX user
           "imapshared". For example, #shared/foo/bar refers to the file
-          ~imapshared/foo/bar. Shared files are not available to anonymous
-          IMAP logins. By default, newly-created files in #shared are
-          created with protection 0660.
+          ~imapshared/foo/bar. Shared files are _not_ available to
+          anonymous IMAP logins. By default, newly-created files in
+          #shared are created with protection 0660.
 
    Back to top
      __________________________________________________________________
 
-   4.7 How can I make the server syslogs go to someplace other than the
-   mail syslog?
+   _4.7 How can I make the server syslogs go to someplace other than the
+   mail syslog?_
 
           The openlog() call that sets the syslog facility is in
-          src/osdep/unix/env_unix.c in routine server_init(). You need to
-          edit this file to change the syslog facility from LOG_MAIL to
+          _src/osdep/unix/env_unix.c_ in routine _server_init()_. You need
+          to edit this file to change the syslog facility from LOG_MAIL to
           the facility you want, then rebuild. You also need to set up
           your /etc/syslog.conf properly.
 
@@ -1371,8 +1376,8 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
 5. Security Questions
      __________________________________________________________________
 
-   5.1 I see that the IMAP server allows access to arbitary files on the
-   system, including /etc/passwd! How do I disable this?
+   _5.1 I see that the IMAP server allows access to arbitrary files on the
+   system, including /etc/passwd! How do I disable this?_
 
           You should not worry about this if your IMAP users are allowed
           shell access. The IMAP server does not permit any access that
@@ -1382,31 +1387,31 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
           want to consider one of three choices. Note that these choices
           reduce IMAP functionality, and may have undesirable side
           effects. Each of these choices involves an edit to file
-          src/osdep/unix/env_unix.c
+          _src/osdep/unix/env_unix.c_
 
-          The first (and recommended) choice is to set restrictBox as
+          The first (and recommended) choice is to set _restrictBox_ as
           described in file CONFIG. This will disable access to the
           filesystem root, to other users' home directory, and to superior
           directory.
 
           The second (and strongly NOT recommended) choice is to set
-          closedBox as described in file CONFIG. This puts each IMAP
+          _closedBox_ as described in file CONFIG. This puts each IMAP
           session into a so-called "chroot jail", and thus setting this
-          option is extremely dangerous; it can make your system much less
-          secure and open to root compromise attacks. So do not use this
-          option unless you are absolutely certain that you understand all
-          the issues of a "chroot jail."
+          option is _extremely_ dangerous; it can make your system much
+          less secure and open to root compromise attacks. So do not use
+          this option unless you are _absolutely certain_ that you
+          understand all the issues of a "chroot jail."
 
-          The third choice is to rewrite routine mailboxfile() to
+          The third choice is to rewrite routine _mailboxfile()_ to
           implement whatever mapping from mailbox name to filesystem name
           (and restrictions) that you wish. This is the most general
           choice. As a guide, you can see at the start of routine
-          mailboxfile() what the restrictBox choice does.
+          _mailboxfile()_ what the _restrictBox_ choice does.
 
    Back to top
      __________________________________________________________________
 
-   5.2 I've heard that IMAP servers are insecure. Is this true?
+   _5.2 I've heard that IMAP servers are insecure. Is this true?_
 
           There are no known security problems in this version of the IMAP
           toolkit, including the IMAP and POP servers. The IMAP and POP
@@ -1434,13 +1439,13 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   5.3 How do I know that I have the most secure version of the server?
+   _5.3 How do I know that I have the most secure version of the server?_
 
           The best way is to keep your server software up to date. The bad
           guys are always looking for ways to crack software, and when
           they find one, let all their friends know.
 
-          Oldtimers used to refer to a concept of software rot: if your
+          Oldtimers used to refer to a concept of _software rot_: if your
           software hasn't been updated in a while, it would "rot" -- tend
           to acquire problems that it didn't have when it was new.
 
@@ -1456,8 +1461,8 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   5.4 I see all these strcpy() and sprintf() calls, those are unsafe,
-   aren't they?
+   _5.4 I see all these strcpy() and sprintf() calls, those are unsafe,
+   aren't they?_
 
           Yes and no.
 
@@ -1509,7 +1514,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   5.5 Those /tmp lock files are protected 666, is that really right?
+   _5.5 Those /tmp lock files are protected 666, is that really right?_
 
           Yes. Shared mailboxes won't work otherwise. Also, you get into
           accidental denial of service problems with old lock files left
@@ -1527,10 +1532,10 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-6. Why Did You Do This Strange Thing? Questions
+6. _Why Did You Do This Strange Thing?_ Questions
      __________________________________________________________________
 
-   6.1 Why don't you use GNU autoconfig / automake / autoblurdybloop?
+   _6.1 Why don't you use GNU autoconfig / automake / autoblurdybloop?_
 
           Autoconfig et al are not available on all the platforms where
           the IMAP toolkit is supported; and do not work correctly on some
@@ -1542,7 +1547,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
           platforms which were not specifically considered by that
           software wastes an inordinate amount of time. When (not if)
           autoconfig fails to do the right thing, the result is an
-          inpenetrable morass to untangle in order to find the problem and
+          impenetrable morass to untangle in order to find the problem and
           fix it.
 
           The concept behind autoconfig is good, but the execution is
@@ -1554,11 +1559,11 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   6.2 Why do you insist upon a build with -g? Doesn't it waste disk and
-   memory space?
+   _6.2 Why do you insist upon a build with -g? Doesn't it waste disk and
+   memory space?_
 
           From time to time a submitted port has snuck in without -g. This
-          has always ended up causing problems. There are only two valid
+          has _always_ ended up causing problems. There are only two valid
           excuses for not using -g in a port:
 
           + The compiler does not support -g
@@ -1570,7 +1575,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
           -g has not been arbitrarily added to the ports which do not
           currently have it because we don't know if doing so would break
           the build. However, any support issues with one of those port
-          will lead to the correct -g setting being determined and
+          _will_ lead to the correct -g setting being determined and
           permanently added.
 
           Processors are fast enough (and disk space is cheap enough) that
@@ -1583,7 +1588,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   6.3 Why don't you make c-client a shared library?
+   _6.3 Why don't you make c-client a shared library?_
 
           All too often, shared libraries create far more problems than
           they solve.
@@ -1618,10 +1623,10 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
 
           Several sites and third-party distributors have modified the
           c-client makefile in order to make c-client be a shared library.
-          When (not if) a c-client based application fails in mysterious
-          ways because of a library compatibility problem, the result is a
-          bug report. A lot of time and effort ends up getting wasted
-          investigating such bug reports.
+          _When_ (not _if_) a c-client based application fails in
+          mysterious ways because of a library compatibility problem, the
+          result is a bug report. A lot of time and effort ends up getting
+          wasted investigating such bug reports.
 
           Memory is so cheap these days that it's not worth it. Human life
           is too short to deal with shared library compatibility problems.
@@ -1629,14 +1634,14 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   6.4 Why don't you use iconv() for internationalization support?
+   _6.4 Why don't you use iconv() for internationalization support?_
 
           iconv() is not ubiquitous enough.
 
    Back to top
      __________________________________________________________________
 
-   6.5 Why is the IMAP server connected to the home directory by default?
+   _6.5 Why is the IMAP server connected to the home directory by default?_
 
           The IMAP server has no way of knowing what you might call "mail"
           as opposed to "some other file"; in fact, you can use IMAP to
@@ -1655,7 +1660,8 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   6.6 I have a Windows system. Why isn't the server plug and play for me?
+   _6.6 I have a Windows system. Why isn't the server plug and play for
+   me?_
 
           There is no standard for how mail is stored on Windows; nor a
           single standard SMTP server. The closest to either would be the
@@ -1675,9 +1681,9 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   6.7 I looked at the UNIX SSL code and saw that you have the SSL data
+   _6.7 I looked at the UNIX SSL code and saw that you have the SSL data
    payload size set to 8192 bytes. SSL allows 16K; why aren't you using
-   the full size?
+   the full size?_
 
           This is to avoid an interoperability problem with:
 
@@ -1702,13 +1708,13 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
           Microsoft has developed a hotfix for this bug. Look up MSKB
           article number 300562. Contrary to the article text which
           implies that this is a Alpine issue, this bug also affects
-          Microsoft Exchange server with any client that transmits
+          Microsoft Exchange server with _any_ client that transmits
           full-sized SSL payloads.
 
    Back to top
      __________________________________________________________________
 
-   6.8 Why is an mh format INBOX called #mhinbox instead of just INBOX?
+   _6.8 Why is an mh format INBOX called #mhinbox instead of just INBOX?_
 
           It's a long story. In brief, the mh format driver is less
           functional than any of the other drivers. It turned out that
@@ -1723,7 +1729,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   6.9 Why don't you support the maildir format?
+   _6.9 Why don't you support the maildir format?_
 
           It is technically difficult to support maildir in IMAP while
           maintaining acceptable performance, robustness, following the
@@ -1747,7 +1753,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   6.10 Why don't you support the Cyrus format?
+   _6.10 Why don't you support the Cyrus format?_
 
           There's no point to doing so. An implementation which supports
           multiple formats will never do as well as one which is optimized
@@ -1761,7 +1767,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   6.11 Why is it creating extra forks on my SVR4 system?
+   _6.11 Why is it creating extra forks on my SVR4 system?_
 
           This is because your system only has fcntl() style locking and
           not flock() style locking. fcntl() locking has a design flaw
@@ -1788,10 +1794,10 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   6.12 Why are you so fussy about the date/time format in the internal
+   _6.12 Why are you so fussy about the date/time format in the internal
    "From " line in traditional UNIX mailbox files? My other mail program
    just considers every line that starts with "From " to be the start of
-   the message.
+   the message._
 
           You just answered your own question. If any line that starts
           with "From " is treated as the start of a message, then every
@@ -1834,7 +1840,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   6.13 Why is traditional UNIX format the default format?
+   _6.13 Why is traditional UNIX format the default format?_
 
           Compatibility with the past 30 or so years of UNIX history. This
           server is the only one that completely interoperates with legacy
@@ -1843,9 +1849,9 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   6.14 Why do you write this "DON'T DELETE THIS MESSAGE -- FOLDER
+   _6.14 Why do you write this "DON'T DELETE THIS MESSAGE -- FOLDER
    INTERNAL DATA" message at the start of traditional UNIX and MMDF format
-   mailboxes?
+   mailboxes?_
 
           This pseudo-message serves two purposes.
 
@@ -1862,9 +1868,9 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   6.15 Why don't you stash the mailbox metadata in the first real message
-   of the mailbox instead of writing this fake FOLDER INTERNAL DATA
-   message?
+   _6.15 Why don't you stash the mailbox metadata in the first real
+   message of the mailbox instead of writing this fake FOLDER INTERNAL
+   DATA message?_
 
           In fact, that is what is done if the mailbox is non-empty and
           does not already have a FOLDER INTERNAL DATA message.
@@ -1881,7 +1887,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   6.16 Why aren't "dual-use" mailboxes the default?
+   _6.16 Why aren't "dual-use" mailboxes the default?_
 
           Compatibility with the past 30 or so years of UNIX history, not
           to mention compatibility with user expectations when using shell
@@ -1890,7 +1896,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   6.17 Why do you use ucbcc to build on Solaris?
+   _6.17 Why do you use ucbcc to build on Solaris?_
 
           It is a long, long story about why cc is set to ucbcc. You need
           to invoke the C compiler so that it links with the SVR4
@@ -1927,7 +1933,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
             binaries (the most obvious symptom is dropping the first two
             characters return filenames from the imapd LIST command. This
             compiler also uses -O2, and is very often what the user gets
-            from "cc". BEWARE
+            from "cc". _BEWARE_
           + If you build the sol port with the real SVR4 compiler, which
             is often hidden away or unavailable on many systems, then you
             will get errors from -O2 and you need to change that to -O.
@@ -1938,8 +1944,8 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   6.18 Why should I care about some old system with BSD libraries? cc is
-   the right thing on my Solaris system!
+   _6.18 Why should I care about some old system with BSD libraries? cc is
+   the right thing on my Solaris system!_
 
           Because there still are sites that use such systems. On those
           systems, the assumption that "cc" does the right thing will lead
@@ -1951,7 +1957,8 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   6.19 Why do you insist upon writing .lock files in the spool directory?
+   _6.19 Why do you insist upon writing .lock files in the spool
+   directory?_
 
           Compatibility with the past 30 years of UNIX software which
           deals with the spool directory, especially software which
@@ -1960,7 +1967,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   6.20 Why should I care about compatibility with the past?
+   _6.20 Why should I care about compatibility with the past?_
 
           This is one of those questions in which the answer never
           convinces those who ask it. Somehow, everybody who ever asks
@@ -1973,7 +1980,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
 7. Problems and Annoyances
      __________________________________________________________________
 
-   7.1 Help! My INBOX is empty! What happened to my messages?
+   _7.1 Help! My INBOX is empty! What happened to my messages?_
 
           If you are seeing "0 messages" when you open INBOX and you know
           you have messages there (and perhaps have looked at your mail
@@ -1988,9 +1995,9 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.2 Help! All my messages in a non-INBOX mailbox have been concatenated
-   into one message which claims to be from me and has a subject of the
-   file name of the mailbox! What's going on?
+   _7.2 Help! All my messages in a non-INBOX mailbox have been
+   concatenated into one message which claims to be from me and has a
+   subject of the file name of the mailbox! What's going on?_
 
           Something wrong with the very first line of the mailbox. Make
           sure that the first five bytes of the file are "From ", followed
@@ -2001,8 +2008,8 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.3 Why do I get the message: CREATE failed: Can't create mailbox node
-   xxxxxxxxx: File exists and how do I fix it?
+   _7.3 Why do I get the message:_ CREATE failed: Can't create mailbox
+   node xxxxxxxxx: File exists _and how do I fix it?_
 
           See the answer to the Are hierarchical mailboxes supported?
           question.
@@ -2010,8 +2017,8 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.4 Why can't I log in to the server? The user name and password are
-   right!
+   _7.4 Why can't I log in to the server? The user name and password are
+   right!_
 
           There are a myriad number of possible answers to this question.
           The only way to say for sure what is wrong is run the server
@@ -2047,8 +2054,8 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.5 Help! My load average is soaring and I see hundreds of POP and IMAP
-   servers, many logged in as the same user!
+   _7.5 Help! My load average is soaring and I see hundreds of POP and
+   IMAP servers, many logged in as the same user!_
 
           Certain inferior losing GUI mail reading programs have a
           "synchronize all mailboxes at startup" (IMAP) or "check for new
@@ -2081,9 +2088,9 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.6 Why does mail disappear even though I set "keep mail on server"?
-   7.7 Why do I get the message Moved ##### bytes of new mail to
-   /home/user/mbox from /var/spool/mail/user and why did this happen?
+   _7.6 Why does mail disappear even though I set "keep mail on server"?_
+   _7.7 Why do I get the message_ Moved ##### bytes of new mail to
+   /home/user/mbox from /var/spool/mail/user _and why did this happen?_
 
           This is probably caused by the mbox driver. If the file "mbox"
           exists on the user's home directory and is in UNIX mailbox
@@ -2101,10 +2108,10 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.8 Why isn't it showing the local host name as a fully-qualified
-   domain name?
-   7.9 Why is the local host name in the From/Sender/Message-ID headers of
-   outgoing mail not coming out as a fully-qualified domain name?
+   _7.8 Why isn't it showing the local host name as a fully-qualified
+   domain name?_
+   _7.9 Why is the local host name in the From/Sender/Message-ID headers
+   of outgoing mail not coming out as a fully-qualified domain name?_
 
           Your UNIX system is misconfigured. The entry for your system in
           /etc/hosts must have the fully-qualified domain name first, e.g.
@@ -2115,6 +2122,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
           short name first, e.g.
 
  105.69.1.234   myserver myserver.example.com
+
 
           or to omit the fully qualified domain name entirely, e.g.
 
@@ -2151,14 +2159,15 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
 
  myserver.example.com.example.com
 
+
           This practice has been thoroughly discredited for many years,
           but folklore dies hard.
 
    Back to top
      __________________________________________________________________
 
-   7.10 What does the message: Mailbox vulnerable - directory
-   /var/spool/mail must have 1777 protection mean? How can I fix this?
+   _7.10 What does the message:_ Mailbox vulnerable - directory
+   /var/spool/mail must have 1777 protection _mean? How can I fix this?_
 
           In order to update a mailbox in the default UNIX format, it is
           necessary to create a lock file to prevent the mailer from
@@ -2195,8 +2204,8 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.11 What does the message: Mailbox is open by another process, access
-   is readonly mean? How do I fix this?
+   _7.11 What does the message:_ Mailbox is open by another process,
+   access is readonly _mean? How do I fix this?_
 
           A problem occurred in applying a lock to a /tmp lock file.
           Either some other program has the mailbox open and won't
@@ -2211,16 +2220,16 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.12 What does the message: Can't get write access to mailbox, access
-   is readonly mean?
+   _7.12 What does the message:_ Can't get write access to mailbox, access
+   is readonly _mean?_
 
           The mailbox file is write-protected against you.
 
    Back to top
      __________________________________________________________________
 
-   7.13 I set my POP3 client to "delete messages from server" but they
-   never get deleted. What is wrong?
+   _7.13 I set my POP3 client to "delete messages from server" but they
+   never get deleted. What is wrong?_
 
           Make sure that your mailbox is not read-only: that the mailbox
           is owned by you and write enabled (protection 0600), and that
@@ -2248,13 +2257,13 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.14 What do messages such as:
+   _7.14 What do messages such as:_
  Message ... UID ... already has UID ...
  Message ... UID ... less than ...
  Message ... UID ... greater than last ...
  Invalid UID ... in message ..., rebuilding UIDs
 
-   mean?
+   _mean?_
 
           Something happened to corrupt the unique identifier regime in
           the mailbox. In traditional UNIX-format mailboxes, this can
@@ -2270,7 +2279,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.15 What do the error messages:
+   _7.15 What do the error messages:_
  Unable to read internal header at ...
  Unable to find CRLF at ...
  Unable to parse internal header at ...
@@ -2280,7 +2289,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
  Unable to parse message size at ...
  Last message (at ... ) runs past end of file ...
 
-   mean? I am using mbx format.
+   _mean? I am using mbx format._
 
           The mbx-format mailbox is corrupted and needs to be repaired.
 
@@ -2292,7 +2301,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
 
           Some people have developed automated scripts, but if you're
           comfortable using emacs it's pretty easy to fix it manually. Do
-          not use vi or any other editor unless you are certain that
+          _not_ use vi or any other editor unless you are certain that
           editor can handle binary!!!
 
           If you are not comfortable with emacs, or if the file is too
@@ -2315,7 +2324,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
  dd-mmm-yyyy hh:mm:ss +zzzz,ssss;ffffffffFFFF-UUUUUUUU
 
           The only thing that is variable is the "ssss" field, it can be
-          as many digits as needed. All other fields (inluding the "dd")
+          as many digits as needed. All other fields (including the "dd")
           are fixed width. So, the easiest thing to do is to look forward
           in the file for the next internal header, and delete everything
           from the error point to that internal header.
@@ -2406,13 +2415,13 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.16 What do the syslog messages:
+   _7.16 What do the syslog messages:_
 
  imap/tcp server failing (looping)
  pop3/tcp server failing (looping)
 
-   mean? When it happens, the listed service shuts down. How can I fix
-   this?
+   _mean? When it happens, the listed service shuts down. How can I fix
+   this?_
 
           The error message "server failing (looping), service terminated"
           is not from either the IMAP or POP servers. Instead, it comes
@@ -2434,9 +2443,9 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
           only ran a few dozen servers.
 
           On some versions of inetd, such as the one distributed with most
-          versions of Linux, you can modify the /etc/inetd.conf file to
+          versions of Linux, you can modify the _/etc/inetd.conf_ file to
           have a larger number of servers by appending a period followed
-          by a number after the nowait word for the server entry. For
+          by a number after the _nowait_ word for the server entry. For
           example, if your existing /etc/inetd.conf line reads:
 
  imap    stream  tcp     nowait  root    /usr/etc/imapd imapd
@@ -2453,6 +2462,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
 
  imap    stream  tcp     nowait.100  root    /usr/sbin/tcpd  imapd
 
+
           to increase the limit to 100 sessions/minute.
 
           Before making this change, please read the information in "man
@@ -2464,16 +2474,16 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
           code (provided by your UNIX system vendor) to set higher limits,
           rebuild inetd, install the new binary, and reboot your system.
           This should only be done by a UNIX system expert. In the inetd.c
-          source code, the limits TOOMANY (normally 40) is the maximum
+          source code, the limits _TOOMANY_ (normally 40) is the maximum
           number of new server sessions permitted per minute, and
-          RETRYTIME (normally 600) is the number of seconds inetd will
+          _RETRYTIME_ (normally 600) is the number of seconds inetd will
           shut down the server after it exceeds TOOMANY.
 
    Back to top
      __________________________________________________________________
 
-   7.17 What does the syslog message: Mailbox lock file /tmp/.600.1df3
-   open failure: Permission denied mean?
+   _7.17 What does the syslog message:_ Mailbox lock file /tmp/.600.1df3
+   open failure: Permission denied _mean?_
 
           This usually means that some "helpful" security script person
           has protected /tmp so that it is no longer world-writeable. /tmp
@@ -2481,6 +2491,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
           scratch space. To fix this, do
 
  chmod 1777 /tmp
+
 
           as root.
 
@@ -2492,12 +2503,12 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.18 What do the syslog messages:
+   _7.18 What do the syslog messages:_
  Command stream end of file, while reading line user=... host=...
  Command stream end of file, while reading char user=... host=...
  Command stream end of file, while writing text user=... host=...
 
-   mean?
+   _mean?_
 
           This message occurs when the session is disconnected without a
           proper LOGOUT (IMAP) or QUIT (POP) command being received by the
@@ -2526,8 +2537,8 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.19 Why did my POP or IMAP session suddenly disconnect? The syslog has
-   the message: Killed (lost mailbox lock) user=... host=...
+   _7.19 Why did my POP or IMAP session suddenly disconnect? The syslog
+   has the message:_ Killed (lost mailbox lock) user=... host=...
 
           This message only happens when either the traditional UNIX
           mailbox format or MMDF format is in use. This format only allows
@@ -2537,8 +2548,8 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
           mailbox, that means that the first session is probably owned by
           an abandoned client. The common scenario here is a user who
           leaves his client running at the office, and then tries to read
-          his mail from home. Through an internal mechanism called kiss of
-          death, the second session requests the first session to kill
+          his mail from home. Through an internal mechanism called _kiss
+          of death_, the second session requests the first session to kill
           itself. When the first session receives the "kiss of death", it
           issues the "Killed (lost mailbox lock)" syslog message and
           terminates. The second session then seizes read/write access,
@@ -2560,10 +2571,10 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.20 Why does my IMAP client show all the files on the system,
-   recursively from the UNIX root directory?
-   7.21 Why does my IMAP client show all of my files, recursively from my
-   UNIX home directory?
+   _7.20 Why does my IMAP client show all the files on the system,
+   recursively from the UNIX root directory?_
+   _7.21 Why does my IMAP client show all of my files, recursively from my
+   UNIX home directory?_
 
           A well-written client should only show one level of hierarchy
           and then stop, awaiting explicit user action before going lower.
@@ -2585,8 +2596,8 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.22 Why does my IMAP client show that I have mailboxes named
-   "#mhinbox", "#mh", "#shared", "#ftp", "#news", and "#public"?
+   _7.22 Why does my IMAP client show that I have mailboxes named
+   "#mhinbox", "#mh", "#shared", "#ftp", "#news", and "#public"?_
 
           These are IMAP namespace names. They represent other hierarchies
           in which messages may exist. These hierarchies may not
@@ -2601,7 +2612,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.23 Why does my IMAP client show all my files in my home directory?
+   _7.23 Why does my IMAP client show all my files in my home directory?_
 
           As distributed, the IMAP server is connected to your home
           directory by default. It has no way of knowing what you might
@@ -2630,10 +2641,10 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.24 Why is there a long delay before I get connected to the IMAP or
-   POP server, no matter what client I use?
+   _7.24 Why is there a long delay before I get connected to the IMAP or
+   POP server, no matter what client I use?_
 
-          There are two common occurances of this problem:
+          There are two common occurrences of this problem:
 
           + You are running a system (e.g. certain versions of Linux)
             which by default attempts to connect to an "IDENT" protocol
@@ -2662,6 +2673,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
             and /etc/xinetd.d/ipop3d. In those files, look for lines
             containing "USERID", e.g.
  log_on_success += USERID
+
             Hunt down such lines, and delete them ruthlessly from all
             files in which they occur. Don't be shy about it.
           + The DNS is taking a long time to do a reverse DNS (PTR record)
@@ -2680,16 +2692,17 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.25 Why is there a long delay in Alpine or any other c-client based
+   _7.25 Why is there a long delay in Alpine or any other c-client based
    application call before I get connected to the IMAP server? The hang
    seems to be in the c-client mail_open() call. I don't have this problem
    with any other IMAP client. There is no delay connecting to a POP3 or
-   NNTP server with mail_open().
+   NNTP server with mail_open()._
 
           By default, the c-client library attempts to make a connection
           through rsh (and ssh, if you enable that). If the command:
 
  rsh imapserver exec /etc/rimapd
+
 
           (or ssh if that is enabled) returns with a "* PREAUTH" response,
           it will use the resulting rsh session as the IMAP session and
@@ -2701,14 +2714,15 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
           successful connection followed by an error message and close the
           connection.
 
-          It must be emphasized that this is a bug in rsh. It is not a bug
-          in the IMAP toolkit.
+          It must be emphasized that this is a bug in rsh. It is _not_ a
+          bug in the IMAP toolkit.
 
           The use of rsh can be disabled in any the following ways:
 
           + You can disable it for this particular session by either:
                o setting an explicit port number in the mailbox name, e.g.
  {imapserver.foo.com:143}INBOX
+
                o using SSL (the /ssl switch)
           + You can disable rsh globally by setting the rsh timeout value
             to 0 with the call:
@@ -2717,20 +2731,20 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.26 Why does a message sometimes get split into two or more messages
-   on my SUN system?
+   _7.26 Why does a message sometimes get split into two or more messages
+   on my SUN system?_
 
           This is caused by an interaction of two independent design
           problems in SUN mail software. The first problem is that the
-          "forward message" option in SUN's mail tool program includes the
-          internal "From " header line in the text that it forwarded. This
-          internal header line is specific to traditional UNIX mailbox
-          files and is not suitable for use in forwarded messages.
+          "forward message" option in SUN's _mail tool_ program includes
+          the internal "From " header line in the text that it forwarded.
+          This internal header line is specific to traditional UNIX
+          mailbox files and is not suitable for use in forwarded messages.
 
           The second problem is that the mail delivery agent assumes that
           mail reading programs will not use the traditional UNIX mailbox
           format but instead an incompatible variant that depends upon a
-          Content-Length: message header. Content-Length is widely
+          _Content-Length:_ message header. Content-Length is widely
           recognized to have been a terrible mistake, and is no longer
           recommended for use in mail (it is used in other facilities that
           use MIME).
@@ -2741,8 +2755,8 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
           "Content-Length:" headers with evil values.
 
           To fix the mailer on your system, edit your sendmail.cf to
-          change the Mlocal line to have the -E flag. A typical entry will
-          lool like:
+          change the _Mlocal_ line to have the _-E_ flag. A typical entry
+          will lool like:
 
  Mlocal,        P=/usr/lib/mail.local, F=flsSDFMmnPE, S=10, R=20,
                 A=mail.local -d $u
@@ -2755,9 +2769,10 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.27 Why did my POP or IMAP session suddenly disconnect? The syslog has
-   the message:
+   _7.27 Why did my POP or IMAP session suddenly disconnect? The syslog
+   has the message:_
  Autologout user=<...my user name...> host=<...my client system...>
+
 
           This is a problem in your client.
 
@@ -2768,10 +2783,10 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.28 What does the UNIX error message: TLS/SSL failure: myserver: SSL
-   negotiation failed mean?
-   7.29 What does the PC error message: TLS/SSL failure: myserver:
-   Unexpected TCP input disconnect mean?
+   _7.28 What does the UNIX error message:_ TLS/SSL failure: myserver: SSL
+   negotiation failed _mean?_
+   _7.29 What does the PC error message:_ TLS/SSL failure: myserver:
+   Unexpected TCP input disconnect _mean?_
 
           This usually means that an attempt to negotiate TLS encryption
           via the STARTTLS command failed, because the server advertises
@@ -2784,8 +2799,8 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.30 What does the error message: TLS/SSL failure: myserver: Server
-   name does not match certificate mean?
+   _7.30 What does the error message:_ TLS/SSL failure: myserver: Server
+   name does not match certificate _mean?_
 
           An SSL or TLS session encryption failed because the server name
           in the server's certificate does not match the name that you
@@ -2801,10 +2816,10 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.31 What does the UNIX error message: TLS/SSL failure: myserver:
-   self-signed certificate mean?
-   7.32 What does the PC error message: TLS/SSL failure: myserver:
-   Self-signed certificate or untrusted authority mean?
+   _7.31 What does the UNIX error message:_ TLS/SSL failure: myserver:
+   self-signed certificate _mean?_
+   _7.32 What does the PC error message:_ TLS/SSL failure: myserver:
+   Self-signed certificate or untrusted authority _mean?_
 
           An SSL or TLS session encryption failed because your server's
           certificate is "self-signed"; that is, it is not signed by any
@@ -2820,8 +2835,8 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.33 What does the UNIX error message: TLS/SSL failure: myserver:
-   unable to get local issuer certificate mean?
+   _7.33 What does the UNIX error message:_ TLS/SSL failure: myserver:
+   unable to get local issuer certificate _mean?_
 
           An SSL or TLS session encryption failed because your system does
           not have the Certificate Authority (CA) certificates installed
@@ -2849,8 +2864,8 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.34 Why does reading certain messages hang when using Netscape? It
-   works fine with Alpine!
+   _7.34 Why does reading certain messages hang when using Netscape? It
+   works fine with Alpine!_
 
           There are two possible causes.
 
@@ -2864,7 +2879,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
           Most clients don't care, but apparently Netscape does.
 
           You can work around this by rebuilding imapd with the
-          NETSCAPE_BRAIN_DAMAGE option set (see src/imapd/Makefile); this
+          _NETSCAPE_BRAIN_DAMAGE_ option set (see src/imapd/Makefile); this
           will cause imapd to convert all NULs to 0x80 characters. A
           better solution is to enable the feature in your MTA to
           MIME-convert messages with binary content. See the documentation
@@ -2873,23 +2888,23 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.35 Why does Netscape say that there's a problem with the IMAP server
-   and that I should "Contact your mail server administrator."?
+   _7.35 Why does Netscape say that there's a problem with the IMAP server
+   and that I should "Contact your mail server administrator."?_
 
           Certain versions of Netscape do this when you click the Manage
           Mail button, which uses an undocumented feature of Netscape's
           proprietary IMAP server.
 
           You can work around this by rebuilding imapd with the
-          NETSCAPE_BRAIN_DAMAGE option set (see src/imapd/Makefile) to a
+          _NETSCAPE_BRAIN_DAMAGE_ option set (see src/imapd/Makefile) to a
           URL that points either to an alternative IMAP client (e.g.
           Alpine) or perhaps to a homebrew mail account management page.
 
    Back to top
      __________________________________________________________________
 
-   7.36 Why is one user creating huge numbers of IMAP or POP server
-   sessions?
+   _7.36 Why is one user creating huge numbers of IMAP or POP server
+   sessions?_
 
           The user is probably using Outlook Express, Eudora, or a similar
           program. See the answer to the Help! My load average is soaring
@@ -2899,8 +2914,8 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.37 Why don't I get any new mail notifications from Outlook Express or
-   Outlook after a while?
+   _7.37 Why don't I get any new mail notifications from Outlook Express
+   or Outlook after a while?_
 
           This is a known bug in Outlook Express. Microsoft is aware of
           the problem and its cause. They have informed us that they do
@@ -2933,12 +2948,12 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.38 Why don't I get any new mail notifications from Entourage?
+   _7.38 Why don't I get any new mail notifications from Entourage?_
 
           This is a known bug in Entourage.
 
           You built an older version of imapd with the
-          MICROSOFT_BRAIN_DAMAGE option set, in order to disable support
+          _MICROSOFT_BRAIN_DAMAGE_ option set, in order to disable support
           for the IDLE command. However, Entourage won't get new mail
           unless IDLE command support exists.
 
@@ -2949,26 +2964,26 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.39 Why doesn't Entourage work at all?
+   _7.39 Why doesn't Entourage work at all?_
 
           It's hard to know. Entourage breaks almost every rule in the
           book for IMAP. It is highly instructive to do a packet trace on
-          Entourage, as an example of how not to use IMAP. It does things
-          like STATUS (MESSAGES) on the currently selected mailbox and
-          re-fetching the same static data over and over again.
+          Entourage, as an example of how _not_ to use IMAP. It does
+          things like STATUS (MESSAGES) on the currently selected mailbox
+          and re-fetching the same static data over and over again.
 
           It seems that every time we understand what it is doing wrong in
           Entourage and come up with a workaround, we learn about
           something else that's broken.
 
-          Try building imapd with the ENTOURAGE_BRAIN_DAMAGE option set,
+          Try building imapd with the _ENTOURAGE_BRAIN_DAMAGE_ option set,
           in order to disable the diagnostic that occurs when doing STATUS
           on the currently selected mailbox.
 
    Back to top
      __________________________________________________________________
 
-   7.40 Why doesn't Netscape Notify (NSNOTIFY.EXE) work at all?
+   _7.40 Why doesn't Netscape Notify (NSNOTIFY.EXE) work at all?_
 
           This is a bug in NSNOTIFY; it doesn't handle unsolicited data
           from the server correctly.
@@ -2987,9 +3002,9 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.41 Why can't I connect via SSL to Eudora? It says the connection has
+   _7.41 Why can't I connect via SSL to Eudora? It says the connection has
    been broken, and in the server syslogs I see "Command stream end of
-   file".
+   file"._
 
           There is a report that you can fix the problem by going into
           Eudora's advanced network configuration menu and increasing the
@@ -2998,12 +3013,12 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.42 Sheesh. Aren't there any good IMAP clients out there?
+   _7.42 Sheesh. Aren't there any good IMAP clients out there?_
 
           Yes!
 
-          Alpine is a wonderful client. It's fast, it uses IMAP well, and
-          it generates text mail (life is too short to waste on HTML
+          Alpine is a _wonderful_ client. It's fast, it uses IMAP well,
+          and it generates text mail (life is too short to waste on HTML
           mail). Also, there are some really wonderful things in progress
           in the Alpine world.
 
@@ -3012,17 +3027,17 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
           active in the IMAP protocol development community, and their
           products.
 
-          Netscape, Eudora, and Outlook can be configured with enough
-          effort to be good citizens and work well for users, but they can
-          also be badly misconfigured, and often the misconfiguration is
-          the default.
+          Netscape, Eudora, and Outlook _can_ be configured with enough
+          effort to be good citizens and work well for users, _but_ they
+          can also be badly misconfigured, and often the misconfiguration
+          is the default.
 
    Back to top
      __________________________________________________________________
 
-   7.43 But wait! PC Alpine (or other PC program build with c-client)
-   crashes with the message incomplete SecBuffer exceeds maximum buffer
-   size when I use SSL connections. This is a bug in c-client, right?
+   _7.43 But wait! PC Alpine (or other PC program build with c-client)
+   crashes with the message_ incomplete SecBuffer exceeds maximum buffer
+   size _when I use SSL connections. This is a bug in c-client, right?_
 
           It's a bug in the Microsoft SChannel.DLL, which implements SSL.
           Microsoft admits it (albeit with an unstatement: "it's not fully
@@ -3035,7 +3050,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
           It can take a while for the problem to show up. The client has
           to do something that causes at least 16K of contiguous data.
           Many clients do partial fetching, which tends to reduce the
-          number of cases where this can happen. However, all software
+          number of cases where this can happen. However, _all_ software
           which uses SChannel to support SSL is affected by this bug.
 
           This problem does not affect UNIX code, since OpenSSL is used on
@@ -3061,15 +3076,15 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.44 My qpopper users keep on getting the DON'T DELETE THIS MESSAGE --
+   _7.44 My qpopper users keep on getting the DON'T DELETE THIS MESSAGE --
    FOLDER INTERNAL DATA if they also use Alpine or IMAP. How can I fix
-   this?
+   this?_
 
           This is an incompatibility between qpopper and the c-client
           library used by Alpine, imapd, and ipop[23]d.
 
           Assuming that you want to continue using qpopper, look into
-          qpopper's --enable-uw-kludge-flag configuration flag, which is
+          qpopper's _--enable-uw-kludge-flag_ configuration flag, which is
           documented as "check for and hide UW 'Folder Internal Data'
           messages".
 
@@ -3078,8 +3093,8 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.45 Help! I installed the servers but I can't connect to them from my
-   client!
+   _7.45 Help! I installed the servers but I can't connect to them from my
+   client!_
 
           Review the installation instructions carefully. Make sure that
           you have not skipped any of the steps. Make sure that you have
@@ -3112,9 +3127,10 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.46 Why do I get the message Can not authenticate to SMTP server: 421
-   SMTP connection went away! and why did this happen? There was also
-   something about SECURITY PROBLEM: insecure server advertised AUTH=PLAIN
+   _7.46 Why do I get the message_ Can not authenticate to SMTP server:
+   421 SMTP connection went away! _and why did this happen? There was also
+   something about_ SECURITY PROBLEM: insecure server advertised
+   AUTH=PLAIN
 
           Some versions of qmail, including that running on
           mail.smtp.yahoo.com, disconnect the SMTP session if you fail to
@@ -3134,9 +3150,9 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.47 Why do I get the message SMTP Authentication cancelled and why did
-   this happen? There was also something about SECURITY PROBLEM: insecure
-   server advertised AUTH=PLAIN
+   _7.47 Why do I get the message_ SMTP Authentication cancelled _and why
+   did this happen? There was also something about_ SECURITY PROBLEM:
+   insecure server advertised AUTH=PLAIN
 
           This is a bug in the SMTP server.
 
@@ -3156,7 +3172,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
           encoded string; in other words, it is a protocol syntax error.
 
           In the case of AUTH=PLAIN, RFC 4422 (page 7) requires that the
-          encoded string have no data. In other words, the appropropiate
+          encoded string have no data. In other words, the appropriate
           standards-compliant server response is "334" followed by a SPACE
           and a CRLF.
 
@@ -3169,8 +3185,8 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
    Back to top
      __________________________________________________________________
 
-   7.48 Why do I get the message Invalid base64 string when I try to
-   authenticate to a Cyrus server?
+   _7.48 Why do I get the message_ Invalid base64 string _when I try to
+   authenticate to a Cyrus server?_
 
           This slightly misleading message is the way that a Cyrus server
           indicates that an authentication exchange was cancelled. It is
@@ -3190,8 +3206,8 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
 8. Where to Go For Additional Information
      __________________________________________________________________
 
-   8.1 Where can I go to ask questions?
-   8.2 I have some ideas for enhancements to IMAP. Where should I go?
+   _8.1 Where can I go to ask questions?_
+   _8.2 I have some ideas for enhancements to IMAP. Where should I go?_
 
           If you have questions about the IMAP protocol, or want to
           participate in discussions of future directions of the IMAP
@@ -3200,23 +3216,23 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
           via imap-protocol-request@u.washington.edu
 
           You must be a subscriber to post to this list. As an
-          alternative, you can use the comp.mail.imap newsgroup.
+          alternative, you can use the _comp.mail.imap_ newsgroup.
 
    Back to top
      __________________________________________________________________
 
-   8.3 Where can I read more about IMAP and other email protocols?
+   _8.3 Where can I read more about IMAP and other email protocols?_
 
-          We recommend Internet Email Protocols: A Developer's Guide, by
+          We recommend _Internet Email Protocols: A Developer's Guide_, by
           Kevin Johnson, published by Addison Wesley, ISBN 0-201-43288-9.
 
    Back to top
      __________________________________________________________________
 
-   8.4 Where can I find out more about setting up and administering an
-   IMAP server?
+   _8.4 Where can I find out more about setting up and administering an
+   IMAP server?_
 
-          We recommend Managing IMAP, by Dianna Mullet & Kevin Mullet,
+          We recommend _Managing IMAP_, by Dianna Mullet & Kevin Mullet,
           published by O'Reilly, ISBN 0-596-00012-X.
 
    Back to top

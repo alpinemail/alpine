@@ -6232,7 +6232,7 @@ PEMailboxCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST
 		     * CMD: zoom
 		     *
 		     *    Set/clear HID bits of non SLCT messages as requested.
-		     *    PEMailbox [first | last | next] are senstive to these flags.
+		     *    PEMailbox [first | last | next] are sensitive to these flags.
 		     *
 		     * ARGS: newstate - 1 or 0
 		     *
@@ -6263,7 +6263,7 @@ PEMailboxCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST
 		     * CMD: focus
 		     *
 		     *    Set/clear HID bits of non MN_SRCH messages as requested.
-		     *    PEMailbox [first | last | next] are senstive to MN_HIDE flag
+		     *    PEMailbox [first | last | next] are sensitive to MN_HIDE flag
 		     *
 		     * ARGS: newstate - 1 or 0
 		     *
@@ -6425,7 +6425,7 @@ PEMailboxCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST
 		     * ARGS: [before | after] relative to 
 		     *       msgno
 		     *
-		     * Returns: count of messsages before or after given message number
+		     * Returns: count of messages before or after given message number
 		     */
 
 		    if((relative = Tcl_GetStringFromObj(objv[2], NULL))

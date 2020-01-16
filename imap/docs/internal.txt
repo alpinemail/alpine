@@ -687,7 +687,7 @@ void (*init) (STRING *s,void *data,unsigned long size);
 	data	pointer to driver-dependent data, from which the
 		 driver can determine string data
 	size	size of the string
- This method initializes the string stucture.  It can use the data,
+ This method initializes the string structure.  It can use the data,
 data1, and chunksize values as it likes.  The remaining values must be
 set up as follows:
 	size		static, copied from the size argument

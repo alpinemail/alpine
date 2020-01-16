@@ -415,7 +415,7 @@ index_lister(struct pine *state, CONTEXT_S *cntxt, char *folder, MAILSTREAM *str
         }
 
 	/*
-	 * events may have occured that require us to shift from
+	 * events may have occurred that require us to shift from
 	 * mode to another...
 	 */
 	style = THRD_INDX()

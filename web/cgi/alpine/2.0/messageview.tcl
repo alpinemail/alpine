@@ -399,9 +399,9 @@ proc drawMessageText {c f u {showimg ""}} {
 		set retf [cgi_quote_html $f]
 	      }
 
-	      cgi_put [cgi_url "Return[cgi_nbspace]to[cgi_nbspace]${retf}" "browse/$c/$f" class="wap" "onClick=return newMessageList({contol:this});"]
+	      cgi_put [cgi_url "Return[cgi_nbspace]to[cgi_nbspace]${retf}" "browse/$c/$f" class="wap" "onClick=return newMessageList({control:this});"]
 	      cgi_br
-	      cgi_put [cgi_url "Show[cgi_nbspace]Filtered[cgi_nbspace]Headers" "view/$c/$f/$u" class="wap" "onClick=return newMessageText({contol:this,parms:{op:'hdroff'}});"]
+	      cgi_put [cgi_url "Show[cgi_nbspace]Filtered[cgi_nbspace]Headers" "view/$c/$f/$u" class="wap" "onClick=return newMessageText({control:this,parms:{op:'hdroff'}});"]
 	    }
 	  }
 	}
@@ -423,7 +423,7 @@ proc drawMessageText {c f u {showimg ""}} {
 		      set retf [cgi_quote_html $f]
 		    }
 
-		    cgi_put [cgi_url "Return[cgi_nbspace]to[cgi_nbspace]${retf}[cgi_span "class=sp spmv spmv3" [cgi_span [cgi_nbspace]]]" "browse/$c/$f" class="wap" "onClick=return newMessageList({contol:this,parms:{page:'new'}});"]
+		    cgi_put [cgi_url "Return[cgi_nbspace]to[cgi_nbspace]${retf}[cgi_span "class=sp spmv spmv3" [cgi_span [cgi_nbspace]]]" "browse/$c/$f" class="wap" "onClick=return newMessageList({control:this,parms:{page:'new'}});"]
 		  }
 		}
 	      } elseif {0 == [string compare -nocase date $hf]} {

@@ -6166,7 +6166,7 @@ calc_extra_hdrs(void)
 	  pat;
 	  pat = next_pattern(&pstate)){
 	  /*
-	   * This section wouldn't be necessary if sender was retreived
+	   * This section wouldn't be necessary if sender was retrieved
 	   * from the envelope. But if not, we do need to add it.
 	   */
 	  if(pat->action && pat->action->scorevalhdrtok

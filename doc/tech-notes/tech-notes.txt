@@ -3868,7 +3868,7 @@ m+4TJybNGNfAgOctSkEyY/OCb49fRRQTCBZVIhzLGGmpYmkO55HbIA==
           connection. The default is "%s %s -l %s exec /etc/r%sd". All
           four "%s" entries MUST exist in the provided command. The first
           is for the command's pathname, the second is for the host to
-          connnect to, the third is for the user to connect as, and the
+          connect to, the third is for the user to connect as, and the
           fourth is for the connection method (typically imap).
    _ssh-open-timeout_
           Sets the time in seconds that _Alpine_ will attempt to open a
@@ -10034,10 +10034,11 @@ Patterns
 
                  {news.example.com/nntp}#news.comp.mail.pine
           The easiest way to fill in the "Folder" field is to use the T
-          command which is available when the "Folder" line is hilighted.
-          Note that you won't be able to edit the "Folder" line unless the
-          Current Folder Type is set to "Specific", and any value that
-          "Folder" has is ignored unless the type is set to "Specific".
+          command which is available when the "Folder" line is
+          highlighted. Note that you won't be able to edit the "Folder"
+          line unless the Current Folder Type is set to "Specific", and
+          any value that "Folder" has is ignored unless the type is set to
+          "Specific".
           When reading a newsgroup, there may be a performance penalty
           incurred when collecting the information necessary to check a
           Pattern. For this reason, the default Current Folder Type is set

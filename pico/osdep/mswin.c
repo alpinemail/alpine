@@ -6335,7 +6335,7 @@ mswin_getscrollpos (void)
 
 
 /*
- * retreive the latest scroll to position.
+ * retrieve the latest scroll to position.
  */
 long
 mswin_getscrollto (void)

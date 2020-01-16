@@ -884,7 +884,7 @@ New W2K port for Windows 2000.  In addition to supporting SSL using the
 official SSPI interface (the NT and NTK ports invoke SChannel.DLL directly),
 the W2K port also supports Microsoft Kerberos.  Note that the NT and NTK ports
 will work on Windows 2000, but the W2K port will not work on NT4, Windows
-9x, or Windows Millenium.
+9x, or Windows Millennium.
 
 There is now a #user namespace, equivalent to the "~" namespace on UNIX.
 

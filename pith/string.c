@@ -1093,7 +1093,7 @@ The following date formats are accepted:
   DD MM WKDAY YY MM HH:MM:SS ZZ
 
 All leading, intervening and trailing spaces tabs and commas are ignored.
-The prefered formats are the first or second ones.  If a field is unparsable
+The preferred formats are the first or second ones.  If a field is unparsable
 it's value is left as -1. 
 
   ----*/

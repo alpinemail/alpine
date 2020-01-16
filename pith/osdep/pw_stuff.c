@@ -35,7 +35,7 @@ static char *gcos_name(char *, char *);
       Pull the name out of the gcos field if we have that sort of /etc/passwd
 
    Args: gcos_field --  The long name or GCOS field to be parsed
-         logname    --  Replaces occurences of & with logname string
+         logname    --  Replaces occurrences of & with logname string
 
  Result: returns pointer to buffer with name
   ----*/

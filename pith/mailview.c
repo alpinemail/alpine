@@ -1289,7 +1289,7 @@ format_env_hdr(MAILSTREAM *stream, long int msgno, char *section, ENVELOPE *env,
  * occurrence of header "field".  Set "start" to that.  Set "end" to point one
  * position past all of the continuation lines that go with "field".
  * That is, if "end" is converted to a null
- * character then the string "start" will be the next occurence of header
+ * character then the string "start" will be the next occurrence of header
  * "field" including all of its continuation lines. Assume we
  * have CRLF's as end of lines.
  *
@@ -2466,7 +2466,7 @@ format_header(MAILSTREAM *stream, long int msgno, char *section, ENVELOPE *env,
 		}
 		else{
 		    /*
-		     * Go through h finding all occurences of this header
+		     * Go through h finding all occurrences of this header
 		     * and all continuation lines, and output.
 		     */
 		    for(current = h;

@@ -2493,7 +2493,7 @@ msgstr ""
 msgid "TakeAddr"
 msgstr ""
 
-#. TRANSLATORS: select currrently highlighted message Thread
+#. TRANSLATORS: select currently highlighted message Thread
 #: alpine/mailcmd.c:190 alpine/mailcmd.c:6897
 msgid "select Curthrd"
 msgstr ""
@@ -3032,7 +3032,7 @@ msgstr ""
 msgid "Problems saving attachments"
 msgstr ""
 
-#. TRANSLATORS: Saved <how many> attachements to <directory name>
+#. TRANSLATORS: Saved <how many> attachments to <directory name>
 #: alpine/mailcmd.c:3951
 #, c-format
 msgid "Saved %s attachments to %s"
@@ -11151,7 +11151,7 @@ msgstr ""
 msgid "Search Cancelled"
 msgstr ""
 
-#. TRANSLATORS: abbreviation for Replace All occurences
+#. TRANSLATORS: abbreviation for Replace All occurrences
 #: pico/search.c:487 pico/search.c:624
 msgid "Repl All"
 msgstr ""

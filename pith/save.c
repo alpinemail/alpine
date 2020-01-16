@@ -1711,7 +1711,7 @@ save_ex_output_line(char *line, long unsigned int *len, gf_io_t pc)
 /*----------------------------------------------------------------------
    Save() helper function to create canonical date string from given header
 
-   Args: date -- buf to recieve canonical date string
+   Args: date -- buf to receive canonical date string
 	 header -- rfc822 header to fish date string from
 
  Result: date filled with canonicalized date in header, or null string
