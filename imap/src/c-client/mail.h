@@ -1951,5 +1951,5 @@ typedef struct oauth2_s {
 } OAUTH2_S;
 
 typedef char *(*oauth2getaccesscode_t) (char *url, OAUTH2_S *, int *);
-typedef void *(*oauth2clientinfo_t)(char *name, char **id, char **secret);
+typedef void (*oauth2clientinfo_t)(char *name, char **id, char **secret);
 
