@@ -269,7 +269,7 @@ BEGIN
 #endif
             VALUE "FileVersion", "2.21.99999\0"
             VALUE "InternalName", "alpine\0"
-            VALUE "LegalCopyright", "Copyright 2013-2020 Eduardo Chappa, Copyright 2006-2009 University of Washington, Copyright 2013-2014\0"
+            VALUE "LegalCopyright", "Copyright 2013-2020 Eduardo Chappa, Copyright 2006-2009 University of Washington\0"
             VALUE "OriginalFilename", "alpine.exe\0"
             VALUE "ProductName", "alpine\0"
             VALUE "ProductVersion", "2.21.99999\0"

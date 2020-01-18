@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 391 2020-01-18 02:21:08
+Alpine Commit 392 2020-01-18 13:08:29
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -189,6 +189,11 @@ Based on code provided by Maciej W. Rozycki.
 
 <LI> Add /tls1_3 flag for servers that support it. Read more information
 in the secure protocols <A HREF="h_network_encryption_security">help</A>.
+
+<LI> To increase user's privacy, remove phone-home code that would prompt 
+users to send an email message upon starting Alpine for the first time for 
+purposes of counting. Your use of Alpine does not disclose information about 
+you or your use of Alpine to the developers of Alpine.
 
 <LI> New variable 
 <A HREF="h_config_encryption_range"><!--#echo var="VAR_encryption-protocol-range"--></A> 

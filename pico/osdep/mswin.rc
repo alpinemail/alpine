@@ -210,7 +210,7 @@ BEGIN
             VALUE "FileDescription", "Pico\0"
             VALUE "FileVersion", "5.10\0"
             VALUE "InternalName", "pico\0"
-            VALUE "LegalCopyright", "Copyright 2013-2020\0"
+            VALUE "LegalCopyright", "Copyright 2013-2020 Eduardo Chappa,\nCopyright 2006-2009 University of Washington\0"
             VALUE "OriginalFilename", "pico.exe\0"
             VALUE "ProductName", "  pico\0"
             VALUE "ProductVersion", "5.10\0"
