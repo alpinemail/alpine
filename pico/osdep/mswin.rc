@@ -177,7 +177,7 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_BYLINE              "Copyright 2006-2009 University of Washington"
+    IDS_BYLINE              "Copyright 2013-2020 Eduardo Chappa, Copyright 2006-2009 University of Washington"
     IDS_APPNAME             "Pico"
     IDS_APPIDENT            "pico"
 END
@@ -189,8 +189,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,09,0,0
- PRODUCTVERSION 5,09,0,0
+ FILEVERSION 5,10,0,0
+ PRODUCTVERSION 5,10,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -205,15 +205,15 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "see http://www.washington.edu/pine\0"
-            VALUE "CompanyName", "University of Washington\0"
+            VALUE "Comments", "see http://alpine.x10host.com/alpine/release\0"
+            VALUE "CompanyName", "Patches for Alpine\0"
             VALUE "FileDescription", "Pico\0"
-            VALUE "FileVersion", "5.09\0"
+            VALUE "FileVersion", "5.10\0"
             VALUE "InternalName", "pico\0"
-            VALUE "LegalCopyright", "Copyright 2006-2009\0"
+            VALUE "LegalCopyright", "Copyright 2013-2020\0"
             VALUE "OriginalFilename", "pico.exe\0"
             VALUE "ProductName", "  pico\0"
-            VALUE "ProductVersion", "5.09\0"
+            VALUE "ProductVersion", "5.10\0"
         END
     END
     BLOCK "VarFileInfo"

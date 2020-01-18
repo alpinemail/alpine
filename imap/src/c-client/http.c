@@ -370,7 +370,7 @@ http_add_header_data(HTTPSTREAM *stream, char *hdata)
   /* extract header name first */
   if((h = strchr(hdata, ':'))){
     *h = '\0';
-    hname = fs_get(h-hdata+1);
+    hname = fs_get((h-hdata+2)*sizeof(char));
     strncpy(hname, hdata, h-hdata);
     hname[h-hdata] = '\0';
     if(!valid_token_name(hname))
@@ -738,7 +738,7 @@ char *
 http_request_line(char *method, char *target, char *version)
 {
   int len = strlen(method) + strlen(target) + strlen(version) + 2 + 1;
-  char *line = fs_get(len);
+  char *line = fs_get(len*sizeof(char));
 
   sprintf(line, "%s %s %s", method, target, version);
   return line;
@@ -756,7 +756,7 @@ http_add_header(HTTP_REQUEST_S **reqp, char *name, char *value)
   len  = strlen(name) + 2 + strlen(value) + 2 + 1;
   hlen = (*reqp)->header ? strlen((*reqp)->header) : 0;
   len += hlen;
-  fs_resize((void **) &(*reqp)->header, len);
+  fs_resize((void **) &(*reqp)->header, len*sizeof(char));
   sprintf((*reqp)->header + hlen, "%s: %s\015\012", name, value);
 }
 
@@ -768,7 +768,7 @@ buffer_add(char **bufp, char *text)
   if(!bufp || !text || !*text) return;
 
   len = *bufp ? strlen(*bufp) : 0;
-  fs_resize((void **) bufp, len + strlen(text) + 1);
+  fs_resize((void **) bufp, (len + strlen(text) + 1)*sizeof(char));
   (*bufp)[len] = '\0';
   strcat(*bufp, text);
 }
@@ -820,7 +820,7 @@ char *
 hex_escape_url_part(char *text, char *addsafe)
 {
   char *safechars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.-";
-  char *s = fs_get(3*strlen(text) + 1), *t;
+  char *s = fs_get((3*strlen(text) + 1)*sizeof(char)), *t;
     
   *s = '\0';
   for(t = text; *t != '\0'; t++)
@@ -829,7 +829,7 @@ hex_escape_url_part(char *text, char *addsafe)
 	sprintf(s + strlen(s), "%c", *t);
      else
 	sprintf(s + strlen(s), "%%%X", *t);
-  fs_resize((void **) &s, strlen(s)+1);
+  fs_resize((void **) &s, (strlen(s)+1)*sizeof(char));
   return s;
 }
   
@@ -838,7 +838,7 @@ char *
 encode_url_body_part(char *text, char *addsafe)
 {
   char *safechars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.-";
-  char *s = fs_get(3*strlen(text) + 1), *t;
+  char *s = fs_get((3*strlen(text) + 1)*sizeof(char)), *t;
         
   *s = '\0';
   for(t = text; *t != '\0'; t++)
@@ -849,7 +849,7 @@ encode_url_body_part(char *text, char *addsafe)
         sprintf(s + strlen(s), "%c", *t);
      else
         sprintf(s + strlen(s), "%%%X", *t);
-  fs_resize((void **) &s, strlen(s)+1);
+  fs_resize((void **) &s, (strlen(s)+1)*sizeof(char));
   return s;
 }
 
