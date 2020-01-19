@@ -13,6 +13,7 @@ rem ========================================================================
 
 if "%1"=="" goto blank
 if "%1"=="wnt" goto wnt
+if "%1"=="w32" goto w32
 if "%1"=="w2k" goto w2k
 if "%1"=="clean" goto clean
 echo Unknown build command: %1 %2 %3 %4
@@ -23,11 +24,23 @@ echo Must specify build command!
 echo usage: BUILD cmd
 echo   where "cmd" is one of either:
 echo         wnt        -- Windows
+echo         w32        -- Windows 32 bits (e.g. XP)
 echo         w2k        -- Windows with Win2k Kerb
 echo         clean      -- to remove obj, lib, and exe files from source
 goto fini
 
+:w32
+set CRYPTO_VERSION=41
+set SSL_VERSION=43
+set TLS_VERSION=15
+set BIT=32
+goto wntbuild
 :wnt
+set CRYPTO_VERSION=45
+set SSL_VERSION=47
+set TLS_VERSION=19
+set BIT=64
+:wntbuild
 echo PC-Alpine for Windows/Winsock (Win32) build sequence
 set cclntmake=makefile.nt
 set alpinemake=makefile.wnt
@@ -40,8 +53,8 @@ set libresslextralibes="crypt32.lib"
 goto ldapincludewnt
 :yeslibresslwnt
 echo including LIBRESSL functionality
-set libresslflags=-I\"%ALPINE_LIBRESSL%\"\include -I\"%ALPINE_LIBRESSL%\"\include\openssl -DENABLE_WINDOWS_LIBRESSL
-set libressllibes=\"%ALPINE_LIBRESSL%\"\x86\libcrypto-45.lib \"%ALPINE_LIBRESSL%\"\x86\libssl-47.lib \"%ALPINE_LIBRESSL%\"\x86\libtls-19.lib
+set libresslflags=-I\"%ALPINE_LIBRESSL%\"\include\"%BIT%\" -I\"%ALPINE_LIBRESSL%\"\include\"%BIT%\"\openssl -DENABLE_WINDOWS_LIBRESSL
+set libressllibes=\"%ALPINE_LIBRESSL%\"\x86\libcrypto-%CRYPTO_VERSION%.lib \"%ALPINE_LIBRESSL%\"\x86\libssl-%SSL_VERSION%.lib \"%ALPINE_LIBRESSL%\"\x86\libtls-%TLS_VERSION%.lib
 set libresslextralibes=
 :ldapincludewnt
 if not defined ALPINE_LDAP set ALPINE_LDAP=%cd%\ldap

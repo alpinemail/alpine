@@ -501,8 +501,8 @@ static int ssl_open_verify (int ok,X509_STORE_CTX *ctx)
 
 static char *ssl_validate_cert (X509 *cert,char *host)
 {
-  int i,j,n, m = 0;;
-  char *s=NULL,*t,*ret = NIL;
+  int i,j,n, m = 0;
+  char *s=NIL,*t,*ret = NIL;
   void *ext;
   GENERAL_NAME *name;
   X509_NAME *cname;
