@@ -497,6 +497,13 @@ static char *ssl_getline_work (SSLSTREAM *stream,unsigned long *size,
   return ret;
 }
 
+/* not implemented yet */
+int pith_ssl_encryption_version(char *s)
+{
+return 0;
+}
+
+
 char *ssl_getsize(SSLSTREAM* stream, unsigned long size)
 {
     char *ret = NIL;

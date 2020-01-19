@@ -64,6 +64,8 @@ main(int argc, char *argv[])
   else if(!strcmp(opt, "sslinit")){
     fpc = fopen("linkage.c", "a");
     fprintf(fpc, "%s\n", "ssl_onceonlyinit();");
+    fph = fopen("linkage.h", "a");
+    fprintf(fph, "%s\n", "int  pith_ssl_encryption_version(char *);");
   }
   else if(!strcmp(opt, "version")){
     fpc = fopen("linkage.c", "a");

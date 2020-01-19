@@ -1003,6 +1003,7 @@ onceenv:
 	./drivers $(EXTRADRIVERS) $(DEFAULTDRIVERS) dummy
 	./mkauths $(EXTRAAUTHENTICATORS) $(DEFAULTAUTHENTICATORS)
 	echo "  mail_versioncheck (CCLIENTVERSION);" >> linkage.c
+	sh -c '(test $(SSLTYPE) != none)  && echo "int pith_ssl_encryption_version(char *);" >> linkage.h || true'
 	$(LN) os_$(OS).h osdep.h
 	$(LN) os_$(OS).c osdepbas.c
 	$(LN) log_$(LOGINPW).c osdeplog.c
