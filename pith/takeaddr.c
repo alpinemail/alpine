@@ -5,7 +5,7 @@ static char rcsid[] = "$Id: takeaddr.c 1012 2008-03-26 00:44:22Z hubert@u.washin
 /*
  * ========================================================================
  * Copyright 2006-2007 University of Washington
- * Copyright 2013-2019 Eduardo Chappa
+ * Copyright 2013-2020 Eduardo Chappa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

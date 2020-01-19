@@ -1,7 +1,7 @@
 
                              Alpine Technical Notes
 
-   Version 2.21.99999, June 2019
+   Version 2.22, January 2020
 
 Table of Contents
 

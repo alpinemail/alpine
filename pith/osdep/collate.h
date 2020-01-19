@@ -2,7 +2,7 @@
  * $Id: collate.h 925 2008-02-06 02:03:01Z hubert@u.washington.edu $
  *
  * ========================================================================
- * Copyright 2013-2019 Eduardo Chappa
+ * Copyright 2013-2020 Eduardo Chappa
  * Copyright 2006-2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

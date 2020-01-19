@@ -4,7 +4,7 @@ static char rcsid[] = "$Id: collate.c 766 2007-10-23 23:59:00Z hubert@u.washingt
 
 /*
  * ========================================================================
- * Copyright 2013-2019 Eduardo Chappa
+ * Copyright 2013-2020 Eduardo Chappa
  * Copyright 2006 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
