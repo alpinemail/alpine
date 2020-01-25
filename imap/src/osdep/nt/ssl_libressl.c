@@ -1,20 +1,14 @@
 /* ========================================================================
- * Copyright 2018 Eduardo Chappa
- * Copyright 2008-2009 Mark Crispin
+ * Copyright 2018-2020 Eduardo Chappa
  * ========================================================================
  */
 
 /*
  * Program:	SSL authentication/encryption module for Windows 9x and NT
  *
- * Author:	Mark Crispin
+ * Author:	Eduardo Chappa, based on ssl_unix.c
  *
- * Date:	22 September 1998
- * Last Edited:	8 November 2009
- *
- * Previous versions of this file were
- *
- * Copyright 1988-2008 University of Washington
+ * Last Edited:	January 25, 2020
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +67,8 @@ typedef struct ssl_stream {
 #include "sslio.h"
 
 /* Function prototypes */
-const SSL_METHOD *ssl_connect_mthd(int flag);
+int ssl_disable_mask(int ssl_version, int direction);
+const SSL_METHOD *ssl_connect_mthd(int flag, int *minv, int *maxv);
 static SSLSTREAM *ssl_start(TCPSTREAM *tstream,char *host,unsigned long flags);
 static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags);
 static int ssl_open_verify (int ok,X509_STORE_CTX *ctx);
@@ -109,20 +104,20 @@ pith_ssl_encryption_version(char *s)
 	{ "tls1_3", TLS1_3_VERSION },
 #endif /* TLS1_3_VERSION */
 	{ "no_max", 0 },	/* set this last in the list */
-	{ NULL, 0 },
+	{ NIL, 0 },
 	};
 	int i;
 
-	if (s == NULL || *s == '\0')
+	if (s == NIL || *s == '\0')
 		return -1;
 
-	for (i = 0; ssl_versions[i].name != NULL; i++)
+	for (i = 0; ssl_versions[i].name != NIL; i++)
 		if (strcmp(ssl_versions[i].name, s) == 0)
 			break;
 
 	if (strcmp(s, "no_max") == 0) i--;
 
-	return ssl_versions[i].name != NULL ? ssl_versions[i].version : -1;
+	return ssl_versions[i].name != NIL ? ssl_versions[i].version : -1;
 }
 
 /* Secure Sockets Layer network driver dispatch */
@@ -158,9 +153,9 @@ void ssl_onceonlyinit (void)
 				/* if system doesn't have /dev/urandom */
     if (stat ("/dev/urandom",&sbuf)) {
       strcpy(tmp, "SSLXXXXXX");
-      fd = fopen(tmp,"a");
-      fstat (fd,&sbuf);		/* get information about the file */
+      fd = open(tmp,"a");
       close (fd);		/* flush descriptor */
+      fstat (fd,&sbuf);		/* get information about the file */
       unlink (tmp);		/* don't need the file */
 				/* not great but it'll have to do */
       sprintf (tmp + strlen (tmp),"%.80s%lx%.80s%lx%lx%lx%lx%lx",
@@ -174,7 +169,7 @@ void ssl_onceonlyinit (void)
     mail_parameters (NIL,SET_SSLDRIVER,(void *) &ssldriver);
     mail_parameters (NIL,SET_SSLSTART,(void *) ssl_start);
 #ifdef OPENSSL_1_1_0
-    OPENSSL_init_ssl(0, NULL);
+    OPENSSL_init_ssl(0, NIL);
 #else
     SSL_library_init ();	/* add all algorithms */
 #endif /* OPENSSL_1_1_0 */
@@ -253,7 +248,7 @@ int ssl_disable_mask(int ssl_version, int direction)
 /* ssl_connect_mthd: returns a context pointer to the connection to
  * a ssl server
  */
-const SSL_METHOD *ssl_connect_mthd(int flag, int *min, int *max)
+const SSL_METHOD *ssl_connect_mthd(int flag, int *minv, int *maxv)
 {
 	int client_request;
 	client_request = (flag & NET_TRYTLS1) ? TLS1_VERSION
@@ -266,55 +261,55 @@ const SSL_METHOD *ssl_connect_mthd(int flag, int *min, int *max)
 #endif
 		: 0;
 
-	*min = *(int *)mail_parameters(NULL, GET_ENCRYPTION_RANGE_MIN, NULL);
-	*max = *(int *)mail_parameters(NULL, GET_ENCRYPTION_RANGE_MAX, NULL);
+	*minv = *(int *)mail_parameters(NIL, GET_ENCRYPTION_RANGE_MIN, NIL);
+	*maxv = *(int *)mail_parameters(NIL, GET_ENCRYPTION_RANGE_MAX, NIL);
 
 	/*
 	* if no special request, negotiate the maximum the client is configured
 	* to negotiate
 	*/
 	if (client_request == 0)
-		client_request = *max;
+		client_request = *maxv;
 
-	if (client_request < *min || client_request > *max)
+	if (client_request < *minv || client_request > *maxv)
 		return NIL;		/* out of range? bail out */
 
-						/* Some Linux distributors seem to believe that it is ok to disable some of
-						* these methods for their users, so we have to test that every requested
-						* method has actually been compiled in into their openssl/libressl library.
-						* Oh well...
-						*/
+	/* Some Linux distributors seem to believe that it is ok to disable some of
+	* these methods for their users, so we have to test that every requested
+	* method has actually been compiled in into their openssl/libressl library.
+	* Oh well...
+	*/
 #ifndef OPENSSL_1_1_0
 	if (client_request == SSL3_VERSION)
 #ifndef OPENSSL_NO_SSL3_METHOD
-		return SSLv3_client_method();
+	return SSLv3_client_method();
 #else
-		return NIL;
+	return NIL;
 #endif /* OPENSSL_NO_SSL3_METHOD */
 	else if (client_request == TLS1_VERSION)
 #ifndef OPENSSL_NO_TLS1_METHOD
-		return TLSv1_client_method();
+	return TLSv1_client_method();
 #else
-		return NIL;
+	return NIL;
 #endif /* OPENSSL_NO_TLS1_METHOD */
 	else if (client_request == TLS1_1_VERSION)
 #ifndef OPENSSL_NO_TLS1_1_METHOD
-		return TLSv1_1_client_method();
+	return TLSv1_1_client_method();
 #else
-		return NIL;
+	return NIL;
 #endif /* OPENSSL_NO_TLS1_1_METHOD */
 	else if (client_request == TLS1_2_VERSION)
 #ifndef OPENSSL_NO_TLS1_2_METHOD
-		return TLSv1_2_client_method();
+	return TLSv1_2_client_method();
 #else
-		return NIL;
+	return NIL;
 #endif /* OPENSSL_NO_TLS1_2_METHOD */
 #ifdef TLS1_3_VERSION	/* this is only reachable if TLS1_3 support exists */
 	else if (client_request == TLS1_3_VERSION)
 #ifndef OPENSSL_NO_TLS1_3_METHOD
-		return TLS_client_method();
+	return TLS_client_method();
 #else
-		return NIL;
+	return NIL;
 #endif /* #ifndef OPENSSL_NO_TLS1_2_METHOD */
 #endif /* TLS1_3_VERSION */
 #endif /* ifndef OPENSSL_1_1_0 */
@@ -389,7 +384,7 @@ static char *ssl_start_work(SSLSTREAM *stream, char *host, unsigned long flags)
 	BIO *bio;
 	X509 *cert;
 	unsigned long sl, tl;
-	int min, max;
+	int minv, maxv;
 	int masklow, maskhigh;
 	char *s, *t, *err, tmp[MAILTMPLEN], buf[256];
 	sslcertificatequery_t scq =
@@ -400,24 +395,24 @@ static char *ssl_start_work(SSLSTREAM *stream, char *host, unsigned long flags)
 		(sslclientkey_t)mail_parameters(NIL, GET_SSLCLIENTKEY, NIL);
 	if (ssl_last_error) fs_give((void **)&ssl_last_error);
 	ssl_last_host = host;
-	if (!(stream->context = SSL_CTX_new(ssl_connect_mthd(flags, &min, &max))))
+	if (!(stream->context = SSL_CTX_new(ssl_connect_mthd(flags, &minv, &maxv))))
 		return "SSL context failed";
 	SSL_CTX_set_options(stream->context, 0);
-	masklow = ssl_disable_mask(min, -1);
-	maskhigh = ssl_disable_mask(max, 1);
+	masklow = ssl_disable_mask(minv, -1);
+	maskhigh = ssl_disable_mask(maxv, 1);
 	SSL_CTX_set_options(stream->context, masklow | maskhigh);
 	/* disable certificate validation? */
 	if (flags & NET_NOVALIDATECERT)
 		SSL_CTX_set_verify(stream->context, SSL_VERIFY_NONE, NIL);
 	else SSL_CTX_set_verify(stream->context, SSL_VERIFY_PEER, ssl_open_verify);
-	/* set default paths to CAs... */
-	SSL_CTX_set_default_verify_paths(stream->context);
-	/* ...unless a non-standard path desired */
-	if ((s = (char *)mail_parameters(NIL, GET_SSLCAPATH, NIL)) != NULL)
-		SSL_CTX_load_verify_locations(stream->context, NIL, s);
+			/* a non-standard path desired */
+	if ((s = (char *)mail_parameters(NIL, GET_SSLCAPATH, NIL)) != NIL)
+		SSL_CTX_load_verify_locations(stream->context, NIL, (const char *)s);
+	else 		/* otherwise we set default paths to CAs... */
+		SSL_CTX_set_default_verify_paths(stream->context);
 	/* want to send client certificate? */
 	if (scc && (s = (*scc) ()) && (sl = strlen(s))) {
-		if ((cert = PEM_read_bio_X509(bio = BIO_new_mem_buf(s, sl), NIL, NIL, NIL)) != NULL) {
+		if ((cert = PEM_read_bio_X509(bio = BIO_new_mem_buf(s, sl), NIL, NIL, NIL)) != NIL) {
 			SSL_CTX_use_certificate(stream->context, cert);
 			X509_free(cert);
 		}
@@ -427,7 +422,7 @@ static char *ssl_start_work(SSLSTREAM *stream, char *host, unsigned long flags)
 		if ((t = (sck ? (*sck) () : s)) && (tl = strlen(t))) {
 			EVP_PKEY *key;
 			if ((key = PEM_read_bio_PrivateKey(bio = BIO_new_mem_buf(t, tl),
-				NIL, NIL, "")) != NULL) {
+				NIL, NIL, "")) != NIL) {
 				SSL_CTX_use_PrivateKey(stream->context, key);
 				EVP_PKEY_free(key);
 			}
@@ -535,7 +530,7 @@ static char *ssl_validate_cert (X509 *cert,char *host)
   if(m == 0 || ret != NIL){
      cname = X509_get_subject_name(cert);
      for(j = 0, ret = NIL; j < X509_NAME_entry_count(cname) && ret == NIL; j++){
-        if((e = X509_NAME_get_entry(cname, j)) != NULL){
+        if((e = X509_NAME_get_entry(cname, j)) != NIL){
            X509_NAME_get_text_by_OBJ(cname, X509_NAME_ENTRY_get_object(e), buf, sizeof(buf));
            s = (char *) buf;
         }
@@ -951,8 +946,8 @@ void ssl_server_init (char *server)
 					    sizeof (SSLSTREAM));
   ssl_onceonlyinit ();		/* make sure algorithms added */
 #ifdef OPENSSL_1_1_0
-  OPENSSL_init_crypto(OPENSSL_INIT_LOAD_CRYPTO_STRINGS, NULL);
-  OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS|OPENSSL_INIT_LOAD_CRYPTO_STRINGS, NULL);
+  OPENSSL_init_crypto(OPENSSL_INIT_LOAD_CRYPTO_STRINGS, NIL);
+  OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS|OPENSSL_INIT_LOAD_CRYPTO_STRINGS, NIL);
 #else
   ERR_load_crypto_strings ();
   SSL_load_error_strings ();
@@ -1065,7 +1060,7 @@ static RSA *ssl_genkey (SSL_CTX_TYPE *con,int export,int keylength)
     }
 #ifdef OPENSSL_1_1_0
     BN_free(e);
-    e = NULL;
+    e = NIL;
 #endif /* OPENSSL_1_1_0 */
   }
   return key;

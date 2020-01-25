@@ -471,6 +471,10 @@ main(int argc, char **argv)
 
     init_vars(pine_state, process_init_cmds);
 
+#if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
+    set_system_certs_path(pine_state);
+#endif
+
 #ifdef SMIME
     if(F_ON(F_DONT_DO_SMIME, ps_global))
       smime_deinit();

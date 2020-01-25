@@ -557,9 +557,14 @@
 
 /* Name of default certificate authority container */
 #define DF_CA_CONTAINER "CAContainer"
-//#else
-#undef DF_ENCRYPTION_RANGE
+#else
 #endif /* ENABLE_WINDOWS_LIBRESSL */
+
+#if !defined(ENABLE_WINDOWS_LIBRESSL) || !defined(W32BITSBUILD)
+#undef DF_ENCRYPTION_RANGE
+#else
+#define DEFAULT_SSLCAPATH "C:\\libressl\\ssl\\certs"
+#endif
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 /* #define TIME_WITH_SYS_TIME */

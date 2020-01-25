@@ -377,6 +377,10 @@ CONF_TXT_T cf_text_mailcap_path[] =	"Sets the search path for the mailcap config
 
 CONF_TXT_T cf_text_mimetype_path[] =	"Sets the search path for the mimetypes configuration file.\n# NOTE: colon delimited under UNIX, semi-colon delimited under DOS/Windows/OS2.";
 
+#if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
+CONF_TXT_T cf_text_system_certs_path[] = "Sets the path for the system ssl certificates issued by a trusted\n# certificate authority. Note that this could be a list of paths, if the same\n# pinerc is used in different systems. Alpine always chooses the first one that\n# it finds. Value must be an absolute path.";
+#endif
+
 CONF_TXT_T cf_text_newmail_fifo_path[] = "Sets the filename for the newmail fifo (named pipe). Unix only.";
 
 CONF_TXT_T cf_text_nmw_width[] = "Sets the width for the NewMail screen.";
@@ -661,6 +665,10 @@ static struct variable variables[] = {
 	NULL,			cf_text_mailcap_path},
 {"mimetype-search-path",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	NULL,			cf_text_mimetype_path},
+#if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
+{"system-certs-path",			0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0,
+	NULL,			cf_text_system_certs_path},
+#endif
 {"url-viewers",				0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0,
 	"URL-Viewers",		cf_text_browser},
 {"default-directories",			0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0,
@@ -746,8 +754,10 @@ static struct variable variables[] = {
 	NULL,			cf_text_disable_drivers},
 {"disable-these-authenticators",	0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0,
 	NULL,			cf_text_disable_auths},
+#ifdef DF_ENCRYPTION_RANGE
 {"encryption-protocol-range",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	NULL,			cf_text_encryption_range},
+#endif
 {"remote-abook-metafile",		0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0,
 	NULL,			cf_text_remote_abook_metafile},
 {"remote-abook-history",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
@@ -1723,6 +1733,10 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     GLO_WP_INDEXHEIGHT          = cpystr("24");
     GLO_WP_AGGSTATE		= cpystr("1");
     GLO_WP_STATE		= cpystr("");
+#if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
+    GLO_SSLCAPATH		= parse_list(DEFAULT_SSLCAPATH, 1,
+					     PL_REMSURRQUOT, NULL);
+#endif
 #ifdef	DF_VAR_SPELLER
     GLO_SPELLER			= cpystr(DF_VAR_SPELLER);
 #endif
@@ -2337,7 +2351,9 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     set_current_val(&vars[V_FORCED_ABOOK_ENTRY], TRUE, TRUE);
     set_current_val(&vars[V_DISABLE_DRIVERS], TRUE, TRUE);
     set_current_val(&vars[V_DISABLE_AUTHS], TRUE, TRUE);
+#ifdef DF_ENCRYPTION_RANGE
     set_current_val(&vars[V_ENCRYPTION_RANGE], TRUE, TRUE);
+#endif
 
     set_current_val(&vars[V_VIEW_HEADERS], TRUE, TRUE);
     /* strip spaces and colons */
@@ -2364,6 +2380,9 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     set_current_val(&vars[V_DOWNLOAD_CMD_PREFIX], TRUE, TRUE);
     set_current_val(&vars[V_MAILCAP_PATH], TRUE, TRUE);
     set_current_val(&vars[V_MIMETYPE_PATH], TRUE, TRUE);
+#if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
+    set_current_val(&vars[V_SSLCAPATH], TRUE, TRUE);
+#endif
 #if !defined(DOS) && !defined(OS2) && !defined(LEAVEOUTFIFO)
     set_current_val(&vars[V_FIFOPATH], TRUE, TRUE);
 #endif
@@ -7048,6 +7067,22 @@ feature_gets_an_x(struct pine *ps, struct variable *var, FEATURE_S *feature,
 			  test_old_growth_bits(ps, feature->id)))));
 }
 
+#if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
+void
+set_system_certs_path(struct pine *ps)
+{ 
+  char **l;
+
+  for (l = ps->vars[V_SSLCAPATH].current_val.l; l && *l; l++){
+      if(is_absolute_path(*l)
+	  && can_access(*l, ACCESS_EXISTS) == 0
+	  && can_access(*l, READ_ACCESS) == 0){
+           mail_parameters(NULL, SET_SSLCAPATH, (void *) *l);
+           break;
+      }
+  }
+}
+#endif
 
 int
 longest_feature_comment(struct pine *ps, EditWhich ew)
@@ -7837,8 +7872,10 @@ config_help(int var, int feature)
 	return(h_config_disable_drivers);
       case V_DISABLE_AUTHS :
 	return(h_config_disable_auths);
+#ifdef DF_ENCRYPTION_RANGE
       case V_ENCRYPTION_RANGE :
 	return(h_config_encryption_range);
+#endif
       case V_REMOTE_ABOOK_METADATA :
 	return(h_config_abook_metafile);
       case V_REPLY_STRING :
@@ -7903,6 +7940,10 @@ config_help(int var, int feature)
 	return(h_config_mailcap_path);
       case V_MIMETYPE_PATH :
 	return(h_config_mimetype_path);
+#if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
+      case V_SSLCAPATH :
+	return(h_config_system_certs_path);
+#endif
 #if !defined(DOS) && !defined(OS2) && !defined(LEAVEOUTFIFO)
       case V_FIFOPATH :
 	return(h_config_fifopath);

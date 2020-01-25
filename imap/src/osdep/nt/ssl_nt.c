@@ -23,8 +23,8 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
  */
-//#ifdef ENABLE_WINDOWS_LIBRESSL
-//#include "ssl_libressl.c"
-//#else
+#if !defined(ENABLE_WINDOWS_LIBRESSL) || !defined(W32BITSBUILD)
 #include "ssl_win.c"
-//#endif /* ENABLE_WINDOWS_LIBRESSL */
+#else
+#include "ssl_libressl.c"
+#endif

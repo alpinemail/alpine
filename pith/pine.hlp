@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 395 2020-01-19 10:57:47
+Alpine Commit 396 2020-01-25 11:12:17
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -173,6 +173,19 @@ Apache web server.
 
 <H2>New in Alpine <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)</H2>
 
+This is a development version of Alpine. These enhancements are
+released after the release of version 
+<!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->). Please report
+any problems you find with this release. New enhancements
+
+<UL>
+<LI> New variable system-certs-path that allows users to indicate the location
+of the directory where folders are located. In PC-Alpine this must be
+C:\\libressl\\ssl\\certs. The C: drive can be replaced by the name of the drive
+where the binary and DLL files are located.
+</UL>
+
+<P>
 Version <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)
 addresses bugs found in previous releases and has a few additions as well.
 
@@ -22193,6 +22206,49 @@ path can be found in this
 
 If there is more than one file name listed, list members should be delimited
 by a colon (:) under UNIX and a semi-colon (;) under Windows.
+<P>
+&lt;End of help on this topic&gt;
+</BODY></HTML>
+====== h_config_system_certs_path ======
+<HTML>
+<HEAD>
+<TITLE>OPTION: <!--#echo var="VAR_system-certs-path"--></TITLE>
+</HEAD>
+<BODY>
+<H1>OPTION: <!--#echo var="VAR_system-certs-path"--></H1>
+
+When Alpine is built to support secure connections to remote servers, a directory
+must be reserved in the system to store certificates that will be used to validate
+remote servers. This is normally configured at the time that Alpine is built, but
+there might be circumstances under which a user might want to use a different
+directory. For example, the directory might not be accessible, or has not been 
+updated and contains old certificates that have expired.
+
+<P>
+When a user wants to override the default, this variable can be used to list
+the directory where such certificates can be found. Alpine will use the first
+directory in this list that exists in your system and can be accessed. This
+allows for users to be able to use the same pinerc file in different systems.
+
+<P>
+Example of values for this option might be:
+
+<PRE>
+System Certs Path = /etc/ssl/certs
+                    /usr/local/ssl/certs
+                    C:\\libressl\\ssl\\certs
+<PRE>
+
+<P>
+In unix systems, the default location of the certificates for openssl can
+be obtained by first executing the command
+
+<PRE>openssl version -d</PRE>
+
+and adding &quot;/certs&quot; to that value. In Windows the default location
+for the certificates is C:\\libressl\\ssl\\certs. This value was set by LibreSSL
+developers, and this option can be used to override this default.
+
 <P>
 &lt;End of help on this topic&gt;
 </BODY></HTML>

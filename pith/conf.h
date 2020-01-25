@@ -133,6 +133,10 @@
 #define VAR_COLOR_STYLE		     vars[V_COLOR_STYLE].current_val.p
 #define GLO_COLOR_STYLE		     vars[V_COLOR_STYLE].global_val.p
 #endif
+#if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
+#define VAR_SSLCAPATH		     vars[V_SSLCAPATH].current_val.l
+#define GLO_SSLCAPATH		     vars[V_SSLCAPATH].global_val.l
+#endif
 #define VAR_INDEX_COLOR_STYLE	     vars[V_INDEX_COLOR_STYLE].current_val.p
 #define GLO_INDEX_COLOR_STYLE	     vars[V_INDEX_COLOR_STYLE].global_val.p
 #define VAR_TITLEBAR_COLOR_STYLE     vars[V_TITLEBAR_COLOR_STYLE].current_val.p
@@ -263,8 +267,10 @@
 #define GLO_REMOTE_ABOOK_HISTORY     vars[V_REMOTE_ABOOK_HISTORY].global_val.p
 #define VAR_REMOTE_ABOOK_VALIDITY    vars[V_REMOTE_ABOOK_VALIDITY].current_val.p
 #define GLO_REMOTE_ABOOK_VALIDITY    vars[V_REMOTE_ABOOK_VALIDITY].global_val.p
+#ifdef DF_ENCRYPTION_RANGE
 #define GLO_ENCRYPTION_RANGE         vars[V_ENCRYPTION_RANGE].global_val.p
 #define VAR_ENCRYPTION_RANGE	     vars[V_ENCRYPTION_RANGE].current_val.p
+#endif
   /* Elm style save is obsolete in Pine 3.81 (see saved msg name rule) */
 #define VAR_ELM_STYLE_SAVE           vars[V_ELM_STYLE_SAVE].current_val.p
 #define GLO_ELM_STYLE_SAVE           vars[V_ELM_STYLE_SAVE].global_val.p
@@ -914,6 +920,9 @@ char     **get_supported_options(void);
 unsigned   reset_startup_rule(MAILSTREAM *);
 void	   free_pinerc_lines(PINERC_LINE **);
 void	   panic1(char *, char *);
+#if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
+void	   set_system_certs_path(struct pine *);
+#endif
 
 /* mandatory to implement prototypes */
 int	   set_input_timeout(int);

@@ -2080,6 +2080,8 @@ else
     AC_MSG_NOTICE([SSL Problem: certificate directory not found])
   fi
 
+  AC_DEFINE_UNQUOTED([DEFAULT_SSLCAPATH],"$certdir",[Directory where system certificates are located])
+
   if test "x$with_smime" != "xno" ; then
     if test -n "$certdir" ; then
       AC_MSG_NOTICE([* * * S/MIME support enabled])

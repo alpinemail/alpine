@@ -34,12 +34,14 @@ set CRYPTO_VERSION=41
 set SSL_VERSION=43
 set TLS_VERSION=15
 set BIT=32
+set windows32build=-DW32BITSBUILD
 goto wntbuild
 :wnt
 set CRYPTO_VERSION=45
 set SSL_VERSION=47
 set TLS_VERSION=19
 set BIT=64
+set windows32build=
 :wntbuild
 echo PC-Alpine for Windows/Winsock (Win32) build sequence
 set cclntmake=makefile.nt
@@ -68,7 +70,7 @@ echo including LDAP functionality
 set ldapflags=-I\"%ALPINE_LDAP%\"\inckit -DENABLE_LDAP
 set ldaplibes=\"%ALPINE_LDAP%\"\binaries\release\ldap32.lib
 :noldapwnt
-set extracflagsnq=/DWINVER=0x0501 /Zi -Od %ldapflags% %libresslflags% -D_USE_32BIT_TIME_T -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -DSPCL_REMARKS=\"\\\"\\\"\"
+set extracflagsnq=/DWINVER=0x0501 /Zi -Od %ldapflags% %libresslflags% %windows32build% -D_USE_32BIT_TIME_T -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -DSPCL_REMARKS=\"\\\"\\\"\"
 set extralibes="%libresslextralibes%"
 set extralibesalpine="%ldaplibes% %libressllibes%"
 set extrarcflags="/D_PCP_WNT"

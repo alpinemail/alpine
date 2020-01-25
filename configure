@@ -21814,6 +21814,12 @@ else
 $as_echo "$as_me: SSL Problem: certificate directory not found" >&6;}
   fi
 
+
+cat >>confdefs.h <<_ACEOF
+#define DEFAULT_SSLCAPATH "$certdir"
+_ACEOF
+
+
   if test "x$with_smime" != "xno" ; then
     if test -n "$certdir" ; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: * * * S/MIME support enabled" >&5
