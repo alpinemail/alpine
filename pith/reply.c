@@ -1169,6 +1169,7 @@ reply_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
 	    else if(orig_body->subtype
 		    && !strucmp(orig_body->subtype, "alternative")
 		    && orig_body->nested.part
+		    && orig_body->nested.part->next
 		    && orig_body->nested.part->next->body.type == TYPEMULTIPART
 		    && orig_body->nested.part->next->body.subtype
 		    && !strucmp(orig_body->nested.part->next->body.subtype, "MIXED"))
