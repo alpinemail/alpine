@@ -19,7 +19,6 @@ an
 alpine/alpine
 alpine/rpdump
 alpine/rpload
-c-client
 imap/OSTYPE
 imap/SPECIALS
 imap/c-client/
