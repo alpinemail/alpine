@@ -1,5 +1,5 @@
 /* ========================================================================
- * Copyright 2018 Eduardo Chappa
+ * Copyright 2018 - 2020 Eduardo Chappa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,12 +12,12 @@
  */
 
 long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder,
-			char *service,NETMBX *mb,void *stream,
+			char *service,NETMBX *mb,void *stream, unsigned long port,
 			unsigned long *trial,char *user);
 
-void mm_login_oauth2_c_client_method (NETMBX *, char *, OAUTH2_S *, unsigned long, int *);
-
-char *oauth2_generate_state(void);
+#ifndef HTTP_OAUTH2_INCLUDED
+void mm_login_oauth2_c_client_method (NETMBX *, char *, char *, OAUTH2_S *, unsigned long, int *);
+#endif /* HTTP_OAUTH2_INCLUDED */
 
 AUTHENTICATOR auth_oa2 = {
   AU_HIDE,			/* hidden */
@@ -31,6 +31,9 @@ AUTHENTICATOR auth_oa2 = {
 #define OAUTH2_USER	"user="
 #define OAUTH2_BEARER	"auth=Bearer "
 
+#ifndef OAUTH2_GENERATE_STATE
+#define OAUTH2_GENERATE_STATE
+char *oauth2_generate_state(void);
 /* we generate something like a guid, but not care about
  * anything, but that it is really random.
  */
@@ -57,6 +60,8 @@ char *oauth2_generate_state(void)
   rv[36] = '\0';
   return cpystr(rv);
 }
+#endif /* OAUTH2_GENERATE_STATE */
+
 
 
 /* Client authenticator
@@ -71,7 +76,7 @@ char *oauth2_generate_state(void)
  */
 
 long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder,
-			char *service,NETMBX *mb,void *stream,
+			char *service,NETMBX *mb,void *stream, unsigned long port, 
 			unsigned long *trial,char *user)
 {
   char *u;
@@ -145,7 +150,7 @@ long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder,
        if(oauth2.param[OA2_RefreshToken].value)
 	 RefreshToken = cpystr(oauth2.param[OA2_RefreshToken].value);
 
-       mm_login_oauth2_c_client_method (mb, user, &oauth2, *trial, &tryanother);
+       mm_login_oauth2_c_client_method (mb, user, OA2NAME, &oauth2, *trial, &tryanother);
 
        /* 
         * if we got an access token from the c_client_method call, 
@@ -207,6 +212,8 @@ long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder,
   return ret;
 }
 
+#ifndef HTTP_OAUTH2_INCLUDED
+#define HTTP_OAUTH2_INCLUDED
 /* 
  * The code above is enough to implement XOAUTH2, all one needs is the username
  * and access token and give it to the function above. However, normal users cannot
@@ -219,7 +226,7 @@ long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder,
 #include "json.h"
 
 void 
-mm_login_oauth2_c_client_method (NETMBX *mb, char *user, 
+mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
 			OAUTH2_S *oauth2, unsigned long trial, int *tryanother)
 {
    int i;
@@ -232,7 +239,7 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user,
      oauth2clientinfo_t ogci =
 		(oauth2clientinfo_t) mail_parameters (NIL, GET_OA2CLIENTINFO, NIL);
 
-     if(ogci) (*ogci)(oauth2->name, &oauth2->param[OA2_Id].value,
+     if(ogci) (*ogci)(oauth2->name, method, &oauth2->param[OA2_Id].value,
 				&oauth2->param[OA2_Secret].value);
    }
 
@@ -359,3 +366,4 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user,
      return;
    }
 }
+#endif /* HTTP_OAUTH2_INCLUDED */

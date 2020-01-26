@@ -1,4 +1,5 @@
 /* ========================================================================
+ * Copyright 2020 Eduardo Chappa
  * Copyright 2008-2011 Mark Crispin   
  * ========================================================================
  */
@@ -639,7 +640,7 @@ long pop3_auth (MAILSTREAM *stream,NETMBX *mb,char *pwd,char *usr)
 				/* hide client authentication responses */
 	  if (!(at->flags & AU_SECURE)) LOCAL->sensitive = T;
 	  if ((*at->client) (pop3_challenge,pop3_response,"pop",mb,stream,
-			     &trial,usr) && LOCAL->response) {
+			     net_port(LOCAL->netstream),&trial,usr) && LOCAL->response) {
 	    if (*LOCAL->response == '+') ret = LONGT;
 				/* if main program requested cancellation */
 	    else if (!trial) mm_log ("POP3 Authentication cancelled",ERROR);

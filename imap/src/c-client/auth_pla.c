@@ -1,4 +1,5 @@
 /* ========================================================================
+ * Copyright 2020 Eduardo Chappa
  * Copyright 1988-2006 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +28,7 @@
  */
 
 long auth_plain_client (authchallenge_t challenger,authrespond_t responder,
-			char *service,NETMBX *mb,void *stream,
+			char *service,NETMBX *mb,void *stream, unsigned long port,
 			unsigned long *trial,char *user);
 char *auth_plain_server (authresponse_t responder,int argc,char *argv[]);
 
@@ -52,7 +53,7 @@ AUTHENTICATOR auth_pla = {
  */
 
 long auth_plain_client (authchallenge_t challenger,authrespond_t responder,
-			char *service,NETMBX *mb,void *stream,
+			char *service,NETMBX *mb,void *stream, unsigned long port,
 			unsigned long *trial,char *user)
 {
   char *u, *pwd = NIL;

@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 397 2020-01-25 11:48:03
+Alpine Commit 398 2020-01-26 02:34:38
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -179,10 +179,13 @@ released after the release of version
 any problems you find with this release. New enhancements
 
 <UL>
-<LI> New variable system-certs-path that allows users to indicate the location
-of the directory where folders are located. In PC-Alpine this must be
-C:\\libressl\\ssl\\certs. The C: drive can be replaced by the name of the drive
-where the binary and DLL files are located.
+<LI> Add support for the OAUTHBEARER authentication method in Gmail. Thanks to
+     Alexander Perlis for suggesting it and explaining how the method works.
+
+<LI> New variable system-certs-path that allows users to indicate the 
+     location of the directory where folders are located. In PC-Alpine 
+     this must be C:\\libressl\\ssl\\certs. The C: drive can be replaced 
+     by the name of the drive where the binary and DLL files are located.
 
 <LI>Crash in Alpine when attempting to reply to a multipart/alternative 
     message that is malformed, and the option to include attachments in

@@ -199,7 +199,7 @@ typedef struct auth_code_s {
 } AUTH_CODE_S;
 
 char *
-oauth2_get_access_code(char *url, OAUTH2_S *oauth2, int *tryanother)
+oauth2_get_access_code(char *url, char *method, OAUTH2_S *oauth2, int *tryanother)
 {
    char tmp[MAILTMPLEN];
    char *code;
@@ -218,7 +218,7 @@ oauth2_get_access_code(char *url, OAUTH2_S *oauth2, int *tryanother)
 	so_puts(in_store, "<HTML><P>");
 	sprintf(tmp, _("<CENTER>Auhtorizing Alpine Access to %s Email Services</CENTER>"), oauth2->name);
 	so_puts(in_store, tmp);
-	sprintf(tmp, _("</P><P>Alpine is attempting to log you into your %s account, using the XOAUTH2 method."), oauth2->name),
+	sprintf(tmp, _("</P><P>Alpine is attempting to log you into your %s account, using the %s method."), oauth2->name, method),
 	so_puts(in_store, tmp);
 
 	so_puts(in_store, _(" In order to do that, Alpine needs to open the following URL:"));
@@ -332,7 +332,7 @@ try_wantto:
    return code;
 }
 
-void mm_login_oauth2(NETMBX *, char *, OAUTH2_S *, long int, char *, char *);
+void mm_login_oauth2(NETMBX *, char *, char *, OAUTH2_S *, long int, char *, char *);
 
 /* The purpose of this function is to report to c-client the values of the
  * different tokens and codes so that c-client can try to log in the user
@@ -375,7 +375,8 @@ void mm_login_oauth2(NETMBX *, char *, OAUTH2_S *, long int, char *, char *);
  *    "authenticator_method separator" code as above.
  */
 void
-mm_login_oauth2(NETMBX *mb, char *user, OAUTH2_S *login, long int trial,
+mm_login_oauth2(NETMBX *mb, char *user, char *method, 
+		OAUTH2_S *login, long int trial,
 	        char *usethisprompt, char *altuserforcache)
 {
     char      *token, tmp[MAILTMPLEN];
@@ -871,8 +872,8 @@ mm_login_method_work(NETMBX *mb, char *user, void *login, long int trial,
 {
    if(method == NULL)
       return;
-   if(strucmp(method, OA2NAME) == 0)
-     mm_login_oauth2(mb, user, (OAUTH2_S *) login, trial, usethisprompt, altuserforcache);
+   if(strucmp(method, OA2NAME) == 0 || strucmp(method, BEARERNAME) == 0)
+     mm_login_oauth2(mb, user, method, (OAUTH2_S *) login, trial, usethisprompt, altuserforcache);
 }
 
 void

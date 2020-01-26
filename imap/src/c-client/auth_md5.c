@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 - Eduardo Chappa
+ * Copyright 2016 - 2010 Eduardo Chappa
  * Last Modified: August 11, 2016
  */
 /* ========================================================================
@@ -45,7 +45,7 @@ typedef struct {
 
 long auth_md5_valid (void);
 long auth_md5_client (authchallenge_t challenger,authrespond_t responder,
-		      char *service,NETMBX *mb,void *stream,
+		      char *service,NETMBX *mb,void *stream, unsigned long port,
 		      unsigned long *trial,char *user);
 char *auth_md5_server (authresponse_t responder,int argc,char *argv[]);
 char *auth_md5_pwd (char *user);
@@ -96,7 +96,7 @@ long auth_md5_valid (void)
  */
 
 long auth_md5_client (authchallenge_t challenger,authrespond_t responder,
-		      char *service,NETMBX *mb,void *stream,
+		      char *service,NETMBX *mb,void *stream, unsigned long port,
 		      unsigned long *trial,char *user)
 {
   char *pwd = NIL,hshbuf[2*MD5DIGLEN + 1];

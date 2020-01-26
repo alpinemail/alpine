@@ -140,7 +140,7 @@ RANLIB=ranlib
 
 # Standard distribution build parameters
 
-DEFAULTAUTHENTICATORS=ext md5 pla oa2 log
+DEFAULTAUTHENTICATORS=ext md5 pla bea oa2 log
 #
 # mh needs to be after any other directory format drivers (such as mx or mix)
 # since otherwise mh will seize any directory that is under the mh path.
@@ -933,7 +933,7 @@ osdep.o:mail.h misc.h env.h fs.h ftl.h nl.h tcp.h \
 	gr_wait.c gr_wait4.c gr_waitp.c \
 	kerb_mit.c \
 	auth_ext.c auth_gss.c auth_log.c auth_md5.c auth_ntl.c \
-	auth_oa2.c auth_pla.c \
+	auth_bea.c auth_oa2.c auth_pla.c \
 	pmatch.c scandir.c setpgrp.c strerror.c truncate.c write.c \
 	memmove.c memmove2.c memset.c \
 	tz_bsd.c tz_nul.c tz_sv4.c \

@@ -1,4 +1,5 @@
 /* ========================================================================
+ * Copyright 2020 Eduardo Chappa
  * Copyright 1988-2006 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +30,7 @@
 
 long auth_gssapi_valid (void);
 long auth_gssapi_client (authchallenge_t challenger,authrespond_t responder,
-			 char *service,NETMBX *mb,void *stream,
+			 char *service,NETMBX *mb,void *stream, unsigned long port,
 			 unsigned long *trial,char *user);
 long auth_gssapi_client_work (authchallenge_t challenger,gss_buffer_desc chal,
 			      authrespond_t responder,char *service,NETMBX *mb,
@@ -89,7 +90,7 @@ long auth_gssapi_valid (void)
  */
 
 long auth_gssapi_client (authchallenge_t challenger,authrespond_t responder,
-			 char *service,NETMBX *mb,void *stream,
+			 char *service,NETMBX *mb,void *stream,unsigned long port,
 			 unsigned long *trial,char *user)
 {
   gss_buffer_desc chal;

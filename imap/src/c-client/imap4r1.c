@@ -1,7 +1,7 @@
 /* 
- * Copyright 2016-2018 Eduardo Chappa
+ * Copyright 2016-2020 Eduardo Chappa
  *
- * Last Edited: May 5, 2018 Eduardo Chappa <alpine.chappa@gmx.com>
+ * Last Edited: Jan 26, 2020 Eduardo Chappa <alpine.chappa@gmx.com>
  *
  */
 /* ========================================================================
@@ -1180,7 +1180,7 @@ long imap_auth (MAILSTREAM *stream,NETMBX *mb,char *tmp,char *usr)
 				/* hide client authentication responses */
 	if (!(at->flags & AU_SECURE)) LOCAL->sensitive = T;
 	ok = (*at->client) (imap_challenge,imap_response,"imap",mb,stream,
-			    &trial,usr);
+			    net_port(LOCAL->netstream),&trial,usr);
 	LOCAL->sensitive = NIL;	/* unhide */
 				/* make sure have a response */
 	if (!(reply = &LOCAL->reply)->tag)

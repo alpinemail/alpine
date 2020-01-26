@@ -1,6 +1,6 @@
 /* ========================================================================
+ * Copyright 2019 - 2020 Eduardo Chappa
  * Copyright 2008-2011 Mark Crispin
- * Copyright 2019 Eduardo Chappa
  * ========================================================================
  */
 
@@ -2072,7 +2072,7 @@ long nntp_send_auth_work (SENDSTREAM *stream,NETMBX *mb,char *pwd,long flags)
 				/* hide client authentication responses */
 	if (!(at->flags & AU_SECURE)) stream->sensitive = T;
 	if ((*at->client) (nntp_challenge,nntp_response,"nntp",mb,stream,
-			   &trial,usr)) {
+			   net_port(stream->netstream), &trial,usr)) {
 	  if (stream->replycode == NNTPAUTHED) ret = LONGT;
 				/* if main program requested cancellation */
 	  else if (!trial) mm_log ("NNTP Authentication cancelled",ERROR);

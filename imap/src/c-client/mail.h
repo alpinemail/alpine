@@ -1,7 +1,7 @@
 /*
  * Copyright 2016-2020 Eduardo Chappa
  *
- * Last Edited: July 21, 2018 Eduardo Chappa <chappa@washington.edu>
+ * Last Edited: January 26, 2020 Eduardo Chappa <chappa@washington.edu>
  *
  */
 /* ========================================================================
@@ -1379,7 +1379,7 @@ typedef long (*authrespond_t) (void *stream,char *s,unsigned long size);
 typedef long (*authcheck_t) (void);
 typedef long (*authclient_t) (authchallenge_t challenger,
 			      authrespond_t responder,char *service,NETMBX *mb,
-			      void *s,unsigned long *trial,char *user);
+			      void *s, unsigned long port, unsigned long *trial,char *user);
 typedef char *(*authresponse_t) (void *challenge,unsigned long clen,
 				 unsigned long *rlen);
 typedef char *(*authserver_t) (authresponse_t responder,int argc,char *argv[]);
@@ -1911,9 +1911,10 @@ int PSOUT (char *s);
 int PSOUTR (SIZEDTEXT *s);
 int PFLUSH (void);
 
-/* XOAUTH Client-Side Support */
+/* XOAUTH2 and AUTHBEARER Client-Side Support */
 
 #define OA2NAME	"XOAUTH2"
+#define BEARERNAME "OAUTHBEARER"
 
 #define OAUTH2_MAX_EQUIV        (2)
 #define OAUTH2_TOT_EQUIV        (OAUTH2_MAX_EQUIV + 2)
@@ -1941,8 +1942,8 @@ typedef struct OA2_serverparam_s {
 } OAUTH2_SERVER_METHOD_S;
 
 typedef struct oauth2_s {
-   unsigned char *name;                          /* provider name */
-   char *host[OAUTH2_TOT_EQUIV];        /* servers for which this data applies  */
+   unsigned char *name;			/* provider name */
+   char *host[OAUTH2_TOT_EQUIV];	/* servers for which this data applies  */
    OAUTH2_PARAM_S param[OA2_End];	/* parameters name and values for this server */
 		/* servers, methods and parameters to retrieve access code and tokens */
    OAUTH2_SERVER_METHOD_S server_mthd[OA2_GetEnd];
@@ -1950,6 +1951,6 @@ typedef struct oauth2_s {
    unsigned long expiration;
 } OAUTH2_S;
 
-typedef char *(*oauth2getaccesscode_t) (char *url, OAUTH2_S *, int *);
+typedef char *(*oauth2getaccesscode_t) (char *, char *, OAUTH2_S *, int *);
 typedef void (*oauth2clientinfo_t)(char *name, char **id, char **secret);
 

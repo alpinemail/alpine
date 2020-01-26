@@ -1,5 +1,5 @@
 /* ========================================================================
- * Copyright 2015-2018 Eduardo Chappa
+ * Copyright 2015-2020 Eduardo Chappa
  * Copyright 2008 Mark Crispin
  * ========================================================================
  */
@@ -316,7 +316,7 @@ long smtp_auth (SENDSTREAM *stream,NETMBX *mb,char *tmp)
 				/* hide client authentication responses */
 	if (!(at->flags & AU_SECURE)) stream->sensitive = T;
 	if ((*at->client) (smtp_challenge,smtp_response,"smtp",mb,stream,
-			   &trial,usr)) {
+			   net_port(stream->netstream),&trial,usr)) {
 	  if (stream->replycode == SMTPAUTHED) {
 	    ESMTP.auth = NIL;	/* disable authenticators */
 	    ret = LONGT;

@@ -1,5 +1,5 @@
 /* ========================================================================
- * Copyright 2018      Eduardo Chappa
+ * Copyright 2018-2020 Eduardo Chappa
  * Copyright 2015      Imagination Technologies
  * Copyright 1988-2008 University of Washington
  *
@@ -25,7 +25,7 @@
 #include <ntlm.h>
 
 long auth_ntlm_client (authchallenge_t challenger,authrespond_t responder,
-			char *service,NETMBX *mb,void *stream,
+			char *service,NETMBX *mb,void *stream, unsigned long port,
 			unsigned long *trial,char *user);
 
 AUTHENTICATOR auth_ntl = {	/* secure, has full auth, hidden */
@@ -49,7 +49,7 @@ AUTHENTICATOR auth_ntl = {	/* secure, has full auth, hidden */
  */
 
 long auth_ntlm_client (authchallenge_t challenger, authrespond_t responder,
-		       char *service, NETMBX *mb, void *stream,
+		       char *service, NETMBX *mb, void *stream, unsigned long port,
 		       unsigned long *trial, char *user)
 {
   tSmbNtlmAuthChallenge *challenge;
