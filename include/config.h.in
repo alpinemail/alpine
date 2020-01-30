@@ -42,9 +42,6 @@
 /* Default configuration value */
 #undef DEFAULT_SAVE
 
-/* Directory where system certificates are located */
-#undef DEFAULT_SSLCAPATH
-
 /* Default configuration value */
 #undef DF_AB_SORT_RULE
 

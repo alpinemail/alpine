@@ -557,7 +557,6 @@
 
 /* Name of default certificate authority container */
 #define DF_CA_CONTAINER "CAContainer"
-#else
 #endif /* ENABLE_WINDOWS_LIBRESSL */
 
 #if !defined(ENABLE_WINDOWS_LIBRESSL) || !defined(W32BITSBUILD)

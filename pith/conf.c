@@ -1733,10 +1733,10 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     GLO_WP_INDEXHEIGHT          = cpystr("24");
     GLO_WP_AGGSTATE		= cpystr("1");
     GLO_WP_STATE		= cpystr("");
-#if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
+#ifdef DEFAULT_SSLCAPATH
     GLO_SSLCAPATH		= parse_list(DEFAULT_SSLCAPATH, 1,
 					     PL_REMSURRQUOT, NULL);
-#endif
+#endif /* DEFAULT_SSLCAPATH */
 #ifdef	DF_VAR_SPELLER
     GLO_SPELLER			= cpystr(DF_VAR_SPELLER);
 #endif
