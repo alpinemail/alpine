@@ -192,8 +192,10 @@
 #define SET_EXTERNALAUTHID (long) 230
 #define GET_SSLCAPATH (long) 231
 #define SET_SSLCAPATH (long) 232
-#define GET_RESTRICTIONS (long) 233
-#define SET_RESTRICTIONS (long) 234
+#define GET_SSLCAFILE (long) 233
+#define SET_SSLCAFILE (long) 234
+#define GET_RESTRICTIONS (long) 235
+#define SET_RESTRICTIONS (long) 236
 
 	/* 3xx: TCP/IP */
 #define GET_OPENTIMEOUT (long) 300

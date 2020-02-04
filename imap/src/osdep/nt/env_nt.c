@@ -44,6 +44,7 @@ static unsigned int rndm = 0;	/* initial `random' number */
 static int server_nli = 0;	/* server and not logged in */
 static int logtry = 3;		/* number of login tries */
 static char *sslCApath = NIL;	/* non-standard CA path */
+static char *sslCAfile = NIL;	/* non-standard CA container */
 				/* block notification */
 static blocknotify_t mailblocknotify = mm_blocknotify;
 				/* callback to get username */
@@ -134,6 +135,13 @@ void *env_parameters (long function,void *value)
     break;
   case GET_SSLCAPATH:
     ret = (void *) sslCApath;
+    break;
+  case SET_SSLCAFILE:		/* this can be set null */
+    if (sslCAfile) fs_give ((void **) &sslCAfile);
+    sslCAfile = value ? cpystr ((char *) value) : value;
+    break;
+  case GET_SSLCAFILE:
+    ret = (void *) sslCAfile;
     break;
   }
   return ret;
@@ -786,4 +794,5 @@ void env_end(void)
   if(myNewsrc)	  fs_give((void **) &myNewsrc);
   if(sysInbox)	  fs_give((void **) &sysInbox);
   if(sslCApath)	  fs_give((void **) &sslCApath);
+  if(sslCAfile)	  fs_give((void **) &sslCAfile);
 }

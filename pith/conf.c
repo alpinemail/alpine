@@ -379,6 +379,8 @@ CONF_TXT_T cf_text_mimetype_path[] =	"Sets the search path for the mimetypes con
 
 #if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
 CONF_TXT_T cf_text_system_certs_path[] = "Sets the path for the system ssl certificates issued by a trusted\n# certificate authority. Note that this could be a list of paths, if the same\n# pinerc is used in different systems. Alpine always chooses the first one that\n# it finds. Value must be an absolute path.";
+
+CONF_TXT_T cf_text_system_certs_file[] = "Sets the path for the system ssl file container of certificates issued by a\n# certificate authority. Note that this could be a list of container files,\n# if the same pinerc is used in different systems. Alpine always chooses the,\n# first one that it finds. Value must be an absolute path.";
 #endif
 
 CONF_TXT_T cf_text_newmail_fifo_path[] = "Sets the filename for the newmail fifo (named pipe). Unix only.";
@@ -667,7 +669,9 @@ static struct variable variables[] = {
 	NULL,			cf_text_mimetype_path},
 #if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
 {"system-certs-path",			0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0,
-	NULL,			cf_text_system_certs_path},
+	"System CACerts Dir",	cf_text_system_certs_path},
+{"system-certs-file",			0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0,
+	"System CACerts File",	cf_text_system_certs_file},
 #endif
 {"url-viewers",				0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0,
 	"URL-Viewers",		cf_text_browser},
@@ -1737,6 +1741,10 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     GLO_SSLCAPATH		= parse_list(DEFAULT_SSLCAPATH, 1,
 					     PL_REMSURRQUOT, NULL);
 #endif /* DEFAULT_SSLCAPATH */
+#ifdef DEFAULT_SSLCAFILE
+    GLO_SSLCAFILE		= parse_list(DEFAULT_SSLCAFILE, 1,
+					     PL_REMSURRQUOT, NULL);
+#endif /* DEFAULT_SSLCAFILE */
 #ifdef	DF_VAR_SPELLER
     GLO_SPELLER			= cpystr(DF_VAR_SPELLER);
 #endif
@@ -2382,6 +2390,7 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     set_current_val(&vars[V_MIMETYPE_PATH], TRUE, TRUE);
 #if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
     set_current_val(&vars[V_SSLCAPATH], TRUE, TRUE);
+    set_current_val(&vars[V_SSLCAFILE], TRUE, TRUE);
 #endif
 #if !defined(DOS) && !defined(OS2) && !defined(LEAVEOUTFIFO)
     set_current_val(&vars[V_FIFOPATH], TRUE, TRUE);
@@ -7082,6 +7091,22 @@ set_system_certs_path(struct pine *ps)
       }
   }
 }
+
+
+void
+set_system_certs_container(struct pine *ps)
+{ 
+  char **l;
+
+  for (l = ps->vars[V_SSLCAPATH].current_val.l; l && *l; l++){
+      if(is_absolute_path(*l)
+	  && can_access(*l, ACCESS_EXISTS) == 0
+	  && can_access(*l, READ_ACCESS) == 0){
+           mail_parameters(NULL, SET_SSLCAFILE, (void *) *l);
+           break;
+      }
+  }
+}
 #endif
 
 int
@@ -7943,6 +7968,8 @@ config_help(int var, int feature)
 #if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
       case V_SSLCAPATH :
 	return(h_config_system_certs_path);
+      case V_SSLCAFILE :
+	return(h_config_system_certs_file);
 #endif
 #if !defined(DOS) && !defined(OS2) && !defined(LEAVEOUTFIFO)
       case V_FIFOPATH :

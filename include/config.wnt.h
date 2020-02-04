@@ -563,6 +563,7 @@
 #undef DF_ENCRYPTION_RANGE
 #else
 #define DEFAULT_SSLCAPATH "C:\\libressl\\ssl\\certs"
+#define DEFAULT_SSLCAFILE "C:\\libressl\\ssl\\certs\\cert.pem"
 #endif
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */

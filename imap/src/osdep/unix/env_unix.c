@@ -73,6 +73,7 @@ static char *blackBoxDir = NIL;	/* black box directory name */
 				/* black box default home directory */
 static char *blackBoxDefaultHome = NIL;
 static char *sslCApath = NIL;	/* non-standard CA path */
+static char *sslCAfile = NIL;	/* non-standard CA container */
 static short anonymous = NIL;	/* is anonymous */
 static short blackBox = NIL;	/* is a black box */
 static short closedBox = NIL;	/* is a closed box (uses chroot() jail) */
@@ -345,6 +346,13 @@ void *env_parameters (long function,void *value)
     break;
   case GET_SSLCAPATH:
     ret = (void *) sslCApath;
+    break;
+  case SET_SSLCAFILE:		/* this can be set null */
+    if (sslCAfile) fs_give ((void **) &sslCAfile);
+    sslCAfile = value ? cpystr ((char *) value) : value;
+    break;
+  case GET_SSLCAFILE:
+    ret = (void *) sslCAfile;
     break;
   case SET_LISTMAXLEVEL:
     list_max_level = (long) value;
@@ -1766,6 +1774,8 @@ void dorc (char *file,long flag)
 				 */
 	  else if (!compare_cstring (s,"set CA-certificate-path"))
 	    sslCApath = cpystr (k);
+	  else if (!compare_cstring (s,"set CA-certificate-container"))
+	    sslCAfile = cpystr (k);
 	  else if (!compare_cstring (s,"set disable-plaintext"))
 	    disablePlaintext = atoi (k);
 	  else if (!compare_cstring (s,"set allowed-login-attempts"))
@@ -1872,6 +1882,7 @@ void env_end(void)
   if(blackBoxDefaultHome)
 		   fs_give((void **)&blackBoxDefaultHome);
   if(sslCApath)	   fs_give((void **)&sslCApath);
+  if(sslCAfile)	   fs_give((void **)&sslCAfile);
   if(userFlags){
     int i;
     for(i = 0; i < NUSERFLAGS; i++)

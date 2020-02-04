@@ -136,6 +136,8 @@
 #if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
 #define VAR_SSLCAPATH		     vars[V_SSLCAPATH].current_val.l
 #define GLO_SSLCAPATH		     vars[V_SSLCAPATH].global_val.l
+#define VAR_SSLCAFILE		     vars[V_SSLCAFILE].current_val.l
+#define GLO_SSLCAFILE		     vars[V_SSLCAFILE].global_val.l
 #endif
 #define VAR_INDEX_COLOR_STYLE	     vars[V_INDEX_COLOR_STYLE].current_val.p
 #define GLO_INDEX_COLOR_STYLE	     vars[V_INDEX_COLOR_STYLE].global_val.p
@@ -922,6 +924,7 @@ void	   free_pinerc_lines(PINERC_LINE **);
 void	   panic1(char *, char *);
 #if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
 void	   set_system_certs_path(struct pine *);
+void	   set_system_certs_container(struct pine *);
 #endif
 
 /* mandatory to implement prototypes */

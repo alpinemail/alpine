@@ -127,6 +127,7 @@ typedef	enum {    V_PERSONAL_NAME = 0
 		, V_MIMETYPE_PATH
 #if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
 		, V_SSLCAPATH
+		, V_SSLCAFILE
 #endif
 		, V_BROWSER
 		, V_HISTORY

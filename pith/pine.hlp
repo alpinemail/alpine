@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 401 2020-01-30 00:08:16
+Alpine Commit 402 2020-02-03 21:15:05
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -186,6 +186,10 @@ any problems you find with this release. New enhancements
      location of the directory where folders are located. In PC-Alpine 
      this must be C:\\libressl\\ssl\\certs. The C: drive can be replaced 
      by the name of the drive where the binary and DLL files are located.
+
+<LI> New variable system-certs-file that allows users to configure the
+     location of a container of certificate authoririty (CA) certificates
+     to be used to validate certificates of remote servers.
 
 <LI>Crash in Alpine when attempting to reply to a multipart/alternative 
     message that is malformed, and the option to include attachments in
@@ -22232,7 +22236,7 @@ directory. For example, the directory might not be accessible, or has not been
 updated and contains old certificates that have expired.
 
 <P>
-When a user wants to override the default, this variable can be used to list
+This variable can be used to list
 the directory where such certificates can be found. Alpine will use the first
 directory in this list that exists in your system and can be accessed. This
 allows for users to be able to use the same pinerc file in different systems.
@@ -22241,9 +22245,9 @@ allows for users to be able to use the same pinerc file in different systems.
 Example of values for this option might be:
 
 <PRE>
-System Certs Path = /etc/ssl/certs
-                    /usr/local/ssl/certs
-                    C:\\libressl\\ssl\\certs
+System CACerts Dir = /etc/ssl/certs
+                     /usr/local/ssl/certs
+                     C:\\libressl\\ssl\\certs
 <PRE>
 
 <P>
@@ -22253,8 +22257,44 @@ be obtained by first executing the command
 <PRE>openssl version -d</PRE>
 
 and adding &quot;/certs&quot; to that value. In Windows the default location
-for the certificates is C:\\libressl\\ssl\\certs. This value was set by LibreSSL
-developers, and this option can be used to override this default.
+for the certificates is C:\\libressl\\ssl\\certs. This value was set by
+LibreSSL developers, and this option can be used to override this default.
+
+<P>
+&lt;End of help on this topic&gt;
+</BODY></HTML>
+====== h_config_system_certs_file ======
+<HTML>
+<HEAD>
+<TITLE>OPTION: <!--#echo var="VAR_system-certs-file"--></TITLE>
+</HEAD>
+<BODY>
+<H1>OPTION: <!--#echo var="VAR_system-certs-file"--></H1>
+
+This option sets the location of the container file that holds 
+certificate authority (CA) certificates.
+Alpine will use the first
+container in this list that exists in your system and can be accessed. This
+allows for users to be able to use the same pinerc file in different systems.
+
+<P>
+Example of values for this option might be:
+
+<PRE>
+System Certs Path = /etc/ssl/certs/cert.pem
+                    /usr/local/ssl/ca-root-nss.crt
+                    C:\\libressl\\ssl\\certs\\cert.pem
+<PRE>
+
+<P>
+In unix systems, the default location of the certificates for openssl can
+be obtained by first executing the command
+
+<PRE>openssl version -d</PRE>
+
+and adding &quot;/certs&quot; to that value. In Windows the default location
+for the certificates is C:\\libressl\\ssl\\certs\\cert.pem. This value was set 
+by LibreSSL developers, and this option can be used to override this default.
 
 <P>
 &lt;End of help on this topic&gt;

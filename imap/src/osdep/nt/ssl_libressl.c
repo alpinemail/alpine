@@ -387,6 +387,7 @@ static char *ssl_start_work(SSLSTREAM *stream, char *host, unsigned long flags)
 	int minv, maxv;
 	int masklow, maskhigh;
 	char *s, *t, *err, tmp[MAILTMPLEN], buf[256];
+	char *CAfile, *CApath;
 	sslcertificatequery_t scq =
 		(sslcertificatequery_t)mail_parameters(NIL, GET_SSLCERTIFICATEQUERY, NIL);
 	sslclientcert_t scc =
@@ -406,10 +407,12 @@ static char *ssl_start_work(SSLSTREAM *stream, char *host, unsigned long flags)
 		SSL_CTX_set_verify(stream->context, SSL_VERIFY_NONE, NIL);
 	else SSL_CTX_set_verify(stream->context, SSL_VERIFY_PEER, ssl_open_verify);
 			/* a non-standard path desired */
-	if ((s = (char *)mail_parameters(NIL, GET_SSLCAPATH, NIL)) != NIL)
-		SSL_CTX_load_verify_locations(stream->context, NIL, (const char *)s);
+	CAfile = (char *) mail_parameters (NIL, GET_SSLCAFILE, NIL);
+	CApath = (char *) mail_parameters (NIL, GET_SSLCAPATH, NIL);
+	if (CAfile != NIL || CApath != NIL)
+	    SSL_CTX_load_verify_locations (stream->context, CAfile, CApath);
 	else 		/* otherwise we set default paths to CAs... */
-		SSL_CTX_set_default_verify_paths(stream->context);
+	    SSL_CTX_set_default_verify_paths(stream->context);
 	/* want to send client certificate? */
 	if (scc && (s = (*scc) ()) && (sl = strlen(s))) {
 		if ((cert = PEM_read_bio_X509(bio = BIO_new_mem_buf(s, sl), NIL, NIL, NIL)) != NIL) {

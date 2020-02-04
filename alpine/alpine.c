@@ -473,6 +473,7 @@ main(int argc, char **argv)
 
 #if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
     set_system_certs_path(pine_state);
+    set_system_certs_container(pine_state);
 #endif
 
 #ifdef SMIME
