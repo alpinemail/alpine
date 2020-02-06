@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 402 2020-02-03 21:15:05
+Alpine Commit 403 2020-02-06 07:31:37
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -194,6 +194,13 @@ any problems you find with this release. New enhancements
 <LI>Crash in Alpine when attempting to reply to a multipart/alternative 
     message that is malformed, and the option to include attachments in
     reply is enabled. Reported and patched by Peter Tirsek.
+</UL>
+
+<P> Bug fixes include
+<UL>
+<LI>Bug in PC-Alpine that made Alpine go into an infinte loop and
+    consume CPU when it was iconized. Reported by Holger Schieferdecker in
+    comp.mail.pine.
 </UL>
 
 <P>

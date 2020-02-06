@@ -1992,8 +1992,14 @@ PaintTTY (HWND hWnd)
     if (pTTYInfo == NULL)
 	return (FALSE);
 
-    if (IsIconic (hWnd))
-      return (TRUE);
+    // There used to be an instruction to return when we were iconized:
+    //    if (IsIconic (hWnd))
+    //      return (TRUE);
+    // We remove this, because when Windows wants to update the screen
+    // and Alpine returns because the screen is iconized,, neither Windows
+    // nor Alpine will stop their vicious infinite cycle: Windows trying to
+    // force the update and Alpine avoiding it. We better yield because
+    // otherwise we will end up with a high consumption of CPU.
 
     hDC = BeginPaint (hWnd, &ps);
     rect = ps.rcPaint;
@@ -6736,6 +6742,7 @@ mswin_caninput (void)
 int
 mswin_charavail (void)
 {
+    DWORD	start;
     MSG		msg;
     BOOL	ca, pa, ma;
 
@@ -6788,6 +6795,7 @@ mswin_charavail (void)
 UCS
 mswin_getc (void)
 {
+    DWORD	start;
     BOOL	ca, pa, ma;
     MSG		msg;
 
