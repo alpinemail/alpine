@@ -7857,6 +7857,8 @@ config_help(int var, int feature)
 	return(h_config_tcp_writewarn_timeo);
       case V_TCPQUERYTIMEO :
 	return(h_config_tcp_query_timeo);
+      case V_QUITQUERYTIMEO :
+	return(h_config_quit_query_timeo);
       case V_RSHOPENTIMEO :
 	return(h_config_rsh_open_timeo);
       case V_SSHOPENTIMEO :

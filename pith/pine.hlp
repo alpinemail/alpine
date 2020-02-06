@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 403 2020-02-06 07:31:37
+Alpine Commit 404 2020-02-06 15:41:28
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -4673,6 +4673,7 @@ There are also additional details on
 <li><a href="h_config_permlocked">OPTION: <!--#echo var="VAR_stay-open-folders"--></a>
 <li><a href="h_config_tcp_open_timeo">OPTION: <!--#echo var="VAR_tcp-open-timeout"--></a>
 <li><a href="h_config_tcp_query_timeo">OPTION: <!--#echo var="VAR_tcp-query-timeout"--></a>
+<li><a href="h_config_quit_query_timeo">OPTION: <!--#echo var="VAR_close-connection-timeout"--></a>
 <li><a href="h_config_tcp_readwarn_timeo">OPTION: <!--#echo var="VAR_tcp-read-warning-timeout"--></a>
 <li><a href="h_config_tcp_writewarn_timeo">OPTION: <!--#echo var="VAR_tcp-write-warning-timeout"--></a>
 <li><a href="h_config_thread_disp_style">OPTION: <!--#echo var="VAR_threading-display-style"--></a>
@@ -25356,6 +25357,56 @@ That amount of time is set by this option, which defaults to 60 seconds,
 has a minimum of 5 seconds, and a maximum of 1000 seconds.
 <P>
 <UL>   
+<LI><A HREF="h_finding_help">Finding more information and requesting help</A>
+</UL><P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+====== h_config_quit_query_timeo =====
+<HTML>
+<HEAD>
+<TITLE>OPTION: <!--#echo var="VAR_close-connection-timeout"--></TITLE>
+</HEAD>
+<BODY>
+<H1>OPTION: <!--#echo var="VAR_close-connection-timeout"--></H1>
+
+The original purpose of this option was to close a connection after this
+much time has elapsed without response from the server. The problem this
+generates is that a server might not reply on time due to a slow operation
+(for example, sorting a large folder, or filtering messages, etc.) In those
+situations it is desirable to wait for the server, even when this takes
+a long time.
+
+<P>
+In order to have a good compromise so that a user can distinguish between
+when a connection is closed, therefore
+we do not need to wait for it, and the operation that the user is waiting
+for takes a long time, this option only applies to the
+&quot;NOOP&quot; IMAP command. So, if a NOOP command has been issued,
+and the connection does not return after the number of seconds configured
+here, which must be at least the amount configured in the option
+<a href="h_config_tcp_query_timeo"><!--#echo var="VAR_tcp-query-timeout"--></a>,
+then Alpine will close the connection.
+
+<P>
+Closing connections that have connectivity problems is a good idea. In an ideal
+world, one would like all connections to be fast and reliable, so the amount
+of time and effort put into parsing a folder to report its state when it is
+opened is not wasted, so keeping connections alive is good, but the problem
+with this is that waiting for a user to reply to a &quot;keep connection
+alive?&quot; question can take a long time, and that might affect other
+connections that could be closed because Alpine is not pinging them while it
+is waiting for a reply from a user for a different connection. Therefore
+setting this value helps to keep other connections alive, in case
+you have several incoming folders in other servers.
+
+<P>
+The default value for this option is 0, which means that no connections will
+be closed automatically, so if you want connections to be closed automatically
+you must set this option to a positive number bigger or equal than the
+value of the option <!--#echo var="VAR_tcp-query-timeout"-->.
+<P>
+<UL>
 <LI><A HREF="h_finding_help">Finding more information and requesting help</A>
 </UL><P>
 &lt;End of help on this topic&gt;
