@@ -183,12 +183,12 @@ any problems you find with this release. New enhancements
      Alexander Perlis for suggesting it and explaining how the method works.
 
 <LI> New variable system-certs-path that allows users to indicate the 
-     location of the directory where folders are located. In PC-Alpine 
+     location of the directory where certificates are located. In PC-Alpine 
      this must be C:\\libressl\\ssl\\certs. The C: drive can be replaced 
      by the name of the drive where the binary and DLL files are located.
 
 <LI> New variable system-certs-file that allows users to configure the
-     location of a container of certificate authoririty (CA) certificates
+     location of a container of certificate authority (CA) certificates
      to be used to validate certificates of remote servers.
 
 <LI>Crash in Alpine when attempting to reply to a multipart/alternative 
