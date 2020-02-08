@@ -176,7 +176,9 @@ Apache web server.
 This is a development version of Alpine. These enhancements are
 released after the release of version 
 <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->). Please report
-any problems you find with this release. New enhancements
+any problems you find with this release.
+
+<P> Additions include:
 
 <UL>
 <LI> Add support for the OAUTHBEARER authentication method in Gmail. Thanks to
@@ -198,7 +200,7 @@ any problems you find with this release. New enhancements
 
 <P> Bug fixes include
 <UL>
-<LI>Bug in PC-Alpine that made Alpine go into an infinte loop and
+<LI>Bug in PC-Alpine that made Alpine go into an infinite loop and
     consume CPU when it was iconized. Reported by Holger Schieferdecker in
     comp.mail.pine.
 </UL>
