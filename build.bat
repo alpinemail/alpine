@@ -11,8 +11,15 @@ rem     http://www.apache.org/licenses/LICENSE-2.0
 rem
 rem ========================================================================
 
+rem These are the default values, which we might override below
+rem by setting them to older versions
+set CRYPTO_VERSION=45
+set SSL_VERSION=47
+set TLS_VERSION=19
+
 if "%1"=="" goto blank
 if "%1"=="wnt" goto wnt
+if "%1"=="wxp" goto wxp
 if "%1"=="w32" goto w32
 if "%1"=="w2k" goto w2k
 if "%1"=="clean" goto clean
@@ -24,22 +31,27 @@ echo Must specify build command!
 echo usage: BUILD cmd
 echo   where "cmd" is one of either:
 echo         wnt        -- Windows
-echo         w32        -- Windows 32 bits (e.g. XP)
+echo         w32        -- Windows 32 bits (not Windows XP)
+echo         wxp        -- Windows XP
 echo         w2k        -- Windows with Win2k Kerb
 echo         clean      -- to remove obj, lib, and exe files from source
 goto fini
 
-:w32
+:wxp
 set CRYPTO_VERSION=41
 set SSL_VERSION=43
 set TLS_VERSION=15
 set BIT=32
-set windows32build=-DW32BITSBUILD
+set windows32build=-DWXPBUILD -D__MINGW_USE_VC2005_COMPAT
+goto wntbuild
+
+:w32
+rem this port uses the default values for libcrypto and friends.
+set BIT=32
+set windows32build=-DW32BITSBUILD -D__MINGW_USE_VC2005_COMPAT
 goto wntbuild
 :wnt
-set CRYPTO_VERSION=45
-set SSL_VERSION=47
-set TLS_VERSION=19
+rem this port uses the default values for libcrypto and friends.
 set BIT=64
 set windows32build=
 :wntbuild
@@ -164,6 +176,11 @@ rem del garbageout.txt
 if not exist mailutil mkdir mailutil
 copy /Y "%ALPINE_IMAP%"\src\mailutil\* mailutil\ > garbageout.txt
 del garbageout.txt
+if defined ALPINE_LIBRESSL del /Q libressl\x86\lib*.lib
+if defined ALPINE_LIBRESSL del /Q alpine\lib*.dll
+if defined ALPINE_LIBRESSL copy /Y libressl\x86\"%1%"\* libressl\x86\ > garbageout.txt
+if defined ALPINE_LIBRESSL copy /Y alpine\DLL\"%1%"\* alpine\ > garbageout.txt
+if defined ALPINE_LIBRESSL del garbageout.txt
 goto build
 
 :build

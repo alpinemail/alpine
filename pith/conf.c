@@ -377,7 +377,7 @@ CONF_TXT_T cf_text_mailcap_path[] =	"Sets the search path for the mailcap config
 
 CONF_TXT_T cf_text_mimetype_path[] =	"Sets the search path for the mimetypes configuration file.\n# NOTE: colon delimited under UNIX, semi-colon delimited under DOS/Windows/OS2.";
 
-#if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
+#if !defined(_WINDOWS) || defined(WINDOWS_LIBRESSL_CERTS)
 CONF_TXT_T cf_text_system_certs_path[] = "Sets the path for the system ssl certificates issued by a trusted\n# certificate authority. Note that this could be a list of paths, if the same\n# pinerc is used in different systems. Alpine always chooses the first one that\n# it finds. Value must be an absolute path.";
 
 CONF_TXT_T cf_text_system_certs_file[] = "Sets the path for the system ssl file container of certificates issued by a\n# certificate authority. Note that this could be a list of container files,\n# if the same pinerc is used in different systems. Alpine always chooses the,\n# first one that it finds. Value must be an absolute path.";
@@ -667,7 +667,7 @@ static struct variable variables[] = {
 	NULL,			cf_text_mailcap_path},
 {"mimetype-search-path",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	NULL,			cf_text_mimetype_path},
-#if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
+#if !defined(_WINDOWS) || defined(WINDOWS_LIBRESSL_CERTS)
 {"system-certs-path",			0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0,
 	"System CACerts Dir",	cf_text_system_certs_path},
 {"system-certs-file",			0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0,
@@ -2388,7 +2388,7 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     set_current_val(&vars[V_DOWNLOAD_CMD_PREFIX], TRUE, TRUE);
     set_current_val(&vars[V_MAILCAP_PATH], TRUE, TRUE);
     set_current_val(&vars[V_MIMETYPE_PATH], TRUE, TRUE);
-#if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
+#if !defined(_WINDOWS) || defined(WINDOWS_LIBRESSL_CERTS)
     set_current_val(&vars[V_SSLCAPATH], TRUE, TRUE);
     set_current_val(&vars[V_SSLCAFILE], TRUE, TRUE);
 #endif
@@ -7076,7 +7076,7 @@ feature_gets_an_x(struct pine *ps, struct variable *var, FEATURE_S *feature,
 			  test_old_growth_bits(ps, feature->id)))));
 }
 
-#if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
+#if !defined(_WINDOWS) || defined(WINDOWS_LIBRESSL_CERTS)
 void
 set_system_certs_path(struct pine *ps)
 { 
@@ -7967,7 +7967,7 @@ config_help(int var, int feature)
 	return(h_config_mailcap_path);
       case V_MIMETYPE_PATH :
 	return(h_config_mimetype_path);
-#if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
+#if !defined(_WINDOWS) || defined(WINDOWS_LIBRESSL_CERTS)
       case V_SSLCAPATH :
 	return(h_config_system_certs_path);
       case V_SSLCAFILE :

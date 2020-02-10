@@ -471,7 +471,7 @@ main(int argc, char **argv)
 
     init_vars(pine_state, process_init_cmds);
 
-#if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
+#if !defined(_WINDOWS) || defined(WINDOWS_LIBRESSL_CERTS)
     set_system_certs_path(pine_state);
     set_system_certs_container(pine_state);
 #endif

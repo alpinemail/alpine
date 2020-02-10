@@ -133,7 +133,7 @@
 #define VAR_COLOR_STYLE		     vars[V_COLOR_STYLE].current_val.p
 #define GLO_COLOR_STYLE		     vars[V_COLOR_STYLE].global_val.p
 #endif
-#if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
+#if !defined(_WINDOWS) || defined(WINDOWS_LIBRESSL_CERTS)
 #define VAR_SSLCAPATH		     vars[V_SSLCAPATH].current_val.l
 #define GLO_SSLCAPATH		     vars[V_SSLCAPATH].global_val.l
 #define VAR_SSLCAFILE		     vars[V_SSLCAFILE].current_val.l
@@ -922,7 +922,7 @@ char     **get_supported_options(void);
 unsigned   reset_startup_rule(MAILSTREAM *);
 void	   free_pinerc_lines(PINERC_LINE **);
 void	   panic1(char *, char *);
-#if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
+#if !defined(_WINDOWS) || defined(WINDOWS_LIBRESSL_CERTS)
 void	   set_system_certs_path(struct pine *);
 void	   set_system_certs_container(struct pine *);
 #endif

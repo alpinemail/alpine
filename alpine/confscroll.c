@@ -5773,7 +5773,7 @@ fix_side_effects(struct pine *ps, struct variable *var, int revert)
 #ifdef DF_ENCRYPTION_RANGE
 		        var == &ps->vars[V_ENCRYPTION_RANGE] ||
 #endif
-#if !defined(_WINDOWS) || (defined(ENABLE_WINDOWS_LIBRESSL) && defined(W32BITSBUILD))
+#if !defined(_WINDOWS) || defined(ENABLE_WINDOWS_LIBRESSL_CERTS)
 			var == &ps->vars[V_SSLCAPATH] ||
 			var == &ps->vars[V_SSLCAFILE] ||
 #endif

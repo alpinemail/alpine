@@ -1,0 +1,6 @@
+This directory is populated by the build.bat script.
+
+* wxp comes from libressl, and can run 32 bits version in Alpine.
+* w32 is equal to wxp, but it is intended to be different from it, 
+  and useful for other 32 bits operating systems
+* wnt was compiled with cygwin 64 bits.

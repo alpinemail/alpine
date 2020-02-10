@@ -559,12 +559,19 @@
 #define DF_CA_CONTAINER "CAContainer"
 #endif /* ENABLE_WINDOWS_LIBRESSL */
 
-#if !defined(ENABLE_WINDOWS_LIBRESSL) || !defined(W32BITSBUILD)
-#undef DF_ENCRYPTION_RANGE
-#else
+#if defined(ENABLE_WINDOWS_LIBRESSL) && (defined(W32BITSBUILD) || defined(WXPBUILD))
+#define WINDOWS_LIBRESSL_CERTS
+#if defined(W32BITSBUILD)
+#define DEFAULT_SSLCAPATH "certs"
+#define DEFAULT_SSLCAFILE "erts\\cert.pem"
+#endif /* W32BITSBUILD */
+#if defined(WXPBUILD)
 #define DEFAULT_SSLCAPATH "C:\\libressl\\ssl\\certs"
 #define DEFAULT_SSLCAFILE "C:\\libressl\\ssl\\certs\\cert.pem"
-#endif
+#endif /* WXPBUILD */
+#else
+#undef DF_ENCRYPTION_RANGE
+#endif /* defined(ENABLE_WINDOWS_LIBRESSL) && (defined(W32BITSBUILD) || defined(WXPBUILD)) */ 
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 /* #define TIME_WITH_SYS_TIME */
