@@ -24,7 +24,7 @@
 
 #include <ntlm.h>
 
-long auth_ntlm_client (authchallenge_t challenger,authrespond_t responder,
+long auth_ntlm_client (authchallenge_t challenger,authrespond_t responder,char *base,
 			char *service,NETMBX *mb,void *stream, unsigned long port,
 			unsigned long *trial,char *user);
 
@@ -48,7 +48,7 @@ AUTHENTICATOR auth_ntl = {	/* secure, has full auth, hidden */
  * Returns: T if success, NIL otherwise, number of trials incremented if retry
  */
 
-long auth_ntlm_client (authchallenge_t challenger, authrespond_t responder,
+long auth_ntlm_client (authchallenge_t challenger, authrespond_t responder,char *base,
 		       char *service, NETMBX *mb, void *stream, unsigned long port,
 		       unsigned long *trial, char *user)
 {
@@ -89,13 +89,13 @@ long auth_ntlm_client (authchallenge_t challenger, authrespond_t responder,
       }
       buildSmbNtlmAuthRequest (&request, user, NULL);
 				/* send a negotiate message */
-      if ((*responder) (stream, (void *) &request, SmbLength (&request)) &&
+      if ((*responder) (stream, NIL, (void *) &request, SmbLength (&request)) &&
 	  (challenge = (*challenger) (stream, &clen))) {
 				/* interpret the challenge message */
 	buildSmbNtlmAuthResponse (challenge, &response, user, pass);
         fs_give ((void **) &challenge);
 				/* send a response message */
-	if ((*responder) (stream, (void *) &response, SmbLength (&response))) {
+	if ((*responder) (stream, NIL, (void *) &response, SmbLength (&response))) {
 	  if (challenge = (*challenger) (stream, &clen))
 	    fs_give ((void **) &challenge);
 	  else {
