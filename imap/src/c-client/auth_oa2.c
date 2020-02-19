@@ -11,7 +11,7 @@
  * ========================================================================
  */
 
-long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder,
+long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder, char *base,
 			char *service,NETMBX *mb,void *stream, unsigned long port,
 			unsigned long *trial,char *user);
 
@@ -20,7 +20,7 @@ void mm_login_oauth2_c_client_method (NETMBX *, char *, char *, OAUTH2_S *, unsi
 #endif /* HTTP_OAUTH2_INCLUDED */
 
 AUTHENTICATOR auth_oa2 = {
-  AU_HIDE,			/* hidden */
+  AU_HIDE | AU_SINGLE,		/* hidden */
   OA2NAME,			/* authenticator name */
   NIL,				/* always valid */
   auth_oauth2_client,		/* client method */
@@ -75,7 +75,7 @@ char *oauth2_generate_state(void)
  * Returns: T if success, NIL otherwise, number of trials incremented if retry
  */
 
-long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder,
+long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder, char *base,
 			char *service,NETMBX *mb,void *stream, unsigned long port, 
 			unsigned long *trial,char *user)
 {
@@ -93,11 +93,13 @@ long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder,
 
 				/* get initial (empty) challenge */
   if ((challenge = (*challenger) (stream,&clen)) != NULL) {
-    fs_give ((void **) &challenge);
-    if (clen) {			/* abort if challenge non-empty */
-      mm_log ("Server bug: non-empty initial XOAUTH2 challenge",WARN);
-      (*responder) (stream,NIL,0);
-      ret = LONGT;		/* will get a BAD response back */
+    if(base == NIL){
+	fs_give ((void **) &challenge);
+	if (clen) {		/* abort if challenge non-empty */
+	   mm_log ("Server bug: non-empty initial XOAUTH2 challenge",WARN);
+	   (*responder) (stream,NIL,NIL,0);
+	   ret = LONGT;		/* will get a BAD response back */
+	}
     }
 
     /* 
@@ -168,7 +170,7 @@ long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder,
 
     /* empty challenge or user requested abort or client does not have info */
     if(!oauth2.access_token) {
-      (*responder) (stream,NIL,0);
+      (*responder) (stream,NIL,NIL,0);
       *trial = 0;		/* cancel subsequent attempts */
       ret = LONGT;		/* will get a BAD response back */
     }
@@ -184,7 +186,7 @@ long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder,
       for (u = oauth2.access_token; *u; *t++ = *u++);
       *t++ = '\001';		/* delimiting ^A */
       *t++ = '\001';		/* delimiting ^A */
-      if ((*responder) (stream,response,rlen)) {
+      if ((*responder) (stream,base,response,rlen)) {
 	if ((challenge = (*challenger) (stream,&clen)) != NULL)
 	  fs_give ((void **) &challenge);
 	else {

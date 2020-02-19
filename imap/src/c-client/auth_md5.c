@@ -44,7 +44,7 @@ typedef struct {
 /* Prototypes */
 
 long auth_md5_valid (void);
-long auth_md5_client (authchallenge_t challenger,authrespond_t responder,
+long auth_md5_client (authchallenge_t challenger,authrespond_t responder,char *base,
 		      char *service,NETMBX *mb,void *stream, unsigned long port,
 		      unsigned long *trial,char *user);
 char *auth_md5_server (authresponse_t responder,int argc,char *argv[]);
@@ -95,7 +95,7 @@ long auth_md5_valid (void)
  * Returns: T if success, NIL otherwise, number of trials incremented if retry
  */
 
-long auth_md5_client (authchallenge_t challenger,authrespond_t responder,
+long auth_md5_client (authchallenge_t challenger,authrespond_t responder,char *base,
 		      char *service,NETMBX *mb,void *stream, unsigned long port,
 		      unsigned long *trial,char *user)
 {
@@ -108,7 +108,7 @@ long auth_md5_client (authchallenge_t challenger,authrespond_t responder,
     mm_login (mb,user, &pwd,*trial);
     if (!pwd) {		/* user requested abort */
       fs_give ((void **) &challenge);
-      (*responder) (stream,NIL,0);
+      (*responder) (stream,NIL,NIL,0);
       *trial = 0;		/* cancel subsequent attempts */
       ret = LONGT;		/* will get a BAD response back */
     }
@@ -118,7 +118,7 @@ long auth_md5_client (authchallenge_t challenger,authrespond_t responder,
 						pwd,strlen (pwd)));
       fs_give ((void **) &challenge);
 				/* send credentials, allow retry if OK */
-      if ((*responder) (stream,tmp,strlen (tmp))) {
+      if ((*responder) (stream,NIL,tmp,strlen (tmp))) {
 	if ((challenge = (*challenger) (stream,&clen)) != NULL)
 	  fs_give ((void **) &challenge);
 	else {

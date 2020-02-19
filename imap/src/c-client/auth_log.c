@@ -27,7 +27,7 @@
  * Last Edited:	30 August 2006
  */
 
-long auth_login_client (authchallenge_t challenger,authrespond_t responder,
+long auth_login_client (authchallenge_t challenger,authrespond_t responder, char *base,
 			char *service,NETMBX *mb,void *stream, unsigned long port,
 			unsigned long *trial,char *user);
 char *auth_login_server (authresponse_t responder,int argc,char *argv[]);
@@ -55,7 +55,7 @@ AUTHENTICATOR auth_log = {
  * Returns: T if success, NIL otherwise, number of trials incremented if retry
  */
 
-long auth_login_client (authchallenge_t challenger,authrespond_t responder,
+long auth_login_client (authchallenge_t challenger,authrespond_t responder, char *base,
 			char *service,NETMBX *mb,void *stream, unsigned long port,
 			unsigned long *trial,char *user)
 {
@@ -68,16 +68,16 @@ long auth_login_client (authchallenge_t challenger,authrespond_t responder,
     fs_give ((void **) &challenge);
     mm_login (mb,user, &pwd,*trial);
     if (!pwd) {			/* user requested abort */
-      (*responder) (stream,NIL,0);
+      (*responder) (stream,NIL,NIL,0);
       *trial = 0;		/* cancel subsequent attempts */
       ret = LONGT;		/* will get a BAD response back */
     }
 				/* send user name */
-    else if ((*responder) (stream,user,strlen (user)) &&
+    else if ((*responder) (stream,NIL,user,strlen (user)) &&
 	     (challenge = (*challenger) (stream,&clen))) {
       fs_give ((void **) &challenge);
 				/* send password */
-      if ((*responder) (stream,pwd,strlen (pwd))) {
+      if ((*responder) (stream,NIL,pwd,strlen (pwd))) {
 	if ((challenge = (*challenger) (stream,&clen)) != NULL)
 	  fs_give ((void **) &challenge);
 	else {

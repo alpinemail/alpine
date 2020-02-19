@@ -27,13 +27,13 @@
  * Last Edited:	30 August 2006
  */
 
-long auth_plain_client (authchallenge_t challenger,authrespond_t responder,
+long auth_plain_client (authchallenge_t challenger,authrespond_t responder,char *base,
 			char *service,NETMBX *mb,void *stream, unsigned long port,
 			unsigned long *trial,char *user);
 char *auth_plain_server (authresponse_t responder,int argc,char *argv[]);
 
 AUTHENTICATOR auth_pla = {
-  AU_AUTHUSER | AU_HIDE,	/* allow authuser, hidden */
+  AU_AUTHUSER | AU_HIDE | AU_SINGLE,	/* allow authuser, hidden, single trip */
   "PLAIN",			/* authenticator name */
   NIL,				/* always valid */
   auth_plain_client,		/* client method */
@@ -52,30 +52,30 @@ AUTHENTICATOR auth_pla = {
  * Returns: T if success, NIL otherwise, number of trials incremented if retry
  */
 
-long auth_plain_client (authchallenge_t challenger,authrespond_t responder,
+long auth_plain_client (authchallenge_t challenger,authrespond_t responder,char *base,
 			char *service,NETMBX *mb,void *stream, unsigned long port,
 			unsigned long *trial,char *user)
 {
   char *u, *pwd = NIL;
-  void *challenge;
+  void *challenge = NIL;
   unsigned long clen;
   long ret = NIL;
 				/* snarl if not SSL/TLS session */
   if (!mb->sslflag && !mb->tlsflag)
     mm_log ("SECURITY PROBLEM: insecure server advertised AUTH=PLAIN",WARN);
 				/* get initial (empty) challenge */
-  if ((challenge = (*challenger) (stream,&clen)) != NULL) {
-    fs_give ((void **) &challenge);
+  if(base || (challenge = (*challenger) (stream,&clen)) != NULL) {
+    if(base == NIL) fs_give ((void **) &challenge);
 #if 0
-    if (clen) {			/* abort if challenge non-empty */
+    if (clen) {                 /* abort if challenge non-empty */
       mm_log ("Server bug: non-empty initial PLAIN challenge",WARN);
       (*responder) (stream,NIL,0);
-      ret = LONGT;		/* will get a BAD response back */
+      ret = LONGT;              /* will get a BAD response back */
     }
 #endif
     mm_login (mb,user, &pwd,*trial);
     if (!pwd) {		/* empty challenge or user requested abort */
-      (*responder) (stream,NIL,0);
+      (*responder) (stream,NIL,NIL,0);
       *trial = 0;		/* cancel subsequent attempts */
       ret = LONGT;		/* will get a BAD response back */
     }
@@ -92,7 +92,7 @@ long auth_plain_client (authchallenge_t challenger,authrespond_t responder,
 				/* copy password */
       for (u = pwd; *u; *t++ = *u++);
 				/* send credentials */
-      if ((*responder) (stream,response,rlen)) {
+      if ((*responder) (stream,base,response,rlen)) {
 	if ((challenge = (*challenger) (stream,&clen)) != NULL)
 	  fs_give ((void **) &challenge);
 	else {

@@ -548,6 +548,8 @@
 #define AU_HIDE (long) 0x10000000
 				/* authenticator disabled */
 #define AU_DISABLE (long) 0x20000000
+				/* can do single trip */
+#define AU_SINGLE (long) 0x40000000
 
 
 /* Garbage collection flags */
@@ -1377,10 +1379,10 @@ typedef long (*mailproxycopy_t) (MAILSTREAM *stream,char *sequence,
 typedef long (*tcptimeout_t) (long overall,long last, char *host);
 typedef long (*ucs4width_t) (unsigned long c);
 typedef void *(*authchallenge_t) (void *stream,unsigned long *len);
-typedef long (*authrespond_t) (void *stream,char *s,unsigned long size);
+typedef long (*authrespond_t) (void *stream,char *base,char *s,unsigned long size);
 typedef long (*authcheck_t) (void);
 typedef long (*authclient_t) (authchallenge_t challenger,
-			      authrespond_t responder,char *service,NETMBX *mb,
+			      authrespond_t responder, char *base, char *service,NETMBX *mb,
 			      void *s, unsigned long port, unsigned long *trial,char *user);
 typedef char *(*authresponse_t) (void *challenge,unsigned long clen,
 				 unsigned long *rlen);

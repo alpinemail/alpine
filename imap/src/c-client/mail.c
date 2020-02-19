@@ -6370,6 +6370,7 @@ long net_getbuffer (void *st,unsigned long size,char *buffer)
 
 long net_soutr (NETSTREAM *stream,char *string)
 {
+  mm_log(string, ERROR);
   return (*stream->dtb->soutr) (stream->stream,string);
 }
 

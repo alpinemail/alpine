@@ -154,7 +154,7 @@ long nntp_send_work (SENDSTREAM *stream,char *command,char *args);
 long nntp_send_auth (SENDSTREAM *stream,long flags);
 long nntp_send_auth_work (SENDSTREAM *stream,NETMBX *mb,char *pwd,long flags);
 void *nntp_challenge (void *s,unsigned long *len);
-long nntp_response (void *s,char *response,unsigned long size);
+long nntp_response (void *s,char *base,char *response,unsigned long size);
 long nntp_reply (SENDSTREAM *stream);
 long nntp_fake (SENDSTREAM *stream,char *text);
 long nntp_soutr (void *stream,char *s);
@@ -2045,7 +2045,7 @@ long nntp_send_auth (SENDSTREAM *stream,long flags)
 long nntp_send_auth_work (SENDSTREAM *stream,NETMBX *mb,char *pwd,long flags)
 {
   unsigned long trial,auths;
-  char tmp[MAILTMPLEN],usr[MAILTMPLEN], *pwd2 = NIL;
+  char tmp[MAILTMPLEN],usr[MAILTMPLEN], *pwd2 = NIL, *base;
   AUTHENTICATOR *at;
   char *lsterr = NIL;
   long ret = NIL;
@@ -2068,10 +2068,15 @@ long nntp_send_auth_work (SENDSTREAM *stream,NETMBX *mb,char *pwd,long flags)
 	fs_give ((void **) &lsterr);
       }
       stream->saslcancel = NIL;
-      if (nntp_send (stream,"AUTHINFO SASL",at->name) == NNTPCHALLENGE) {
+      if(at->flags & AU_SINGLE){
+        sprintf(tmp, "AUTHINFO SASL %s", at->name);	/* create base string */
+        base = (char *) tmp;
+      }
+      else base = NIL;
+      if ((at->flags & AU_SINGLE) || nntp_send (stream,"AUTHINFO SASL",at->name) == NNTPCHALLENGE) {
 				/* hide client authentication responses */
 	if (!(at->flags & AU_SECURE)) stream->sensitive = T;
-	if ((*at->client) (nntp_challenge,nntp_response,"nntp",mb,stream,
+	if ((*at->client) (nntp_challenge,nntp_response,base,"nntp",mb,stream,
 			   net_port(stream->netstream), &trial,usr)) {
 	  if (stream->replycode == NNTPAUTHED) ret = LONGT;
 				/* if main program requested cancellation */
@@ -2163,7 +2168,7 @@ void *nntp_challenge (void *s,unsigned long *len)
  * Returns: T, always
  */
 
-long nntp_response (void *s,char *response,unsigned long size)
+long nntp_response (void *s,char *base,char *response,unsigned long size)
 {
   SENDSTREAM *stream = (SENDSTREAM *) s;
   unsigned long i,j;
@@ -2173,13 +2178,13 @@ long nntp_response (void *s,char *response,unsigned long size)
       for (t = (char *) rfc822_binary ((void *) response,size,&i),u = t,j = 0;
 	   j < i; j++) if (t[j] > ' ') *u++ = t[j];
       *u = '\0';		/* tie off string */
-      i = nntp_send_work (stream,t,NIL);
+      i = base ? nntp_send_work(stream, base, t) : nntp_send_work (stream,t,NIL);
       fs_give ((void **) &t);
     }
     else i = nntp_send_work (stream,"",NIL);
   }
   else {			/* abort requested */
-    i = nntp_send_work (stream,"*",NIL);
+    i = base ? 0L : nntp_send_work (stream,"*",NIL);
     stream->saslcancel = T;	/* mark protocol-requested SASL cancel */
   }
   return LONGT;

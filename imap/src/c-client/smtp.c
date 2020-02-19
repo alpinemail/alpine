@@ -59,7 +59,7 @@
 /* Function prototypes */
 
 void *smtp_challenge (void *s,unsigned long *len);
-long smtp_response (void *s,char *response,unsigned long size);
+long smtp_response (void *s,char *base,char *response,unsigned long size);
 long smtp_auth (SENDSTREAM *stream,NETMBX *mb,char *tmp);
 long smtp_rcpt (SENDSTREAM *stream,ADDRESS *adr,long *error);
 long smtp_send (SENDSTREAM *stream,char *command,char *args);
@@ -283,7 +283,7 @@ long smtp_auth (SENDSTREAM *stream,NETMBX *mb,char *tmp)
 {
   unsigned long trial,auths, authsaved;
   char *lsterr = NIL;
-  char usr[MAILTMPLEN];
+  char usr[MAILTMPLEN], *base;
   AUTHENTICATOR *at, *atsaved;
   long ret = NIL;
   for (auths = ESMTP.auth, stream->saslcancel = NIL;
@@ -311,11 +311,16 @@ long smtp_auth (SENDSTREAM *stream,NETMBX *mb,char *tmp)
 	mm_log (tmp,WARN);
 	fs_give ((void **) &lsterr);
       }
+      if(at->flags & AU_SINGLE){
+	sprintf(tmp, "AUTH %s", at->name);
+	base = (char *) tmp;
+      }
+      else base = NIL;
       stream->saslcancel = NIL;
-      if (smtp_send (stream,"AUTH",at->name) == SMTPAUTHREADY) {
+      if ((at->flags & AU_SINGLE) || smtp_send (stream,"AUTH",at->name) == SMTPAUTHREADY) {
 				/* hide client authentication responses */
 	if (!(at->flags & AU_SECURE)) stream->sensitive = T;
-	if ((*at->client) (smtp_challenge,smtp_response,"smtp",mb,stream,
+	if ((*at->client) (smtp_challenge,smtp_response,base,"smtp",mb,stream,
 			   net_port(stream->netstream),&trial,usr)) {
 	  if (stream->replycode == SMTPAUTHED) {
 	    ESMTP.auth = NIL;	/* disable authenticators */
@@ -375,7 +380,7 @@ void *smtp_challenge (void *s,unsigned long *len)
  * Returns: T, always
  */
 
-long smtp_response (void *s,char *response,unsigned long size)
+long smtp_response (void *s,char* base,char *response,unsigned long size)
 {
   SENDSTREAM *stream = (SENDSTREAM *) s;
   unsigned long i,j;
@@ -385,13 +390,13 @@ long smtp_response (void *s,char *response,unsigned long size)
       for (t = (char *) rfc822_binary ((void *) response,size,&i),u = t,j = 0;
 	   j < i; j++) if (t[j] > ' ') *u++ = t[j];
       *u = '\0';		/* tie off string */
-      i = smtp_send (stream,t,NIL);
+      i = base ? smtp_send(stream, base, t) : smtp_send (stream,t,NIL);
       fs_give ((void **) &t);
     }
     else i = smtp_send (stream,"",NIL);
   }
   else {			/* abort requested */
-    i = smtp_send (stream,"*",NIL);
+    i = base ? 0L :  smtp_send (stream,"*",NIL);
     stream->saslcancel = T;	/* mark protocol-requested SASL cancel */
   }
   return LONGT;

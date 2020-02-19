@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 407 2020-02-09 22:46:28
+Alpine Commit 408 2020-02-19 00:39:37
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -183,6 +183,11 @@ any problems you find with this release.
 <UL>
 <LI> Add support for the OAUTHBEARER authentication method in Gmail. Thanks to
      Alexander Perlis for suggesting it and explaining how the method works.
+
+<LI> Support for the SASL-IR IMAP extension that avoids a round trip during
+     authentication. Similar support added for the SMTP, NNTP and POP3 
+     protocols. Thanks to Geoffrey Bodwin for a report that lead to this
+     implementation.
 
 <LI> New variable system-certs-path that allows users to indicate the 
      location of the directory where certificates are located. In PC-Alpine 

@@ -177,7 +177,7 @@ long imap_anon (MAILSTREAM *stream,char *tmp);
 long imap_auth (MAILSTREAM *stream,NETMBX *mb,char *tmp,char *usr);
 long imap_login (MAILSTREAM *stream,NETMBX *mb,char *pwd,char *usr);
 void *imap_challenge (void *stream,unsigned long *len);
-long imap_response (void *stream,char *s,unsigned long size);
+long imap_response (void *stream,char *base,char *s,unsigned long size);
 void imap_close (MAILSTREAM *stream,long options);
 void imap_fast (MAILSTREAM *stream,char *sequence,long flags);
 void imap_flags (MAILSTREAM *stream,char *sequence,long flags);
@@ -1107,7 +1107,7 @@ long imap_anon (MAILSTREAM *stream,char *tmp)
       mm_log (broken,ERROR);
       return NIL;
     }
-    if (imap_challenge (stream,&i)) imap_response (stream,s,strlen (s));
+    if (imap_challenge (stream,&i)) imap_response (stream,NIL,s,strlen (s));
 				/* get response */
     if (!(reply = &LOCAL->reply)->tag) reply = imap_fake (stream,tag,broken);
 				/* what we wanted? */
@@ -1145,7 +1145,7 @@ long imap_auth (MAILSTREAM *stream,NETMBX *mb,char *tmp,char *usr)
   unsigned long trial,ua,uasaved;
   int ok;
   char tag[16];
-  char *lsterr = NIL;
+  char *lsterr = NIL, *base;
   AUTHENTICATOR *at, *atsaved;
   IMAPPARSEDREPLY *reply;
   for (ua = LOCAL->cap.auth, LOCAL->saslcancel = NIL; LOCAL->netstream && ua &&
@@ -1176,10 +1176,12 @@ long imap_auth (MAILSTREAM *stream,NETMBX *mb,char *tmp,char *usr)
       sprintf (tag,"%08lx",0xffffffff & (stream->gensym++));
 				/* build command */
       sprintf (tmp,"%s AUTHENTICATE %s",tag,at->name);
-      if (imap_soutr (stream,tmp)) {
+      base = (at->flags & AU_SINGLE) && LOCAL->cap.sasl_ir
+		? (char *) tmp : NIL;
+      if (base || imap_soutr (stream,tmp)) {
 				/* hide client authentication responses */
 	if (!(at->flags & AU_SECURE)) LOCAL->sensitive = T;
-	ok = (*at->client) (imap_challenge,imap_response,"imap",mb,stream,
+	ok = (*at->client) (imap_challenge,imap_response,base,"imap",mb,stream,
 			    net_port(LOCAL->netstream),&trial,usr);
 	LOCAL->sensitive = NIL;	/* unhide */
 				/* make sure have a response */
@@ -1311,15 +1313,26 @@ void *imap_challenge (void *s,unsigned long *len)
  * Returns: T if successful, else NIL
  */
 
-long imap_response (void *s,char *response,unsigned long size)
+long imap_response (void *s,char *base,char *response,unsigned long size)
 {
   MAILSTREAM *stream = (MAILSTREAM *) s;
   unsigned long i,j,ret;
   char *t,*u;
   if (response) {		/* make CRLFless BASE64 string */
     if (size) {
-      for (t = (char *) rfc822_binary ((void *) response,size,&i),u = t,j = 0;
+      if(base){
+	char *s, *v;
+
+        v = (char *) rfc822_binary ((void *) response,size,&i);
+	t  = fs_get((strlen(base) + strlen(v) + 1 + 2)*sizeof(char));
+	for(s = base, u = t; *s; s++) *u++ = *s;
+	*u++ = ' ';
+        for (s = v,j = 0; j < i; j++) if (s[j] > ' ') *u++ = s[j];
+	fs_give((void **) &v);
+      } else {
+        for (t = (char *) rfc822_binary ((void *) response,size,&i),u = t,j = 0;
 	   j < i; j++) if (t[j] > ' ') *u++ = t[j];
+      }
       *u = '\0';		/* tie off string for mm_dlog() */
       if (stream->debug) mail_dlog (t,LOCAL->sensitive);
 				/* append CRLF */
@@ -1330,7 +1343,7 @@ long imap_response (void *s,char *response,unsigned long size)
     else ret = imap_soutr (stream,"");
   }
   else {			/* abort requested */
-    ret = imap_soutr (stream,"*");
+    ret = base ? NIL : imap_soutr (stream,"*");
     LOCAL->saslcancel = T;	/* mark protocol-requested SASL cancel */
   }
   return ret;

@@ -27,7 +27,7 @@
  * Last Edited:	30 August 2006
  */
 
-long auth_external_client (authchallenge_t challenger,authrespond_t responder,
+long auth_external_client (authchallenge_t challenger,authrespond_t responder,char *base,
 			  char *service,NETMBX *mb,void *stream, unsigned long port,
 			  unsigned long *trial,char *user);
 char *auth_external_server (authresponse_t responder,int argc,char *argv[]);
@@ -52,7 +52,7 @@ AUTHENTICATOR auth_ext = {	/* secure, has full auth, hidden */
  * Returns: T if success, NIL otherwise, number of trials incremented if retry
  */
 
-long auth_external_client (authchallenge_t challenger,authrespond_t responder,
+long auth_external_client (authchallenge_t challenger,authrespond_t responder,char *base,
 			  char *service,NETMBX *mb,void *stream, unsigned long port,
 			  unsigned long *trial,char *user)
 {
@@ -60,10 +60,10 @@ long auth_external_client (authchallenge_t challenger,authrespond_t responder,
   unsigned long clen;
   long ret = NIL;
   *trial = 65535;		/* never retry */
-  if ((challenge = (*challenger) (stream,&clen)) != NULL) {
-    fs_give ((void **) &challenge);
+  if (base || (challenge = (*challenger) (stream,&clen)) != NULL) {
+    if(base == NIL) fs_give ((void **) &challenge);
 				/* send authorization id (empty string OK) */
-    if ((*responder) (stream,strcpy (user,mb->user),strlen (mb->user))) {
+    if ((*responder) (stream,base,strcpy (user,mb->user),strlen(mb->user))) {
       if ((challenge = (*challenger) (stream,&clen)) != NULL)
 	fs_give ((void **) &challenge);
       else ret = LONGT;		/* check the authentication */
