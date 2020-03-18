@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 411 2020-02-29 14:37:03
+Alpine Commit 412 2020-03-18 01:36:29
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -174,9 +174,8 @@ Apache web server.
 <H2>New in Alpine <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)</H2>
 
 This is a development version of Alpine. These enhancements are
-released after the release of version 
-<!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->). Please report
-any problems you find with this release.
+released after the release of version 2.22. Please report any
+problems you find with this release.
 
 <P> Additions include:
 
@@ -197,22 +196,23 @@ any problems you find with this release.
 <LI> New variable system-certs-file that allows users to configure the
      location of a container of certificate authority (CA) certificates
      to be used to validate certificates of remote servers.
+</UL>
+
+<P>
+Bugs that have been addressed include:
+<UL>
+<LI>Bug in PC-Alpine that made Alpine go into an infinite loop and
+    consume CPU when it was iconized. Reported by Holger Schieferdecker in
+    comp.mail.pine.
 
 <LI>Crash in Alpine when attempting to reply to a multipart/alternative 
     message that is malformed, and the option to include attachments in
     reply is enabled. Reported and patched by Peter Tirsek.
 </UL>
 
-<P> Bug fixes include
-<UL>
-<LI>Bug in PC-Alpine that made Alpine go into an infinite loop and
-    consume CPU when it was iconized. Reported by Holger Schieferdecker in
-    comp.mail.pine.
-</UL>
-
 <P>
-Version <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)
-addresses bugs found in previous releases and has a few additions as well.
+Version 2.22 addresses bugs found in previous releases and has several
+additions as well.
 
 <P>
 Additions include:

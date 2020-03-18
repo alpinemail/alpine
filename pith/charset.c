@@ -593,9 +593,32 @@ rfc1522_encoded_word(unsigned char *s, int enc, char *charset)
       for(goal = ((goal / 4) * 3) - 2; goal && *s; goal--, s++)
 	;
     else				/* special 'Q' encoding */
-      for(; goal && *s; s++)
-	if((goal -= RFC1522_ENC_CHAR(*s) ? 3 : 1) < 0)
-	  break;
+      if(!strucmp(charset, "UTF-8")){	/* special handling for utf-8 */
+	int i,more;
+	unsigned char *p;
+	for(; goal && *s; s++){
+	   more = *s < 0x80 ? 0
+		   : *s < 0xe0 ? 1
+		   : *s < 0xf0 ? 2
+		   : *s < 0xf8 ? 3
+		   : *s < 0xfc ? 4
+		   : *s < 0xfe ? 5 : -1;
+	   if(more >= 0){	/* check that we have at least more characters */
+		for(p = s, i = 0; i <= more && *p != '\0'; i++, p++)
+		    goal -= RFC1522_ENC_CHAR(*p) ? 3 : 1;
+		if(goal < 0)   /* does not fit in encoded word */
+		   break;
+		s += i - 1; 	/* i - 1 should be equal to more */
+	   }
+	   else /* encode it, and skip it */
+	      if((goal -= RFC1522_ENC_CHAR(*s) ? 3 : 1) < 0)
+	        break;
+	}
+      }
+      else
+        for(; goal && *s; s++)
+	  if((goal -= RFC1522_ENC_CHAR(*s) ? 3 : 1) < 0)
+	    break;
 
     return(s);
 }
