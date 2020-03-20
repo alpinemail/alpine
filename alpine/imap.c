@@ -2038,6 +2038,8 @@ pine_sslcertquery(char *reason, char *host, char *cert)
 
 	if(the_answer == 'y')
 	  rv++;
+	else if(the_answer == 'n')
+	  ps_global->user_says_cancel = 1;
 
 	ps_global->mangled_screen = 1;
 	ps_global->painted_body_on_startup = 0;

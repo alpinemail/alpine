@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 412 2020-03-18 01:36:29
+Alpine Commit 413 2020-03-19 23:12:05
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -208,6 +208,14 @@ Bugs that have been addressed include:
 <LI>Crash in Alpine when attempting to reply to a multipart/alternative 
     message that is malformed, and the option to include attachments in
     reply is enabled. Reported and patched by Peter Tirsek.
+
+<LI>Bug that makes Alpine split encoded words in the subject of a message
+    in the middle of a utf-8 character into two encoded words, breaking the
+    encoding. Reported by Jean Chevalier.
+
+<LI> Alpine would not redraw the screen when a check for new mail in an
+    incoming folder failed due to a failurec while validating the server 
+    certificate, and the user did not allow the connection to proceed.
 </UL>
 
 <P>
