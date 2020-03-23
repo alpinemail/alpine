@@ -5890,8 +5890,6 @@ subj_str(INDEXDATA_S *idata, char *str, size_t strsize, SubjKW kwtype, int openi
 	    ftielem->data[len] = '\0';
 
 	    ftielem->datalen = strlen(ftielem->data);
-	    if(first_text)
-	      fs_give((void **) &first_text);
 
 	    if(ftielem){
 		if(pico_usingcolor()

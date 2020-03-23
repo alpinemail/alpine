@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 413 2020-03-19 23:12:05
+Alpine Commit 414 2020-03-22 19:32:44
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -216,6 +216,10 @@ Bugs that have been addressed include:
 <LI> Alpine would not redraw the screen when a check for new mail in an
     incoming folder failed due to a failurec while validating the server 
     certificate, and the user did not allow the connection to proceed.
+
+<LI> Crash in Alpine while resizing the screen when using any of the tokens
+    SUBJKEYTEXT, SUBJECTTEXT, or SUBJKEYINITTEXT in the index format, and 
+    the screen was resized. Reported by Iggy Mogo.
 </UL>
 
 <P>
