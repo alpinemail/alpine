@@ -46,7 +46,6 @@ CONF_TXT_T init_md_create[] =	"Creating subdirectory \"%s\" where Alpine will st
 /*
  * Internal prototypes
  */
-void	 display_init_err(char *, int);
 char	*context_string(char *);
 int	 prune_folders(CONTEXT_S *, char *, int, char *, unsigned);
 int	 prune_move_folder(char *, char *, CONTEXT_S *);

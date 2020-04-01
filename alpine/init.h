@@ -21,7 +21,7 @@
 /* exported prototypes */
 int	init_mail_dir(struct pine *);
 int	expire_sent_mail(void);
-
+void	display_init_err(char *, int);
 
 #endif /* PINE_INIT_INCLUDED */
 

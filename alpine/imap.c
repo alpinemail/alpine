@@ -40,6 +40,7 @@ static char rcsid[] = "$Id: imap.c 1266 2009-07-14 18:39:12Z hubert@u.washington
 #include "busy.h"
 #include "titlebar.h"
 #include "xoauth2.h"
+#include "init.h"
 #include "../pith/state.h"
 #include "../pith/conf.h"
 #include "../pith/msgno.h"
@@ -302,6 +303,48 @@ oauth2_get_access_code(char *url, char *method, OAUTH2_S *oauth2, int *tryanothe
 	 * If screen hasn't been initialized yet, use want_to.
 	 */
 try_wantto:
+	tmp_20k_buf[0] = '\0';
+	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf), 
+		_("Auhtorizing Alpine Access to %s Email Services\n\n"), oauth2->name);
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+
+	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
+		_("Alpine is attempting to log you into your %s account, using the %s method."), oauth2->name, method),
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+
+	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf), 
+		"%s\n\n",_(" In order to do that, Alpine needs to open the following URL:"));
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+
+	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf), 
+		"%s\n\n", url);
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+
+	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf), 
+		_("Copy and paste the previous URL into a web browser that supports javascript, to take you to %s's servers to complete this process.\n\n"), oauth2->name);
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+
+	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
+		"%s", _("After you open the previous link, you will be asked to authenticate and later to authorize access to Alpine."));
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+
+	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
+		"%s", _(" At the end of this process, you will be given an access code or redirected to a web page.\n"));
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+
+	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
+		"%s", _(" If you see a code, copy it and then press 'C', and enter the code at the prompt."));
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+
+	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
+		"%s", _(" If you do not see a code, copy the url of the page you were redirected to and again press 'C' and copy and paste it into the prompt. "));
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+
+	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
+		"%s", _(" Once you have completed this process,  Alpine will proceed with authentication.\n"));
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+
+	display_init_err(tmp_20k_buf, 0);
 	memset((void *)tmp, 0, sizeof(tmp));
 	strncpy(tmp, _("Alpine would like to get authorization to access your email: "), sizeof(tmp));
 	tmp[sizeof(tmp)-1] = '\0';

@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 415 2020-03-26 01:13:59
+Alpine Commit 416 2020-04-01 00:08:26
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -220,6 +220,11 @@ Bugs that have been addressed include:
 <LI> Crash in Alpine while resizing the screen when using any of the tokens
     SUBJKEYTEXT, SUBJECTTEXT, or SUBJKEYINITTEXT in the index format, and 
     the screen was resized. Reported by Iggy Mogo.
+
+<LI> When Alpine is trying to authenticate to Gmail, using the XOAUTH2 method,
+    it does not display the url the user needs to open, in order to authorize
+    Alpine to access Gmail using XOAUTH2 when Alpine still has not created
+    a screen. Reported by Baron Fujimoto.
 </UL>
 
 <P>
