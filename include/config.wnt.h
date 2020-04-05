@@ -563,7 +563,7 @@
 #define WINDOWS_LIBRESSL_CERTS
 #if defined(W32BITSBUILD)
 #define DEFAULT_SSLCAPATH "certs"
-#define DEFAULT_SSLCAFILE "erts\\cert.pem"
+#define DEFAULT_SSLCAFILE "certs\\cert.pem"
 #endif /* W32BITSBUILD */
 #if defined(WXPBUILD)
 #define DEFAULT_SSLCAPATH "C:\\libressl\\ssl\\certs"
