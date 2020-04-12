@@ -2850,6 +2850,7 @@ typedef	struct _center_s {
 typedef	struct collector_s {
     char        buf[HTML_BUF_LEN];	/* buffer to collect data */
     int		len;			/* length of that buffer  */
+    unsigned	unquoted_data:1;	/* parameter is not quoted... */
     unsigned    end_tag:1;		/* collecting a closing tag */
     unsigned    hit_equal:1;		/* collecting right half of attrib */
     unsigned	mkup_decl:1;		/* markup declaration */
@@ -7461,9 +7462,14 @@ html_element_collector(FILTER_S *fd, int ch)
 	    return(0);			/* need more data */
 	}
     }
+    else if (ASCII_ISSPACE((unsigned char) ch))
+	ED(fd)->unquoted_data = 0;
+    else if (ED(fd)->hit_equal)
+	ED(fd)->unquoted_data = 1;
 
     ch &= 0xff;			/* strip any "literal" high bits */
     if(ED(fd)->quoted
+       || ED(fd)->unquoted_data
        || isalnum(ch)
        || strchr("#-.!", ch)){
 	if(ED(fd)->len < ((ED(fd)->element || !ED(fd)->hit_equal)

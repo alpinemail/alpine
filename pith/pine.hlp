@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 418 2020-04-11 22:28:50
+Alpine Commit 419 2020-04-12 14:29:36
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -229,6 +229,9 @@ Bugs that have been addressed include:
     it does not display the url the user needs to open, in order to authorize
     Alpine to access Gmail using XOAUTH2 when Alpine still has not created
     a screen. Reported by Baron Fujimoto.
+
+<LI> When an html anchor does not quote the link in the href parameter,
+    alpine does not link to it.
 </UL>
 
 <P>
