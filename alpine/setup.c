@@ -339,7 +339,6 @@ option_screen(struct pine *ps, int edit_exceptions)
 	}
 	else{
 	    if(vtmp == &ps->vars[V_FILLCOL]
-	       || vtmp == &ps->vars[V_SLEEP]
 	       || vtmp == &ps->vars[V_QUOTE_SUPPRESSION]
 	       || vtmp == &ps->vars[V_OVERLAP]
 	       || vtmp == &ps->vars[V_MAXREMSTREAM]

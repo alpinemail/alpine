@@ -320,8 +320,6 @@ struct pine {
 
     int          tcp_query_timeout;
 
-    int		 sleep;
-
     int          inc_check_timeout;
     int          inc_check_interval;		/* for local and IMAP */
     int          inc_second_check_interval;	/* for other */

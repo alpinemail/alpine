@@ -349,8 +349,6 @@ CONF_TXT_T cf_text_stat_msg_delay[] =	"The number of seconds to sleep after writ
 
 CONF_TXT_T cf_text_busy_cue_rate[] =	"Number of times per-second to update busy cue messages";
 
-CONF_TXT_T cf_text_psleep[] =	"UNIX ONLY (except MAC OSX): When an attachment is opened, this variable controls the number\n#of seconds to wait between checks if the user has ended viewing the attachment.\n#minimum value: 60 seconds, maximum value: 600 seconds (10 minutes). Default: 60 seconds";
-
 CONF_TXT_T cf_text_mailcheck[] =	"The approximate number of seconds between checks for new mail";
 
 CONF_TXT_T cf_text_mailchecknoncurr[] =	"The approximate number of seconds between checks for new mail in folders\n# other than the current folder and inbox.\n# Default is same as mail-check-interval";
@@ -639,8 +637,6 @@ static struct variable variables[] = {
 	NULL,			cf_text_stat_msg_delay},
 {"busy-cue-rate",			0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	NULL,			cf_text_busy_cue_rate},
-{"mailcap-check-interval",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
-	NULL,			cf_text_psleep},
 {"mail-check-interval",			0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	NULL,			cf_text_mailcheck},
 {"mail-check-interval-noncurrent",	0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
@@ -1659,7 +1655,6 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     GLO_LOCAL_FULLNAME		= cpystr(DF_LOCAL_FULLNAME);
     GLO_LOCAL_ADDRESS		= cpystr(DF_LOCAL_ADDRESS);
     GLO_OVERLAP			= cpystr(DF_OVERLAP);
-    GLO_SLEEP			= cpystr("60");
     GLO_MAXREMSTREAM		= cpystr(DF_MAXREMSTREAM);
     GLO_MARGIN			= cpystr(DF_MARGIN);
     GLO_FILLCOL			= cpystr(DF_FILLCOL);
@@ -2140,13 +2135,6 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
 	    }
 	}
     }
-
-    set_current_val(&vars[V_SLEEP], TRUE, TRUE);
-    ps->sleep = i = 60;
-    if(SVAR_SLEEP(ps, i, tmp_20k_buf, SIZEOF_20KBUF))
-      init_error(ps, SM_ORDER | SM_DING, 3, 5, tmp_20k_buf);
-    else
-      ps->sleep = i;
 
     set_current_val(&vars[V_OVERLAP], TRUE, TRUE);
     ps->viewer_overlap = i = atoi(DF_OVERLAP);
@@ -7835,8 +7823,6 @@ config_help(int var, int feature)
 	return(h_config_incoming_second_interv);
       case V_INCCHECKLIST :
 	return(h_config_incoming_list);
-      case V_SLEEP :
-	return(h_config_psleep);
       case V_OVERLAP :
 	return(h_config_viewer_overlap);
       case V_MAXREMSTREAM :

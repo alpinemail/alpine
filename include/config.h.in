@@ -545,9 +545,6 @@
 /* Default configuration value */
 #undef POSTPONED_MSGS
 
-/* ps command which outputs list of running commands */
-#undef PSEFCMD
-
 /* Define to necessary symbol if this constant uses a non-standard name on
    your system. */
 #undef PTHREAD_CREATE_JOINABLE

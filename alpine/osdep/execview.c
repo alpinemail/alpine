@@ -194,12 +194,17 @@ exec_mailcap_cmd(MCAP_CMD_S *mc_cmd, char *image_file, int needsterminal)
 	char *cmd = mc_cmd->command;
 	size_t l;
 
-	l = 32 + strlen(cmd) + (2*strlen(image_file));
+	/* 32 is enough to contain "( ; sleep 5 ; rm -f ) &\n\0" */
+	l = 32 + strlen(cmd) + strlen(image_file);
 	p = command = (char *) fs_get((l+1) * sizeof(char));
-	if(!needsterminal)  /* put in background if it doesn't need terminal */
-	  *p++ = '(';
 
-	snprintf(p, l+1-(p-command), "%s", cmd);
+	if(needsterminal)
+	   snprintf(p, l+1-(p-command), "%s ; rm -f %s", cmd, image_file);
+	else{
+	  *p++ = '(';
+	   snprintf(p, l+1-(p-command), "%s ; sleep 5 ; rm -f %s", cmd, image_file);
+	}
+
 	p += strlen(p);
 	if(!needsterminal){
 	    if(p-command+2 < l+1){
@@ -246,7 +251,7 @@ exec_mailcap_cmd(MCAP_CMD_S *mc_cmd, char *image_file, int needsterminal)
 #else
     char   *command = NULL,
 	   *result_file = NULL,
-	   *p, *cmd, *q, *psef;
+	   *p, *cmd;
     char  **r_file_h;
     PIPE_S *syspipe;
     int     mode;
@@ -258,23 +263,17 @@ exec_mailcap_cmd(MCAP_CMD_S *mc_cmd, char *image_file, int needsterminal)
     else
       return;
 
-#ifdef PSEFCMD
-    psef = fs_get((60 + strlen(PSEFCMD) + strlen(image_file))*sizeof(char));
-    sprintf(psef, "PSEF=`%s | /bin/grep \"%s\" | /bin/grep -v grep`", PSEFCMD, image_file);
-
-    q = fs_get((80 + 2*strlen(psef))*sizeof(char)); /* bigger than 62 */
-    sprintf(q, "/bin/sh -c '(%s; while test -n \"$PSEF\" ; do %s ; sleep %d ; done)' ;", psef, psef, ps_global->sleep);
-    fs_give((void **) &psef);
-#else
-    q = cpystr("");
-#endif /* PSEFCMD */
-
-    l = 45 + strlen(cmd) + 2*strlen(image_file) + strlen(q);
+    /* 32 is enough for "( ; sleep 5; rm -f ) &\n\0" */
+    l = 32 + strlen(cmd) + strlen(image_file);
     p = command = (char *)fs_get((l+1) * sizeof(char));
-    if(!needsterminal)  /* put in background if it doesn't need terminal */
+
+    if(needsterminal)
+       snprintf(p, l+1-(p-command), "%s ; rm -f %s", cmd, image_file);
+    else {
       *p++ = '(';
-    snprintf(p, l+1-(p-command), "%s ; %s sleep 5 ; rm -f %s", cmd, q, image_file);
-    fs_give((void **)&q);
+      snprintf(p, l+1-(p-command), "%s ; sleep 5 ; rm -f %s", cmd, image_file);
+    }
+
     command[l] = '\0';
     p += strlen(p);
     if(!needsterminal && (p-command)+5 < l){

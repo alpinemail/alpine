@@ -1561,10 +1561,6 @@ text_toolit(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags, int look_
 	    lowrange = 1;
 	    hirange  = MAX_FILLCOL;
 	}
-	else if((*cl)->var == &ps->vars[V_SLEEP]){
-	    lowrange = 60;
-	    hirange  = 600;
-	}
 	else if((*cl)->var == &ps->vars[V_OVERLAP]
 		|| (*cl)->var == &ps->vars[V_MARGIN]){
 	    lowrange = 0;
@@ -5261,16 +5257,6 @@ fix_side_effects(struct pine *ps, struct variable *var, int revert)
 	}
 	else
 	  ps->viewer_overlap = old_value;
-    }
-    else if(var == &ps->vars[V_SLEEP]){
-	int old_value = ps->sleep;
-
-	if(SVAR_SLEEP(ps, old_value, tmp_20k_buf, SIZEOF_20KBUF)){
-	    if(!revert)
-	      q_status_message(SM_ORDER, 3, 5, tmp_20k_buf);
-	}
-	else
-	  ps->sleep = old_value;
     }
 #ifdef	SMIME
     else if(smime_related_var(ps, var)){

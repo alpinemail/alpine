@@ -832,7 +832,6 @@ enable_dmalloc
 with_dmalloc_dir
 with_date_stamp
 with_host_stamp
-with_ps_cmd
 with_localedir
 enable_osx_universal_binaries
 with_include_path
@@ -1611,8 +1610,6 @@ Optional Packages:
                           Default: output of `date`
   --with-host-stamp=HOST  Set name of computer for compilation. Default:
                           output of `hostname`
-  --with-ps-cmd="CMD"     Use this command to check running commands. Default:
-                          /bin/ps auxww
   --with-localedir=DIR    Name of gettext locale directory
   --with-include-path=PATHS
                           Colon-separated list of directories used for include
@@ -15245,46 +15242,6 @@ fi
 
 ALPINE_HOSTSTAMP=$ALPINE_hoststamp
 
-
-ALPINE_psefcmd="/bin/ps auxww"
-ALPINE_psfailed="0"
-ALPINE_PSTEST="-"
-
-# Check whether --with-ps-cmd was given.
-if test "${with_ps_cmd+set}" = set; then :
-  withval=$with_ps_cmd;
-    if test "x$withval" = "xno" -o "x$withval" = "xyes" -o "x$withval" = "x" ; then
-	withval=$ALPINE_psefcmd
-    fi
-    ALPINE_PSTEST=`$withval | $EGREP "$withval" | $EGREP -v $EGREP`
-    if test -n "$ALPINE_PSTEST" ; then
-       ALPINE_psefcmd="$withval"
-    else
-       ALPINE_psfailed="1"
-       if test "x$ALPINE_psefcmd" != "x$withval" ; then
-          { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: failed command $withval. Trying $ALPINE_psefcmd" >&5
-$as_echo "$as_me: WARNING: failed command $withval. Trying $ALPINE_psefcmd" >&2;}
-       fi
-    fi
-
-fi
-
-if test "$ALPINE_psfailed" = "1" -o "$ALPINE_PSTEST" = "-" ; then
-   withval="$ALPINE_psefcmd"
-   ALPINE_PSTEST=`$withval | $EGREP "$withval" | $EGREP -v $EGREP`
-   if test -z "$ALPINE_PSTEST" ; then
-      ALPINE_psfailed="1"
-   else
-      ALPINE_psfailed="0"
-   fi
-fi
-if test "$ALPINE_psfailed" = "0" ; then
-
-cat >>confdefs.h <<_ACEOF
-#define PSEFCMD "$ALPINE_psefcmd"
-_ACEOF
-
-fi
 
 case $host in
     *apple-darwin*)

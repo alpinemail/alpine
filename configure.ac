@@ -106,39 +106,6 @@ AC_ARG_WITH(host-stamp,
   ])
 AC_SUBST([ALPINE_HOSTSTAMP], $ALPINE_hoststamp)
 
-dnl set ps command, this test is fragile, but it should mostly work
-ALPINE_psefcmd="/bin/ps auxww"
-ALPINE_psfailed="0"
-ALPINE_PSTEST="-"
-AC_ARG_WITH(ps-cmd,
-  AS_HELP_STRING([--with-ps-cmd="CMD"],[Use this command to check running commands. Default: /bin/ps auxww]),
-  [
-    if test "x$withval" = "xno" -o "x$withval" = "xyes" -o "x$withval" = "x" ; then
-	withval=$ALPINE_psefcmd
-    fi
-    ALPINE_PSTEST=`$withval | $EGREP "$withval" | $EGREP -v $EGREP`
-    if test -n "$ALPINE_PSTEST" ; then
-       ALPINE_psefcmd="$withval"
-    else
-       ALPINE_psfailed="1"
-       if test "x$ALPINE_psefcmd" != "x$withval" ; then
-          AC_MSG_WARN(failed command $withval. Trying $ALPINE_psefcmd)
-       fi
-    fi
-  ])
-if test "$ALPINE_psfailed" = "1" -o "$ALPINE_PSTEST" = "-" ; then
-   withval="$ALPINE_psefcmd"
-   ALPINE_PSTEST=`$withval | $EGREP "$withval" | $EGREP -v $EGREP`
-   if test -z "$ALPINE_PSTEST" ; then
-      ALPINE_psfailed="1"
-   else
-      ALPINE_psfailed="0"
-   fi
-fi
-if test "$ALPINE_psfailed" = "0" ; then
-  AC_DEFINE_UNQUOTED([PSEFCMD], "$ALPINE_psefcmd", [ps command which outputs list of running commands])
-fi
-
 dnl Set default locale dir.
 case $host in
     *apple-darwin*)
