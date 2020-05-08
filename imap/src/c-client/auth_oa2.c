@@ -92,7 +92,7 @@ long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder, cha
     mm_log ("SECURITY PROBLEM: insecure server advertised AUTH=XOAUTH2",WARN);
 
 				/* get initial (empty) challenge */
-  if ((challenge = (*challenger) (stream,&clen)) != NULL) {
+  if (base || (challenge = (*challenger) (stream,&clen)) != NULL) {
     if(base == NIL){
 	fs_give ((void **) &challenge);
 	if (clen) {		/* abort if challenge non-empty */
