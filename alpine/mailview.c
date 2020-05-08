@@ -2296,7 +2296,8 @@ scrolltool(SCROLL_S *sparms)
     UCS              ch;
     int              result, done, cmd, found_on, found_on_index,
 		     first_view, force, scroll_lines, km_size,
-		     cursor_row, cursor_col, km_popped;
+		     cursor_row, cursor_col, km_popped,
+		     nrows, ncols;
     char            *utf8str;
     long             jn;
     struct key_menu *km;
@@ -2310,7 +2311,8 @@ scrolltool(SCROLL_S *sparms)
     ps_global->mangled_header = 1;
     ps_global->mangled_footer = 1;
     ps_global->mangled_body   = !sparms->body_valid;
-      
+    ncols		      = ps_global->ttyo ? ps_global->ttyo->screen_cols : 0;
+    nrows		      = ps_global->ttyo ? ps_global->ttyo->screen_rows : 0;
 
     what	    = sparms->keys.what;	/* which key menu to display */
     cur_top_line    = 0;
@@ -2624,6 +2626,10 @@ scrolltool(SCROLL_S *sparms)
 	if(ps_global->prev_screen == mail_view_screen)
 	  mswin_setviewinwindcallback(view_in_new_window);
 #endif
+	if(cmd == MC_RESIZE
+	   || ps_global->ttyo == NULL
+	   || (ps_global->ttyo->screen_cols == ncols
+		&& ps_global->ttyo->screen_rows == nrows))
 	ch = (sparms->quell_newmail || read_command_prep()) ? read_command(&utf8str) : NO_OP_COMMAND;
 #ifdef	MOUSE
 #ifndef	WIN32
@@ -2639,8 +2645,21 @@ scrolltool(SCROLL_S *sparms)
 	mswin_setviewinwindcallback(NULL);
 	cur_top_line = scroll_state(SS_CUR)->top_text_line;
 #endif
+	/* we need to check if there was a resize of the screen
+	 * which did not happen in this routine but during a call
+	 * to another routine from this routing, and that routine has no
+	 * way to tell us that a resize happened
+	 */
+	if(cmd != MC_RESIZE
+	   && ps_global->ttyo 
+	   && (ps_global->ttyo->screen_cols != ncols
+		|| ps_global->ttyo->screen_rows != nrows))
+	   cmd = MC_RESIZE;
+	else
+	   cmd = menu_command(ch, km);
 
-	cmd = menu_command(ch, km);
+        ncols	= ps_global->ttyo ? ps_global->ttyo->screen_cols : 0;
+        nrows	= ps_global->ttyo ? ps_global->ttyo->screen_rows : 0;
 
 	if(km_popped)
 	  switch(cmd){

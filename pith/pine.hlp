@@ -232,6 +232,10 @@ Bugs that have been addressed include:
 
 <LI> When an html anchor does not quote the link in the href parameter,
     alpine does not link to it.
+
+<LI> Attempt to fix a bug that breaks scrolling of a message in Alpine when
+     the screen is resized. Reported in the Debian bug system at
+     <A HREF="https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=956361">https://bugs.debian.org/cgi-bin/bugreport.cgie?bug=956361</A>.
 </UL>
 
 <P>
