@@ -217,14 +217,29 @@ oauth2_get_access_code(char *url, char *method, OAUTH2_S *oauth2, int *tryanothe
 	  goto try_wantto;
 
 	so_puts(in_store, "<HTML><P>");
-	sprintf(tmp, _("<CENTER>Auhtorizing Alpine Access to %s Email Services</CENTER>"), oauth2->name);
+	sprintf(tmp, _("<CENTER>Authorizing Alpine Access to %s Email Services</CENTER>"), oauth2->name);
 	so_puts(in_store, tmp);
 	sprintf(tmp, _("</P><P>Alpine is attempting to log you into your %s account, using the %s method."), oauth2->name, method),
 	so_puts(in_store, tmp);
 
-	so_puts(in_store, _(" In order to do that, Alpine needs to open the following URL:"));
+        if(strucmp(oauth2->name, "Gmail") == 0){
+	   so_puts(in_store, _(" If this is your first time setting up this type of authentication and you have a G-Suite account, please follow the steps below. "));
+	   so_puts(in_store, _("</P><P> First you must register Alpine with Google and create a client-id and client-secret. The steps below explain how to do this. If you already did that, then you can skip to the <A HREF=\"#secondpart\">second part</A> to continue with the setup process."));
+	   so_puts(in_store, _("<UL> "));
+	   so_puts(in_store, _("<LI>Firtst, login to <A HREF=\"https://console.developers.google.com\">https://console.developers.google.com</A>,"));
+	   so_puts(in_store, _("and create a project. The name of the project is not important."));
+	   so_puts(in_store, _("<LI> Go to the Consent screen and make your app INTERNAL."));
+	   so_puts(in_store, _("<LI> Create OAUTH Credentials"));
+	   so_puts(in_store, _("</UL> "));
+	   so_puts(in_store, _("<P> As a result of this process, you will get a client-id and a client-secret."));
+	   so_puts(in_store, _(" Exit this screen, and from Alpine's Main Screen press S U to save these values permanently."));
+	   so_puts(in_store, _(" Then retry login into Gmail's server, skip these steps, and continue with the steps below."));
+	   so_puts(in_store, _("</P><P> Cancelling this process will lead to an error in authentication that can be ignored."));
+	}
+
+	so_puts(in_store, _("</P><P><A NAME=\"secondpart\">In order</A> to authrorize Alpine to access your email, Alpine needs to open the following URL:"));
 	so_puts(in_store,"</P><P>");
-	sprintf(tmp_20k_buf, _("<A HREF=\"%s\">%s.</A>"), url, url);
+	sprintf(tmp_20k_buf, _("<A HREF=\"%s\">%s</A>"), url, url);
 	so_puts(in_store, tmp_20k_buf);
 
 	so_puts(in_store, _("</P><P> Alpine will try to use your URL Viewers setting to find a browser to open this URL."));

@@ -170,6 +170,11 @@ long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder, cha
 
     /* empty challenge or user requested abort or client does not have info */
     if(!oauth2.access_token) {
+       if (base){
+	  (*responder) (stream,base,"",strlen(base));
+	  if ((challenge = (*challenger) (stream,&clen)) != NULL)
+	     fs_give ((void **) &challenge);
+       }
       (*responder) (stream,NIL,NIL,0);
       *trial = 0;		/* cancel subsequent attempts */
       ret = LONGT;		/* will get a BAD response back */
@@ -241,7 +246,7 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
      oauth2clientinfo_t ogci =
 		(oauth2clientinfo_t) mail_parameters (NIL, GET_OA2CLIENTINFO, NIL);
 
-     if(ogci) (*ogci)(oauth2->name, method, &oauth2->param[OA2_Id].value,
+     if(ogci) (*ogci)(oauth2->name, &oauth2->param[OA2_Id].value,
 				&oauth2->param[OA2_Secret].value);
    }
 
@@ -315,7 +320,7 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
 	(oauth2getaccesscode_t) mail_parameters (NIL, GET_OA2CLIENTGETACCESSCODE, NIL);
 
 	if(ogac)
-	  oauth2->param[OA2_Code].value = (*ogac)(url, oauth2, tryanother);
+	  oauth2->param[OA2_Code].value = (*ogac)(url, method, oauth2, tryanother);
      }
 
      if(oauth2->param[OA2_Code].value){
