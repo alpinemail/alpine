@@ -21,7 +21,6 @@
 #		Internet: MRC@CAC.Washington.EDU
 
 
-CC=cc
 RM=rm -f
 
 

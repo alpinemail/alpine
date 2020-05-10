@@ -132,10 +132,9 @@ EMPTYPROTO=unixproto
 
 # Commands possibly overridden by the individual port
 
-ARRC=ar rc
-CC=cc
+ARRC=$(AR) rc
 LN=ln -s
-RANLIB=ranlib
+RANLIB?=ranlib
 
 
 # Standard distribution build parameters
