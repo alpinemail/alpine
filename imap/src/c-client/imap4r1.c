@@ -1179,11 +1179,14 @@ long imap_auth (MAILSTREAM *stream,NETMBX *mb,char *tmp,char *usr)
       base = (at->flags & AU_SINGLE) && LOCAL->cap.sasl_ir
 		? (char *) tmp : NIL;
       if (base || imap_soutr (stream,tmp)) {
+				/* report we tried this authenticator */
+	if(base && stream && stream->debug) mm_dlog (base);
 				/* hide client authentication responses */
 	if (!(at->flags & AU_SECURE)) LOCAL->sensitive = T;
 	ok = (*at->client) (imap_challenge,imap_response,base,"imap",mb,stream,
 			    net_port(LOCAL->netstream),&trial,usr);
 	LOCAL->sensitive = NIL;	/* unhide */
+
 				/* make sure have a response */
 	if (!(reply = &LOCAL->reply)->tag)
 	  reply = imap_fake (stream,tag,
@@ -1335,6 +1338,7 @@ long imap_response (void *s,char *base,char *response,unsigned long size)
       }
       *u = '\0';		/* tie off string for mm_dlog() */
       if (stream->debug) mail_dlog (t,LOCAL->sensitive);
+
 				/* append CRLF */
       *u++ = '\015'; *u++ = '\012';
       ret = net_sout (LOCAL->netstream,t,u - t);

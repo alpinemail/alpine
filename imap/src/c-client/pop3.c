@@ -641,6 +641,8 @@ long pop3_auth (MAILSTREAM *stream,NETMBX *mb,char *pwd,char *usr)
 	} else base = NIL;
 	LOCAL->saslcancel = NIL;
 	if ((at->flags & AU_SINGLE) || pop3_send (stream,"AUTH",at->name)) {
+				/* record that we are trying this authentication */
+	  if ((at->flags & AU_SINGLE) && stream && stream->debug) mm_dlog(base);
 				/* hide client authentication responses */
 	  if (!(at->flags & AU_SECURE)) LOCAL->sensitive = T;
 	  if ((*at->client) (pop3_challenge,pop3_response,base,"pop",mb,stream,

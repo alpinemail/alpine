@@ -318,6 +318,8 @@ long smtp_auth (SENDSTREAM *stream,NETMBX *mb,char *tmp)
       else base = NIL;
       stream->saslcancel = NIL;
       if ((at->flags & AU_SINGLE) || smtp_send (stream,"AUTH",at->name) == SMTPAUTHREADY) {
+				/* log what type of authentication we are about to try */
+	if ((at->flags & AU_SINGLE) && stream && stream->debug) mm_dlog(base);
 				/* hide client authentication responses */
 	if (!(at->flags & AU_SECURE)) stream->sensitive = T;
 	if ((*at->client) (smtp_challenge,smtp_response,base,"smtp",mb,stream,
