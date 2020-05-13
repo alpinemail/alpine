@@ -162,7 +162,7 @@ xoauth_parse_client_info(char *lvalp, char **namep, char **idp, char **secretp)
 
   if (lvalp == NULL) return;
 
-  if(s = strstr(lvalp, XNAME)){
+  if((s = strstr(lvalp, XNAME)) != NULL){
 	s += strlen(XNAME);
 	if(*s == '"') s++;
 	for(t = s; *t && *t != '"' && *t != ' '; t++);
@@ -172,7 +172,7 @@ xoauth_parse_client_info(char *lvalp, char **namep, char **idp, char **secretp)
 	*t = c;
   }
 
-  if(s = strstr(lvalp, XID)){
+  if((s = strstr(lvalp, XID)) != NULL){
 	s += strlen(XID);
 	if(*s == '"') s++;
 	for(t = s; *t && *t != '"' && *t != ' '; t++);
@@ -182,7 +182,7 @@ xoauth_parse_client_info(char *lvalp, char **namep, char **idp, char **secretp)
 	*t = c;
   }
 
-  if(s = strstr(lvalp, XSECRET)){
+  if((s = strstr(lvalp, XSECRET)) != NULL){
 	s += strlen(XSECRET);
 	if(*s == '"') s++;
 	for(t = s; *t && *t != '"' && *t != ' '; t++);
@@ -219,6 +219,7 @@ alpine_xoauth2_configuration(struct pine *ps, int edit_exceptions)
 
     dprint((3, "--  alpine_xoauth2_configuration --\n"));
 
+    expose_hidden_config = F_ON(F_EXPOSE_HIDDEN_CONFIG, ps_global);
     ew = edit_exceptions ? ps_global->ew_for_except_vars : Main;
 
     if(ps->restricted)
@@ -309,6 +310,9 @@ alpine_xoauth2_configuration(struct pine *ps, int edit_exceptions)
 	   ctmpa->help	     = NO_HELP;
 	   ctmpa->valoffset  = 1;
 	   ctmpa->value	     = cpystr(alpine_oauth2_list[i].name);
+	   ctmpa->varname  = NULL;
+           ctmpa->varnamep = ctmpb = ctmpa;
+
 
 	   /* Setup client-id variable */
 	   varlist[l]->name = cpystr(XOAUTH2_CLIENT_ID);

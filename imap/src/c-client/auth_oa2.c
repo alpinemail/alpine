@@ -44,19 +44,19 @@ char *oauth2_generate_state(void)
 
   rv[0] = '\0';
   for(i = 0; i < 4; i++)
-     sprintf(rv + strlen(rv), "%x", random() % 256);
+     sprintf(rv + strlen(rv), "%x", (unsigned int) (random() % 256));
   sprintf(rv + strlen(rv), "%c", '-');
   for(i = 0; i < 2; i++)
-     sprintf(rv + strlen(rv), "%x", random() % 256);
+     sprintf(rv + strlen(rv), "%x", (unsigned int) (random() % 256));
   sprintf(rv + strlen(rv), "%c", '-');
   for(i = 0; i < 2; i++)
-     sprintf(rv + strlen(rv), "%x", random() % 256);
+     sprintf(rv + strlen(rv), "%x", (unsigned int) (random() % 256));
   sprintf(rv + strlen(rv), "%c", '-');
   for(i = 0; i < 2; i++)
-     sprintf(rv + strlen(rv), "%x", random() % 256);
+     sprintf(rv + strlen(rv), "%x", (unsigned int) (random() % 256));
   sprintf(rv + strlen(rv), "%c", '-');
   for(i = 0; i < 6; i++)
-     sprintf(rv + strlen(rv), "%x", random() % 256);
+     sprintf(rv + strlen(rv), "%x", (unsigned int) (random() % 256));
   rv[36] = '\0';
   return cpystr(rv);
 }

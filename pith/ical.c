@@ -1763,7 +1763,7 @@ ical_free_duration(ICAL_DURATION_S **ic_d)
 int
 ical_parse_duration(char *value, ICAL_DURATION_S *ic_d)
 {
-   int i, j, rv = 0;
+   int i, j = 0, rv = 0;
 
    if(value == NULL || ic_d == NULL) return -1;
 

@@ -919,11 +919,11 @@ http_post_param(char *url, HTTP_PARAM_S *param)
   HTTPSTREAM *stream;
   HTTP_PARAM_S enc_param;
   HTTP_REQUEST_S *http_request;
-  char *reply;
+  char *reply = NULL;
   int i;
 
   if(url == NULL || param == NULL || (stream = http_open(url)) == NULL)
-     return NULL;
+     return reply;
 
   http_request = http_request_get();
   http_request->request = http_request_line("POST", stream->urltail, HTTP_1_1_VERSION);
@@ -995,7 +995,7 @@ http_post_param2(char *url, HTTP_PARAM_S *param)
 char *
 http_get_param(char *base_url, HTTP_PARAM_S *param)
 {
-  char *url, *reply;
+  char *url, *reply = NIL;
 
   url = http_get_param_url(base_url, param);
   if(url){
@@ -1009,14 +1009,14 @@ char *
 http_get(char *url)
 {  
   HTTP_REQUEST_S *http_request;
-  char *reply;
+  char *reply = NIL;
   HTTPSTREAM *stream;
 
-  if(!url) return NIL;
+  if(!url) return reply;
   stream = http_open(url);
   if(!stream){
     fs_give((void **) &url);
-    return NIL;
+    return reply;
   }
 
   http_request = http_request_get();

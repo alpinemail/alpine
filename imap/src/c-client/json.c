@@ -335,7 +335,7 @@ json_value_parse(unsigned char **s)
 JSON_S *
 json_array_parse(unsigned char **s)
 {
-  JSON_S *j;
+  JSON_S *j = NIL;
   unsigned char *w = *s;
 
   json_skipws(w);
