@@ -169,13 +169,8 @@ long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder, cha
     }
 
     /* empty challenge or user requested abort or client does not have info */
-    if(!oauth2.access_token) {
-       if (base){
-	  (*responder) (stream,base,"",strlen(base));
-	  if ((challenge = (*challenger) (stream,&clen)) != NULL)
-	     fs_give ((void **) &challenge);
-       }
-      (*responder) (stream,NIL,NIL,0);
+    if(tryanother || !oauth2.access_token) {
+       if (!base) (*responder) (stream,base,NIL,0);
       *trial = 0;		/* cancel subsequent attempts */
       ret = LONGT;		/* will get a BAD response back */
     }
@@ -214,7 +209,7 @@ long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder, cha
       fs_give ((void **) &response);
     }
   }
-  if (!ret || !oauth2.name || tryanother) 
+  if (!ret || !oauth2.name)
       *trial = 65535; 			/* don't retry if bad protocol */
   return ret;
 }

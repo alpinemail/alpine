@@ -1187,6 +1187,10 @@ long imap_auth (MAILSTREAM *stream,NETMBX *mb,char *tmp,char *usr)
 			    net_port(LOCAL->netstream),&trial,usr);
 	LOCAL->sensitive = NIL;	/* unhide */
 
+	if(base && ok && !trial){	/* return now or see below for the same code */
+	    mm_log ("IMAP Authentication cancelled",ERROR);
+	    return NIL;
+	}
 				/* make sure have a response */
 	if (!(reply = &LOCAL->reply)->tag)
 	  reply = imap_fake (stream,tag,

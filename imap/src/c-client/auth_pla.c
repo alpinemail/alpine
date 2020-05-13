@@ -75,7 +75,7 @@ long auth_plain_client (authchallenge_t challenger,authrespond_t responder,char 
 #endif
     mm_login (mb,user, &pwd,*trial);
     if (!pwd) {		/* empty challenge or user requested abort */
-      (*responder) (stream,NIL,NIL,0);
+      if (!base) (*responder) (stream,base,NIL,0);
       *trial = 0;		/* cancel subsequent attempts */
       ret = LONGT;		/* will get a BAD response back */
     }
