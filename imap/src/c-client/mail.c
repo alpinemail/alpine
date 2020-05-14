@@ -847,11 +847,11 @@ long mail_valid_net_parse_work (char *name,NETMBX *mb,char *service)
 	else if (!compare_cstring (s,"secure")) mb->secflag = T;
 	else if (!compare_cstring (s,"norsh")) mb->norsh = T;
 	else if (!compare_cstring (s,"loser")) mb->loser = T;
-	else if (!compare_cstring (s,"tls") && !mb->notlsflag)
+	else if ((!compare_cstring (s,"starttls") || !compare_cstring (s,"tls")) && !mb->notlsflag)
 	  mb->tlsflag = T;
 	else if (!compare_cstring (s,"tls-sslv23") && !mb->notlsflag)
 	  mb->tlssslv23 = mb->tlsflag = T;
-	else if (!compare_cstring (s,"notls") && !mb->tlsflag)
+	else if ((!compare_cstring (s,"notls") || !compare_cstring(s,"nostarttls")) && !mb->tlsflag)
 	  mb->notlsflag = T;
 	else if (!compare_cstring (s,"tryssl"))
 	  mb->trysslflag = mailssldriver? T : NIL;
@@ -1274,7 +1274,7 @@ MAILSTREAM *mail_open (MAILSTREAM *stream,char *name,long options)
 	if (mb.user[0]) sprintf (tmp + strlen (tmp),"/user=%.64s",mb.user);
 	if (mb.dbgflag) strcat (tmp,"/debug");
 	if (mb.secflag) strcat (tmp,"/secure");
-	if (mb.tlsflag) strcat (tmp,"/tls");
+	if (mb.tlsflag) strcat (tmp,"/starttls");
 	if (mb.notlsflag) strcat (tmp,"/notls");
 	if (mb.sslflag) strcat (tmp,"/ssl");
 	if (mb.tls1) strcat (tmp,"/tls1");

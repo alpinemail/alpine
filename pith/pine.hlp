@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 427 2020-05-13 02:16:31
+Alpine Commit 428 2020-05-14 14:13:20
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -21005,7 +21005,7 @@ An example might be:
 
 </DD>
 
-<DT>TLS</DT>
+<DT>STARTTLS</DT>
 <DD>
 This is a unary parameter indicating communication with the server must 
 take place over a TLS connection. If you use this parameter, Alpine will 
@@ -21024,7 +21024,7 @@ establish a secure connection using STARTTLS.
 considerations when you use this option.
 
 <P>
-<CENTER><SAMP>/tls</SAMP></CENTER>
+<CENTER><SAMP>/starttls</SAMP></CENTER>
 <P>
 
 </DD>
@@ -21277,7 +21277,8 @@ SSL protocols.
 modifier /tls with respect to the names of the encryption protocols, such 
 as TLS 1.2. The meaning of /tls is to start an encrypted connection to a 
 server after an insecure connection has been established, and we will 
-discuss this later in this help text. 
+discuss this later in this help text. The preferred way flag is to use
+/starttls, instead of /tls.
 
 <P>The best way to start an encrypted connection to a server is to use the 
 /ssl modifier. If your provider allows encrypted connections on port 993 
@@ -21294,13 +21295,13 @@ above.
 the port number in case it is different to the ones above.
 
 <P>If your service provider says to use STARTTLS, then you need to use the 
-/tls modifier. If your service provider gives you the option to use SSL or 
+/starttls modifier. If your service provider gives you the option to use SSL or 
 TLS and to use STARTTLS choose the secure port and choose the /ssl 
-modifier. This is because connections using the /tls modifier can be 
+modifier. This is because connections using the /starttls modifier can be 
 attacked and your username and password can be stolen by a hacker. The next
 paragraph describes in short how to do this.
 
-<P> When you use the /tls modifier, Alpine connects insecurely to the 
+<P> When you use the /starttls modifier, Alpine connects insecurely to the 
 remote server. Because the connection is insecure, it is possible that you 
 connect to a different server, which connects you to the real server. This 
 is called &quot;man-in-the-middle&quot; attack, and so your communication 
@@ -22546,11 +22547,11 @@ Normally, when a connection is made to the Smtp-Server Alpine will attempt
 to negotiate a secure (encrypted) session using Transport Layer Security (TLS).
 If that fails then a non-encrypted connection will be attempted instead.
 You may specify that a TLS connection is required if you wish.
-If you append &quot;/tls&quot; to the name then the connection will fail
+If you append &quot;/starttls&quot; to the name then the connection will fail
 instead of falling back to a non-secure connection.
 
 <P>
-<CENTER><SAMP>smtpserver.example.com/tls</SAMP></CENTER>
+<CENTER><SAMP>smtpserver.example.com/starttls</SAMP></CENTER>
 <P>
 
 
@@ -32630,10 +32631,10 @@ terminal being used.
 <H1>FEATURE: <!--#echo var="FEAT_try-alternative-authentication-driver-first"--></H1>
 
 This feature affects how Alpine connects to IMAP servers.
-It's utility has largely been overtaken by events,
+Its utility has largely been overtaken by events,
 but it may still be useful in some circumstances.
 If you only connect to modern IMAP servers that support
-&quot;TLS&quot; you can ignore this feature.
+&quot;STARTTLS&quot; you can ignore this feature.
 
 <P>
 Details:
@@ -32641,22 +32642,22 @@ Details:
 <P>
 By default, Alpine will attempt to connect to an IMAP server on the
 normal IMAP service port (143), and if the server offers &quot;Transport Layer
-Security&quot; (TLS) and Alpine has been compiled with encryption capability,
+Security&quot; (STARTTLS) and Alpine has been compiled with encryption capability,
 then a secure (encrypted) session will be negotiated.
 
 <P>
 With this feature enabled, before connecting on the normal IMAP port, Alpine
 will first attempt to connect to an alternate IMAP service port (993) used
 specifically for encrypted IMAP sessions via the Secure Sockets Layer
-(SSL) method.
+(SSL) or Transport Layer Security (TLS) method.
 If the SSL attempt fails, Alpine will then try the default
 behavior described in the previous paragraph.
 
 <P>
-TLS negotiation on the normal port is preferred, and supersedes the use of
-SSL on port 993, but older servers may not provide TLS support.
+STARTTLS negotiation on the normal port is preferred, and supersedes the use of
+SSL on port 993, but older servers may not provide STARTTLS support.
 This feature may be convenient when accessing IMAP servers that do not support
-TLS, but do support SSL connections on port 993.
+STARTTLS, but do support SSL or TLS connections on port 993.
 However, it is important to understand that with this feature enabled,
 Alpine will <EM>attempt</EM> to make a secure connection if that is possible,
 but it will proceed to make an insecure connection if that is the only
@@ -32671,14 +32672,14 @@ This feature interacts with some of
 the possible host/folder path specification flags as follows:
 
 <P>
-The <SAMP>/tls</SAMP> host flag, for example,
+The <SAMP>/starttls</SAMP> host flag, for example,
 
 <P>
-<CENTER><SAMP>{foo.example.com/tls}INBOX</SAMP></CENTER>
+<CENTER><SAMP>{foo.example.com/starttls}INBOX</SAMP></CENTER>
 <P>
 will over-ride this feature for the specified host by bypassing the
-SSL connection attempt.
-Moreover, with <SAMP>/tls</SAMP> specified,
+SSL or TLS connection attempt.
+Moreover, with <SAMP>/starttls</SAMP> specified,
 the connection attempt will fail if the
 service on port 143 does not offer TLS support.
 
@@ -32688,8 +32689,8 @@ The <SAMP>/ssl</SAMP> host flag, for example,
 <P>
 <CENTER><SAMP>{foo.example.com/ssl}INBOX</SAMP></CENTER>
 <P>
-will insist on an SSL connection for the specified host,
-and will fail if the SSL service on port 993 is not available.
+will insist on an SSL or TLS connection for the specified host,
+and will fail if the SSL or TLS service on port 993 is not available.
 Alpine will not subsequently retry a connection
 on port 143 if <SAMP>/ssl</SAMP> is specified.
 

@@ -852,7 +852,7 @@ MAILSTREAM *imap_open (MAILSTREAM *stream)
     /* IMAP connection open logic is more complex than net_open() normally
      * deals with, because of the simap and rimap hacks.
      * If the session is anonymous, a specific port is given, or if /ssl or
-     * /tls is set, do net_open() since those conditions override everything
+     * /starttls is set, do net_open() since those conditions override everything
      * else.
      */
     if (stream->anonymous || mb.port || mb.sslflag || mb.tlsflag)
@@ -911,7 +911,7 @@ MAILSTREAM *imap_open (MAILSTREAM *stream)
 				/* get capabilities now that TLS in effect */
 	if (LOCAL->netstream) imap_capability (stream);
       }
-      else if (mb.tlsflag) {	/* user specified /tls but can't do it */
+      else if (mb.tlsflag) {	/* user specified /starttls but can't do it */
 	mm_log ("Unable to negotiate TLS with this server",ERROR);
 	return NIL;
       }
@@ -975,13 +975,13 @@ MAILSTREAM *imap_open (MAILSTREAM *stream)
     if (!((i = net_port (LOCAL->netstream)) & 0xffff0000))
       sprintf (tmp + strlen (tmp),":%lu",i);
     strcat (tmp,"/imap");
-    if (LOCAL->tlsflag) strcat (tmp,"/tls");
+    if (LOCAL->tlsflag) strcat (tmp,"/starttls");
     if (LOCAL->tls1) strcat (tmp,"/tls1");
     if (LOCAL->tls1_1) strcat (tmp,"/tls1_1");
     if (LOCAL->tls1_2) strcat (tmp,"/tls1_2");
     if (LOCAL->tls1_3) strcat (tmp,"/tls1_3");
     if (LOCAL->tlssslv23) strcat (tmp,"/tls-sslv23");
-    if (LOCAL->notlsflag) strcat (tmp,"/notls");
+    if (LOCAL->notlsflag) strcat (tmp,"/nostarttls");
     if (LOCAL->sslflag) strcat (tmp,"/ssl");
     if (LOCAL->novalidate) strcat (tmp,"/novalidate-cert");
     if (LOCAL->loser) strcat (tmp,"/loser");

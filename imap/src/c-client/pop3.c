@@ -420,13 +420,13 @@ MAILSTREAM *pop3_open (MAILSTREAM *stream)
 	       (long) mail_parameters (NIL,GET_TRUSTDNS,NIL) ?
 	       net_host (LOCAL->netstream) : mb.host,
 	       net_port (LOCAL->netstream));
-      if (mb.tlsflag) strcat (tmp,"/tls");
+      if (mb.tlsflag) strcat (tmp,"/starttls");
       if (mb.tlssslv23) strcat (tmp,"/tls-sslv23");
       if (mb.tls1) strcat (tmp,"/tls1");
       if (mb.tls1_1) strcat (tmp,"/tls1_1");
       if (mb.tls1_2) strcat (tmp,"/tls1_2");
       if (mb.tls1_3) strcat (tmp,"/tls1_3");
-      if (mb.notlsflag) strcat (tmp,"/notls");
+      if (mb.notlsflag) strcat (tmp,"/nostarttls");
       if (mb.sslflag) strcat (tmp,"/ssl");
       if (mb.novalidate) strcat (tmp,"/novalidate-cert");
       if ((LOCAL->loser = mb.loser) != 0) strcat (tmp,"/loser");
@@ -578,7 +578,7 @@ long pop3_auth (MAILSTREAM *stream,NETMBX *mb,char *pwd,char *usr)
     }
     pop3_capa (stream,flags);	/* get capabilities now that TLS in effect */
   }
-  else if (mb->tlsflag) {	/* user specified /tls but can't do it */
+  else if (mb->tlsflag) {	/* user specified /starttls but can't do it */
     mm_log ("Unable to negotiate TLS with this server",ERROR);
     return NIL;
   }

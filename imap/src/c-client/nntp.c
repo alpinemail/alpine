@@ -688,9 +688,9 @@ MAILSTREAM *nntp_mopen (MAILSTREAM *stream)
     hostlist[0] = strcpy (tmp,mb.host);
     if (mb.port || nntp_port)
       sprintf (tmp + strlen (tmp),":%lu",mb.port ? mb.port : nntp_port);
-    if (mb.tlsflag) strcat (tmp,"/tls");
+    if (mb.tlsflag) strcat (tmp,"/starttls");
     if (mb.tlssslv23) strcat (tmp,"/tls-sslv23");
-    if (mb.notlsflag) strcat (tmp,"/notls");
+    if (mb.notlsflag) strcat (tmp,"/nostarttls");
     if (mb.sslflag) strcat (tmp,"/ssl");
     if (mb.tls1) strcat (tmp,"/tls1");
     if (mb.tls1_1) strcat (tmp,"/tls1_1");
@@ -761,9 +761,9 @@ MAILSTREAM *nntp_mopen (MAILSTREAM *stream)
   sprintf (tmp,"{%s:%lu/nntp",(long) mail_parameters (NIL,GET_TRUSTDNS,NIL) ?
 	   net_host (nstream->netstream) : mb.host,
 	   net_port (nstream->netstream));
-  if (LOCAL->tlsflag) strcat (tmp,"/tls");
+  if (LOCAL->tlsflag) strcat (tmp,"/starttls");
   if (LOCAL->tlssslv23) strcat (tmp,"/tls-sslv23");
-  if (LOCAL->notlsflag) strcat (tmp,"/notls");
+  if (LOCAL->notlsflag) strcat (tmp,"/nostarttls");
   if (LOCAL->sslflag) strcat (tmp,"/ssl");
   if (LOCAL->tls1) strcat (tmp,"/tls1");
   if (LOCAL->tls1_1) strcat (tmp,"/tls1_1");
@@ -1752,7 +1752,7 @@ SENDSTREAM *nntp_open_full (NETDRIVER *dv,char **hostlist,char *service,
       stream = nntp_close (stream);
     }
   }
-  else if (mb.tlsflag) {	/* user specified /tls but can't do it */
+  else if (mb.tlsflag) {	/* user specified /starttls but can't do it */
     mm_log ("Unable to negotiate TLS with this server",ERROR);
     return NIL;
   }
