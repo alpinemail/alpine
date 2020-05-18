@@ -22,7 +22,7 @@ typedef struct http_param_list_s {
 } HTTP_PARAM_LIST_S;
 
 typedef struct http_header_value_s {
-  char *data;
+  unsigned char *data;
   HTTP_PARAM_LIST_S *p;
 } HTTP_HEADER_S;
 
@@ -91,8 +91,8 @@ typedef struct http_stream {
   char *urlhost;	/* get original host */
   char *urltail;	/* the part of the URL after the original host */
   HTTP_STATUS_S *status;/* parsed status line from server */
-  char *response;	/* last reply line from server */
-  char *reply;		/* the full reply from the server */
+  unsigned char *response;	/* last reply line from server */
+  unsigned char *reply;	/* the full reply from the server */
 } HTTPSTREAM;
 
 /* parameters for a get or post call */
@@ -102,15 +102,15 @@ typedef struct http_param_s {
 } HTTP_PARAM_S;
 
 /* exported prototypes */
-HTTPSTREAM *http_open (char *);
-char *http_post_param(char *, HTTP_PARAM_S *);
-char *http_post_param2(char *, HTTP_PARAM_S *);
-char *http_get_param(char *, HTTP_PARAM_S *);
-char *http_get(char *);
+HTTPSTREAM *http_open (unsigned char *);
+unsigned char *http_post_param(unsigned char *, HTTP_PARAM_S *);
+unsigned char *http_post_param2(unsigned char *, HTTP_PARAM_S *);
+unsigned char *http_get_param(unsigned char *, HTTP_PARAM_S *);
+unsigned char *http_get(unsigned char *);
 void http_close (HTTPSTREAM *stream);
 
 HTTP_PARAM_S *http_param_get(int);
 void http_param_free(HTTP_PARAM_S **);
 
 /* Ugghh.... just construct the URL for a get request */
-char *http_get_param_url(char *, HTTP_PARAM_S *);
+unsigned char *http_get_param_url(unsigned char *, HTTP_PARAM_S *);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Eduardo Chappa
+ * Copyright 2018-2020 Eduardo Chappa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,9 @@ static char http_noparam_val[] = "\1\2\3\4\5\6\7\10\12\13\14\15\16\17\20\21\22\2
 #define HTTPSSLPORT (long) 443	/* assigned SSL TCP contact port */
 
 typedef struct http_request_s {
-  char *request;
-  char *header;
-  char *body;
+  unsigned char *request;
+  unsigned char *header;
+  unsigned char *body;
 } HTTP_REQUEST_S;
 
 #define HTP_NOVAL	0x001	/* the header accepts parameters without value */
@@ -35,7 +35,7 @@ typedef struct http_request_s {
 
 #if 0
 typedef struct http_val_param_s {
-  char *value;
+  unsigned char *value;
   PARAMETER *plist;
 } HTTP_VAL_PARAM_S;
 
@@ -45,7 +45,7 @@ typedef struct http_param_list_s {
 } HTTP_PARAM_LIST_S;
 
 typedef struct http_header_value_s {
-  char *data;
+  unsigned char *data;
   HTTP_PARAM_LIST_S *p;
 } HTTP_HEADER_S;
 
@@ -93,43 +93,59 @@ typedef struct http_header_data_s {
 #endif
 
 /* helper functions */
-HTTP_STATUS_S *http_status_line_get(char *);
+HTTP_STATUS_S *http_status_line_get(unsigned char *);
 void http_status_line_free(HTTP_STATUS_S **);
 HTTP_REQUEST_S *http_request_get(void);
 void http_request_free(HTTP_REQUEST_S **);
-char *http_request_line(char *, char *, char *);
-void http_add_header(HTTP_REQUEST_S **, char *, char *);
-void http_add_body(HTTP_REQUEST_S **, char *);
-void buffer_add(char **, char *);
-char *hex_escape_url_part(char *, char *);
-char *encode_url_body_part(char *, char *);
-
+unsigned char *http_request_line(unsigned char *, unsigned char *, unsigned char *);
+void http_add_header(HTTP_REQUEST_S **, unsigned char *, unsigned char *);
+void http_add_body(HTTP_REQUEST_S **, unsigned char *);
+void buffer_add(unsigned char **, unsigned char *);
+unsigned char *hex_escape_url_part(unsigned char *, unsigned char *);
+unsigned char *encode_url_body_part(unsigned char *, unsigned char *);
+unsigned char *http_response_from_reply(unsigned char *);
 
 /* HTTP function prototypes */
-int http_valid_net_parse (char *, NETMBX *);
+int http_valid_net_parse (unsigned char *, NETMBX *);
 void *http_parameters (long function,void *value);
 
 long http_send (HTTPSTREAM *stream, HTTP_REQUEST_S *);
 long http_reply (HTTPSTREAM *stream);
-long http_fake (HTTPSTREAM *stream, char *text);
+long http_fake (HTTPSTREAM *stream, unsigned char *text);
 
-void http_skipows(char **);
-void http_remove_trailing_ows(char *);
+void http_skipows(unsigned char **);
+void http_remove_trailing_ows(unsigned char *);
 
-int valid_dquote_text(char *);
+int valid_dquote_text(unsigned char *);
 #define valid_token_name(X)  (strpbrk((X), http_notok) ? 0 : 1)
 #define valid_parameter_value(X) \
 	((valid_token_name((X)) || valid_dquote_text((X))) ? 1 : 0)
 
 /* HTTP HEADER FUNCTIONS */
-void http_add_header_data(HTTPSTREAM *, char *);
-void http_add_data_to_header(HTTP_HEADER_S **, char *);
+void http_add_header_data(HTTPSTREAM *, unsigned char *);
+void http_add_data_to_header(HTTP_HEADER_S **, unsigned char *);
 
-HTTP_PARAM_LIST_S *http_parse_token_parameter(char *, int);
-HTTP_PARAM_LIST_S *http_parse_token_list(char *, int);
-PARAMETER *http_parse_parameter(char *, int);
+HTTP_PARAM_LIST_S *http_parse_token_parameter(unsigned char *, int);
+HTTP_PARAM_LIST_S *http_parse_token_list(unsigned char *, int);
+PARAMETER *http_parse_parameter(unsigned char *, int);
 
 void http_parse_headers(HTTPSTREAM *);
+
+unsigned char *
+http_response_from_reply(unsigned char *reply)
+{
+  unsigned char *rv, *s, *t;
+
+  if (reply == NULL
+	|| (s = strstr(reply, "\r\n\r\n")) == NULL
+	|| (t = strstr(s + 4, "\r\n")) == NULL)
+      rv = NULL;
+  else
+      rv = t + 2;
+  return rv;
+}
+
+
 
 void
 http_parse_headers(HTTPSTREAM *stream)
@@ -339,7 +355,7 @@ http_parse_headers(HTTPSTREAM *stream)
 
 
 void
-http_add_data_to_header(HTTP_HEADER_S **headerp,  char *data)
+http_add_data_to_header(HTTP_HEADER_S **headerp,  unsigned char *data)
 {
   HTTP_HEADER_S *h = *headerp;
 
@@ -354,9 +370,9 @@ http_add_data_to_header(HTTP_HEADER_S **headerp,  char *data)
 }
 
 void
-http_add_header_data(HTTPSTREAM *stream, char *hdata)
+http_add_header_data(HTTPSTREAM *stream, unsigned char *hdata)
 {
-  char *hname, *h;
+  unsigned char *hname, *h;
   int found = 1;
 
   if(!stream || !hdata || !*hdata) return;
@@ -531,9 +547,9 @@ http_add_header_data(HTTPSTREAM *stream, char *hdata)
  * without bounds
  */
 HTTP_PARAM_LIST_S *
-http_parse_token_list(char *h, int num)
+http_parse_token_list(unsigned char *h, int num)
 {
-  char *s = h, *t, c;
+  unsigned char *s = h, *t, c;
   HTTP_PARAM_LIST_S *rv = NIL;
 
   if(!s || !*s || num == 0) return NIL;
@@ -566,9 +582,9 @@ http_parse_token_list(char *h, int num)
  * it anything invalid.
  */
 HTTP_PARAM_LIST_S *
-http_parse_token_parameter(char *h, int flag)
+http_parse_token_parameter(unsigned char *h, int flag)
 {
-  char *s = h, *t, *u, c, d;
+  unsigned char *s = h, *t, *u, c, d;
   HTTP_PARAM_LIST_S *rv = NIL;
 
   /* 
@@ -617,9 +633,9 @@ http_parse_token_parameter(char *h, int flag)
 }
 
 int
-valid_dquote_text(char *s)
+valid_dquote_text(unsigned char *s)
 {
-  char *t;
+  unsigned char *t;
 
   if(!s || *s != '\"') return 0;
 
@@ -629,17 +645,17 @@ valid_dquote_text(char *s)
 
 
 void
-http_skipows(char **sp)
+http_skipows(unsigned char **sp)
 {
-  char *s = *sp;
+  unsigned char *s = *sp;
   for(; *s == ' ' || *s == '\t'; s++);
   *sp = s;
 }
 
 void
-http_remove_trailing_ows(char *s)
+http_remove_trailing_ows(unsigned char *s)
 {
-  char *t;
+  unsigned char *t;
   for(t = s; strlen(t) > 0 ;)
      if(t[strlen(t)-1] == ' ' || t[strlen(t)-1] == '\t')
 	t[strlen(t)-1] = '\0';
@@ -648,10 +664,10 @@ http_remove_trailing_ows(char *s)
 }
 
 PARAMETER *
-http_parse_parameter(char *s, int flag)
+http_parse_parameter(unsigned char *s, int flag)
 {
   PARAMETER *p;
-  char *t, *u, c;
+  unsigned char *t, *u, c;
 
   /* Step 1:
    * separate the parameters into a list separated by ";"
@@ -692,11 +708,11 @@ http_parse_parameter(char *s, int flag)
   return p;
 }
 
-char *
-http_get_param_url(char *url, HTTP_PARAM_S *param)
+unsigned char *
+http_get_param_url(unsigned char *url, HTTP_PARAM_S *param)
 {
   int i;
-  char *rv = NULL;
+  unsigned char *rv = NULL;
   HTTP_PARAM_S enc_param;
 
   buffer_add(&rv, url);
@@ -734,18 +750,18 @@ http_request_free(HTTP_REQUEST_S **hr)
   fs_give((void **) hr);
 }
 
-char *
-http_request_line(char *method, char *target, char *version)
+unsigned char *
+http_request_line(unsigned char *method, unsigned char *target, unsigned char *version)
 {
   int len = strlen(method) + strlen(target) + strlen(version) + 2 + 1;
-  char *line = fs_get(len*sizeof(char));
+  unsigned char *line = fs_get(len*sizeof(char));
 
   sprintf(line, "%s %s %s", method, target, version);
   return line;
 }
 
 void
-http_add_header(HTTP_REQUEST_S **reqp, char *name, char *value)
+http_add_header(HTTP_REQUEST_S **reqp, unsigned char *name, unsigned char *value)
 {
   int len, hlen;
 
@@ -761,7 +777,7 @@ http_add_header(HTTP_REQUEST_S **reqp, char *name, char *value)
 }
 
 void
-buffer_add(char **bufp, char *text)
+buffer_add(unsigned char **bufp, unsigned char *text)
 {
   int len;
 
@@ -774,7 +790,7 @@ buffer_add(char **bufp, char *text)
 }
 
 void
-http_add_body(HTTP_REQUEST_S **reqp, char *text)
+http_add_body(HTTP_REQUEST_S **reqp, unsigned char *text)
 {
   if(!reqp) return;
 
@@ -816,11 +832,11 @@ http_param_free(HTTP_PARAM_S **param)
 
 
 /* This encodes for a GET request */
-char *
-hex_escape_url_part(char *text, char *addsafe)
+unsigned char *
+hex_escape_url_part(unsigned char *text, unsigned char *addsafe)
 {
   char *safechars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.-";
-  char *s = fs_get((3*strlen(text) + 1)*sizeof(char)), *t;
+  unsigned char *s = fs_get((3*strlen(text) + 1)*sizeof(char)), *t;
     
   *s = '\0';
   for(t = text; *t != '\0'; t++)
@@ -834,11 +850,11 @@ hex_escape_url_part(char *text, char *addsafe)
 }
   
 /* this encodes for a POST request */
-char *
-encode_url_body_part(char *text, char *addsafe)
+unsigned char *
+encode_url_body_part(unsigned char *text, unsigned char *addsafe)
 {
   char *safechars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.-";
-  char *s = fs_get((3*strlen(text) + 1)*sizeof(char)), *t;
+  unsigned char *s = fs_get((3*strlen(text) + 1)*sizeof(char)), *t;
         
   *s = '\0';
   for(t = text; *t != '\0'; t++)
@@ -854,10 +870,11 @@ encode_url_body_part(char *text, char *addsafe)
 }
 
 int
-http_valid_net_parse (char *url, NETMBX *mb)
+http_valid_net_parse (unsigned char *url, NETMBX *mb)
 {
    int i, len;
-   char *s, *p;
+   unsigned char *s;
+   char *p;
 
    if((url == NIL) 
       || (url[0] != 'h' && url[0] != 'H')
@@ -889,11 +906,11 @@ http_valid_net_parse (char *url, NETMBX *mb)
 }
 
 HTTPSTREAM *
-http_open (char *url)
+http_open (unsigned char *url)
 {
   HTTPSTREAM *stream;
   NETMBX mb;
-  char *s;
+  unsigned char *s;
 
   memset((void *) &mb, 0, sizeof(NETMBX));
   if(http_valid_net_parse (url,&mb) == 0)
@@ -902,10 +919,10 @@ http_open (char *url)
   stream = fs_get(sizeof(HTTPSTREAM));
   memset((void *) stream, 0, sizeof(HTTPSTREAM));
 
-  s = strchr(url + 7 + (mb.trysslflag ? 1 : 0) + 1, '/'); /* 7 = strlen("http://") + 1 */
+  s = strchr((char *) url + 7 + (mb.trysslflag ? 1 : 0) + 1, '/'); /* 7 = strlen("http://") + 1 */
   stream->url     = cpystr(url);
   stream->urlhost = cpystr(mb.orighost);
-  stream->urltail = cpystr(s ? s : "/");
+  stream->urltail = cpystr(s ? (char *) s : "/");
   stream->netstream = net_open (&mb, NIL, mb.port ? mb.port : HTTPTCPPORT,
 		 (NETDRIVER *) mail_parameters (NIL,GET_SSLDRIVER,NIL),
 		 "*https", mb.port ? mb.port : HTTPSSLPORT);
@@ -913,17 +930,17 @@ http_open (char *url)
   return stream;
 }
 
-char *
-http_post_param(char *url, HTTP_PARAM_S *param)
+unsigned char *
+http_post_param(unsigned char *url, HTTP_PARAM_S *param)
 {
   HTTPSTREAM *stream;
   HTTP_PARAM_S enc_param;
   HTTP_REQUEST_S *http_request;
-  char *reply = NULL;
+  unsigned char *response = NULL;
   int i;
 
   if(url == NULL || param == NULL || (stream = http_open(url)) == NULL)
-     return reply;
+     return response;
 
   http_request = http_request_get();
   http_request->request = http_request_line("POST", stream->urltail, HTTP_1_1_VERSION);
@@ -943,26 +960,27 @@ http_post_param(char *url, HTTP_PARAM_S *param)
   }
   
   if(http_send(stream, http_request)){
-     reply = cpystr(stream->reply ? stream->reply : "");
+     unsigned char *s = http_response_from_reply(stream->reply);
+     response = cpystr(s ? (char *) s : "");
      http_close(stream);
   }
 
   http_request_free(&http_request);
 
-  return reply;
+  return response;
 }
 
-char *
-http_post_param2(char *url, HTTP_PARAM_S *param)
+unsigned char *
+http_post_param2(unsigned char *url, HTTP_PARAM_S *param)
 {
   HTTPSTREAM *stream;
   HTTP_PARAM_S enc_param;
-  HTTP_REQUEST_S *http_request;
-  char *reply;
+  HTTP_REQUEST_S *http_request = NULL;
+  unsigned char *response = NULL;
   int i;
 
   if(url == NULL || param == NULL || (stream = http_open(url)) == NULL)
-     return NULL;
+     return response;
 
   http_request = http_request_get();
   http_request->request = http_request_line("POST", stream->urltail, HTTP_1_1_VERSION);
@@ -983,40 +1001,41 @@ http_post_param2(char *url, HTTP_PARAM_S *param)
   }
   
   if(http_send(stream, http_request)){
-     reply = cpystr(stream->reply ? stream->reply : "");
+     unsigned char *s = http_response_from_reply(stream->reply);
+     response = cpystr(s ? (char *) s : "");
      http_close(stream);
   }
 
   http_request_free(&http_request);
 
-  return reply;
+  return response;
 }
 
-char *
-http_get_param(char *base_url, HTTP_PARAM_S *param)
+unsigned char *
+http_get_param(unsigned char *base_url, HTTP_PARAM_S *param)
 {
-  char *url, *reply = NIL;
+  unsigned char *url, *response = NIL;
 
   url = http_get_param_url(base_url, param);
   if(url){
-    reply = http_get(url);
+    response = http_get(url);
     fs_give((void **) &url);
   }
-  return reply;
+  return response;
 }
 
-char *
-http_get(char *url)
+unsigned char *
+http_get(unsigned char *url)
 {  
   HTTP_REQUEST_S *http_request;
-  char *reply = NIL;
+  unsigned char *response = NIL;
   HTTPSTREAM *stream;
 
-  if(!url) return reply;
+  if(!url) return response;
   stream = http_open(url);
   if(!stream){
     fs_give((void **) &url);
-    return reply;
+    return response;
   }
 
   http_request = http_request_get();
@@ -1024,13 +1043,14 @@ http_get(char *url)
   http_add_header(&http_request, "Host", stream->urlhost);
   
   if(http_send(stream, http_request)){
-     reply = cpystr(stream->reply ? stream->reply : "");
+     unsigned char *s = http_response_from_reply(stream->reply);
+     response = cpystr(s ? (char *) s : "");
      http_close(stream);
   }
 
   http_request_free(&http_request);
 
-  return reply;
+  return response;
 }
 
 void
@@ -1052,7 +1072,7 @@ long
 http_send (HTTPSTREAM *stream, HTTP_REQUEST_S *req)
 {
   long ret;
-  char *s = NULL;
+  unsigned char *s = NULL;
 
   if (!stream->netstream) 
     ret = http_fake (stream,"http connection lost");
@@ -1077,7 +1097,7 @@ http_send (HTTPSTREAM *stream, HTTP_REQUEST_S *req)
 }
 
 HTTP_STATUS_S *
-http_status_line_get(char *status_line)
+http_status_line_get(unsigned char *status_line)
 {
    HTTP_STATUS_S *rv = NULL;
    char *version, *s;
@@ -1120,7 +1140,7 @@ http_reply (HTTPSTREAM *stream)
   unsigned long size;
 
   if (stream->response) fs_give ((void **) &stream->response);
-  stream->response = net_getline(stream->netstream);
+  stream->response = (unsigned char *) net_getline(stream->netstream);
 
   if(stream->response){
      buffer_add(&stream->reply, stream->response);
@@ -1137,7 +1157,7 @@ http_reply (HTTPSTREAM *stream)
 
   while (in_header > 0){
     if (stream->response) fs_give ((void **) &stream->response);
-    stream->response = net_getline (stream->netstream);
+    stream->response = (unsigned char *) net_getline (stream->netstream);
     if(stream->response){
        buffer_add(&stream->reply, stream->response);
        http_add_header_data(stream, stream->response);
@@ -1152,7 +1172,7 @@ http_reply (HTTPSTREAM *stream)
   if(stream->header->content_length){
      size = atol(stream->header->content_length->p->vp->value);
      if (stream->response) fs_give ((void **) &stream->response);
-     stream->response = net_getsize (stream->netstream, size);
+     stream->response = (unsigned char *) net_getsize (stream->netstream, size);
      if(stream->response) buffer_add(&stream->reply, stream->response);
   }
   else if (stream->header->transfer_encoding){
@@ -1166,13 +1186,13 @@ http_reply (HTTPSTREAM *stream)
 	size = 0L;
 	while(!done){
 	  if (stream->response) fs_give ((void **) &stream->response);
-	  stream->response = net_getline (stream->netstream);
+	  stream->response = (unsigned char *) net_getline (stream->netstream);
 	  if(stream->response){
 	     buffer_add(&stream->reply, stream->response);
 	     buffer_add(&stream->reply, "\015\012");
-	     size = strtol(stream->response, NIL, 16);
+	     size = strtol((unsigned char *) stream->response, NIL, 16);
 	     fs_give ((void **) &stream->response);
-	     stream->response = net_getsize (stream->netstream, size);
+	     stream->response = (unsigned char *) net_getsize (stream->netstream, size);
 	     buffer_add(&stream->reply, stream->response);
 	  }
 	  if(size == 0L) done++;
@@ -1183,7 +1203,7 @@ http_reply (HTTPSTREAM *stream)
 #if 0
   while(in_header == 0){
     if (stream->response) fs_give ((void **) &stream->response);
-    stream->response = net_getline (stream->netstream);
+    stream->response = (unsigned char *) net_getline (stream->netstream);
     if(stream->response){
        buffer_add(&stream->reply, stream->response);
        buffer_add(&stream->reply, stream->response);
@@ -1200,7 +1220,7 @@ http_reply (HTTPSTREAM *stream)
 }
 
 long
-http_fake (HTTPSTREAM *stream, char *text)
+http_fake (HTTPSTREAM *stream, unsigned char *text)
 {
   if (stream->netstream) net_close (stream->netstream);
   stream->netstream = NIL;

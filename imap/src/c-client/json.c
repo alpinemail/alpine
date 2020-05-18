@@ -47,35 +47,6 @@ JSON_S *json_array_parse_work(unsigned char **);
 JSON_S *json_array_parse(unsigned char **);
 void    json_array_free(JSON_S **);
 
-#ifdef STANDALONE
-int compare_cstring (unsigned char *,unsigned char *);
-int compare_uchar (unsigned char,unsigned char);
-int compare_ulong (unsigned long,unsigned long);
-
-int compare_ulong (unsigned long l1,unsigned long l2)
-{
-  if (l1 < l2) return -1;
-  if (l1 > l2) return 1;
-  return 0;
-} 
-
-int compare_uchar (unsigned char c1,unsigned char c2)
-{
-  return compare_ulong (((c1 >= 'a') && (c1 <= 'z')) ? c1 - ('a' - 'A') : c1,
-                        ((c2 >= 'a') && (c2 <= 'z')) ? c2 - ('a' - 'A') : c2);
-}
-
-int compare_cstring (unsigned char *s1,unsigned char *s2)
-{
-  int i;
-  if (!s1) return s2 ? -1 : 0;  /* empty string cases */
-  else if (!s2) return 1;
-  for (; *s1 && *s2; s1++,s2++) if ((i = (compare_uchar (*s1,*s2))) != 0) return i;
-  if (*s1) return 1;            /* first string is longer */
-  return *s2 ? -1 : 0;          /* second string longer : strings identical */
-}
-#endif /* STANDALONE */
-
 /* we are parsing from the text of the json object, so it is
  * never possible to have a null character, unless something
  * is corrupt, in whose case we return JNumberError.
@@ -476,22 +447,3 @@ json_parse(unsigned char **s)
   *s = w;
   return j;  
 }
-
-#ifdef STANDALONE
-int main (int argc, char *argv[])
-{
- unsigned char *s, *t;
- JSON_S *json;
- JSON_X *jx;
-
- t = NULL;
- readfile(argv[1], (char **) &t, NULL);
- s = t;
- json = json_parse(&s);
- if(!*s) printf("Success!\n");
-// jx = json_body_value(json, (unsigned char *) "subject");
-// if(jx) printf("subject = %s\n", (char *) jx->value);
- if(t) fs_give((void **)&t);
- exit(0);
-}
-#endif /* STANDALONE */

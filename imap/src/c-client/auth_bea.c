@@ -217,7 +217,7 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
    int i;
    HTTP_PARAM_S params[OAUTH2_PARAM_NUMBER];
    OAUTH2_SERVER_METHOD_S RefreshMethod;
-   char *s = NULL;
+   unsigned char *s = NULL;
    JSON_S *json = NULL;
 
    if(oauth2->param[OA2_Id].value == NULL || oauth2->param[OA2_Secret].value == NULL){
@@ -248,9 +248,8 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
 	s = http_post_param2(RefreshMethod.urlserver, params);
 
      if(s){
-	unsigned char *t, *u;
-	if((t = strstr(s, "\r\n\r\n")) && (u = strchr(t, '{')))
-	   json = json_parse(&u);
+	unsigned char *u = s;
+	json = json_parse(&u);
 	fs_give((void **) &s);
      }
 
@@ -262,17 +261,8 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
 	   oauth2->access_token = cpystr((char *) jx->value);
 
 	jx = json_body_value(json, "expires_in");
-	if(jx){
-	   if(jx->jtype == JString){
-	      unsigned long *l = fs_get(sizeof(unsigned long));
-	      *l = atol((char *) jx->value);
-	      fs_give(&jx->value);
-	      jx->value = (void *) l;
-	      jx->jtype = JLong;
-	   }
-	   if(jx->jtype == JLong)
-	      oauth2->expiration   = time(0) + *(unsigned long *) jx->value;
-	}
+	if(jx && jx->jtype == JString)
+	   oauth2->expiration   = time(0) + atol((char *) jx->value);
 
 	json_free(&json);
      }
@@ -316,9 +306,8 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
 	   s = http_post_param2(RefreshMethod.urlserver, params);
 
         if(s){
-	   unsigned char *t, *u;
-	   if((t = strstr(s, "\r\n\r\n")) && (u = strchr(t, '{')))
-		json = json_parse(&u);
+	   unsigned char *u = s;
+	   json = json_parse(&u);
 	   fs_give((void **) &s);
         }
 
@@ -334,17 +323,9 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
 	      oauth2->access_token = cpystr((char *) jx->value);
 
 	   jx = json_body_value(json, "expires_in");
-	   if(jx){
-	      if(jx->jtype == JString){
-		unsigned long *l = fs_get(sizeof(unsigned long));
-		*l = atol((char *) jx->value);
-		fs_give(&jx->value);
-		jx->value = (void *) l;
-		jx->jtype = JLong;
-	      }
-	      if(jx->jtype == JLong)
-	         oauth2->expiration = time(0) + *(unsigned long *) jx->value;
-	   }
+	   if(jx && jx->jtype == JString)
+	      oauth2->expiration   = time(0) + atol((char *) jx->value);
+
 	   json_free(&json);
 	}
      }
