@@ -103,15 +103,15 @@ void http_add_body(HTTP_REQUEST_S **, unsigned char *);
 void buffer_add(unsigned char **, unsigned char *);
 unsigned char *hex_escape_url_part(unsigned char *, unsigned char *);
 unsigned char *encode_url_body_part(unsigned char *, unsigned char *);
-unsigned char *http_response_from_reply(unsigned char *);
+unsigned char *http_response_from_reply(HTTPSTREAM *);
 
 /* HTTP function prototypes */
 int http_valid_net_parse (unsigned char *, NETMBX *);
 void *http_parameters (long function,void *value);
 
-long http_send (HTTPSTREAM *stream, HTTP_REQUEST_S *);
-long http_reply (HTTPSTREAM *stream);
-long http_fake (HTTPSTREAM *stream, unsigned char *text);
+long http_send (HTTPSTREAM *, HTTP_REQUEST_S *);
+long http_reply (HTTPSTREAM *);
+long http_fake (HTTPSTREAM *, unsigned char *);
 
 void http_skipows(unsigned char **);
 void http_remove_trailing_ows(unsigned char *);
@@ -132,20 +132,31 @@ PARAMETER *http_parse_parameter(unsigned char *, int);
 void http_parse_headers(HTTPSTREAM *);
 
 unsigned char *
-http_response_from_reply(unsigned char *reply)
+http_response_from_reply(HTTPSTREAM *stream)
 {
-  unsigned char *rv, *s, *t;
+  unsigned char *rv = NULL, *s, *t;
 
-  if (reply == NULL
-	|| (s = strstr(reply, "\r\n\r\n")) == NULL
-	|| (t = strstr(s + 4, "\r\n")) == NULL)
-      rv = NULL;
-  else
-      rv = t + 2;
+  if(stream == NULL || stream->reply == NULL || stream->header == NULL) 
+     return rv;
+
+  if(stream->header->content_length){
+     s = strstr(stream->reply, "\r\n\r\n");
+     if(s != NULL) rv = s + 4;
+  }
+  else if (stream->header->transfer_encoding){
+     HTTP_PARAM_LIST_S *p = stream->header->transfer_encoding->p;
+     for(; p ; p = p->next){
+	if(!compare_cstring(p->vp->value, "chunked"))
+	   break;
+     }
+     if(p && p->vp->value){	/* chunked transfer */
+        if((s = strstr(stream->reply, "\r\n\r\n")) != NULL
+	    && (t = strstr(s + 4, "\r\n")) != NULL)
+	rv = t + 2;
+     }
+  }
   return rv;
 }
-
-
 
 void
 http_parse_headers(HTTPSTREAM *stream)
@@ -960,7 +971,7 @@ http_post_param(unsigned char *url, HTTP_PARAM_S *param)
   }
   
   if(http_send(stream, http_request)){
-     unsigned char *s = http_response_from_reply(stream->reply);
+     unsigned char *s = http_response_from_reply(stream);
      response = cpystr(s ? (char *) s : "");
      http_close(stream);
   }
@@ -1001,7 +1012,7 @@ http_post_param2(unsigned char *url, HTTP_PARAM_S *param)
   }
   
   if(http_send(stream, http_request)){
-     unsigned char *s = http_response_from_reply(stream->reply);
+     unsigned char *s = http_response_from_reply(stream);
      response = cpystr(s ? (char *) s : "");
      http_close(stream);
   }
@@ -1043,7 +1054,7 @@ http_get(unsigned char *url)
   http_add_header(&http_request, "Host", stream->urlhost);
   
   if(http_send(stream, http_request)){
-     unsigned char *s = http_response_from_reply(stream->reply);
+     unsigned char *s = http_response_from_reply(stream);
      response = cpystr(s ? (char *) s : "");
      http_close(stream);
   }
@@ -1199,20 +1210,6 @@ http_reply (HTTPSTREAM *stream)
 	}
      }
   }
-
-#if 0
-  while(in_header == 0){
-    if (stream->response) fs_give ((void **) &stream->response);
-    stream->response = (unsigned char *) net_getline (stream->netstream);
-    if(stream->response){
-       buffer_add(&stream->reply, stream->response);
-       buffer_add(&stream->reply, stream->response);
-    }
-    buffer_add(&stream->reply, "\015\012");
-    if(!stream->response  || *stream->response == '\0')
-	in_header--;
-  }
-#endif 
 
   if(!stream->netstream)
     http_fake(stream, "Connection to HTTP server closed");
