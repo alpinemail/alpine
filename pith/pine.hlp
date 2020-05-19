@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 430 2020-05-18 21:46:04
+Alpine Commit 431 2020-05-19 00:50:41
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -1283,8 +1283,7 @@ Bugs addressed in the 1.10(962) release included:
 
 <P>
 Version 1.00
-was an evolutionary release based on
-<A HREF="http://www.washington.edu/pine/">Pine</A>, which was also
+was an evolutionary release based on Pine, which was also
 developed at the University of Washington.
 It is upwards-compatible for existing Pine users.
 
@@ -1331,12 +1330,6 @@ including new version availability, is the web page at
 <CENTER><SAMP><A HREF="http://repo.or.cz/alpine.git">http://repo.or.cz/alpine.git</A></SAMP></CENTER>
 </DD>
 </DL>
-
-Frequently Asked Questions (and answers) may be found at the following
-URL:
-<P>
-<CENTER><SAMP><A HREF="http://www.washington.edu/alpine/faq/">http://www.washington.edu/alpine/faq/</A></SAMP></CENTER>
-<P>
 
 <HR WIDTH="75%"><P>
 
@@ -2352,29 +2345,20 @@ listing of changes in Alpine <!--#echo var="ALPINE_VERSION"-->
 <B>especially</B> if a &quot;problem&quot; you are encountering is actually 
 a change in the way an aspect of Alpine works.  There, you will also find notes 
 on Alpine configuration.<P>
-<!--
   <LI> The main site for Alpine contains information on configuring and solving problems
        with Alpine, it can be found at
 
 <CENTER><A HREF="http://alpine.x10host.com/alpine/">http://alpine.x10host.com/alpine/</A></CENTER>  
--->
-  <LI> The Alpine Information Center (maintained by the University of
-	   Washington) World Wide Web site contains, among other things
-	   <UL>
-	   <LI>a collection of Frequently Asked Questions (and answers!) about Alpine
-	   <LI>an overview of the basics for beginning Alpine users
-	   <LI>Technical Notes for systems administrators
-	   <LI>archives (including a searchable index) of the alpine-info 
-mailing list, on which matters of interest to systems/email administrators,
-developers, trainers, user support personnel, and others involved with Alpine 
-messaging on a &quot;technical&quot; level are discussed.
-</UL>
-	The Alpine Information Center can be accessed with a WWW browser at:<P>
-	    <CENTER><A HREF="http://www.washington.edu/alpine/">http://www.washington.edu/alpine/</A></CENTER>  
+
+  <LI> Archives of the Alpine-info mailing list, at <A 
+href="http://mailman13.u.washington.edu/pipermail/alpine-info/">http://mailman13.u.washington.edu/pipermail/alpine-info/</A>
+
+  <LI>The newsgroup comp.mail.pine.
+
 </UL>
 <P><HR WIDTH="75%">
 <H1>Requesting help</H1>
-If the internal help, the Release Notes, the Alpine Information Center, and your 
+If the internal help, the Release Notes, and your 
 local online and print resources do not help you resolve a problem, please
 start by contacting your local computer support staff and asking for help.
 <p>
@@ -2407,9 +2391,6 @@ employer, ... ; or
 <LI> the person who setup your computer and internet connection.
 </UL>
 
-Due to the large number of Alpine installations worldwide, and because we
-receive no funding for it, the University of Washington <B>cannot provide 
-individual support services outside the University of Washington</B>.
 <P>
 If you have no local computing support to turn to, the worldwide <b>comp.mail.pine</b>
 newsgroup can be a valuable source of information and assistance for Alpine 
@@ -2420,7 +2401,7 @@ personnel, and others involved with Alpine messaging on a &quot;technical&quot;
 level, the mailing list alpine-info is available; for information on
 subscribing and posting to it, see
 <P>
-<CENTER><A HREF="http://www.washington.edu/alpine/alpine-info/subscribing.html">http://www.washington.edu/alpine/alpine-info/subscribing.html</A></CENTER>
+<CENTER><A HREF="https://mailman13.u.washington.edu/mailman/listinfo/alpine-info">https://mailman13.u.washington.edu/mailman/listinfo/alpine-info</A></CENTER>
 <P>
 
 Regardless of whom you are asking for help with Alpine, remember 
@@ -32392,8 +32373,7 @@ terminal with the same Alpine configuration.
 Alpine will know to use color on the color terminal because it is described
 in the termcap entry, and Alpine will know to use black and white on the
 non-color terminal.
-The Alpine Technical Notes
-<CENTER><SAMP><A HREF="http://www.washington.edu/alpine/tech-notes/">http://www.washington.edu/alpine/tech-notes/</A></SAMP></CENTER>
+The Alpine Technical Notes, distributed with the source code of Alpine
 have more information on configuring a TERMCAP or TERMINFO
 entry for color Alpine.
 This is usually something a system administrator does.
