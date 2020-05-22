@@ -79,7 +79,7 @@ typedef struct http_header_data_s {
 
 typedef struct http_status_s {
   char *version;  
-  int   status;  
+  int   code;
   char *text;
 } HTTP_STATUS_S;
 
@@ -103,10 +103,10 @@ typedef struct http_param_s {
 
 /* exported prototypes */
 HTTPSTREAM *http_open (unsigned char *);
-unsigned char *http_post_param(unsigned char *, HTTP_PARAM_S *);
-unsigned char *http_post_param2(unsigned char *, HTTP_PARAM_S *);
-unsigned char *http_get_param(unsigned char *, HTTP_PARAM_S *);
-unsigned char *http_get(unsigned char *);
+unsigned char *http_post_param(unsigned char *, HTTP_PARAM_S *, int *);
+unsigned char *http_post_param2(unsigned char *, HTTP_PARAM_S *, int *);
+unsigned char *http_get_param(unsigned char *, HTTP_PARAM_S *, int *);
+unsigned char *http_get(unsigned char *, int *);
 void http_close (HTTPSTREAM *stream);
 
 HTTP_PARAM_S *http_param_get(int);

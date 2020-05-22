@@ -942,7 +942,7 @@ http_open (unsigned char *url)
 }
 
 unsigned char *
-http_post_param(unsigned char *url, HTTP_PARAM_S *param)
+http_post_param(unsigned char *url, HTTP_PARAM_S *param, int *code)
 {
   HTTPSTREAM *stream;
   HTTP_PARAM_S enc_param;
@@ -950,6 +950,7 @@ http_post_param(unsigned char *url, HTTP_PARAM_S *param)
   unsigned char *response = NULL;
   int i;
 
+  *code = -1;
   if(url == NULL || param == NULL || (stream = http_open(url)) == NULL)
      return response;
 
@@ -973,6 +974,7 @@ http_post_param(unsigned char *url, HTTP_PARAM_S *param)
   if(http_send(stream, http_request)){
      unsigned char *s = http_response_from_reply(stream);
      response = cpystr(s ? (char *) s : "");
+     *code = stream->status ? stream->status->code : -1;
      http_close(stream);
   }
 
@@ -982,7 +984,7 @@ http_post_param(unsigned char *url, HTTP_PARAM_S *param)
 }
 
 unsigned char *
-http_post_param2(unsigned char *url, HTTP_PARAM_S *param)
+http_post_param2(unsigned char *url, HTTP_PARAM_S *param, int *code)
 {
   HTTPSTREAM *stream;
   HTTP_PARAM_S enc_param;
@@ -990,6 +992,7 @@ http_post_param2(unsigned char *url, HTTP_PARAM_S *param)
   unsigned char *response = NULL;
   int i;
 
+  *code = -1;
   if(url == NULL || param == NULL || (stream = http_open(url)) == NULL)
      return response;
 
@@ -1014,6 +1017,7 @@ http_post_param2(unsigned char *url, HTTP_PARAM_S *param)
   if(http_send(stream, http_request)){
      unsigned char *s = http_response_from_reply(stream);
      response = cpystr(s ? (char *) s : "");
+     *code = stream->status ? stream->status->code : -1;
      http_close(stream);
   }
 
@@ -1023,25 +1027,27 @@ http_post_param2(unsigned char *url, HTTP_PARAM_S *param)
 }
 
 unsigned char *
-http_get_param(unsigned char *base_url, HTTP_PARAM_S *param)
+http_get_param(unsigned char *base_url, HTTP_PARAM_S *param, int *code)
 {
   unsigned char *url, *response = NIL;
 
+  *code = -1;
   url = http_get_param_url(base_url, param);
   if(url){
-    response = http_get(url);
+    response = http_get(url, code);
     fs_give((void **) &url);
   }
   return response;
 }
 
 unsigned char *
-http_get(unsigned char *url)
+http_get(unsigned char *url, int *code)
 {  
   HTTP_REQUEST_S *http_request;
   unsigned char *response = NIL;
   HTTPSTREAM *stream;
 
+  *code = -1;
   if(!url) return response;
   stream = http_open(url);
   if(!stream){
@@ -1056,6 +1062,7 @@ http_get(unsigned char *url)
   if(http_send(stream, http_request)){
      unsigned char *s = http_response_from_reply(stream);
      response = cpystr(s ? (char *) s : "");
+     *code = stream->status ? stream->status->code : -1;
      http_close(stream);
   }
 
@@ -1112,7 +1119,7 @@ http_status_line_get(unsigned char *status_line)
 {
    HTTP_STATUS_S *rv = NULL;
    char *version, *s;
-   int status;
+   int code;
 
    if(!status_line) return NIL;
    
@@ -1120,11 +1127,11 @@ http_status_line_get(unsigned char *status_line)
       *s = '\0';
       version = cpystr(status_line);
       *s++ = ' ';
-      status = strtoul(s, &s, 10);
-      if(s && *s == ' ' && status >= 100 && status < 600){
+      code = strtoul(s, &s, 10);
+      if(s && *s == ' ' && code >= 100 && code < 600){
         rv = fs_get(sizeof(HTTP_STATUS_S));
 	rv->version = version;
-	rv->status = status;
+	rv->code = code;
 	rv->text = cpystr(++s);
       }
       else

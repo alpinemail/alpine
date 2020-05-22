@@ -219,6 +219,7 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
    OAUTH2_SERVER_METHOD_S RefreshMethod;
    unsigned char *s = NULL;
    JSON_S *json = NULL;
+   int status = 0;
 
    if(oauth2->param[OA2_Id].value == NULL || oauth2->param[OA2_Secret].value == NULL){
      oauth2clientinfo_t ogci =
@@ -243,9 +244,12 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
      params[i].name = params[i].value = NULL;
 
      if(strcmp(RefreshMethod.name, "POST") == 0)
-	s = http_post_param(RefreshMethod.urlserver, params);
+	s = http_post_param(RefreshMethod.urlserver, params, &status);
      else if(strcmp(RefreshMethod.name, "POST2") == 0)
-	s = http_post_param2(RefreshMethod.urlserver, params);
+	s = http_post_param2(RefreshMethod.urlserver, params, &status);
+
+    if(status != 200 && s)
+      fs_give((void **) &s);	/* at this moment ignore the reply text */
 
      if(s){
 	unsigned char *u = s;
@@ -301,9 +305,12 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
         params[i].name = params[i].value = NULL;
 
         if(strcmp(RefreshMethod.name, "POST") == 0)
-	   s = http_post_param(RefreshMethod.urlserver, params);
+	   s = http_post_param(RefreshMethod.urlserver, params, &status);
 	else if(strcmp(RefreshMethod.name, "POST2") == 0)
-	   s = http_post_param2(RefreshMethod.urlserver, params);
+	   s = http_post_param2(RefreshMethod.urlserver, params, &status);
+
+	if(status != 200 && s)
+	   fs_give((void **) &s);	/* at this moment ignore the error */
 
         if(s){
 	   unsigned char *u = s;
