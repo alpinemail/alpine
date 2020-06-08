@@ -3392,9 +3392,9 @@ IMAPPARSEDREPLY *imap_send_literal (MAILSTREAM *stream,char *tag,char **s,
 	       sprintf (u, (X), (Y));		\
 	       len = strlen(u);			\
 	       if(len < remain){		\
+		 strncpy(t, u, remain);		\
+		 t[remain-1] = '\0';		\
 		 remain -= len;			\
-		 strncpy(t, u, strlen(u));	\
-		 t[strlen(u)] = '\0';		\
 		 t += strlen (t);		\
 	       }				\
 	    }					\
@@ -3409,7 +3409,7 @@ long imap_search_x_gm_ext1 (MAILSTREAM *stream, char *charset, SEARCHPGM *pgm, l
   IMAPPARSEDREPLY *reply;
   unsigned long i,j,k;
   MESSAGECACHE *elt;
-  size_t remain = sizeof(s) - 1, len;
+  size_t remain = sizeof(s), len;
 	
   u[0] = s[0] = '\0';
   t = s;

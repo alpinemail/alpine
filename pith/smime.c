@@ -478,7 +478,7 @@ smime_expunge_cert(WhichCerts ctype)
 	if(SMHOLDERTYPE(ctype) == Directory){
 	  build_path(buf, path, cl->next->name, sizeof(buf));
 	  if(ctype == Private && strlen(buf) + strlen(EXTCERT(Private)) < sizeof(buf)){
-	    strncat(buf, EXTCERT(Private), 4);
+	    strncat(buf, EXTCERT(Private), sizeof(buf) - strlen(buf));
 	    buf[sizeof(buf)-1] = '\0';
 	  }
 
@@ -795,7 +795,7 @@ import_certificate(WhichCerts ctype, PERSONAL_CERT *p_cert, char *fname)
 			
 			if(encrypt_file((char *)tmp, text, pc)){ /* we did it! */
 			   build_path(buf, PATHCERTDIR(ctype), pwdcert->name, sizeof(buf));
-			   strncat(buf, EXTCERT(Private), 4);
+			   strncat(buf, EXTCERT(Private), sizeof(buf) - strlen(buf));
 			   buf[sizeof(buf)-1] = '\0';
 			   if(strcmp(PrivateKeyPath, buf)){
 			      if (unlink(buf) < 0)
@@ -867,7 +867,7 @@ import_certificate(WhichCerts ctype, PERSONAL_CERT *p_cert, char *fname)
 	  if(SMHOLDERTYPE(ctype) == Directory){
 	    build_path(buf, PATHCERTDIR(ctype), filename, sizeof(buf));
 	    if(strcmp(buf + strlen(buf) - 4, EXTCERT(ctype)) != 0 && strlen(buf) + 4 < sizeof(buf)){
-	       strncat(buf, EXTCERT(ctype), 4);
+	       strncat(buf, EXTCERT(ctype), sizeof(buf) - strlen(buf));
 	       buf[sizeof(buf)-1] = '\0';
 	    }
 	    rc = our_copy(buf, full_filename);
@@ -892,7 +892,7 @@ import_certificate(WhichCerts ctype, PERSONAL_CERT *p_cert, char *fname)
 	  if(SMHOLDERTYPE(ctype) == Directory){
 	    build_path(buf, PATHCERTDIR(ctype), filename, sizeof(buf));
 	    if(strcmp(buf + strlen(buf) - 4, ".crt") != 0 && strlen(buf) + 4 < sizeof(buf)){
-	       strncat(buf, EXTCERT(ctype), 4);
+	       strncat(buf, EXTCERT(ctype), sizeof(buf) - strlen(buf));
 	       buf[sizeof(buf)-1] = '\0';
 	    }
 
@@ -1345,7 +1345,7 @@ get_personal_certs(char *path)
 		    pc = (PERSONAL_CERT *) fs_get(sizeof(*pc));
 		    pc->cert = cert;
 		    pc->name = cpystr(buf2);
-		    strncat(buf2, EXTCERT(Public), 4);
+		    strncat(buf2, EXTCERT(Public), sizeof(buf2) - strlen(buf2));
 		    pc->cname = cpystr(buf2);
 
 		    /* Try to load the key with an empty password */
@@ -1631,6 +1631,7 @@ add_file_to_container(WhichCerts ctype, char *fpath, char *altname)
     struct stat sbuf;
     STORE_S *in = NULL;
     int rv = -1; 	/* assume error */
+    size_t clen;	/* content buffer size */
 
     if(our_stat(fpath, &sbuf) < 0 
 	|| (in = so_get(FileStar, fpath, READ_ACCESS | READ_FROM_LOCALE)) == NULL)
@@ -1647,16 +1648,18 @@ add_file_to_container(WhichCerts ctype, char *fpath, char *altname)
       goto endadd;
 
     if(content){
-      fs_resize((void **)&content, strlen(content) + strlen(sep) + strlen(name) + sbuf.st_size + 2*strlen(NEWLINE) + 1); /* 1 = \0*/
+      clen = strlen(content) + strlen(sep) + strlen(name) + sbuf.st_size + 2*strlen(NEWLINE) + 1;
+      fs_resize((void **)&content, clen);
       s = content;
       content += strlen(content);
     }
     else{
-      s = content = fs_get(strlen(sep) + strlen(name) + sbuf.st_size + strlen(NEWLINE) + 1); /* 1 = \0 */
+      clen = strlen(sep) + strlen(name) + sbuf.st_size + strlen(NEWLINE) + 1;
+      s = content = fs_get(clen);
       *content = '\0';
     }
-    strncat(content, sep, strlen(sep));
-    strncat(content, name, strlen(name));
+    strncat(content, sep, clen - strlen(content));
+    strncat(content, name, clen - strlen(content));
     content += strlen(content);
 #ifdef _WINDOWS
     *content++ = '\r';

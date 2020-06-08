@@ -238,10 +238,13 @@ ical_decode(char *text, unsigned short encoding)
 {
   unsigned char *t;
   unsigned long callen;
+  size_t tlen;
   if(encoding == ENCQUOTEDPRINTABLE){
      t = rfc822_qprint ((unsigned char *) text,strlen(text),&callen);
      if(t != NULL){
-       strncpy(text, t, strlen(t));
+       tlen = strlen(text) + 1;
+       strncpy(text, t, tlen);
+       text[tlen - 1] = '\0';
        fs_give((void **) &t);
      }
   }
@@ -260,10 +263,12 @@ ical_remove_escapes(char **textp)
    char *text, *s, *t;
    int rv = 0;
    int escaped;
+   size_t tlen;
 
    if(textp == NULL) return 0;
 
    t = cpystr(*textp); /* work on a copy of the text */
+   tlen = strlen(*textp) + 1; 	/* and record its size */
    /* the variable text below points to the beginning of the filtered text */
    for (text = s = t, escaped = 0; rv == 0 && *s != '\0'; s++){
        if(*s == '\\' && escaped == 0){ 
@@ -292,8 +297,8 @@ ical_remove_escapes(char **textp)
     *t = '\0';	/* tie off filtered text */
     t = text;   /* reset t to the beginning */
     if(rv == 0){
-      strncpy(*textp, t, strlen(t));	/* overwrite given text with filtered text */
-      (*textp)[strlen(t)] = '\0';
+      strncpy(*textp, t, tlen);	/* overwrite given text with filtered text */
+      (*textp)[tlen - 1] = '\0';
     }
     fs_give((void **) &t);
     return rv;
