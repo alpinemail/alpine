@@ -3393,6 +3393,7 @@ goodnight_gracey(struct pine *pine_state, int exit_val)
     free_saved_query_parameters();
 #endif
 
+    html_dir_clean(1);		/* force remove of remaining files */
     free_pine_struct(&pine_state);
 
     free_histlist();

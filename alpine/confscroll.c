@@ -330,6 +330,7 @@ exclude_config_var(struct pine *ps, struct variable *var, int allow_hard_to_conf
       return(!(var->is_user && var->is_used && !var->is_obsolete));
 
     switch(var - ps->vars){
+      case V_HTML_DIRECTORY :
       case V_MAIL_DIRECTORY :
       case V_INCOMING_FOLDERS :
       case V_FOLDER_SPEC :

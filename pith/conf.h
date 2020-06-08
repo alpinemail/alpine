@@ -476,6 +476,8 @@
 #define VAR_PROMPT_BACK_COLOR	     vars[V_PROMPT_BACK_COLOR].current_val.p
 #define VAR_VIEW_HDR_COLORS	     vars[V_VIEW_HDR_COLORS].current_val.l
 #define VAR_INDEX_TOKEN_COLORS	     vars[V_INDEX_TOKEN_COLORS].current_val.l
+#define VAR_HTML_DIRECTORY	     vars[V_HTML_DIRECTORY].current_val.p
+#define GLO_HTML_DIRECTORY	     vars[V_HTML_DIRECTORY].global_val.p
 #ifdef SMIME
 #define VAR_PUBLICCERT_DIR	     vars[V_PUBLICCERT_DIR].current_val.p
 #define GLO_PUBLICCERT_DIR	     vars[V_PUBLICCERT_DIR].global_val.p

@@ -138,6 +138,12 @@ free_pine_struct(struct pine **pps)
     if((*pps)->folders_dir != NULL)
       fs_give((void **)&(*pps)->folders_dir);
 
+    if((*pps)->html_dir != NULL)
+      fs_give((void **)&(*pps)->html_dir);
+
+    if((*pps)->html_dir_list != NULL)
+      free_html_log(&(*pps)->html_dir_list);
+
     if((*pps)->ui.homedir)
       fs_give((void **)&(*pps)->ui.homedir);
 

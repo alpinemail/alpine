@@ -615,6 +615,7 @@ PINEVAR(default-local-fullname, DF_LOCAL_FULLNAME, ["Local Support"], [Default l
 PINEVAR(default-local-address, DF_LOCAL_ADDRESS, [postmaster], [Default local support address])
 PINEVAR(default-keyboard-lock-count, DF_KBLOCK_PASSWD_COUNT, [1], [Default keyboard lock count])
 PINEVAR(default-remote-addressbook-history, DF_REMOTE_ABOOK_HISTORY, [3], [Default address book history count])
+PINEVAR(default-html-directory, DF_HTML_DIRECTORY, [.alpine-html], [Default Directory to Temporarily Save HTML Messages])
 PINEVAR(smime-public-cert-directory, DF_PUBLICCERT_DIR, [.alpine-smime/public], [Default Public Cert Directory])
 PINEVAR(smime-private-key-directory, DF_PRIVATEKEY_DIR, [.alpine-smime/private], [Default Private Key Directory])
 PINEVAR(smime-cacert-directory, DF_CACERT_DIR, [.alpine-smime/ca], [Default Cert Authority Directory])
@@ -2023,6 +2024,7 @@ AC_DEFINE_UNQUOTED([C_FILESEP],'$alpine_path_delim',[File name separator as char
 AC_DEFINE_UNQUOTED([S_FILESEP],"$alpine_path_delim",[File name separator as string constant])
 AC_DEFINE_UNQUOTED([MAILDIR],"$alpine_local_maildir",[Path to local inboxes for pico newmail check])
 AC_DEFINE_UNQUOTED([MODE_READONLY], $alpine_mode_readonly, [File mode used to set readonly access])
+AC_DEFINE_UNQUOTED([HTML_EXT],"html",[Default extension for html files])
 
 dnl c-client make particulars
 AC_SUBST([C_CLIENT_TARGET], $alpine_c_client_target)

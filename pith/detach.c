@@ -202,7 +202,7 @@ detach(MAILSTREAM *stream,		/* c-client stream to use         */
     }
 
     /* convert all text to UTF-8 */
-    if(is_text & !(flags & DT_BINARY)){
+    if(is_text & !(flags & (DT_BINARY | DT_EXTERNAL))){
 	charset = parameter_val(body->parameter, "charset");
 
 	/*
@@ -276,6 +276,11 @@ detach(MAILSTREAM *stream,		/* c-client stream to use         */
 	|| body->type == TYPEMESSAGE 
 	|| body->type == TYPEMULTIPART)
       gf_link_filter(gf_nvtnl_local, NULL);
+
+    if(flags & DT_EXTERNAL){
+	char i = flags & DT_ALLIMAGES ? 'i' : '\0';
+        gf_link_filter(gf_html_cid2file, (void *) &i);
+    }
 
     /*
      * If we're detaching a text segment and a user-defined filter may

@@ -200,6 +200,7 @@ void	   *gf_html2plain_rss_opt(RSS_FEED_S **, int);
 void	    gf_html2plain_rss_free(RSS_FEED_S **);
 void	    gf_html2plain_rss_free_items(RSS_ITEM_S **);
 void	    gf_escape_filter(FILTER_S *, int);
+void	    gf_html_cid2file(FILTER_S *, int);
 void	    gf_control_filter(FILTER_S *, int);
 void	   *gf_control_filter_opt(int *);
 void	    gf_tag_filter(FILTER_S *, int);

@@ -37,6 +37,11 @@ int               prune_move_folder(char *, char *, CONTEXT_S *);
 int               first_run_of_month(void);
 int               first_run_of_year(void);
 struct sm_folder *get_mail_list(CONTEXT_S *, char *);
-
+char		 *html_directory_path(char *, char *, size_t);
+int		  init_html_directory(char *);
+HTML_LOG_S	 *create_html_log(void);
+void		  add_html_log(HTML_LOG_S **, char *);
+void		  free_html_log(HTML_LOG_S **);
+void		  html_dir_clean(int);
 
 #endif /* PITH_INIT_INCLUDED */

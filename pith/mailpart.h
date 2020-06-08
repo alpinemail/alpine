@@ -35,6 +35,9 @@
 /* Is this a VCalendar type? */
 #define	MIME_VCALENDAR(t,s)  ((t) == TYPETEXT && (s) && !strucmp((s),"CALENDAR"))
 
+/* Is this a text/html attachment? */
+#define	TEXT_HTML(t,s)  ((t) == TYPETEXT && (s) && !strucmp((s),"HTML"))
+
 /* Is this a multipart signed? */
 #define	MIME_MULT_SIGNED(t,s)	((t) == TYPEMULTIPART && (s) && !strucmp((s),"signed"))
 

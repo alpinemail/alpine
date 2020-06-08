@@ -31,6 +31,7 @@ static char rcsid[] = "$Id: newmail.c 1266 2009-07-14 18:39:12Z hubert@u.washing
 #include "../pith/options.h"
 #include "../pith/folder.h"
 #include "../pith/ablookup.h"
+#include "../pith/init.h"
 
 #ifdef _WINDOWS
 #include "../pico/osdep/mswin.h"
@@ -102,11 +103,14 @@ new_mail(int force_arg, CheckPointTime time_for_check_point, int flags)
 
     timeo = get_input_timeout();
 
-    if(time_for_check_point == GoodTime)
+    if(time_for_check_point == GoodTime){
       adrbk_maintenance();
+      html_dir_clean(0);
+    }
 
     if(time_for_check_point == GoodTime || force_arg)
       folder_unseen_count_updater(UFU_ANNOUNCE | (force_arg ? UFU_FORCE : 0));
+
 
     if(sp_need_to_rethread(ps_global->mail_stream))
       force = 1;

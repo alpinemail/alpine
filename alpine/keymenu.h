@@ -216,6 +216,7 @@ struct key_menu {
 #define MC_QUOTA	803
 #define MC_ADDHEADER	804
 #define MC_XOAUTH2	805
+#define MC_EXTERNAL	806
 
 
 /* Commands for S/MIME screens */

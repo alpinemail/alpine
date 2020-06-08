@@ -500,6 +500,25 @@ our_rename(char *oldpath, char *newpath)
 #endif /* UNIX */
 }
 
+int
+our_rmdir(char *path)
+{
+#ifdef _WINDOWS
+    LPTSTR p = NULL;
+    int ret = -1;
+
+    p = utf8_to_lptstr((LPSTR) path);
+
+    if(p){
+	ret = _trmdir(p);
+	fs_give((void **) &p);
+    }
+
+    return ret;
+#else /* UNIX */
+    return(rmdir(fname_to_locale(path)));
+#endif /* UNIX */
+}
 
 int
 our_unlink(char *path)

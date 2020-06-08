@@ -720,15 +720,15 @@ int
 scroll_handle_prompt(HANDLE_S *handle, int force)
 {
     char prompt[256], tmp[MAILTMPLEN];
-    int  rc, flags, local_h;
+    int  rc, flags, local_h, external, images;
     static ESCKEY_S launch_opts[] = {
 	/* TRANSLATORS: command names, editURL means user gets to edit a URL if they
 	   want, editApp is edit application where they edit the application used to
 	   view a URL */
 	{'y', 'y', "Y", N_("Yes")},
 	{'n', 'n', "N", N_("No")},
-	{-2, 0, NULL, NULL},
-	{-2, 0, NULL, NULL},
+	{0, 'x', "X", ""},
+	{0, 'i', "I", ""},
 	{0, 'u', "U", N_("editURL")},
 	{0, 'a', "A", N_("editApp")},
 	{-1, 0, NULL, NULL}};
@@ -833,6 +833,25 @@ scroll_handle_prompt(HANDLE_S *handle, int force)
     else
       launch_opts[4].ch = -1;
 
+    if(handle->type == Attach
+	&& handle->h.attach
+	&& handle->h.attach->body
+	&& handle->h.attach->body->type == TYPETEXT
+	&& !strucmp(handle->h.attach->body->subtype, "HTML")){
+        images = F_OFF(F_EXTERNAL_INLINE_IMAGES, ps_global) ? 1 : 0;
+	external = 0;	/* default to not using external viewer, set to 1 to make it default */
+	force = 0;	/* do not open automatically */
+	launch_opts[2].ch = 'x';
+	launch_opts[2].label = external > 0 ? N_("No eXternal") : N_("External");
+	launch_opts[3].ch = external > 0 ? 'i' : -2;
+	launch_opts[3].label = images ? N_("Inline imgs") : N_("All images");
+    }
+    else {
+	launch_opts[2].ch = -2;	/* skip */
+	launch_opts[3].ch = -2;	/* skip */
+	external = images = -1;
+    }
+
     if(force
        || (handle->type == URL
 	   && (!struncmp(handle->h.url.path, "x-alpine-", 9)
@@ -852,13 +871,15 @@ scroll_handle_prompt(HANDLE_S *handle, int force)
 		  (int) MIN(MAX(0,sc - 25), sizeof(prompt)-50), handle->h.url.path+7,
 		  (strlen(handle->h.url.path+7) > MAX(0,sc-25)) ? "..." : "");
 	else
-	  snprintf(prompt, sizeof(prompt), "View selected %s %s%.*s%s ? ",
+	  snprintf(prompt, sizeof(prompt), "View selected %s %s%s%s%.*s%s ? ",
 		  (handle->type == URL) ? "URL" : "Attachment",
+		  external > 0 ? "using external viewer " : "",
+		  external > 0 ? (images > 0 ? "including all images" : "including inline images only") : "",
 		  (handle->type == URL) ? "\"" : "",
-		  (int) MIN(MAX(0,sc-27), sizeof(prompt)-50),
+		  (int) MIN(MAX(0,sc-27-(external ? (images ? 41 : 50) : 0)), sizeof(prompt)-50),
 		  (handle->type == URL) ? handle->h.url.path : "",
 		  (handle->type == URL)
-		    ? ((strlen(handle->h.url.path) > MAX(0,sc-27))
+		    ? ((strlen(handle->h.url.path) > MAX(0,sc-27 - (external ? (images > 0 ? 41 : 50) : 0)))
 			    ? "...\"" : "\"") : "");
 
 	prompt[sizeof(prompt)-1] = '\0';
@@ -866,7 +887,20 @@ scroll_handle_prompt(HANDLE_S *handle, int force)
 	switch(radio_buttons(prompt, -FOOTER_ROWS(ps_global),
 			     launch_opts, 'y', 'n', NO_HELP, RB_SEQ_SENSITIVE)){
 	  case 'y' :
-	    return(1);
+	    return(external > 0 ? (images > 0 ? -2 : -1) : 1);
+
+	 case 'x' :
+	    external = 1 - external;
+	    images = F_OFF(F_EXTERNAL_INLINE_IMAGES, ps_global) ? 1 : 0;
+	    launch_opts[2].label = external > 0 ? N_("No eXternal") : N_("External");
+	    launch_opts[3].ch = external > 0 ? 'i' : -2;
+	    launch_opts[3].label = images ? N_("Inline imgs") : N_("All images");
+	    break;
+
+	 case 'i' :
+	    images = 1 - images;
+	    launch_opts[3].label = images ? N_("Inline imgs") : N_("All images");
+	    break;
 
 	  case 'u' :
 	    strncpy(tmp, handle->h.url.path, sizeof(tmp)-1);
@@ -950,6 +984,7 @@ scroll_handle_prompt(HANDLE_S *handle, int force)
 int
 scroll_handle_launch(HANDLE_S *handle, int force)
 {
+   int flags;
     switch(handle->type){
       case URL :
 	if(handle->h.url.path){
@@ -965,13 +1000,15 @@ scroll_handle_launch(HANDLE_S *handle, int force)
       break;
 
       case Attach :
-	if(scroll_handle_prompt(handle, force))
-	  display_attachment(mn_m2raw(ps_global->msgmap,
-				      mn_get_cur(ps_global->msgmap)),
-			     handle->h.attach, DA_FROM_VIEW | DA_DIDPROMPT);
-	else
-	  return(-1);
-
+	flags = DA_FROM_VIEW | DA_DIDPROMPT;
+	switch(scroll_handle_prompt(handle, force)){
+	   case  1 : break;
+	   case -2 : flags |= DA_ALLIMAGES;
+	   case -1 : flags |= DA_EXTERNAL; break;
+	   default : return -1;
+	}
+	display_attachment(mn_m2raw(ps_global->msgmap,
+			      mn_get_cur(ps_global->msgmap)), handle->h.attach, flags);
 	break;
 
       case Folder :

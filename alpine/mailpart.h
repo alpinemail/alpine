@@ -27,6 +27,8 @@
 #define	DA_FROM_VIEW	0x02		/* see mailpart.c		    */
 #define	DA_RESIZE	0x04
 #define DA_DIDPROMPT    0x08            /* Already prompted to view att     */
+#define DA_EXTERNAL	0x10		/* use external viewer operations   */
+#define DA_ALLIMAGES	0x20		/* external browser displays all images	*/
 
 
 /* exported prototypes */

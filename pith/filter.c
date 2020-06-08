@@ -3228,6 +3228,7 @@ int	html_code(HANDLER_S *, int, int);
 int	html_ins(HANDLER_S *, int, int);
 int	html_del(HANDLER_S *, int, int);
 int	html_abbr(HANDLER_S *, int, int);
+char   *cid_tempfile_name(unsigned char *, long, int *);
 
 /*
  * Protos for RSS 2.0 Tag handlers
@@ -9055,6 +9056,182 @@ gf_html2plain_rss_free_items(RSS_ITEM_S **itemp)
     }
 }
 
+char *
+cid_tempfile_name(unsigned char *line, long n, int *is_cidp)
+{
+    int f2 = 0;
+    int i, found;
+    char *s, *t = NULL, *u;
+    char imgfile[1024];
+    char *extp = NULL;
+
+
+    s = NULL;
+    *is_cidp = 0;
+    if(n > 0){
+	if (line[0] == '\"') f2 = 1;
+	if (n - f2 > 3){
+	   if (!struncmp(line+f2, "cid:", 4)){
+	       *is_cidp = 1;
+	       f2 += 4;
+	       s = fs_get((n - f2 + 4)*sizeof(char));
+	       snprintf(s, n - f2 + 2, "<%s", line+f2);
+	       if (s[strlen(s)-1] == '\"')
+		  s[strlen(s)-1] = '>';
+	       else{
+		  i = strlen(s);
+		  s[i] = '>';
+		  s[i + 1] = '\0';
+	       }
+	    /* find the tmpdir where all these files will be saved to */
+	       if(t == NULL){
+		  for(i = 0; ps_global->atmts[i].tmpdir == NULL && ps_global->atmts[i].description != NULL; i++);
+		   t = ps_global->atmts[i].description ? ps_global->atmts[i].tmpdir : NULL;
+	       }
+
+	    /* now we need to look for s in the list of attachments */
+	       for (i = 0, found = 0; found == 0 && ps_global->atmts[i].description != NULL; i++)
+		    if (ps_global->atmts[i].body
+			&& ps_global->atmts[i].body->type == TYPEIMAGE
+			&& strcmp(ps_global->atmts[i].body->id, s) == 0){
+			found++;
+			break;
+		    }
+
+	       fs_give((void **) &s);
+	       if(found && ps_global->atmts[i].cid_tmpfile == NULL){
+		   PARAMETER *param;
+		   if (ps_global->atmts[i].cid_tmpfile == NULL){
+		      for(param = ps_global->atmts[i].body->parameter; param ; param = param->next){
+		          if (!strucmp(param->attribute, "NAME")){
+			     strncpy(imgfile, param->value, sizeof(imgfile));
+			     imgfile[sizeof(imgfile)-1] = '\0';
+			     extp = strrchr(imgfile, '.');
+			     if(extp) extp++;
+		          }
+		      }
+		      ps_global->atmts[i].cid_tmpfile = temp_nam_ext(t, "tmp-img-", extp);
+		   }
+	       }
+	       if(found && ps_global->atmts[i].cid_tmpfile != NULL)
+		  s = strstr(ps_global->atmts[i].cid_tmpfile, "tmp-img-");
+	   }
+	}
+    }
+    return s;
+}
+
+#define COLLECT(X, C) {						\
+	if((X)->n == buflen){					\
+	   fs_resize((void **) &((X)->line), buflen + 1024);	\
+	   (X)->linep = (X)->line + buflen;			\
+	   buflen += 1024;					\
+	}							\
+	*((X)->linep)++ = (C);					\
+	(X)->n = (X)->linep - (X)->line;			\
+}
+
+#define RESET_FILTER(X) { 					\
+	(X)->linep = (X)->line;					\
+	(X)->n = 0L;						\
+}
+
+void
+gf_html_cid2file(FILTER_S *f, int cmd)
+{
+    register char *p;
+    register unsigned char c;
+    static long buflen = 0L;
+
+    GF_INIT(f, f->next);
+
+    if(cmd == GF_DATA){
+        register int state = f->f1;
+
+	while(GF_GETC(f, c)){
+
+	    if(state == 0){	/* look for "<img " */
+	       if (c == '<') f->f2 = 1;
+	       else if(f->f2 > 0){
+		   if (f->f2 == 1 && (c == 'i' || c == 'I')) f->f2 = 2;
+		   else if (f->f2 == 2 && (c == 'm' || c == 'M')) f->f2 = 3;
+		   else if (f->f2 == 3 && (c == 'g' || c == 'G')) f->f2 = 4;
+		   else if (f->f2 == 4 && HTML_ISSPACE(c)){ f->f2 = 0; state = 1; }
+		   else f->f2 = 0;
+	       }
+	    }
+	    else if(state == 1){	/* look for "src=" */
+		    if (c == 's' || c == 'S') f->f2 = 1;
+		    else if (f->f2 == 1 && (c == 'r' || c == 'R')) f->f2 = 2;
+		    else if (f->f2 == 2 && (c == 'c' || c == 'C')) f->f2 = 3;
+		    else if (f->f2 == 3 && c == '='){ GF_PUTC(f->next, c);  state = 2; }
+		    else if (f->f2 == 3 && !HTML_ISSPACE(c)) f->f2 = 0;
+		    else f->f2 = 0;
+	    }
+	    else if (state == 2){	/* collect all data */
+	        if(HTML_ISSPACE(c) || c == '>'){
+		   long n;
+		   int is_cid;
+		   if(f->n > 0){
+		      char *s = cid_tempfile_name(f->line, f->n, &is_cid);
+		      if(is_cid){
+		        RESET_FILTER(f);
+		        if(s != NULL)
+			  for(; *s != '\0'; s++)
+			    COLLECT(f, *s);
+		     }
+		   }
+		   GF_PUTC(f->next, '\"');
+		   if(is_cid || f->t){
+		      for(p = f->line; f->n; f->n--, p++){
+			 if(*p == '\"') continue;
+		         GF_PUTC(f->next, *p);
+		      }
+		   }
+		   else f->n = 0;
+		   GF_PUTC(f->next, '\"');
+		   GF_PUTC(f->next, c);
+		   state = HTML_ISSPACE(c) ? 1 : 0;
+		   RESET_FILTER(f);
+		}
+		else COLLECT(f, c);	/* collect this data */
+	    }
+
+	    p = f->line;
+	    if(state < 2)
+	       GF_PUTC(f->next, c);
+	}
+
+	f->f1 = state;
+	GF_END(f, f->next);
+    }
+    else if(cmd == GF_EOD){
+	if(f->f1 == 2){
+	   char *s = cid_tempfile_name(f->line, f->n, &f->f2);
+	   GF_PUTC(f->next, '\"');
+	   if (f->f2 || f->t){
+	      for(p = s; *p; p++){
+		 if(*p == '\"') continue;
+		 GF_PUTC(f->next, *p);
+	      }
+	   }
+	   GF_PUTC(f->next, '\"');
+	   GF_PUTC(f->next, '>');
+	}
+
+	buflen = 0;
+	fs_give((void **)&(f->line));	/* free temp line buffer */
+	(void) GF_FLUSH(f->next);
+	(*f->next->f)(f->next, GF_EOD);
+    }
+    else if(cmd == GF_RESET){
+	dprint((9, "-- gf_reset cid2file\n"));
+	f->n = 0L;		/* number of bytes in buffer */
+	f->f1 = 0;		/* state */
+	f->f2 = 0;		/* total number of bytes read that match pattern */
+	f->t  = *(char *)f->opt;
+    }
+}
 
 /* END OF HTML-TO-PLAIN text filter */
 

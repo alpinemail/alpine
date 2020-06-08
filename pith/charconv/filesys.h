@@ -37,6 +37,7 @@ int      our_creat(char *, mode_t);
 int      our_mkdir(char *, mode_t);
 int      our_rename(char *, char *);
 int      our_unlink(char *);
+int	 our_rmdir(char *);
 int      our_link(char *, char *);
 int      our_lstat(char *, struct stat *);
 int      our_chmod(char *, mode_t);

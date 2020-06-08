@@ -105,6 +105,8 @@ CONF_TXT_T cf_text_smtp_server[] =		"List of SMTP servers for sending mail. If b
 
 CONF_TXT_T cf_text_nntp_server[] =		"NNTP server for posting news. Also sets news-collections for news reading.";
 
+CONF_TXT_T cf_html_directory[] =		"Directory used by Alpine to save copies of html messages before they are\n#opened by an external web browser. The default directory is .alpine-html\n# in unix systems and alpine-html in a windows system.";
+
 #ifdef	SMIME
 
 CONF_TXT_T cf_text_publiccertdir[] =		"Public certificates are kept in files in this directory. The files should\n# contain certificates in PEM format. The name of each file should look\n# like <emailaddress>.crt. The default directory is .alpine-smime/public.";
@@ -907,6 +909,8 @@ static struct variable variables[] = {
 	NULL,			cf_text_window_position},
 {"cursor-style",			0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, NULL},
 #endif	/* _WINDOWS */
+{"html-messages-directory",		0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0,
+	NULL,			cf_html_directory},
 #ifdef	SMIME
 {"smime-public-cert-directory",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	"S/MIME - Public Cert Directory",	cf_text_publiccertdir},
@@ -1743,6 +1747,7 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
 #ifdef	DF_VAR_SPELLER
     GLO_SPELLER			= cpystr(DF_VAR_SPELLER);
 #endif
+    GLO_HTML_DIRECTORY		= cpystr(DF_HTML_DIRECTORY);
 #ifdef	SMIME
     if(ps->smimedir){
 	snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%s/public", ps->smimedir);
@@ -2094,6 +2099,7 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
 	  fs_give((void **)&ps_global->vars[V_OPER_DIR].main_user_val.p);
     }
 
+    set_current_val(&vars[V_HTML_DIRECTORY], TRUE, TRUE);
     set_current_val(&vars[V_PERSONAL_PRINT_CATEGORY], TRUE, TRUE);
     ps->printer_category = -1;
     if(VAR_PERSONAL_PRINT_CATEGORY != NULL)
@@ -3026,6 +3032,8 @@ feature_list(int index)
 	 F_VIEW_SEL_URL_HOST, h_config_enable_view_web_host, PREF_VIEW, 1},
 	{"enable-msg-view-forced-arrows", "Enable Message View Forced Arrows",
 	 F_FORCE_ARROWS, h_config_enable_view_arrows, PREF_VIEW, 0},
+	{"external-command-loads-inline-images-only", NULL,
+	 F_EXTERNAL_INLINE_IMAGES, h_external_loads_inline_images_only, PREF_VIEW, 1},
 	/* set to TRUE for windows */
 	{"pass-c1-control-characters-as-is", NULL,
 	 F_PASS_C1_CONTROL_CHARS, h_config_pass_c1_control, PREF_VIEW, 0},

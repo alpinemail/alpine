@@ -787,7 +787,7 @@ struct key att_index_keys[] =
 	HELP_MENU,
 	OTHER_MENU,
 	HDRMODE_MENU,
-	NULL_MENU,
+	{"X",N_("eXternal"),{MC_EXTERNAL,1,{'x'}},KS_NONE},
 	NULL_MENU,
 	NULL_MENU,
 	NULL_MENU,

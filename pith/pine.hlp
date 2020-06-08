@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 432 2020-05-21 21:53:25
+Alpine Commit 433 2020-06-07 20:59:33
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -187,6 +187,16 @@ problems you find with this release.
      authentication. Similar support added for the SMTP, NNTP and POP3 
      protocols. Thanks to Geoffrey Bodwin for a report that lead to this
      implementation.
+
+<LI> Alpine can pass an HTML message to an external web browser, by using the
+     &quot;External&quot; command in the <a href="h_attachment_screen">ATTACHMENT INDEX</a>
+     screen. <A href="h_command_external_browser">Learn more</A>.
+
+<LI> New configuration variable
+     <a href="h_external_loads_inline_images_only"><!--#echo var="FEAT_external-command-loads-inline-images-only"--></a>
+     that controls if Alpine will pass to an external browser a link to all the images in the
+     HTML message, or will only pass a link to inline images included in the message. For your
+     privacy and security this feature is enabled by default.
 
 <LI> New variable system-certs-path that allows users to indicate the 
      location of the directory where certificates are located. In PC-Alpine 
@@ -4340,6 +4350,7 @@ There are also additional details on
 <li><a href="h_config_enable_mouse">FEATURE: <!--#echo var="FEAT_enable-mouse-in-xterm"--></a>
 <li><a href="h_config_enable_view_addresses">FEATURE: <!--#echo var="FEAT_enable-msg-view-addresses"--></a>
 <li><a href="h_config_enable_view_attach">FEATURE: <!--#echo var="FEAT_enable-msg-view-attachments"--></a>
+<li><a href="h_external_loads_inline_images_only">FEATURE: <!--#echo var="FEAT_external-command-loads-inline-images-only"--></a>
 <li><a href="h_config_enable_view_arrows">FEATURE: <!--#echo var="FEAT_enable-msg-view-forced-arrows"--></a>
 <li><a href="h_config_enable_view_url">FEATURE: <!--#echo var="FEAT_enable-msg-view-urls"--></a>
 <li><a href="h_config_enable_view_web_host">FEATURE: <!--#echo var="FEAT_enable-msg-view-web-hostnames"--></a>
@@ -13541,6 +13552,9 @@ Available commands include:
 
 <DT>View</DT>
 <DD>View the currently selected attachment.
+
+<DT>External</DT>
+<DD>Passes a TEXT/HTML message to an external browser for its display.
 
 <DT>Prev Attach</DT>
 <DD>Move to previous attachment.
@@ -30891,6 +30905,48 @@ Ctrl-B key can be used to select the previous web hostnames in the same way.
 &lt;End of help on this topic&gt;
 </BODY>
 </HTML>
+====== h_external_loads_inline_images_only =====
+<HTML>
+<HEAD>
+<TITLE>FEATURE: <!--#echo var="FEAT_external-command-loads-inline-images-only"--></TITLE>
+</HEAD>
+<BODY>
+<H1>FEATURE: <!--#echo var="FEAT_external-command-loads-inline-images-only"--></H1>
+
+Alpine allows you to pass a HTML message to the browser that you have configured in your
+<A HREF="h_config_browser"><!--#echo var="VAR_url-viewers"--></A> variable. This allows
+you to read a message outside of Alpine. This is desirable when Alpine does not display
+html correctly, or when you wish to read the message and see the inline images in the message.
+
+<P>
+An inline image is one that comes with the message and is necessary for the correct display of
+the message. However, there are instances in which the source of an image will come from
+external servers. If this feature is enabled (the default) then Alpine will only pass inline
+images to the browser and will remove the link to external images, so only inline images will
+be used to display the message, and no external image will be loaded. Alpine does this to protect
+your privacy and security.
+
+<P>
+Please note that messages are usually formatted by the sender so that they display correctly once
+all images have been loaded. Enabling this feature might cause the message not to be correctly
+displayed by your browser.
+
+<P>
+Also consider security and privacy implications of opening an HTML message in a browser. You are
+always protected when you do not use this feature, but you might not have the same level of
+protection if you try to open a spam or scam using the html view. Also commercial email is
+normally embedded with links to external images that let them, their partners, and your internet
+service provider (which could be your employer or school)  know that you opened their message or
+connected to a web site, violating your privacy.
+
+<P>
+If you are worried about your privacy and security, do not use an external viewer to open
+html files, and keep using the internal mechanisms that Alpine provides to read messages.
+
+<P>
+&lt;End of help on this topic&gt;
+</BODY>
+<HTML>
 ====== h_config_enable_view_arrows =====
 <HTML>
 <HEAD>
@@ -35594,6 +35650,161 @@ way to capture a copy to each folder.
 depending on whether your mail system delivers one or two copies of the
 message to you and on how the list works.)
 <P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+====== h_command_external_browser =====
+<HTML>
+<HEAD>
+<TITLE>The External Browser Command</TITLE>
+</HEAD>
+<BODY>
+<H1>The External Browser Command</H1>
+
+<P>
+A new command was added to Alpine that allows users to send HTML messages to be displayed
+by a web browser. This is helpful when a user wants to see images in the context of the
+message, or get a better display of the message than Alpine provides.
+
+<P>
+The simplest way to use this command is to do as follows. While reading a message,
+press the &quot;V&quot; to go to the <A href="h_attachment_screen">ATTACHMENT SCREEN</A>.
+In that screen move the cursor until it is on top of a TEXT/HTML attachment and press the
+&quot;X&quot; key. This will make Alpine launch the browser you have configured for
+in the <a href="h_config_browser"><!--#echo var="VAR_url-viewers"--></a> variable, and
+you should be able to read the message in your browser, as well as in Alpine.
+
+<P> If the message you sent to your browser has inline images, then the images attached to
+the message that are necessary for the display of the message are also sent to the browser
+for its display.
+
+<P> The text that follows will explain more details about this command, and is only
+recommended for more advanced users.
+
+<h1><CENTER>Displaying Images</CENTER></h1>
+
+<P> First, we will talk about displaying images in an HTML file. Typically, HTML images
+are displayed as the result of some specific code of the form
+<center>
+<PRE>
+&lt;img src=&quot;...&quot;&gt;,
+</PRE>
+</center>
+where the text between the quotes tells Alpine how to find the image.
+If the source of the image is internal to the message, Alpine passes that image to the
+browser. Otherwise Alpine erases the link to the image. This is done so that
+you can be protected from a bad use of external images. Images can be used to track
+that you read the message, or your location, devices you own, etc.. Since Alpine does
+not open images in any messages, your
+privacy is always protected this way. Therefore, when you do not pass the links to
+external images to a browser, your privacy is being protected. However, doing this
+might make the message not be displayed correctly, since when the message was
+created the images were part of the formatted message, and not having images might make
+this formatting look awkward.
+
+<P> If you would like that Alpine display all images, regardless of their source, and
+regardless of the sender, then you need to disable the feature <a
+href="h_external_loads_inline_images_only"><!--#echo var="FEAT_external-command-loads-inline-images-only"--></a>.
+The message will display as intended, but you will leak information to the sender of the
+message, as well as to your internet service provider, which could be your employer, or
+school, etc.
+
+<P> Alpine provides an alternative mechanism to either send all links to the images to the
+external browser or to send only those that are attached to the message you are trying to
+display. In order to use this mechanism you must first enable
+<a href="h_config_enable_view_attach"><!--#echo var="FEAT_enable-msg-view-attachments"--></a>.
+This allows Alpine to add direct links to each attachments. If you want to send an HTML
+attachment to an external browser, you would place the cursor over the attachment and press
+the &quot;Return&quot; or &quot;Enter&quot; key to open the attachment. When you do that
+you will see a prompt and menu which says
+
+<pre>
+View selected Attachment  ?
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Y [Yes]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X External
+^C Cancel&nbsp;&nbsp;&nbsp;&nbsp;N No
+</pre>
+
+<P>In order to send this message to an external browser, you would press the &quot;X&quot;
+key. This will change the prompt and menu to
+
+<pre>
+View selected Attachment using external viewer including inline images only ?
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Y [Yes]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X No eXternal
+^C Cancel&nbsp;&nbsp;&nbsp;&nbsp;N No&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I All images
+</pre>
+
+<P>This is telling you that if you answer &quot;Yes&quot; to this question, and external
+browser will be used to send this messages, and only inline images, that is, those attached
+in the message will be sent to the browser. If you would like to send all images in
+this case, the menu tells you that you must press the &quot;I&quot; key. Pressing
+that key changes the prompt and menu to
+
+<pre>
+View selected Attachment using external viewer including all images ?
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Y [Yes]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X No eXternal
+^C Cancel&nbsp;&nbsp;&nbsp;&nbsp;N No&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I Inline imgs
+</pre>
+
+<P>and as you can see the prompt says that if you press &quot;Yes&quot; then the message
+will be sent to the browser including the source of all images, including those in
+external servers. Notice that the &quot;X&quot; command now is a toggle. If you
+were to press it now, you would return to the original prompt,
+
+<pre>
+View selected Attachment  ?
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Y [Yes]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X External
+^C Cancel&nbsp;&nbsp;&nbsp;&nbsp;N No
+</pre>
+
+<P>which means that if you answer &quot;Yes&quot; at this time your message would not
+be sent to your external browser for display, unless you have configured a mailcap
+entry to display HTML files.
+
+<P> One of the lessons of this discussion is that if you never press the &quot;X&quot;
+command in the ATTACHMENT SCREEN, and you never press the &quot;X&quot; command when
+launching a viewer for an attachment in the MESSAGE TEXT screen, you will never use this
+mechanism, and Alpine will resort to your already configured mechanisms to open HTML
+text.This means you can live your life without worrying that Alpine will do anything
+different because of this new feature. You do not have to use it, but if you do, you should
+know the risks and advantages and decide when and how to use it.
+
+<h1><CENTER>Saving HTML Messages to Disk</CENTER></h1>
+
+<P>
+No matter what your reason to send a message to an external web browser is, Alpine must
+write your message to a file (and also all related inline images), and point your browser
+to open that file. Alpine saves all your messages and auxiliary images in a subdirectory
+of the ~/.alpine-html directory in unix-like Alpine, or the alpine-html folder in your home
+directory in PC-Alpine. If Alpine cannot access these directories, or create folders
+in them, then the full mechanism described above will fail, and you will not be able
+to send messages to an external browser for display.
+
+<P>
+Unfortunately browsers do not remove the file that Alpine created, nor the images
+that Alpine saved in order to display this message, so if you use this mechanism often
+you will create many directories and files which the browser will not remove. Alpine
+will remove these files when you exit Alpine. Any temporary directory that Alpine
+created that has existed for longer than 10 minutes will be automatically erased.
+Alpine also erases these directories upon exiting.
+
+<P>
+When Alpine creates a directory to house the files associated to a message that will
+pass to an external browser, it tries to delete that directory later on, according to
+the discussion above. What this means is that you should consider the contents of the
+~/.alpine-html directory in unix-like Alpine and the alpine-html folder in PC-Alpine
+as temporary, and not rely on their existence. If you attempt to save files in one of
+these directories, chances are your data will be deleted by Alpine. Since deleting is
+a destructive action,
+every session of Alpine that you have open will only attempt to remove the directories
+it created, with their content in them. If this operation fails, Alpine will not try
+to investigate, nor will report to you, why the opeation failed. Therefore, users
+should periodically check their html directory to see if there is content there that
+they wish to delete.
+
+<P>
+<UL>
+<LI><A HREF="h_finding_help">Finding more information and requesting help</A>
+</UL><P>
 &lt;End of help on this topic&gt;
 </BODY>
 </HTML>

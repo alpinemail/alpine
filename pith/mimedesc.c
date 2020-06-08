@@ -434,6 +434,8 @@ zero_atmts(ATTACH_S *atmts)
     ATTACH_S *a;
 
     for(a = atmts; a->description != NULL; a++){
+	a->tmpdir      = NULL;		/* short lived variabled, cleared right after use */
+	a->cid_tmpfile = NULL;		/* resetting pointer is enough */
 	fs_give((void **)&(a->description));
 	fs_give((void **)&(a->number));
     }

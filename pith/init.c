@@ -544,3 +544,147 @@ prune_move_folder(char *oldpath, char *newpath, CONTEXT_S *prune_cntxt)
 
     return 0;
 }
+
+char *
+html_directory_path(char *sname, char *sbuf, size_t len)
+{
+    *sbuf = '\0';
+    if(sname && *sname){
+	size_t snl = strlen(sname);
+	if(is_absolute_path(sname)){
+	    strncpy(sbuf, sname, len-1);
+	    sbuf[len-1] = '\0';
+	    fnexpand(sbuf, len);
+	}
+	else if(ps_global->VAR_OPER_DIR){
+	    if(strlen(ps_global->VAR_OPER_DIR) + snl < len - 1)
+	      build_path(sbuf, ps_global->VAR_OPER_DIR, sname, len);
+	}
+	else if(strlen(ps_global->home_dir) + snl < len - 1)
+		build_path(sbuf, ps_global->home_dir, sname, len);
+    }
+    return(*sbuf ? sbuf : NULL);
+}
+
+int
+init_html_directory(char *path)
+{
+    int rv;
+    switch(is_writable_dir(path)){
+        case  0: rv = 0; break;
+        case  3: rv = create_mail_dir(path) < 0 ? -1 : 0; break;
+        default: rv = -1; break;
+    }
+    return rv;
+}
+
+HTML_LOG_S *
+create_html_log(void)
+{
+  HTML_LOG_S *rv;
+  rv = fs_get(sizeof(HTML_LOG_S));
+  memset((void *) rv, 0, sizeof(HTML_LOG_S));
+
+  return rv;
+}
+
+void
+add_html_log(HTML_LOG_S **htmlp, char *d)
+{
+  HTML_LOG_S *h;
+
+  for(h = *htmlp; h && h->next; h = h->next);
+
+  if(!h){
+     h = create_html_log();
+     *htmlp = h;
+  }
+  else {
+     h->next = create_html_log();
+     h = h->next;
+  }
+  h->dir       = cpystr(d);
+  h->to_delete = time(0) + 10*60;	/* 10 minutes life */
+}
+
+void
+free_html_log(HTML_LOG_S **htmlp)
+{
+   if (htmlp == NULL || *htmlp == NULL)
+     return;
+
+   if((*htmlp)->dir) fs_give((void **) &(*htmlp)->dir);
+   if((*htmlp)->next) free_html_log(&(*htmlp)->next);
+   fs_give((void **)htmlp);
+}
+
+void
+html_dir_clean(int force)
+{
+  HTML_LOG_S *h, prev, *j;
+  time_t now = time(0);
+  DIR *dirp;
+  struct dirent *d;
+  struct stat sbuf;
+  char fpath[MAXPATH];
+  int delete_happened = 0;
+
+  /* these are barriers to try to not to enter here */
+  if(ps_global->html_dir == NULL
+     || ps_global->html_dir_list == NULL
+     || our_stat(ps_global->html_dir, &sbuf) < 0) return;
+
+  for(h = ps_global->html_dir_list; h; h = h->next){
+     if(force || now >= h->to_delete){	/* the time to delete has come */
+	if(strlen(h->dir) + strlen(ps_global->html_dir) + 3 < MAXPATH){
+	   if(our_stat(h->dir, &sbuf) < 0)
+	     continue;
+	   if((sbuf.st_mode & S_IFMT) == S_IFDIR){
+	      if((dirp = opendir(h->dir)) != NULL){
+	          while ((d = readdir(dirp)) != NULL){
+		     if(!strcmp(d->d_name, ".") || !strcmp(d->d_name, ".."))
+			continue;
+		     if(strlen(h->dir) + strlen(d->d_name) + 3 < MAXPATH){
+			snprintf(fpath, sizeof(fpath) - 1, "%s%s%s", h->dir, S_FILESEP, d->d_name);
+			fpath[sizeof(fpath)-1] = '\0';
+			our_unlink(fpath);
+		     }
+		  }
+		  closedir(dirp);
+	      }
+	      if(!our_rmdir(h->dir)){
+		 h->to_delete = 0;	/* mark it deleted */
+		 delete_happened++;
+	      }
+	   }
+	}
+     }
+  }
+
+  /* remove all deleted directories from the list */
+  if(delete_happened){
+    prev.to_delete = 1;	/* do not free this entry */
+    (&prev)->next = ps_global->html_dir_list;
+    for (j = &prev; j && j->next ; ){
+      if(j->next->to_delete == 0){
+	HTML_LOG_S *k;
+	k = j->next;
+	j->next = k->next;
+	k->next = NULL;
+	free_html_log(&k);
+      }
+      else j = j->next;
+    }
+    ps_global->html_dir_list = (&prev)->next;
+  }
+
+  /* this is wrong, but we do not care if this fails. What this
+   * is trying to do is to the delete the .alpine-html directory
+   * if it is empty. We could test if it is empty by reading the
+   * directory. Instead we will use a weaker test checking if we
+   * have anything else to erase. If we don't, then we try to
+   * erase ps_global->html_dir, and we do not worry if we  fail.
+   */
+  if(ps_global->html_dir_list == NULL)
+     our_rmdir(ps_global->html_dir);
+}

@@ -22,6 +22,6 @@
  * Exported Prototypes
  */
 int	create_mail_dir(char *);
-
+int	create_random_dir(char *, size_t);
 
 #endif /* PITH_OSDEP_CREATDIR_INCLUDED */

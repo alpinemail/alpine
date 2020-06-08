@@ -53,3 +53,45 @@ create_mail_dir(char *dir)
 
     return(0);
 }
+
+
+/*----------------------------------------------------------------------
+      Create random directory
+
+  Args: dir -- Name of the directory that contains the random directory
+	len -- size of dir.
+
+ Result: Directory is created.  Returns 0 on success, else -1 on error
+	 and errno is valid.
+  ----*/
+int
+create_random_dir(char *dir, size_t len)
+{
+    size_t olen, dlen = strlen(dir);
+
+    olen = dlen;	/* save original length */
+
+    if(dir[dlen-1] != C_FILESEP){
+	 dir[dlen++] = C_FILESEP;
+	 dir[dlen] = '\0';
+    }
+
+    if(dlen + 6 < len)
+	strcat(dir, "XXXXXX");
+    else{
+	dir[olen] = '\0';
+	return -1;
+    }
+
+#ifndef _WINDOWS
+    dir = mkdtemp(dir);
+    our_chmod(dir, MAILDIR_MODE);
+
+    /* Some systems need this, on others we don't care if it fails */
+    our_chown(dir, getuid(), getgid());
+#else
+    dir = _mktemp(dir);
+#endif /* !_WINDOWS */
+
+    return(0);
+}

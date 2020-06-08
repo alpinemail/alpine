@@ -55,9 +55,11 @@ extern FETCH_READC_S *g_fr_desc;
  * This lazily gets combined with FT_ flags from c-client so make
  * it different from all those possible values.
  */
-#define DT_NODFILTER   (long) 0x10000
-#define DT_NOINTR      (long) 0x20000
-#define DT_BINARY      (long) 0x40000
+#define DT_NODFILTER   (long) 0x010000
+#define DT_NOINTR      (long) 0x020000
+#define DT_BINARY      (long) 0x040000
+#define DT_EXTERNAL    (long) 0x080000
+#define DT_ALLIMAGES   (long) 0x100000
 
 /* exported prototypes */
 char	   *detach_raw(MAILSTREAM *, long, char *, gf_io_t, int);

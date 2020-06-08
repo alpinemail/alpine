@@ -69,6 +69,7 @@ static char rcsid[] = "$Id: mailpart.c 1074 2008-06-04 00:08:43Z hubert@u.washin
 #include "../pith/smime.h"
 #include "../pith/ical.h"
 #include "../pith/body.h"
+#include "../pith/init.h"
 
 /*
  * Information used to paint and maintain a line on the attachment
@@ -146,6 +147,7 @@ int	    format_msg_att(long, ATTACH_S **, HANDLE_S **, gf_io_t, int);
 void	    display_vcard_att(long, ATTACH_S *, int);
 void	    display_vcalendar_att(long, ATTACH_S *, int);
 void	    display_attach_info(long, ATTACH_S *);
+int	    display_html_external_attachment(long int, ATTACH_S *, int);
 void	    forward_attachment(MAILSTREAM *, long, ATTACH_S *);
 void	    forward_msg_att(MAILSTREAM *, long, ATTACH_S *);
 void	    reply_msg_att(MAILSTREAM *, long, ATTACH_S *);
@@ -538,6 +540,11 @@ attachment_screen(struct pine *ps)
 
 	    }
 
+	    break;
+
+	  case MC_EXTERNAL:
+	       display_html_external_attachment(msgno, current->attp,
+			DA_EXTERNAL | DA_SAVE | (F_OFF(F_EXTERNAL_INLINE_IMAGES, ps_global) ? DA_ALLIMAGES : 0));
 	    break;
 
 	  case MC_EXIT :			/* exit attachment screen */
@@ -1989,6 +1996,158 @@ print_digest_att(long int msgno, ATTACH_S *a)
     }
 }
 
+int
+display_html_external_attachment(long int msgno, ATTACH_S *a, int flags)
+{
+    char    dir_path[MAXPATH+1];
+    char    *filename = NULL;
+    char    *file_path;		/* file:///some/path/ */
+    STORE_S *store;
+    gf_io_t  pc;
+    char    *err;
+    int      we_cancel = 0, saved, errs;
+    char    *tool;
+    ATTACH_S *att;
+    unsigned long rawno;
+
+    if(a->body == NULL){
+	q_status_message(SM_ORDER | SM_DING, 3, 5, _("Attachment has no body!"));
+	return 1;
+    } else if (a->body->type != TYPETEXT
+		|| a->body->subtype == NULL
+		|| strucmp(a->body->subtype, "HTML")){
+	q_status_message(SM_ORDER | SM_DING, 3, 5, _("Not a TEXT/HTML attachment"));
+	return 1;
+    }
+
+    /* zero these variables, just in case. Do not try freeing them. They have short lives */
+    for(att = ps_global->atmts; att->description != NULL; att++){
+	att->cid_tmpfile = NULL;
+	att->tmpdir = NULL;
+    }
+
+    /* setup the environment first */
+    if(!ps_global->html_dir){
+	if(!html_directory_path(ps_global->VAR_HTML_DIRECTORY, dir_path, MAXPATH)){
+	    q_status_message1(SM_ORDER | SM_DING, 3, 5,
+		_("Error creating full path for %s"), ps_global->VAR_HTML_DIRECTORY);
+	    return 1;
+	} else if (init_html_directory(dir_path) < 0){
+		q_status_message1(SM_ORDER | SM_DING, 3, 5, _("Error initializing %s"), dir_path);
+		return 1;
+	}
+	ps_global->html_dir = cpystr(dir_path);
+    }
+    else{
+	strncpy(dir_path, ps_global->html_dir, sizeof(dir_path));
+	dir_path[sizeof(dir_path)-1] = '\0';
+    }
+
+    if(create_random_dir(dir_path, sizeof(dir_path)) < 0){
+	q_status_message1(SM_ORDER | SM_DING, 3, 5, _("Error creating temp dir in %s"), dir_path);
+	return 1;
+    }
+
+    a->tmpdir = cpystr(dir_path);
+    add_html_log(&ps_global->html_dir_list, a->tmpdir);
+
+    /* Process the text/html part */
+    filename = temp_nam_ext(a->tmpdir, "tmp-html-", HTML_EXT);
+
+    if(!filename){
+        q_status_message1(SM_ORDER | SM_DING, 3, 5,
+                          _("Error \"%s\", Can't create temporary file"),
+                          error_description(errno));
+        return(1);
+    }
+
+    if((store = so_get(FileStar, filename, WRITE_ACCESS|OWNER_ONLY)) == NULL){
+        q_status_message2(SM_ORDER | SM_DING, 3, 5,
+                          _("Error \"%s\", Can't write file %s"),
+                          error_description(errno), filename);
+	if(filename){
+	    our_unlink(filename);
+	    fs_give((void **)&filename);
+	}
+        return(1);
+    }
+
+    if(a->body->size.bytes){
+	char msg_buf[128];
+
+	snprintf(msg_buf, sizeof(msg_buf), "Decoding %s%s%s%s",
+		a->description ? "\"" : "",
+		a->description ? a->description : "attachment number ",
+		a->description ? "" : a->number,
+		a->description ? "\"" : "");
+	msg_buf[sizeof(msg_buf)-1] = '\0';
+	we_cancel = init_att_progress(msg_buf, ps_global->mail_stream, a->body);
+    }
+
+    gf_set_so_writec(&pc, store);
+
+    err = detach(ps_global->mail_stream, msgno, a->number, 0L, NULL, pc, NULL,
+			DT_EXTERNAL | ((flags & DA_ALLIMAGES) ? DT_ALLIMAGES : 0));
+
+    gf_clear_so_writec(store);
+
+    if(we_cancel)
+      cancel_busy_cue(0);
+
+    so_give(&store);
+
+    /*----- Download all needed inline attachments ------*/
+    saved = errs = 0;
+    rawno = mn_m2raw(ps_global->msgmap, msgno);
+    for (att = ps_global->atmts; rawno > 0 && att->description != NULL; att++){
+        if(att->cid_tmpfile){
+	    if(write_attachment_to_file(ps_global->mail_stream, rawno,
+					att, GER_NONE, att->cid_tmpfile) == 1)
+                  saved++;
+                else
+                  errs++;
+	    fs_give((void **) &att->cid_tmpfile);
+	}
+	if(att->tmpdir)
+	   fs_give((void **) &att->tmpdir);
+    }
+
+    if(err){
+	q_status_message2(SM_ORDER | SM_DING, 3, 5,
+		     "%s: Error saving image to temp file %s",
+		     err, filename);
+	if(filename){
+	    our_unlink(filename);
+	    fs_give((void **)&filename);
+	}
+	return(1);
+    }
+
+    tool = get_url_external_handler("http://", 1);
+    if(tool == NULL) tool = get_url_external_handler("http://", 0);
+    if(tool == NULL) tool = get_url_external_handler("https://", 1);
+    if(tool == NULL) tool = get_url_external_handler("https://", 0);
+
+    file_path = fs_get((strlen(filename) + strlen("file://") + 1)*sizeof(char));
+    sprintf(file_path, "file://%s", filename);
+
+    /*----- Run the viewer process ----*/
+    if(do_url_launch(tool, file_path) == 0)
+	q_status_message(SM_ORDER, 3, 3, "Opened message in external browser");
+    else
+	q_status_message(SM_ORDER|SM_DING, 3, 5, "Failed to open message in external browser");
+
+    if(filename)
+      fs_give((void **)&filename);
+
+    if(file_path)
+      fs_give((void **)&file_path);
+
+    ps_global->mangled_screen = 1;
+
+    return(0);
+}
+
 
 /*----------------------------------------------------------------------
   Unpack and display the given attachment associated with given message no.
@@ -2011,6 +2170,9 @@ display_attachment(long int msgno, ATTACH_S *a, int flags)
     char     prefix[70];
     char     ext[32];
     char     mtype[128];
+
+    if(flags & DA_EXTERNAL)
+	return display_html_external_attachment(msgno, a, flags);
 
     /*------- Display the attachment -------*/
     if(dispatch_attachment(a) == MCD_NONE){
