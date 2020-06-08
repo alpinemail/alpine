@@ -715,9 +715,7 @@ main(int argc, char **argv)
 	   }
 
 	   if(max_v > 0 && max_v < (long) pith_ssl_encryption_version("tls1")){
-	      snprintf(tmp_20k_buf, SIZEOF_20KBUF,
-		_("Security alert: SSL maximum encryption version was set to SSLv3."),
-		   ps_global->VAR_ENCRYPTION_RANGE);
+	      strncpy(tmp_20k_buf, _("Security alert: SSL maximum encryption version was set to SSLv3."), SIZEOF_20KBUF);
 	      tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
 	      init_error(ps_global, SM_ORDER | SM_DING, 3, 5, tmp_20k_buf);
 	   } 

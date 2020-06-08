@@ -243,7 +243,7 @@ ical_decode(char *text, unsigned short encoding)
      t = rfc822_qprint ((unsigned char *) text,strlen(text),&callen);
      if(t != NULL){
        tlen = strlen(text) + 1;
-       strncpy(text, t, tlen);
+       strncpy(text, (char *) t, tlen);
        text[tlen - 1] = '\0';
        fs_give((void **) &t);
      }

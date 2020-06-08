@@ -1941,7 +1941,7 @@ typedef struct OA2_param_s {
    
 typedef struct OA2_serverparam_s {
   char *name;         /* method name: GET or POST */
-  char *urlserver;
+  unsigned char *urlserver;
   OA2_type params[OAUTH2_PARAM_NUMBER];
 } OAUTH2_SERVER_METHOD_S;
 
@@ -1955,6 +1955,5 @@ typedef struct oauth2_s {
    unsigned long expiration;
 } OAUTH2_S;
 
-typedef char *(*oauth2getaccesscode_t) (char *, char *, OAUTH2_S *, int *);
-typedef void (*oauth2clientinfo_t)(char *name, char **id, char **secret);
-
+typedef char *(*oauth2getaccesscode_t) (unsigned char *, char *, OAUTH2_S *, int *);
+typedef void (*oauth2clientinfo_t)(unsigned char *name, char **id, char **secret);

@@ -48,19 +48,19 @@ char *oauth2_generate_state(void)
 
   rv[0] = '\0';
   for(i = 0; i < 4; i++)
-     sprintf(rv + strlen(rv), "%x", random() % 256);
+     sprintf(rv + strlen(rv), "%x", (unsigned int) (random() % 256));
   sprintf(rv + strlen(rv), "%c", '-');
   for(i = 0; i < 2; i++)
-     sprintf(rv + strlen(rv), "%x", random() % 256);
+     sprintf(rv + strlen(rv), "%x", (unsigned int) (random() % 256));
   sprintf(rv + strlen(rv), "%c", '-');
   for(i = 0; i < 2; i++)
-     sprintf(rv + strlen(rv), "%x", random() % 256);
+     sprintf(rv + strlen(rv), "%x", (unsigned int) (random() % 256));
   sprintf(rv + strlen(rv), "%c", '-');
   for(i = 0; i < 2; i++)
-     sprintf(rv + strlen(rv), "%x", random() % 256);
+     sprintf(rv + strlen(rv), "%x", (unsigned int) (random() % 256));
   sprintf(rv + strlen(rv), "%c", '-');
   for(i = 0; i < 6; i++)
-     sprintf(rv + strlen(rv), "%x", random() % 256);
+     sprintf(rv + strlen(rv), "%x", (unsigned int) (random() % 256));
   rv[36] = '\0';
   return cpystr(rv);
 }
@@ -287,7 +287,7 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
      params[i].name = params[i].value = NULL;
 
      if(strcmp(RefreshMethod.name, "GET") == 0){
-	char *url = http_get_param_url(RefreshMethod.urlserver, params);
+	unsigned char *url = http_get_param_url(RefreshMethod.urlserver, params);
 	oauth2getaccesscode_t ogac = 
 	(oauth2getaccesscode_t) mail_parameters (NIL, GET_OA2CLIENTGETACCESSCODE, NIL);
 

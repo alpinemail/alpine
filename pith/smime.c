@@ -478,7 +478,7 @@ smime_expunge_cert(WhichCerts ctype)
 	if(SMHOLDERTYPE(ctype) == Directory){
 	  build_path(buf, path, cl->next->name, sizeof(buf));
 	  if(ctype == Private && strlen(buf) + strlen(EXTCERT(Private)) < sizeof(buf)){
-	    strncat(buf, EXTCERT(Private), sizeof(buf) - strlen(buf));
+	    strncat(buf, EXTCERT(Private), sizeof(buf) - strlen(buf)-1);
 	    buf[sizeof(buf)-1] = '\0';
 	  }
 
@@ -867,7 +867,7 @@ import_certificate(WhichCerts ctype, PERSONAL_CERT *p_cert, char *fname)
 	  if(SMHOLDERTYPE(ctype) == Directory){
 	    build_path(buf, PATHCERTDIR(ctype), filename, sizeof(buf));
 	    if(strcmp(buf + strlen(buf) - 4, EXTCERT(ctype)) != 0 && strlen(buf) + 4 < sizeof(buf)){
-	       strncat(buf, EXTCERT(ctype), sizeof(buf) - strlen(buf));
+	       strncat(buf, EXTCERT(ctype), sizeof(buf) - strlen(buf) -1);
 	       buf[sizeof(buf)-1] = '\0';
 	    }
 	    rc = our_copy(buf, full_filename);
@@ -892,7 +892,7 @@ import_certificate(WhichCerts ctype, PERSONAL_CERT *p_cert, char *fname)
 	  if(SMHOLDERTYPE(ctype) == Directory){
 	    build_path(buf, PATHCERTDIR(ctype), filename, sizeof(buf));
 	    if(strcmp(buf + strlen(buf) - 4, ".crt") != 0 && strlen(buf) + 4 < sizeof(buf)){
-	       strncat(buf, EXTCERT(ctype), sizeof(buf) - strlen(buf));
+	       strncat(buf, EXTCERT(ctype), sizeof(buf) - strlen(buf) - 1);
 	       buf[sizeof(buf)-1] = '\0';
 	    }
 
@@ -1345,7 +1345,7 @@ get_personal_certs(char *path)
 		    pc = (PERSONAL_CERT *) fs_get(sizeof(*pc));
 		    pc->cert = cert;
 		    pc->name = cpystr(buf2);
-		    strncat(buf2, EXTCERT(Public), sizeof(buf2) - strlen(buf2));
+		    strncat(buf2, EXTCERT(Public), sizeof(buf2) - strlen(buf2) - 1);
 		    pc->cname = cpystr(buf2);
 
 		    /* Try to load the key with an empty password */

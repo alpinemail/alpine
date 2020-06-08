@@ -21,7 +21,7 @@
 /* exported prototypes */
 void	alpine_xoauth2_configuration(struct pine *, int);
 void	xoauth_parse_client_info(char *, char **, char **, char **);
-void	oauth2_get_client_info(char *, char **, char **);
+void	oauth2_get_client_info(unsigned char *, char **, char **);
 char	*xoauth_config_line(char *, char *, char *);
 
 #endif /* XOAUTH2_CONFIG */

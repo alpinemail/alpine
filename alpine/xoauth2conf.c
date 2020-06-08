@@ -63,7 +63,7 @@ xoauth_config_line(char *server, char *id, char *secret)
  * else return default values.
  */
 void
-oauth2_get_client_info(char *name, char **id, char **secret)
+oauth2_get_client_info(unsigned char *name, char **id, char **secret)
 {
   int i;
   char **lval, *name_lval, *idp, *secretp;

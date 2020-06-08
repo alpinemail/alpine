@@ -1118,7 +1118,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 
 		    if((status = fexist(child, "w", (off_t *)NULL)) == FIOSUC){
 			snprintf(tmp, sizeof(tmp), _("%s \"%.*s\" already exists!"),
-				NLINE - 20, add_file > 0 ? "File" : "Directory", child);
+				add_file > 0 ? "File" : "Directory", NLINE - 20, child);
 			emlwrite(tmp, NULL);
 			break;
 		    }

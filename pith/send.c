@@ -4297,7 +4297,7 @@ pine_rfc822_output_body(struct mail_bodystruct *body, soutr_t f, void *s)
 #ifdef SMIME
 	if(ps_global->smime && ps_global->smime->do_sign 
 	    && strlen(tmp) < sizeof(tmp)-2)
-	  strncat(tmp, "\015\012", sizeof(tmp) - strlen(tmp));
+	  strncat(tmp, "\015\012", sizeof(tmp) - strlen(tmp) - 1);
 #endif
 	if(lmc.so && !lmc.all_written){
 	    so_puts(lmc.so, t);

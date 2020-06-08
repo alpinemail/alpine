@@ -200,7 +200,7 @@ typedef struct auth_code_s {
 } AUTH_CODE_S;
 
 char *
-oauth2_get_access_code(char *url, char *method, OAUTH2_S *oauth2, int *tryanother)
+oauth2_get_access_code(unsigned char *url, char *method, OAUTH2_S *oauth2, int *tryanother)
 {
    char tmp[MAILTMPLEN];
    char *code;

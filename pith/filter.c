@@ -3228,7 +3228,7 @@ int	html_code(HANDLER_S *, int, int);
 int	html_ins(HANDLER_S *, int, int);
 int	html_del(HANDLER_S *, int, int);
 int	html_abbr(HANDLER_S *, int, int);
-char   *cid_tempfile_name(unsigned char *, long, int *);
+char   *cid_tempfile_name(char *, long, int *);
 
 /*
  * Protos for RSS 2.0 Tag handlers
@@ -9057,7 +9057,7 @@ gf_html2plain_rss_free_items(RSS_ITEM_S **itemp)
 }
 
 char *
-cid_tempfile_name(unsigned char *line, long n, int *is_cidp)
+cid_tempfile_name(char *line, long n, int *is_cidp)
 {
     int f2 = 0;
     int i, found;
@@ -9086,7 +9086,7 @@ cid_tempfile_name(unsigned char *line, long n, int *is_cidp)
 	    /* find the tmpdir where all these files will be saved to */
 	       if(t == NULL){
 		  for(i = 0; ps_global->atmts[i].tmpdir == NULL && ps_global->atmts[i].description != NULL; i++);
-		   t = ps_global->atmts[i].description ? ps_global->atmts[i].tmpdir : NULL;
+		  t = ps_global->atmts[i].description ? ps_global->atmts[i].tmpdir : NULL;
 	       }
 
 	    /* now we need to look for s in the list of attachments */
@@ -9156,7 +9156,7 @@ gf_html_cid2file(FILTER_S *f, int cmd)
 		   if (f->f2 == 1 && (c == 'i' || c == 'I')) f->f2 = 2;
 		   else if (f->f2 == 2 && (c == 'm' || c == 'M')) f->f2 = 3;
 		   else if (f->f2 == 3 && (c == 'g' || c == 'G')) f->f2 = 4;
-		   else if (f->f2 == 4 && HTML_ISSPACE(c)){ f->f2 = 0; state = 1; }
+		   else if (f->f2 == 4 && ASCII_ISSPACE(c)){ f->f2 = 0; state = 1; }
 		   else f->f2 = 0;
 	       }
 	    }
@@ -9165,11 +9165,11 @@ gf_html_cid2file(FILTER_S *f, int cmd)
 		    else if (f->f2 == 1 && (c == 'r' || c == 'R')) f->f2 = 2;
 		    else if (f->f2 == 2 && (c == 'c' || c == 'C')) f->f2 = 3;
 		    else if (f->f2 == 3 && c == '='){ GF_PUTC(f->next, c);  state = 2; }
-		    else if (f->f2 == 3 && !HTML_ISSPACE(c)) f->f2 = 0;
+		    else if (f->f2 == 3 && !ASCII_ISSPACE(c)) f->f2 = 0;
 		    else f->f2 = 0;
 	    }
 	    else if (state == 2){	/* collect all data */
-	        if(HTML_ISSPACE(c) || c == '>'){
+	        if(ASCII_ISSPACE(c) || c == '>'){
 		   long n;
 		   int is_cid;
 		   if(f->n > 0){
@@ -9191,7 +9191,7 @@ gf_html_cid2file(FILTER_S *f, int cmd)
 		   else f->n = 0;
 		   GF_PUTC(f->next, '\"');
 		   GF_PUTC(f->next, c);
-		   state = HTML_ISSPACE(c) ? 1 : 0;
+		   state = ASCII_ISSPACE(c) ? 1 : 0;
 		   RESET_FILTER(f);
 		}
 		else COLLECT(f, c);	/* collect this data */

@@ -621,7 +621,7 @@ lisblank(LINE *line)
     for(; n < llength(line); n++)
       if(!ucs4_isspace(lgetc(line, n).c) 
 	  || lgetc(line, n).c >= 0xff 
-	  || (unsigned char) lgetc(line,n).c != NBSPC)
+	  || (unsigned char) lgetc(line,n).c != (unsigned char) NBSPC)
 	return(FALSE);
 
     return(TRUE);
