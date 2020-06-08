@@ -118,6 +118,12 @@
 /* Default configuration value */
 #define DF_USE_ONLY_DOMAIN_NAME "no"
 
+/* Default configuration value */
+#define DF_HTML_DIRECTORY "alpine-html"
+
+/* Default extension for html files */
+#define HTML_EXT "htm"
+
 /* Define enable dmalloc debugging */
 /* #undef ENABLE_DMALLOC */
 

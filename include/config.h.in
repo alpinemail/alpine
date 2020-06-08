@@ -79,6 +79,9 @@
 #undef DF_HEADER_IN_REPLY
 
 /* Default configuration value */
+#undef DF_HTML_DIRECTORY
+
+/* Default configuration value */
 #undef DF_KBLOCK_PASSWD_COUNT
 
 /* Default configuration value */
@@ -469,6 +472,9 @@
 /* Define to 1 if `vfork' works. */
 #undef HAVE_WORKING_VFORK
 
+/* Default extension for html files */
+#undef HTML_EXT
+
 /* Default configuration value */
 #undef INBOX_NAME
 
@@ -478,8 +484,7 @@
 /* Enable keyboard lock support */
 #undef KEYBOARD_LOCK
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #undef LT_OBJDIR
 
 /* Path to local inboxes for pico newmail check */

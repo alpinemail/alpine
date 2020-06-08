@@ -900,7 +900,7 @@ with_default_local_fullname
 with_default_local_address
 with_default_keyboard_lock_count
 with_default_remote_addressbook_history
-with_html_messages_directory
+with_default_html_directory
 with_smime_public_cert_directory
 with_smime_private_key_directory
 with_smime_cacert_directory
@@ -1729,7 +1729,7 @@ Optional Packages:
                           Default keyboard lock count (1)
   --with-default-remote-addressbook-history=VALUE
                           Default address book history count (3)
-  --with-html-messages-directory=VALUE
+  --with-default-html-directory=VALUE
                           Default Directory to Temporarily Save HTML Messages
                           (.alpine-html)
   --with-smime-public-cert-directory=VALUE
@@ -17779,9 +17779,9 @@ _ACEOF
 
     dpv=.alpine-html
 
-# Check whether --with-html-messages-directory was given.
-if test "${with_html_messages_directory+set}" = set; then :
-  withval=$with_html_messages_directory;
+# Check whether --with-default-html-directory was given.
+if test "${with_default_html_directory+set}" = set; then :
+  withval=$with_default_html_directory;
 	if test "x$withval" != "xno" ; then
 	  dpv=$withval
 	fi
