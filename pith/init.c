@@ -623,10 +623,16 @@ html_dir_clean(int force)
 {
   HTML_LOG_S *h, prev, *j;
   time_t now = time(0);
+#ifndef _WINDOWS
   DIR *dirp;
   struct dirent *d;
+#else
+  struct _finddata_t dbuf;
+  char buf[_MAX_PATH + 4];
+  long findrv;
+#endif /* _WINDOWS */
   struct stat sbuf;
-  char fpath[MAXPATH];
+  char fpath[MAXPATH], *fname;
   int delete_happened = 0;
 
   /* these are barriers to try to not to enter here */
@@ -640,18 +646,32 @@ html_dir_clean(int force)
 	   if(our_stat(h->dir, &sbuf) < 0)
 	     continue;
 	   if((sbuf.st_mode & S_IFMT) == S_IFDIR){
+#ifndef _WINDOWS
 	      if((dirp = opendir(h->dir)) != NULL){
 	          while ((d = readdir(dirp)) != NULL){
-		     if(!strcmp(d->d_name, ".") || !strcmp(d->d_name, ".."))
+		     fname = d->d_name;
+#else /* _WINDOWS */
+	      snprintf(buf, sizeof(buf), "%s%s*.*", ps_global->html_dir, (ps_global->html_dir[strlen(ps_global->html_dir)-1] == '\\') ? "" : "\\");
+	      buf[sizeof(buf)-1] = '\0';
+	      if((findrv = _findfirst(buf, &dbuf)) < 0)
+		  return;
+	      do {
+		     fname = fname_to_utf8(dbuf.name);
+#endif /* _WINDOWS */
+		     if(!strcmp(fname, ".") || !strcmp(fname, ".."))
 			continue;
-		     if(strlen(h->dir) + strlen(d->d_name) + 3 < MAXPATH){
-			snprintf(fpath, sizeof(fpath) - 1, "%s%s%s", h->dir, S_FILESEP, d->d_name);
+		     if(strlen(h->dir) + strlen(fname) + 3 < MAXPATH){
+			snprintf(fpath, sizeof(fpath) - 1, "%s%s%s", h->dir, S_FILESEP, fname);
 			fpath[sizeof(fpath)-1] = '\0';
 			our_unlink(fpath);
 		     }
+#ifndef _WINDOWS
 		  }
 		  closedir(dirp);
 	      }
+#else /* _WINDOWS */
+	      } while(_findnext(findrv, &dbuf) == 0);
+#endif /* _WINDOWS */
 	      if(!our_rmdir(h->dir)){
 		 h->to_delete = 0;	/* mark it deleted */
 		 delete_happened++;

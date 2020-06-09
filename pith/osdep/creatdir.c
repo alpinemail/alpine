@@ -90,7 +90,15 @@ create_random_dir(char *dir, size_t len)
     /* Some systems need this, on others we don't care if it fails */
     our_chown(dir, getuid(), getgid());
 #else
-    dir = _mktemp(dir);
+    {	int i;
+	char *s = &dir[strlen(dir) - 6];
+	for(i = 0; i < 10; i++){
+	   sprintf(s, "%x%x%x", (unsigned int)(random() % 256), (unsigned int)(random() % 256),
+			     (unsigned int)(random() % 256));
+	   if(our_mkdir(dir, 0700) == 0) return dir;
+	}
+	*dir = '\0';	/* if we are here, we failed! */
+     }
 #endif /* !_WINDOWS */
 
     return(0);
