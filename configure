@@ -1582,7 +1582,7 @@ Optional Features:
   --disable-optimization  Exclude optimizing compiler flags
   --disable-mouse         Disable mouse support
   --enable-quotas         Enable disk quota checking on startup
-  --disable-from-changing Disallow users changing From addresss
+  --disable-from-changing Disallow users changing From address
   --disable-background-post
                           Disable background posting
   --disable-keyboard-lock Disable keyboard locking
@@ -18580,7 +18580,7 @@ fi
 
 
 	if test "x$alpine_CRYPTO_DEVEL" = "xnone" ; then
-	   as_fn_error $? "crypto library file crypto.h NOT found. Install correspoding libcrypt-devel package" "$LINENO" 5
+	   as_fn_error $? "crypto library file crypto.h NOT found. Install corresponding libcrypt-devel package" "$LINENO" 5
 	   exit 1
 	fi
 	;;

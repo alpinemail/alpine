@@ -436,7 +436,7 @@ EditProc (HWND hEdit, UINT msg, WPARAM wParam, LPARAM lParam)
 	if (ProcessChar (hDlg, wParam, &gOEInfo, &ret)) 
 	     return (ret);
         
-        /* No... Fall through for deault processing. */
+        /* No... Fall through for default processing. */
     }
 
     return (CallWindowProc (gpOldEditProc, hEdit, msg, wParam, lParam));

@@ -5427,7 +5427,7 @@ John: on a job well done!
           early in the posting process intended to cause the server SMTP
           to provide a more detailed account of the transaction. This
           feature is typically only useful to system administrators and
-          other support personnel as an aid in troublshooting problems.
+          other support personnel as an aid in troubleshooting problems.
           Note, this feature relies on a specific capability of the
           system's mail transport agent or configured smtp-server.
    _expanded-view-of-addressbooks_

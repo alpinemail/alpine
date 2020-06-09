@@ -360,7 +360,7 @@ setup_certs_backup_by_type(WhichCerts ctype)
 	     if(len < MAXPATH){
 		snprintf(buf2, len, "%s%s%s.%s", p, S_FILESEP, clname, cl->data.md5);
 		buf2[sizeof(buf2)-1] = '\0';
-		done = 0;	/* recycle done: it means we have a file that may be a certifificate*/
+		done = 0;	/* recycle done: it means we have a file that may be a certificate*/
 		if(stat(buf2, &sbuf) < 0){
 		  if (our_copy(buf2, buf) == 0)
 		     done++;

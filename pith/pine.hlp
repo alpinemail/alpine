@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 436 2020-06-08 17:19:02
+Alpine Commit 437 2020-06-08 19:26:03
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -194,7 +194,7 @@ problems you find with this release.
 
 <LI> New configuration variable
      <a href="h_external_loads_inline_images_only"><!--#echo var="FEAT_external-command-loads-inline-images-only"--></a>
-     that controls if Alpine will pass to an external browser a link to all the images in the
+     that controls if Alpine will keep the source link to all the images in the
      HTML message, or will only pass a link to inline images included in the message. For your
      privacy and security this feature is enabled by default.
 
@@ -208,8 +208,8 @@ problems you find with this release.
      to be used to validate certificates of remote servers.
 
 <LI> Remove sleep of 5 seconds for mailcap programs that use the terminal
-     to display content. Suggested by Carl Edquist. In addition to remove
-     configurable process table command and it corresponding sleep time.
+     to display content. Suggested by Carl Edquist. In addition, remove
+     configurable process table command and its corresponding sleep time.
 </UL>
 
 <P>
@@ -31231,7 +31231,7 @@ This feature controls an aspect of Alpine's message sending.  When enabled,
 Alpine will send a VERB (i.e., VERBose) command early in the posting process
 intended to cause the SMTP server to provide a more detailed account of
 the transaction.  This feature is typically only useful to system
-administrators and other support personnel as an aid in troublshooting
+administrators and other support personnel as an aid in troubleshooting
 problems.
 <P>
 Note, this feature relies on a specific capability of the system's mail
@@ -35797,7 +35797,7 @@ these directories, chances are your data will be deleted by Alpine. Since deleti
 a destructive action,
 every session of Alpine that you have open will only attempt to remove the directories
 it created, with their content in them. If this operation fails, Alpine will not try
-to investigate, nor will report to you, why the opeation failed. Therefore, users
+to investigate, nor will report to you, why the operation failed. Therefore, users
 should periodically check their html directory to see if there is content there that
 they wish to delete.
 

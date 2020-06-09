@@ -1,4 +1,4 @@
-dnl Process this file with autoconf to produce a configure script.
+dbl Process this file with autoconf to produce a configure script.
 
 dnl /* ========================================================================
 dnl  * Copyright 2013-2020 Eduardo Chappa
@@ -267,7 +267,7 @@ else
 fi
 
 AC_MSG_CHECKING([option: From changing enabled])
-AC_ARG_ENABLE(from_changing, AS_HELP_STRING([--disable-from-changing],[Disallow users changing From addresss]))
+AC_ARG_ENABLE(from_changing, AS_HELP_STRING([--disable-from-changing],[Disallow users changing From address]))
 if test x$enable_from_changing != "xno" ; then
   AC_MSG_RESULT([yes])
 else
@@ -1553,7 +1553,7 @@ if test "x$alpine_SSLTYPE" != "xnone" ; then
     *-*-cygwin)
 	AC_CHECK_HEADER(crypto.h, , [ alpine_CRYPTO_DEVEL="none" ])
 	if test "x$alpine_CRYPTO_DEVEL" = "xnone" ; then
-	   AC_MSG_ERROR(crypto library file crypto.h NOT found. Install correspoding libcrypt-devel package)
+	   AC_MSG_ERROR(crypto library file crypto.h NOT found. Install corresponding libcrypt-devel package)
 	   exit 1
 	fi
 	;;

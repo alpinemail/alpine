@@ -6148,7 +6148,7 @@ void mail_free_quotalist (QUOTALIST **ql)
   }
 }
 
-/* Link authenicator
+/* Link authenticator
  * Accepts: authenticator to add to list
  */
 
