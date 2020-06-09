@@ -45,6 +45,7 @@ static char rcsid[] = "$Id: mailview.c 1266 2009-07-14 18:39:12Z hubert@u.washin
 #include "dispfilt.h"
 #include "busy.h"
 #include "smime.h"
+#include "roleconf.h"
 #include "../pith/conf.h"
 #include "../pith/filter.h"
 #include "../pith/msgno.h"
@@ -721,6 +722,7 @@ scroll_handle_prompt(HANDLE_S *handle, int force)
 {
     char prompt[256], tmp[MAILTMPLEN];
     int  rc, flags, local_h, external, images;
+    ACTION_S *role = NULL;
     static ESCKEY_S launch_opts[] = {
 	/* TRANSLATORS: command names, editURL means user gets to edit a URL if they
 	   want, editApp is edit application where they edit the application used to
@@ -729,12 +731,14 @@ scroll_handle_prompt(HANDLE_S *handle, int force)
 	{'n', 'n', "N", N_("No")},
 	{0, 'x', "X", ""},
 	{0, 'i', "I", ""},
+	{-2, 'r', "R", N_("setRole")},
+	{-2, 0, NULL, NULL},
 	{0, 'u', "U", N_("editURL")},
 	{0, 'a', "A", N_("editApp")},
 	{-1, 0, NULL, NULL}};
 
     if(handle->type == URL){
-	launch_opts[4].ch = 'u';
+	launch_opts[6].ch = 'u';
 
 	if((!(local_h = !struncmp(handle->h.url.path, "x-alpine-", 9))
 	   || !(local_h = !struncmp(handle->h.url.path, "x-pine-help", 11)))
@@ -748,12 +752,12 @@ scroll_handle_prompt(HANDLE_S *handle, int force)
 	    if(handle->h.url.tool[0] != '*')
 #endif
 	    if(ps_global->vars[V_BROWSER].is_fixed)
-	      launch_opts[5].ch = -1;
+	      launch_opts[7].ch = -1;
 	    else
-	      launch_opts[5].ch = 'a';
+	      launch_opts[7].ch = 'a';
 	}
 	else{
-	    launch_opts[5].ch = -1;
+	    launch_opts[7].ch = -1;
 	    if(!local_h){
 	      if(ps_global->vars[V_BROWSER].is_fixed){
 		  q_status_message(SM_ORDER, 3, 4,
@@ -831,7 +835,7 @@ scroll_handle_prompt(HANDLE_S *handle, int force)
 	}
     }
     else
-      launch_opts[4].ch = -1;
+      launch_opts[6].ch = -1;
 
     if(handle->type == Attach
 	&& handle->h.attach
@@ -866,10 +870,26 @@ scroll_handle_prompt(HANDLE_S *handle, int force)
 	 * sense if you just say View selected URL ...
 	 */
 	if(handle->type == URL &&
-	   !struncmp(handle->h.url.path, "mailto:", 7))
-	  snprintf(prompt, sizeof(prompt), "Compose mail to \"%.*s%s\" ? ",
-		  (int) MIN(MAX(0,sc - 25), sizeof(prompt)-50), handle->h.url.path+7,
-		  (strlen(handle->h.url.path+7) > MAX(0,sc-25)) ? "..." : "");
+	   !struncmp(handle->h.url.path, "mailto:", 7)){
+	    char tmp[128];
+	  snprintf(prompt, sizeof(prompt), "Compose mail to \"%.*s%s\"",
+		  (int) MIN(MAX(0,sc - (role ? 44 : 25)), sizeof(prompt)-50), handle->h.url.path+7,
+		  (strlen(handle->h.url.path+7) > MAX(0,sc-(role ? 44 :25))) ? "..." : "");
+
+	  if(role != NULL){
+	     snprintf(tmp, sizeof(tmp), " (using role \"%.*s%s\")",
+		  (int) MIN(MAX(0,sc - strlen(prompt) - 19), sizeof(prompt)-strlen(tmp)-50), role->nick,
+		  (strlen(role->nick) > MAX(0,sc-strlen(prompt) - 19)) ? "..." : "");
+
+	     strncat(prompt, tmp, sizeof(prompt) - strlen(prompt) - 1);
+	     prompt[sizeof(prompt) - 1] = '\0';
+	  }
+
+	  strncat(prompt, " ? ", sizeof(prompt) - strlen(prompt) - 1);
+	  prompt[sizeof(prompt) - 1] = '\0';
+
+	  launch_opts[4].ch = 'r';
+	}
 	else
 	  snprintf(prompt, sizeof(prompt), "View selected %s %s%s%s%.*s%s ? ",
 		  (handle->type == URL) ? "URL" : "Attachment",
@@ -901,6 +921,30 @@ scroll_handle_prompt(HANDLE_S *handle, int force)
 	    images = 1 - images;
 	    launch_opts[3].label = images ? N_("Inline imgs") : N_("All images");
 	    break;
+
+	 case 'r' :
+	   {    void (*prev_screen)(struct pine *) = ps_global->prev_screen,
+		   (*redraw)(void) = ps_global->redrawer;
+
+		ps_global->redrawer = NULL;
+		ps_global->next_screen = SCREEN_FUN_NULL;
+		role = ps_global->reply.role_chosen;
+		if(role_select_screen(ps_global, &role, MC_COMPOSE) < 0){
+		   cmd_cancelled("Composition");
+		   ps_global->next_screen = prev_screen;
+		   ps_global->redrawer = redraw;
+		   return -1;
+		}
+
+		ps_global->next_screen = prev_screen;
+		ps_global->redrawer = redraw;
+		if(role)
+		   role = combine_inherited_role(role);
+		ps_global->reply.role_chosen = role;
+		if(ps_global->redrawer) (ps_global->redrawer)();
+		break;
+            }
+
 
 	  case 'u' :
 	    strncpy(tmp, handle->h.url.path, sizeof(tmp)-1);
@@ -1770,17 +1814,21 @@ url_local_mailto_and_atts(char *url, PATMT *attachlist)
 
 	fs_give((void **) &urlp);
 
-	rflags = ROLE_COMPOSE;
-	if(nonempty_patterns(rflags, &dummy)){
-	    role = set_role_from_msg(ps_global, rflags, -1L, NULL);
-	    if(confirm_role(rflags, &role))
-	      role = combine_inherited_role(role);
-	    else{			/* cancel */
-		role = NULL;
-		cmd_cancelled("Composition");
-		goto outta_here;
-	    }
+	if(ps_global->reply.role_chosen == NULL){
+	   rflags = ROLE_COMPOSE;
+	   if(nonempty_patterns(rflags, &dummy)){
+	       role = set_role_from_msg(ps_global, rflags, -1L, NULL);
+	       if(confirm_role(rflags, &role))
+	         role = combine_inherited_role(role);
+	       else{			/* cancel */
+		 role = NULL;
+		 cmd_cancelled("Composition");
+		 goto outta_here;
+	       }
+	   }
 	}
+	else
+	   role = ps_global->reply.role_chosen;
 
 	if(role)
 	  q_status_message1(SM_ORDER, 3, 4, "Composing using role \"%s\"",
@@ -1847,6 +1895,7 @@ outta_here:
     
     free_redraft_pos(&redraft_pos);
     free_action(&role);
+    ps_global->reply.role_chosen = NULL;
 
     return(rv);
 }

@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 437 2020-06-08 19:26:03
+Alpine Commit 438 2020-06-09 03:08:26
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -197,6 +197,10 @@ problems you find with this release.
      that controls if Alpine will keep the source link to all the images in the
      HTML message, or will only pass a link to inline images included in the message. For your
      privacy and security this feature is enabled by default.
+
+<LI> When reading an email and a user selects an email address to which to compose
+     a message from the message, the user will be able to select a role to compose
+     that message.
 
 <LI> New variable system-certs-path that allows users to indicate the 
      location of the directory where certificates are located. In PC-Alpine 
