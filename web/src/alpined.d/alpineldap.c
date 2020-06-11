@@ -65,8 +65,8 @@ static char rcsid[] = "$Id: alpineldap.c 1204 2009-02-02 19:54:23Z hubert@u.wash
 #include "alpined.h"
 #include "ldap.h"
 
-struct pine *ps_global;                         /* THE global variable! */
-char         tmp_20k_buf[20480];
+struct pine *wps_global;                         /* THE global variable! */
+//char         wtmp_20k_buf[20480];
 
 char	  *peSocketName;
 
@@ -104,8 +104,8 @@ main(argc, argv)
     int i, usage = 0, rv = 0;
 
     pine_state = new_pine_struct();
-    ps_global  = pine_state;
-    vars = ps_global->vars;
+    wps_global  = pine_state;
+    vars = wps_global->vars;
 #ifdef DEBUG
     debug = 0;
 #endif /* DEBUG */
@@ -140,22 +140,22 @@ main(argc, argv)
     wpldap_global->query_no = 0;
     wpldap_global->ldap_search_list = NULL;
 
-    ps_global->pconf = new_pinerc_s(p);
-    if(ps_global->pconf)
-      read_pinerc(ps_global->pconf, vars, ParseGlobal);
+    wps_global->pconf = new_pinerc_s(p);
+    if(wps_global->pconf)
+      read_pinerc(wps_global->pconf, vars, ParseGlobal);
     else {
         fprintf(stderr, "Failed to read pineconf\n");
 	rv = 1;
 	goto done;
     }
-    set_current_val(&ps_global->vars[V_LDAP_SERVERS], FALSE, FALSE);
-    set_current_val(&ps_global->vars[V_USER_DOMAIN], FALSE, FALSE);
-    if(!ps_global->VAR_USER_DOMAIN && !domain){
+    set_current_val(&wps_global->vars[V_LDAP_SERVERS], FALSE, FALSE);
+    set_current_val(&wps_global->vars[V_USER_DOMAIN], FALSE, FALSE);
+    if(!wps_global->VAR_USER_DOMAIN && !domain){
       fprintf(stderr, "No domain set in pineconf\n");
       usage = 1;
       goto done;
     }
-    if((pname = peLdapPname(userid, domain ? domain : ps_global->VAR_USER_DOMAIN)) != NULL){
+    if((pname = peLdapPname(userid, domain ? domain : wps_global->VAR_USER_DOMAIN)) != NULL){
       fprintf(stdout, "%s\n", pname);
       fs_give((void **)&pname);
     }
@@ -170,8 +170,8 @@ done:
 	  free_wpldapres(wpldap_global->ldap_search_list);
 	fs_give((void **)&wpldap_global);
     }
-    if(ps_global->pconf)
-      free_pinerc_s(&ps_global->pconf);
+    if(wps_global->pconf)
+      free_pinerc_s(&wps_global->pconf);
     free_pine_struct(&pine_state);
 
     exit(rv);
