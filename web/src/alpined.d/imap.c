@@ -53,9 +53,9 @@ long  imap_seq_exec_append(MAILSTREAM *, long, void *);
  * where to put message numbers that matched the search criteria,
  * and to allow mm_searched to return number of matches.
  */
-MAILSTREAM *mm_search_stream;
+//MAILSTREAM *mm_search_stream;
 
-MM_LIST_S  *mm_list_info;
+//MM_LIST_S  *mm_list_info;
 
 
 
