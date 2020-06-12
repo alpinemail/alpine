@@ -32,6 +32,9 @@ int     url_local_certdetails(char *);
 void    pine_sslfailure(char *, char *, unsigned long);
 void	mm_expunged_current(long unsigned int);
 char   *oauth2_get_access_code(unsigned char *, char *, OAUTH2_S *, int *);
+void    oauth2_set_device_info(OAUTH2_S *, char *);
+int     oauth2_elapsed_done(void *);
+UCS	oauth2device_decode_reply(void *, void *);
 
 #ifdef	LOCAL_PASSWD_CACHE
 int     get_passfile_passwd(char *, char **, char *, STRLIST_S *, int);

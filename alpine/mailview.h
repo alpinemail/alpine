@@ -63,6 +63,11 @@ typedef	struct scrolltool_s {
 	HelpType  text;		/* help text				 */
 	char	 *title;	/* title for help screen		 */
     } help;
+    UCS  (*decode_aux_rv_value)(void *, void *);  /* transforms a reply to a command */
+    int  (*aux_condition)(void *);	  /* has the condition been met to execute aux_function, 0 = success */
+    void (*aux_function)(void *, void *); /* auxiliary function to help us decide what to do */
+    void *aux_value;			  /* argument of aux_function */
+    void *aux_rv_value;			  /* the return value of aux_function in (void *) */
     struct {
 	int (*click)(struct scrolltool_s *);
 	int (*clickclick)(struct scrolltool_s *);

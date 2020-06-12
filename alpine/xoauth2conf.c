@@ -26,9 +26,7 @@ extern OAUTH2_S alpine_oauth2_list[];
 
 XOAUTH2_INFO_S xoauth_default[] = {
   { GMAIL_NAME, GMAIL_ID, GMAIL_SECRET},
-#if 0
   { OUTLOOK_NAME, OUTLOOK_ID, OUTLOOK_SECRET},
-#endif
   { NULL, NULL, NULL}
 };
 
@@ -202,9 +200,7 @@ void
 alpine_xoauth2_configuration(struct pine *ps, int edit_exceptions)
 {
     struct variable gmail_client_id_var, gmail_client_secret_var;
-#if 0
     struct variable outlook_client_id_var, outlook_client_secret_var;
-#endif
     struct variable *varlist[2*NXSERVERS + 1];
     char	    tmp[MAXPATH+1], *pval, **lval;
     char	    *id, *secret;
@@ -245,10 +241,8 @@ alpine_xoauth2_configuration(struct pine *ps, int edit_exceptions)
 
     varlist[0] = &gmail_client_id_var;
     varlist[1] = &gmail_client_secret_var;
-#if 0
     varlist[2] = &outlook_client_id_var;
     varlist[3] = &outlook_client_secret_var;
-#endif
     varlist[2*NXSERVERS] = NULL;
 
     for(i = 0; i < 2*NXSERVERS; i++)

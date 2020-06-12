@@ -153,51 +153,267 @@ OAUTH2_S alpine_oauth2_list[] =
     {"grant_type", "refresh_token"},
     {"response_type", "code"},
     {"state", NULL},
-    {"prompt", NULL}
+    {"prompt", NULL},
+    {"device_code", NULL}
    },
    {{"GET", "https://accounts.google.com/o/oauth2/auth",
 	{OA2_Id, OA2_Scope, OA2_Redirect, OA2_Response, OA2_End, OA2_End, OA2_End}},
     {"POST", "https://accounts.google.com/o/oauth2/token",
 	{OA2_Id, OA2_Secret, OA2_Redirect, OA2_GrantTypeforAccessToken, OA2_Code, OA2_End, OA2_End}},
     {"POST", "https://accounts.google.com/o/oauth2/token",
-	{OA2_Id, OA2_Secret, OA2_RefreshToken, OA2_GrantTypefromRefreshToken, OA2_End, OA2_End, OA2_End}}
+	{OA2_Id, OA2_Secret, OA2_RefreshToken, OA2_GrantTypefromRefreshToken, OA2_End, OA2_End, OA2_End}},
+    {NULL, NULL, {OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End}}
    },
-    NULL, 0
+   {NULL, NULL, NULL, 0, 0, NULL},	/* devicecode info */
+    NULL, 0, 0
   },
-#if 0
   {"Outlook",
-   {"outlook.office365.com", "smtp.gmail.com", NULL, NULL},
-//   {{"client_id", "2d681b88-9675-4ff0-b033-4de97dcb7a04"},
-//    {"client_secret", "FHLY770;@%fmrzxbnEKG44!"},
+   {"outlook.office365.com", "smtp.office365.com", NULL, NULL},
    {{"client_id", NULL},
     {"client_secret", NULL},
     {"code", NULL},
     {"refresh_token", NULL},
-    {"scope", "openid offline_access profile https://outlook.office.com/mail.readwrite https://outlook.office.com/mail.readwrite.shared https://outlook.office.com/mail.send https://outlook.office.com/mail.send.shared https://outlook.office.com/calendars.readwrite https://outlook.office.com/calendars.readwrite.shared https://outlook.office.com/contacts.readwrite https://outlook.office.com/contacts.readwrite.shared https://outlook.office.com/tasks.readwrite https://outlook.office.com/tasks.readwrite.shared https://outlook.office.com/mailboxsettings.readwrite https://outlook.office.com/people.read https://outlook.office.com/user.readbasic.all"},
-    {"redirect_uri", "https://login.microsoftonline.com/common/oauth2/nativeclient"},
-    {"grant_type", "authorization_code"},
+    {"scope", "offline_access https://outlook.office.com/IMAP.AccessAsUser.All https://outlook.office.com/SMTP.Send"},
+    {"grant_type", "urn:ietf:params:oauth:grant-type:device_code"},
+    {"scope", "https://graph.microsoft.com/mail.read"},
     {"grant_type", "refresh_token"},
     {"response_type", "code"},
     {"state", NULL},
-    {"prompt", "login"}
+    {"prompt", "login"},
+    {"device_code", NULL}
    },
    {{"GET", "https://login.microsoftonline.com/common/oauth2/authorize",
 	{OA2_Id, OA2_Scope, OA2_Redirect, OA2_Response, OA2_State, OA2_Prompt, OA2_End}},
-    {"POST", "https://login.microsoftonline.com/common/oauth2/token",
-	{OA2_Id, OA2_Secret, OA2_Redirect, OA2_GrantTypeforAccessToken, OA2_Code, OA2_Scope, OA2_End}},
-    {"POST", "https://login.microsoftonline.com/common/oauth2/token",
-	{OA2_Id, OA2_Secret, OA2_RefreshToken, OA2_GrantTypefromRefreshToken, OA2_End, OA2_End, OA2_End}}
+    {"POST", "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+	{OA2_Id, OA2_Redirect, OA2_DeviceCode, OA2_End, OA2_End, OA2_End}},
+    {"POST", "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+	{OA2_Id, OA2_RefreshToken, OA2_Scope, OA2_GrantTypefromRefreshToken, OA2_End, OA2_End, OA2_End}},
+    {"POST", "https://login.microsoftonline.com/common/oauth2/v2.0/devicecode",
+	{OA2_Id, OA2_Scope, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End}}
    },
-    NULL, 0
+   {NULL, NULL, NULL, 0, 0, NULL},
+    NULL, 0, 0
   },
-#endif
-  { NULL, NULL, NULL, NULL, NULL, 0},
+  { NULL, NULL, NULL, NULL, NULL, NULL, 0, 0},
 };
 
 typedef struct auth_code_s {
   char *code;
   int   answer;
 } AUTH_CODE_S;
+
+UCS
+oauth2device_decode_reply(void *datap, void *replyp)
+{
+   OAUTH2_DEVICEPROC_S *av = (OAUTH2_DEVICEPROC_S *)datap;
+   int reply = *(int *) replyp;
+
+   return reply < 0 ? av->code_failure : (reply == 0 ? av->code_success : av->code_wait);
+}
+
+int
+oauth2_elapsed_done(void *aux_valuep)
+{
+   OAUTH2_S *oauth2 = aux_valuep ? ((OAUTH2_DEVICEPROC_S *) aux_valuep)->xoauth2 : NULL;
+   static time_t savedt = 0, now;
+   int rv = 0;
+
+   if(aux_valuep == NULL) savedt = 0;	/* reset last time we approved */
+   else{
+      now = time(0);
+      if(oauth2->devicecode.interval + now >= savedt)
+	 savedt = now;
+      else
+	 rv = -1;
+   }
+   return rv;
+}
+
+void
+oauth2_set_device_info(OAUTH2_S *oa2, char *method)
+{
+   char tmp[MAILTMPLEN];
+   char *code;
+   char *name = oa2->name;
+   int aux_rv_value;
+   OAUTH2_DEVICECODE_S *deviceinfo = &oa2->devicecode;
+   OAUTH2_DEVICEPROC_S aux_value;
+
+   if(ps_global->ttyo){
+	SCROLL_S  sargs;
+	STORE_S  *in_store, *out_store;
+	gf_io_t   pc, gc;
+	HANDLE_S *handles = NULL;
+	AUTH_CODE_S user_input;
+
+	if(!(in_store = so_get(CharStar, NULL, EDIT_ACCESS)) ||
+	   !(out_store = so_get(CharStar, NULL, EDIT_ACCESS)))
+	  goto try_wantto;
+
+	aux_value.xoauth2      = oa2;
+	aux_value.code_success = 'e';
+	aux_value.code_failure = 'e';
+	aux_value.code_wait    = NO_OP_COMMAND;
+
+	so_puts(in_store, "<HTML><P>");
+	sprintf(tmp, _("<CENTER>Authorizing Alpine Access to %s Email Services</CENTER>"), name);
+	so_puts(in_store, tmp);
+	sprintf(tmp, _("<P>Alpine is attempting to log you into your %s account, using the %s method."), name, method),
+	so_puts(in_store, tmp);
+
+	if(deviceinfo->verification_uri && deviceinfo->user_code){
+	   sprintf(tmp,
+		_("</P><P>To sign in, use a web browser to open the page  <A HREF=\"%s\">%s</A> and enter the code \"%s\" without the quotes."),
+		deviceinfo->verification_uri, deviceinfo->verification_uri, deviceinfo->user_code);
+	   so_puts(in_store, tmp);
+	}
+	else{
+	   so_puts(in_store, "</P><P>");
+	   so_puts(in_store, deviceinfo->message);
+	}
+	so_puts(in_store, _("</P><P> Alpine will try to use your URL Viewers setting to find a browser to open this URL."));
+	sprintf(tmp, _(" When you open this link, you will be sent to %s's servers to complete this process."), name);
+	so_puts(in_store, tmp);
+	so_puts(in_store, _(" Alternatively, you can copy and paste the previous link and open it with the browser of your choice."));
+
+        so_puts(in_store, _("</P><P> After you open the previous link, please enter the code above, and then you will be asked to authenticate and later "));
+        so_puts(in_store, _("to grant access to Alpine to your data. "));
+        so_puts(in_store, _("</P><P> Once you have authorized Alpine, you will be asked if you want to preserve the Refresh Token and Access Code. If you do "));
+        so_puts(in_store, _("not wish to repeat this process again, answer \'Y\'es. If you did this process quickly, your connection to the server will still be "));
+        so_puts(in_store, _("alive at the end of this process, and your connection will proceed from there."));
+	so_puts(in_store, _(" </P><P>If you do not wish to proceed, cancel at any time by pressing 'E' to exit"));
+	so_puts(in_store, _("</P></HTML>"));
+
+	so_seek(in_store, 0L, 0);
+	init_handles(&handles);
+	gf_filter_init();
+	gf_link_filter(gf_html2plain,
+		       gf_html2plain_opt(NULL,
+					 ps_global->ttyo->screen_cols, non_messageview_margin(),
+					 &handles, NULL, GFHP_LOCAL_HANDLES));
+	gf_set_so_readc(&gc, in_store);
+	gf_set_so_writec(&pc, out_store);
+	gf_pipe(gc, pc);
+	gf_clear_so_writec(out_store);
+	gf_clear_so_readc(in_store);
+
+	memset(&sargs, 0, sizeof(SCROLL_S));
+	sargs.text.handles  = handles;
+	sargs.text.text     = so_text(out_store);
+	sargs.text.src      = CharStar;
+	sargs.text.desc     = _("help text");
+	sargs.bar.title     = _("SETTING UP XOAUTH2 AUTHORIZATION");
+	sargs.proc.tool     = oauth2_auth_answer;
+	sargs.proc.data.p   = (void *)&user_input;
+	sargs.keys.menu     = &oauth2_device_auth_keymenu;
+	/* don't want to re-enter c-client */
+	sargs.quell_newmail = 1;
+	setbitmap(sargs.keys.bitmap);
+	sargs.help.text     = h_oauth2_start;
+	sargs.help.title    = _("HELP FOR SETTING UP XOAUTH2");
+	sargs.aux_function  = oauth2deviceinfo_get_accesscode;
+	sargs.aux_value     = (void *) &aux_value;
+	sargs.aux_condition = oauth2_elapsed_done;
+	sargs.decode_aux_rv_value = oauth2device_decode_reply;
+	sargs.aux_rv_value  = (void *) &aux_rv_value;
+
+	do {
+	   scrolltool(&sargs);
+	   ps_global->mangled_screen = 1;
+	   ps_global->painted_body_on_startup = 0;
+	   ps_global->painted_footer_on_startup = 0;
+	} while (user_input.answer != 'e');
+
+	so_give(&in_store);
+	so_give(&out_store);
+	free_handles(&handles);
+	oauth2_elapsed_done(NULL);
+    }
+    else{
+	int flags, rc, q_line;
+	/* TRANSLATORS: user needs to input an access code from the server */
+	char prompt[MAILTMPLEN], token[MAILTMPLEN];
+	/*
+	 * If screen hasn't been initialized yet, use want_to.
+	 */
+try_wantto:
+
+	tmp_20k_buf[0] = '\0';
+	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
+		_("Authorizing Alpine Access to %s Email Services\n\n"), name);
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+
+	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
+		_("Alpine is attempting to log you into your %s account, using the %s method. "), name, method),
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+
+	if(deviceinfo->verification_uri && deviceinfo->user_code){
+	   snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
+		_("To sign in, user a web browser to open the page %s and enter the code \"%s\" without the quotes.\n\n"),
+		deviceinfo->verification_uri, deviceinfo->user_code);
+	   tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+	}
+	else{
+	   snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
+	            "%s\n\n", deviceinfo->message);
+	   tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+	}
+
+	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
+		_("Copy and paste the previous URL into a web browser that supports javascript, to take you to %s's servers to complete this process.\n\n"), name);
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+
+	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
+		"%s", _("After you open the previous link, please enter the code above, and then you will be asked to authenticate and later "));
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+
+	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
+		"%s", _("to grant access to Alpine to your data.\n\n"));
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+
+	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
+		"%s", _(" Once you have authorized Alpine, you will be asked if you want to preserve the Refresh Token and Access Code. "));
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+
+	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
+		"%s", _("If you do not wish to repeat this process again, answer \'Y\'es. If you did this process quickly, your connection "));
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+
+	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
+		"%s", _("to the server will still be alive at the end of this process, and your connection will proceed from there.\n\n"));
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+
+	display_init_err(tmp_20k_buf, 0);
+	memset((void *)tmp, 0, sizeof(tmp));
+	strncpy(tmp, _("Alpine would like to get authorization to access your email. Proceed "), sizeof(tmp));
+	tmp[sizeof(tmp)-1] = '\0';
+
+	if(want_to(tmp, 'n', 'x', NO_HELP, WT_NORM) == 'y'){
+	   int rv;
+	   UCS ch;
+	   q_line = -(ps_global->ttyo ? ps_global->ttyo->footer_rows : 3);
+	   flags = OE_APPEND_CURRENT;
+
+	   snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
+		"%s", _("After you are done going through the process described above, press \'y\' to continue, or \'n\' to cancel\n"));
+	   tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+
+	   aux_value.xoauth2      = oa2;
+	   aux_value.code_success = 'y';
+	   aux_value.code_failure = 'n';
+	   aux_value.code_wait    = 'w';
+
+	   strncpy(tmp, _("Continue waiting"), sizeof(tmp));
+	   tmp[sizeof(tmp)-1] = '\0';
+	   do {
+		if(oauth2_elapsed_done((void *) &aux_value) == 0)
+		   oauth2deviceinfo_get_accesscode((void *) &aux_value, (void *) &rv);
+		ch = oauth2device_decode_reply((void *) &aux_value, (void *) &rv);
+	   } while (ch == 'w' || want_to(tmp, 'n', 'x', NO_HELP, WT_NORM) == 'y');
+	   oauth2_elapsed_done(NULL);
+	}
+   }
+}
 
 char *
 oauth2_get_access_code(unsigned char *url, char *method, OAUTH2_S *oauth2, int *tryanother)
@@ -238,7 +454,7 @@ oauth2_get_access_code(unsigned char *url, char *method, OAUTH2_S *oauth2, int *
 	   so_puts(in_store, _("</P><P> If you completed these steps successfully, you are ready to move to the second part, where you will authorize Gmail to give access to Alpine to access your email."));
 	}
 
-	so_puts(in_store, _("</P><P><A NAME=\"secondpart\">In order</A> to authrorize Alpine to access your email, Alpine needs to open the following URL:"));
+	so_puts(in_store, _("</P><P><A NAME=\"secondpart\">In order</A> to authorize Alpine to access your email, Alpine needs to open the following URL:"));
 	so_puts(in_store,"</P><P>");
 	sprintf(tmp_20k_buf, _("<A HREF=\"%s\">%s</A>"), url, url);
 	so_puts(in_store, tmp_20k_buf);
@@ -362,9 +578,8 @@ try_wantto:
 
 	display_init_err(tmp_20k_buf, 0);
 	memset((void *)tmp, 0, sizeof(tmp));
-	strncpy(tmp, _("Alpine would like to get authorization to access your email: "), sizeof(tmp));
+	strncpy(tmp, _("Alpine would like to get authorization to access your email. Proceed "), sizeof(tmp));
 	tmp[sizeof(tmp)-1] = '\0';
-	strncat(tmp, _(": Proceed "), sizeof(tmp)-strlen(tmp)-1);
 
 	if(want_to(tmp, 'n', 'x', NO_HELP, WT_NORM) == 'y'){
 	  q_line = -(ps_global->ttyo ? ps_global->ttyo->footer_rows : 3);
@@ -623,6 +838,7 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
        if(NewAccessToken && (NewExpirationTime == 0L || !*NewAccessToken)) 
 	  fs_give((void **) &NewAccessToken);
     }
+    else login->first_time++;
 
     /* Default to saving what we already had saved */
 
@@ -685,6 +901,7 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
        oa2list->param[OA2_RefreshToken].value = SaveRefreshToken;
        oa2list->access_token = SaveAccessToken;
        oa2list->expiration = SaveExpirationTime;
+       oa2list->first_time = login->first_time;
       *login = *oa2list;	/* load login pointer */
     }
 

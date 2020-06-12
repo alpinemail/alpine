@@ -93,6 +93,8 @@ static appenduid_t mailappenduid = NIL;
 static oauth2getaccesscode_t oauth2getaccesscode = NIL;
 
 static oauth2clientinfo_t oauth2clientinfo = NIL;
+
+static oauth2deviceinfo_t oauth2deviceinfo = NIL;
 				/* free elt extra stuff callback */
 static freeeltsparep_t mailfreeeltsparep = NIL;
 				/* free envelope extra stuff callback */
@@ -679,6 +681,11 @@ void *mail_parameters (MAILSTREAM *stream,long function,void *value)
     oauth2clientinfo = (oauth2clientinfo_t) value;
   case GET_OA2CLIENTINFO:
     ret = (void *) oauth2clientinfo;
+    break;
+  case SET_OA2DEVICEINFO:
+    oauth2deviceinfo = (oauth2deviceinfo_t) value;
+  case GET_OA2DEVICEINFO:
+    ret = (void *) oauth2deviceinfo;
     break;
   default:
     if ((r = smtp_parameters (function,value)) != NULL) ret = r;
@@ -6444,3 +6451,13 @@ void free_c_client_module_globals(void)
    env_end();
    tcp_end();
 }
+
+/* OAUTH2 support code goes here. This is necessary because
+ * 1. it helps to coordinate two different methods, such as XOAUTH2 and
+ *    OAUTHBEARER, which use the same code, so it can all go in one place
+ *
+ * 2. It helps with coordinating with the client when the server requires
+ *    the deviceinfo method.
+ */
+
+#include "oauth2_aux.c"

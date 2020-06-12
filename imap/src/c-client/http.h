@@ -71,11 +71,13 @@ typedef struct http_header_data_s {
 #define HTTP_MIME_URLENCODED	"application/x-www-form-urlencoded"
 
 #define HTTP_1_1_VERSION	"HTTP/1.1"
+#define HTTP_OK			200
+#define HTTP_BAD		400
 
-#define GET_HTTPPORT (long) 456
-#define SET_HTTPPORT (long) 457
-#define GET_SSLHTTPPORT (long) 458
-#define SET_SSLHTTPPORT (long) 459
+#define GET_HTTPPORT (long) 490
+#define SET_HTTPPORT (long) 491
+#define GET_SSLHTTPPORT (long) 492
+#define SET_SSLHTTPPORT (long) 493
 
 typedef struct http_status_s {
   char *version;  

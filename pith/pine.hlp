@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 442 2020-06-11 01:39:17
+Alpine Commit 443 2020-06-12 02:21:54
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -173,9 +173,15 @@ Apache web server.
 
 <H2>New in Alpine <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)</H2>
 
-<!--This is a development version of Alpine. These enhancements are
+This is a development version of Alpine. These enhancements are
 released after the release of version 2.22. Please report any
-problems you find with this release. -->
+problems you find with this release.
+
+<P> Additions include:
+<UL>
+<LI> Implementation of XOAUTH2 authentication support for Outlook.
+     Based on documentation suggested by Andrew C Aitchison.
+</UL>
 
 <P>
 Version <!--#echo var="ALPINE_VERSION"--> addresses bugs found in previous releases and 

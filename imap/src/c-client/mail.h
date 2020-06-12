@@ -158,6 +158,8 @@
 #define SET_OA2CLIENTGETACCESSCODE (long) 170
 #define GET_OA2CLIENTINFO (long) 171
 #define SET_OA2CLIENTINFO (long) 172
+#define GET_OA2DEVICEINFO (long) 173
+#define SET_OA2DEVICEINFO (long) 174
 
 	/* 2xx: environment */
 #define GET_USERNAME (long) 201
@@ -298,6 +300,7 @@
 #define SET_IDLETIMEOUT (long) 453
 #define GET_FETCHLOOKAHEADLIMIT (long) 454
 #define SET_FETCHLOOKAHEADLIMIT (long) 455
+/* HTTP SUPPORT DEFINES THEIR OWN SET_ AND GET_ CONSTANTS (490..493). See http.h */
 
 	/* 5xx: local file drivers */
 #define GET_MBXPROTECTION (long) 500
@@ -1927,11 +1930,12 @@ int PFLUSH (void);
 typedef enum {OA2_Id = 0, OA2_Secret, OA2_Code, OA2_RefreshToken,
 	      OA2_Scope, OA2_Redirect,   
 	      OA2_GrantTypeforAccessToken, OA2_GrantTypefromRefreshToken,
-	      OA2_Response, OA2_State, OA2_Prompt, OA2_End} OA2_type;
+	      OA2_Response, OA2_State, OA2_Prompt, OA2_DeviceCode, OA2_End} OA2_type;
 
 typedef enum {OA2_GetAccessCode = 0,
 	      OA2_GetAccessTokenFromAccessCode,
 	      OA2_GetAccessTokenFromRefreshToken,
+	      OA2_GetDeviceCode,
 	      OA2_GetEnd} OA2_function;
 
 typedef struct OA2_param_s {
@@ -1945,15 +1949,38 @@ typedef struct OA2_serverparam_s {
   OA2_type params[OAUTH2_PARAM_NUMBER];
 } OAUTH2_SERVER_METHOD_S;
 
+typedef struct device_code_s {
+  unsigned char *device_code;
+  unsigned char *user_code;
+  char *verification_uri;
+  int   expires_in;
+  int   interval;
+  unsigned char *message;
+} OAUTH2_DEVICECODE_S;
+
 typedef struct oauth2_s {
    unsigned char *name;			/* provider name */
    char *host[OAUTH2_TOT_EQUIV];	/* servers for which this data applies  */
    OAUTH2_PARAM_S param[OA2_End];	/* parameters name and values for this server */
 		/* servers, methods and parameters to retrieve access code and tokens */
    OAUTH2_SERVER_METHOD_S server_mthd[OA2_GetEnd];
+   OAUTH2_DEVICECODE_S devicecode;
    char *access_token;
    unsigned long expiration;
+   unsigned int first_time:1;	/* this is the first time we get credentials for this account */
 } OAUTH2_S;
 
+typedef struct deviceproc_s {
+  OAUTH2_S *xoauth2;		/* the full OAUTH2_S structure we need to update */
+  char code_success;		/* code to say we succeeded */
+  char code_failure;		/* code to say we failed */
+  char code_wait;		/* code to say keep waiting */
+} OAUTH2_DEVICEPROC_S;
+
+/* Supporting external functions for XOAUTH2 and OAUTHBEARER */
 typedef char *(*oauth2getaccesscode_t) (unsigned char *, char *, OAUTH2_S *, int *);
 typedef void (*oauth2clientinfo_t)(unsigned char *name, char **id, char **secret);
+typedef void (*oauth2deviceinfo_t)(OAUTH2_S *, char *method);
+void mm_login_oauth2_c_client_method (NETMBX *, char *, char *, OAUTH2_S *, unsigned long, int *);
+char *oauth2_generate_state(void);
+void oauth2deviceinfo_get_accesscode(void *, void *);

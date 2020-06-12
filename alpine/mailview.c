@@ -2382,7 +2382,7 @@ scrolltool(SCROLL_S *sparms)
     UCS              ch;
     int              result, done, cmd, found_on, found_on_index,
 		     first_view, force, scroll_lines, km_size,
-		     cursor_row, cursor_col, km_popped,
+		     cursor_row, cursor_col, km_popped, rv,
 		     nrows, ncols;
     char            *utf8str;
     long             jn;
@@ -2712,11 +2712,21 @@ scrolltool(SCROLL_S *sparms)
 	if(ps_global->prev_screen == mail_view_screen)
 	  mswin_setviewinwindcallback(view_in_new_window);
 #endif
-	if(cmd == MC_RESIZE
+	rv = -1;
+	if(sparms->aux_function
+	    && sparms->aux_condition
+	    && ((rv = (sparms->aux_condition)(sparms->aux_value)) == 0))
+	   (sparms->aux_function)(sparms->aux_value, sparms->aux_rv_value);
+
+	if(rv == 0){
+	   ch = (sparms->decode_aux_rv_value)(sparms->aux_value, sparms->aux_rv_value);
+	   if (ch == NO_OP_COMMAND) ch = read_command(&utf8str);
+	}
+	else if(cmd == MC_RESIZE
 	   || ps_global->ttyo == NULL
 	   || (ps_global->ttyo->screen_cols == ncols
 		&& ps_global->ttyo->screen_rows == nrows))
-	ch = (sparms->quell_newmail || read_command_prep()) ? read_command(&utf8str) : NO_OP_COMMAND;
+	  ch = (sparms->quell_newmail || read_command_prep()) ? read_command(&utf8str) : NO_OP_COMMAND;
 #ifdef	MOUSE
 #ifndef	WIN32
 	if(sparms->text.handles)

@@ -897,7 +897,7 @@ dummy.o: mail.h misc.h osdep.h dummy.h
 fdstring.o: mail.h misc.h osdep.h fdstring.h
 flstring.o: mail.h misc.h osdep.h flstring.h
 imap4r1.o: mail.h misc.h osdep.h imap4r1.h rfc822.h
-mail.o: mail.h misc.h osdep.h rfc822.h linkage.h json.h
+mail.o: mail.h misc.h osdep.h rfc822.h linkage.h http.h json.h oauth2_aux.h oauth2_aux.c
 mbx.o: mail.h misc.h osdep.h dummy.h
 mh.o: mail.h misc.h osdep.h dummy.h
 mix.o: mail.h misc.h osdep.h dummy.h
@@ -925,14 +925,14 @@ http.o: mail.h misc.h osdep.h utf8.h http.h json.h
 # OS-dependent
 
 osdep.o:mail.h misc.h env.h fs.h ftl.h nl.h tcp.h \
-	osdep.h env_unix.h tcp_unix.h \
+	osdep.h env_unix.h tcp_unix.h oauth2_aux.h \
 	osdep.c env_unix.c fs_unix.c ftl_unix.c nl_unix.c tcp_unix.c ip_unix.c\
 	auths.c crexcl.c flockcyg.c flocklnx.c flocksim.c fsync.c \
 	gethstid.c getspnam.c \
 	gr_wait.c gr_wait4.c gr_waitp.c \
 	kerb_mit.c \
 	auth_ext.c auth_gss.c auth_log.c auth_md5.c auth_ntl.c \
-	auth_bea.c auth_oa2.c auth_pla.c \
+	auth_bea.c auth_oa2.c auth_pla.c oauth2_aux.c \
 	pmatch.c scandir.c setpgrp.c strerror.c truncate.c write.c \
 	memmove.c memmove2.c memset.c \
 	tz_bsd.c tz_nul.c tz_sv4.c \

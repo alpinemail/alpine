@@ -26,7 +26,7 @@ typedef struct xoauth_default_s {
 #define GMAIL_SECRET "vwnqVJQrJZpR6JilCfAN5nY7"
 
 #define OUTLOOK_NAME "Outlook"
-#define OUTLOOK_ID   "c8df0dbf-4750-4bb9-98e9-562b10caa26a"
-#define OUTLOOK_SECRET "ijrmPVDYP4yxbNL3442;!!_"
+#define OUTLOOK_ID   "f21dcaf2-8020-469b-8135-343bfc35d046"
+#define OUTLOOK_SECRET "lIE42T4kZ2ZrN-2-AVNYSZ~8i_Co2WG4m."
 
 #endif /* ALPINE_XOAUTH2_INCLUDED */
