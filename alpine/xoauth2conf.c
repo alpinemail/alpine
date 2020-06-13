@@ -333,22 +333,24 @@ alpine_xoauth2_configuration(struct pine *ps, int edit_exceptions)
 	   varlist[l]->name = cpystr(XOAUTH2_CLIENT_SECRET);
 	   varlist[l]->is_used = 1;
 	   varlist[l]->is_user = 1;
-	   varlist[l]->main_user_val.p = strcmp(secret, secret_def) ? cpystr(secret) : NULL;
-	   varlist[l]->global_val.p = cpystr(secret_def);
+	   varlist[l]->main_user_val.p = secret && secret_def && strcmp(secret, secret_def) ? cpystr(secret) : NULL;
+	   varlist[l]->global_val.p = secret_def ? cpystr(secret_def) : NULL;
 	   set_current_val(varlist[l], FALSE, FALSE);
 
 	   /* Write client-secret variable */
-	   new_confline(&ctmpa)->var = varlist[l];
-	   utf8_snprintf(tmp, sizeof(tmp), "   %-*.100w =", ln, XOAUTH2_CLIENT_SECRET);
-	   tmp[sizeof(tmp)-1] = '\0';
-	   ctmpa->varname   = cpystr(tmp);
-	   ctmpa->varmem    = l++;
-	   ctmpa->valoffset = ln + 3 + 3;
-	   ctmpa->value     = pretty_value(ps, ctmpa);
-	   ctmpa->keymenu   = &config_text_keymenu;
-	   ctmpa->help      = h_config_xoauth2_client_secret;
-	   ctmpa->tool      = text_tool;
-	   ctmpa->varnamep  = ctmpb;
+	   if(secret){
+	     new_confline(&ctmpa)->var = varlist[l];
+	     utf8_snprintf(tmp, sizeof(tmp), "   %-*.100w =", ln, XOAUTH2_CLIENT_SECRET);
+	     tmp[sizeof(tmp)-1] = '\0';
+	     ctmpa->varname   = cpystr(tmp);
+	     ctmpa->varmem    = l++;
+	     ctmpa->valoffset = ln + 3 + 3;
+	     ctmpa->value     = pretty_value(ps, ctmpa);
+	     ctmpa->keymenu   = &config_text_keymenu;
+	     ctmpa->help      = h_config_xoauth2_client_secret;
+	     ctmpa->tool      = text_tool;
+	     ctmpa->varnamep  = ctmpb;
+	   }
 
 	   /* Separate servers with a blank line */
 	   new_confline(&ctmpa);

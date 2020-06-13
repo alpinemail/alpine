@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 443 2020-06-12 02:21:54
+Alpine Commit 444 2020-06-12 20:33:43
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -1594,9 +1594,9 @@ program.
 <P>
 At the beginning of this process, the developer of the email program 
 registers the email program with the email service provider (Gmail, 
-Outlook, etc.) In return, the email service provider creates an id and
-secret for the email program, which the email program will use in the 
-future. Since Alpine is an open source program, these values are part
+Outlook, etc.) In return, the email service provider creates a client-id.
+In addition, some services provice a client-secret.
+Since Alpine is an open source program, these values are part
 of the source code, and are known to everyone, and cannot be obfuscated.
 
 <P>
@@ -16011,22 +16011,15 @@ Nickname: field.
 <BODY>
 <H1>Client-Id Explained</H1>
 
-If you have registered Alpine with your service provider to use the
-XOAUTH2 authenticator, or someone has shared a client-id with you, use this
-field to input this value. Remember that in order to use the XOAUTH2 authentication
-method, you must have a pair of client-id and client-secret. You must have
-both in order for this authenticator to work.
-
+If you have registered Alpine with your service provider to use the XOAUTH2 authenticator, or
+someone has shared a client-id and client-secret with you, use this field to input the
+client-id.
 <P>
 The Client-Id field is a string that your provider generates for the program
 being registered. However, some providers allow different users to register
 the same program. Users of the Mutt email program already do this to use
 XOAUTH2 authentication in Gmail.
 
-<P>
-Some providers generate an extremely long client-id string. If this is your 
-case, you might have to divide that string into pieces and paste each of those
-pieces  into this field.
 <P>
 &lt;End of help on this topic&gt;
 </BODY>
@@ -16039,19 +16032,18 @@ pieces  into this field.
 <BODY>
 <H1>Client-Secret Explained</H1>
 
-If you have registered Alpine with your service provider to use the
-XOAUTH2 authenticator, or someone has shared a client-secret with you, use this
-field to input this value. Remember that in order to use the XOAUTH2 authentication
-method, you must have a pair of client-id and client-secret. You must have
-both in order for this authenticator to work.
+If you have registered Alpine with your service provider to use the XOAUTH2 authenticator, or
+someone has shared a client-id and client-secret with you, use this field to input the
+client-secret. Some servers require both a client-id and a client-secret, some other servers do
+not require a client-secret. If a client-secret is required, use this field to add one.
 
-<P> The client-secret field is supposed to be kept secret, that is not 
-shared with any of the users, but due to the open source nature of Alpine, 
-it is not possible to keep it secret in any meaningful way. The intention 
-of this field is so that only the coders of an app can use the codes given 
-to them and authenticate their users to the services they are requesting. 
-This means that other coders would not be able to impresonate that app, 
-and use it to steal data from those users. In the case of Alpine this is 
+<P> The client-secret field is supposed to be kept secret, that is, not
+shared with any of the users, but due to the open source nature of Alpine,
+it is not possible to keep it secret in any meaningful way. The intention
+of this field is so that only the coders of an app can use the codes given
+to them and authenticate their users to the services they are requesting.
+This means that other coders would not be able to impresonate that app,
+and use it to steal data from those users. In the case of Alpine this is
 not possible, as Alpine does not steal data from its users, so users are safe
 sharing client-secrets. Just make sure you obtain your copy of Alpine from
 a reputable provider or compile the source code by yourself. The official

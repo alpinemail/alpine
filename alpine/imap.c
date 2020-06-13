@@ -145,7 +145,7 @@ OAUTH2_S alpine_oauth2_list[] =
    {"imap.gmail.com", "smtp.gmail.com", NULL, NULL},
    {{"client_id", NULL},
     {"client_secret", NULL},
-    {"code", NULL},
+    {"code", NULL},		/* not used */
     {"refresh_token", NULL},
     {"scope", "https://mail.google.com/"},
     {"redirect_uri", "urn:ietf:wg:oauth:2.0:oob"},
@@ -153,48 +153,51 @@ OAUTH2_S alpine_oauth2_list[] =
     {"grant_type", "refresh_token"},
     {"response_type", "code"},
     {"state", NULL},
-    {"prompt", NULL},
-    {"device_code", NULL}
+    {"device_code", NULL}	/* not used */
    },
-   {{"GET", "https://accounts.google.com/o/oauth2/auth",
+   {{"GET", "https://accounts.google.com/o/oauth2/auth",	/* authorization address, get access code */
 	{OA2_Id, OA2_Scope, OA2_Redirect, OA2_Response, OA2_End, OA2_End, OA2_End}},
-    {"POST", "https://accounts.google.com/o/oauth2/token",
+    {NULL, NULL, {OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End}},	/* Device Info information, not used */
+    {"POST", "https://accounts.google.com/o/oauth2/token",	/* Address to get refresh token from access code */
 	{OA2_Id, OA2_Secret, OA2_Redirect, OA2_GrantTypeforAccessToken, OA2_Code, OA2_End, OA2_End}},
-    {"POST", "https://accounts.google.com/o/oauth2/token",
-	{OA2_Id, OA2_Secret, OA2_RefreshToken, OA2_GrantTypefromRefreshToken, OA2_End, OA2_End, OA2_End}},
-    {NULL, NULL, {OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End}}
+    {"POST", "https://accounts.google.com/o/oauth2/token",	/* access token from refresh token */
+	{OA2_Id, OA2_Secret, OA2_RefreshToken, OA2_GrantTypefromRefreshToken, OA2_End, OA2_End, OA2_End}}
    },
-   {NULL, NULL, NULL, 0, 0, NULL},	/* devicecode info */
-    NULL, 0, 0
+   {NULL, NULL, NULL, 0, 0, NULL},	/* device_code information */
+    NULL, 	/* access token */
+    0, 		/* expiration time */
+    0, 		/* first time indicator */
+    1		/* client secret required */
   },
   {"Outlook",
    {"outlook.office365.com", "smtp.office365.com", NULL, NULL},
    {{"client_id", NULL},
-    {"client_secret", NULL},
-    {"code", NULL},
+    {"client_secret", NULL},		/* not used, but needed */
+    {"code", NULL},			/* not used, not needed */
     {"refresh_token", NULL},
     {"scope", "offline_access https://outlook.office.com/IMAP.AccessAsUser.All https://outlook.office.com/SMTP.Send"},
     {"grant_type", "urn:ietf:params:oauth:grant-type:device_code"},
-    {"scope", "https://graph.microsoft.com/mail.read"},
+    {"scope", NULL},			/* not used */
     {"grant_type", "refresh_token"},
-    {"response_type", "code"},
-    {"state", NULL},
-    {"prompt", "login"},
-    {"device_code", NULL}
+    {"response_type", "code"},		/* not used */
+    {"state", NULL},			/* not used */
+    {"device_code", NULL}		/* only used for frst time set up */
    },
-   {{"GET", "https://login.microsoftonline.com/common/oauth2/authorize",
-	{OA2_Id, OA2_Scope, OA2_Redirect, OA2_Response, OA2_State, OA2_Prompt, OA2_End}},
-    {"POST", "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+   {{NULL, NULL, {OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End}}, /* Get Access Code, Not used */
+    {"POST", "https://login.microsoftonline.com/common/oauth2/v2.0/devicecode",	/* first time use and get device code information */
+	{OA2_Id, OA2_Scope, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End}},
+    {"POST", "https://login.microsoftonline.com/common/oauth2/v2.0/token",	/* Get first Refresh Token and Access token  */
 	{OA2_Id, OA2_Redirect, OA2_DeviceCode, OA2_End, OA2_End, OA2_End}},
-    {"POST", "https://login.microsoftonline.com/common/oauth2/v2.0/token",
-	{OA2_Id, OA2_RefreshToken, OA2_Scope, OA2_GrantTypefromRefreshToken, OA2_End, OA2_End, OA2_End}},
-    {"POST", "https://login.microsoftonline.com/common/oauth2/v2.0/devicecode",
-	{OA2_Id, OA2_Scope, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End}}
+    {"POST", "https://login.microsoftonline.com/common/oauth2/v2.0/token",	/* Get access token from refresh token */
+	{OA2_Id, OA2_RefreshToken, OA2_Scope, OA2_GrantTypefromRefreshToken, OA2_End, OA2_End, OA2_End}}
    },
-   {NULL, NULL, NULL, 0, 0, NULL},
-    NULL, 0, 0
+   {NULL, NULL, NULL, 0, 0, NULL},	/* device_code information */
+    NULL, 	/* access token */
+    0, 		/* expiration time */
+    0, 		/* first time indicator */
+    0		/* client secret required */
   },
-  { NULL, NULL, NULL, NULL, NULL, NULL, 0, 0},
+  { NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0},
 };
 
 typedef struct auth_code_s {

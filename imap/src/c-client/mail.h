@@ -1927,15 +1927,23 @@ int PFLUSH (void);
 #define OAUTH2_TOT_EQUIV        (OAUTH2_MAX_EQUIV + 2)
 #define OAUTH2_PARAM_NUMBER	(7)
 
-typedef enum {OA2_Id = 0, OA2_Secret, OA2_Code, OA2_RefreshToken,
-	      OA2_Scope, OA2_Redirect,   
-	      OA2_GrantTypeforAccessToken, OA2_GrantTypefromRefreshToken,
-	      OA2_Response, OA2_State, OA2_Prompt, OA2_DeviceCode, OA2_End} OA2_type;
+typedef enum {OA2_Id = 0,
+	      OA2_Secret,
+	      OA2_Code,
+	      OA2_RefreshToken,
+	      OA2_Scope,
+	      OA2_Redirect,
+	      OA2_GrantTypeforAccessToken,
+	      OA2_GrantTypefromRefreshToken,
+	      OA2_Response,
+	      OA2_State,
+	      OA2_DeviceCode,
+	      OA2_End} OA2_type;
 
-typedef enum {OA2_GetAccessCode = 0,
+typedef enum {OA2_GetAccessCode = 0,		/* define this to get access code */
+	      OA2_GetDeviceCode,		/* define this if server uses device */
 	      OA2_GetAccessTokenFromAccessCode,
 	      OA2_GetAccessTokenFromRefreshToken,
-	      OA2_GetDeviceCode,
 	      OA2_GetEnd} OA2_function;
 
 typedef struct OA2_param_s {
@@ -1968,6 +1976,7 @@ typedef struct oauth2_s {
    char *access_token;
    unsigned long expiration;
    unsigned int first_time:1;	/* this is the first time we get credentials for this account */
+   unsigned int require_secret:1;	/* this server requires a client-secret */
 } OAUTH2_S;
 
 typedef struct deviceproc_s {

@@ -90,7 +90,8 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
    char *s = NULL;
    JSON_S *json = NULL;
 
-   if(oauth2->param[OA2_Id].value == NULL || oauth2->param[OA2_Secret].value == NULL){
+   if(oauth2->param[OA2_Id].value == NULL
+	|| (oauth2->require_secret && oauth2->param[OA2_Secret].value == NULL)){
      oauth2clientinfo_t ogci =
 		(oauth2clientinfo_t) mail_parameters (NIL, GET_OA2CLIENTINFO, NIL);
 
@@ -98,7 +99,8 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
 				&oauth2->param[OA2_Secret].value);
    }
 
-   if (oauth2->param[OA2_Id].value == NULL || oauth2->param[OA2_Secret].value == NULL)
+   if(oauth2->param[OA2_Id].value == NULL
+	|| (oauth2->require_secret && oauth2->param[OA2_Secret].value == NULL))
       return;
 
    /* Do we have a method to execute? */

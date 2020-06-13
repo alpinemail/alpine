@@ -27,6 +27,6 @@ typedef struct xoauth_default_s {
 
 #define OUTLOOK_NAME "Outlook"
 #define OUTLOOK_ID   "f21dcaf2-8020-469b-8135-343bfc35d046"
-#define OUTLOOK_SECRET "lIE42T4kZ2ZrN-2-AVNYSZ~8i_Co2WG4m."
+#define OUTLOOK_SECRET NULL
 
 #endif /* ALPINE_XOAUTH2_INCLUDED */
