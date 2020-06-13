@@ -139,7 +139,7 @@ RANLIB?=ranlib
 
 # Standard distribution build parameters
 
-DEFAULTAUTHENTICATORS=ext md5 pla bea oa2 log
+DEFAULTAUTHENTICATORS=ext md5 pla log bea oa2
 #
 # mh needs to be after any other directory format drivers (such as mx or mix)
 # since otherwise mh will seize any directory that is under the mh path.
