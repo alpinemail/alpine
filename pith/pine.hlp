@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 444 2020-06-12 20:33:43
+Alpine Commit 445 2020-06-13 14:13:45
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -171,11 +171,12 @@ is available as is a world wide web based version designed to run under the
 Apache web server.
 
 
-<H2>New in Alpine <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)</H2>
 
 This is a development version of Alpine. These enhancements are
 released after the release of version 2.22. Please report any
 problems you find with this release.
+
+<H2>New in Alpine <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)</H2>
 
 <P> Additions include:
 <UL>
@@ -184,8 +185,16 @@ problems you find with this release.
 </UL>
 
 <P>
-Version <!--#echo var="ALPINE_VERSION"--> addresses bugs found in previous releases and 
-has several additions as well.
+Bugs addressed:
+<P>
+
+<UL>
+   <LI> Selecting by subject might not copy the subject of the current message
+     to the selection text correctly. Reported by Iosif Fettich.
+</UL>
+
+<P>
+Version 2.22 addresses bugs found in previous releases and has several additions as well.
 <P> Additions include:
 
 <UL>

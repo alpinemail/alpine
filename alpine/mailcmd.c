@@ -8250,7 +8250,7 @@ select_by_text(MAILSTREAM *stream, MSGNO_S *msgmap, long int msgno, SEARCHSET **
 {
     int          r, ku, type, we_cancel = 0, flags, rv, ekeyi = 0;
     int          not = 0, me = 0;
-    char         sstring[80], savedsstring[80], tmp[128];
+    char         sstring[80], tmp[128];
     char        *p, *sval = NULL;
     char         buftmp[MAILTMPLEN], namehdr[80];
     ESCKEY_S     ekey[8];
@@ -8264,7 +8264,6 @@ select_by_text(MAILSTREAM *stream, MSGNO_S *msgmap, long int msgno, SEARCHSET **
     static char *dont_match_me = N_("[Don't_Match_My_Addresses]");
 
     ps_global->mangled_footer = 1;
-    savedsstring[0] = '\0';
     ekey[0].ch = ekey[1].ch = ekey[2].ch = ekey[3].ch = -1;
 
     while(1){
@@ -8497,15 +8496,8 @@ select_by_text(MAILSTREAM *stream, MSGNO_S *msgmap, long int msgno, SEARCHSET **
 		if(env && env->subject && env->subject[0]){
 		    char *q = NULL;
 
-		    snprintf(buftmp, sizeof(buftmp), "%.75s", env->subject);
-		    buftmp[sizeof(buftmp)-1] = '\0';
 		    q = (char *) rfc1522_decode_to_utf8((unsigned char *)tmp_20k_buf,
-							SIZEOF_20KBUF, buftmp);
-		    if(q != env->subject){
-			snprintf(savedsstring, sizeof(savedsstring), "%.70s", q);
-			savedsstring[sizeof(savedsstring)-1] = '\0';
-		    }
-
+							SIZEOF_20KBUF, env->subject);
 		    snprintf(sstring, sizeof(sstring), "%s", q);
 		    sstring[sizeof(sstring)-1] = '\0';
 		}
