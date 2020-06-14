@@ -126,9 +126,7 @@ new_user_or_version(struct pine *ps)
 		       (nuov_keymenu.how_many * 12) * sizeof(struct key));
 		setbitmap(sargs.keys.bitmap);
 
-		km.keys[NUOV_EXIT].label	= "[Exit this greeting]";
-		km.keys[NUOV_EXIT].bind.nch = 3;
-		clrbitn(NUOV_VIEW, sargs.keys.bitmap);
+		km.keys[NUOV_EXIT].label	= "Exit this greeting";
 
 		if(ps->first_time_user)
 		  clrbitn(NUOV_RELNOTES, sargs.keys.bitmap);

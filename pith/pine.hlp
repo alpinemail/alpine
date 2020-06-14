@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 447 2020-06-14 02:05:18
+Alpine Commit 448 2020-06-14 15:53:58
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -170,8 +170,16 @@ variety of Unix&reg; operating systems.  A version for Microsoft Windows&reg;
 is available as is a world wide web based version designed to run under the
 Apache web server.
 
+<P>
+Alpine's privacy policy is a living, online only, document, which can be found at
+<A href="h_privacy_policy">http://alpine.x10host.com/privacy.html</A>.
+By following the previous link,  Alpine
+will connect to an external server, and will download it and display
+it for you. Please take some time to read it and understand it.
+Since the Privacy Policy could be ammended to take into consideration
+new additions to Alpine, please check it periodically.
 
-
+<P>
 This is a development version of Alpine. These enhancements are
 released after the release of version 2.22. Please report any
 problems you find with this release.
@@ -182,6 +190,15 @@ problems you find with this release.
 <UL>
 <LI> Implementation of XOAUTH2 authentication support for Outlook.
      Based on documentation suggested by Andrew C Aitchison.
+
+<LI> Creation of Alpine's Privacy Policy. This is presented as a link to an online
+    document from the Release Notes (Link at the top of this document.) Upon user request,
+    Alpine downloads and displays this document. Links to the privacy policy are
+    also displayed when a user starts Alpine for the first time, or when a user
+    starts a new version of Alpine. There is no default exit greeting command for
+    these screens, and to exit the user must press "E", instead of the old default,
+    which was the RETURN command. The RETURN command will open the handle on which
+    the cursor is on, which by default is the Privacy Policy.
 </UL>
 
 <P>
@@ -2482,22 +2499,20 @@ this link now to send a message to it:<BR>
 <H1>Welcome to Alpine ... a Program for Internet News and Email</H1>
 We hope you will explore Alpine's many capabilities. From the MAIN MENU,
 select Setup/Config to see many of the options available to you. Also note
-that all screens have context-sensitive help text available.<P>
-<!--chtml if pinemode="phone_home"-->
-SPECIAL REQUEST:
-This software was originally created and maintained as a public
-service by the University of Washington until 2009; updates are made 
-available as a public service of the Alpine community. It is always 
-helpful to have an idea of how many users are using Alpine. Are you 
-willing to be counted as an Alpine user? Pressing 
-<A HREF="X-Alpine-Phone-Home:">Return</A>
-will send an anonymous (meaning, your real email address will not be revealed) 
-message to the Alpine developers for purposes of tallying.
+that all screens have context-sensitive help text available.
+
 <P>
-<!--To Exit this screen and continue your Alpine session press "E".-->
-<!--chtml else-->
-To Exit this screen and continue your Alpine session press "Return".
-<!--chtml endif-->
+Alpine's privacy policy is a living, online only, document, which can be found at
+<A href="h_privacy_policy">http://alpine.x10host.com/privacy.html</A>.
+By following the previous link,  Alpine
+will connect to an external server, and will download it and display
+it for you. Please take some time to read it and understand it.
+Since the Privacy Policy could be ammended to take into consideration
+new additions to Alpine, please check it periodically. You can always
+find a link to the Privacy Policy in the <A href="h_news">Release Notes</A>.
+
+<P>
+To Exit this screen and continue your Alpine session press "E".
 </BODY>
 </HTML>
 ===== new_alpine_user_greeting ======
@@ -2516,22 +2531,19 @@ using Alpine.
 Your Pine configuration file is automatically used for Alpine.
 The Release Notes may be viewed by pressing 
 &quot;R&quot; now or while in the MAIN MENU.
+
 <P>
-<!--chtml if pinemode="phone_home"-->
-SPECIAL REQUEST:
-This software was originally created and maintained as a public
-service by the University of Washington until 2009; updates are made 
-available as a public service of the Alpine community. It is always 
-helpful to have an idea of how many users are using Alpine. Are you 
-willing to be counted as an Alpine user? Pressing 
-<A HREF="X-Alpine-Phone-Home:">Return</A>
-will send an anonymous (meaning, your real email address will not be revealed) 
-message to the Alpine developers for purposes of tallying.
+Alpine's privacy policy is a living, online only, document, which can be found at
+<A href="h_privacy_policy">http://alpine.x10host.com/privacy.html</A>.
+By following the previous link,  Alpine
+will connect to an external server, and will download it and display
+it for you. Please take some time to read it and understand it.
+Since the Privacy Policy could be ammended to take into consideration
+new additions to Alpine, please check it periodically. You can always
+find a link to the Privacy Policy in the <A href="h_news">Release Notes</A>.
+
 <P>
-<!--To Exit this screen and continue your Alpine session press "E".-->
-<!--chtml else-->
-To Exit this screen and continue your Alpine session press "Return".
-<!--chtml endif-->
+To Exit this screen and continue your Alpine session press "E".
 </BODY>
 </HTML>
 ===== new_version_greeting ======
@@ -2548,21 +2560,18 @@ this version of Alpine before.  This version's significant changes are
 documented in the Release Notes, which may be viewed by pressing 
 &quot;R&quot; now or while in the MAIN MENU.
 <P>
-<!--chtml if pinemode="phone_home"-->
-SPECIAL REQUEST:
-This software was originally created and maintained as a public
-service by the University of Washington until 2009; updates are made 
-available as a public service of the Alpine community. It is always 
-helpful to have an idea of how many users are using Alpine. Are you 
-willing to be counted as an Alpine user? Pressing 
-<A HREF="X-Alpine-Phone-Home:">Return</A>
-will send an anonymous (meaning, your real email address will not be revealed) 
-message to the Alpine developers for purposes of tallying.
 <P>
-<!--To Exit this screen and continue your Alpine session press "E".-->
-<!--chtml else-->
-To Exit this screen and continue your Alpine session press "Return".
-<!--chtml endif-->
+Alpine's privacy policy is a living, online only, document, which can be found at
+<A href="h_privacy_policy">http://alpine.x10host.com/privacy.html</A>.
+By following the previous link,  Alpine
+will connect to an external server, and will download it and display
+it for you. Please take some time to read it and understand it.
+Since the Privacy Policy could be ammended to take into consideration
+new additions to Alpine, please check it periodically. You can always
+find a link to the Privacy Policy in the <A href="h_news">Release Notes</A>.
+
+<P>
+To Exit this screen and continue your Alpine session press "E".
 </BODY>
 </HTML>
 
@@ -37954,3 +37963,5 @@ in size will be selected. Examples: 2176, 1.53K (1530), or 3M (3000000).
 ========== h_preserve_field ==========
 Use 'p' to toggle between preserving or not preserving the original To:
 and Cc: fields of the message. Enter ^C to cancel message.
+========== h_privacy_policy ==========
+x-alpine-http:http://alpine.x10host.com/privacy.html

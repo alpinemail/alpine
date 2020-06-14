@@ -1086,10 +1086,8 @@ INST_KEY_MENU(simple_file_keymenu, simple_file_keys);
 struct key nuov_keys[] =
        {HELP_MENU,
 	OTHER_MENU,
-	{"E",NULL,{MC_EXIT,1,{'e',ctrl('M'),ctrl('J')}},KS_NONE},
-	/* TRANSLATORS: Alpine asks the user to be counted when they
-	   first start using alpine. */
-	{"Ret","[" N_("Be Counted!") "]",{MC_VIEW_HANDLE,2,{ctrl('M'),ctrl('J')}},KS_NONE},
+	{"E",NULL,{MC_EXIT,1,{'e'}},KS_NONE},
+	{"V",N_("ViewLink"),{MC_VIEW_HANDLE,3,{'v',ctrl('m'),ctrl('j')}},KS_NONE},
 	NULL_MENU,
 	NULL_MENU,
 	PREVPAGE_MENU,

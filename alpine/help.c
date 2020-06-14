@@ -119,8 +119,8 @@ the first line in the text.
 int
 helper_internal(HelpType text, char *frag, char *title, int flags)
 {
-    char	  **shown_text;
-    int		    cmd = MC_NONE;
+    char	  **shown_text, **external_text = NULL, *help_text = NULL, **rv;
+    int		    cmd = MC_NONE, is_external;
     long	    offset = 0L;
     char	   *error = NULL, tmp_title[MAX_SCREEN_COLS + 1];
     STORE_S	   *store;
@@ -132,6 +132,37 @@ helper_internal(HelpType text, char *frag, char *title, int flags)
 
     /* assumption here is that HelpType is char **  */
     shown_text = text;
+    is_external = 0;
+
+    if(shown_text && *shown_text && !struncmp(*shown_text, "x-alpine-http:", 14)){
+	int status;
+	help_text = http_get(*shown_text + 14, &status);
+	if(status != HTTP_OK){
+	    shown_text = NO_HELP;
+	    if(help_text) fs_give((void **) &help_text);
+	}
+	else{
+	    is_external = 1;
+	    if(help_text == NULL) external_text = NO_HELP;
+	    else{
+		char *s, *t;
+		int nlines;
+
+		for(nlines = 0, s = help_text; s != NULL; nlines++){
+		   s = strchr(s, '\n');
+		   if(s != NULL) s++;
+		}
+		rv = external_text = fs_get((nlines + 1)*sizeof(char *));
+		for(s = help_text; s != NULL; s = t){
+		   t = strchr(s, '\n');
+		   if(t != NULL) *t++ = '\0';
+		   *rv++ = cpystr(s);
+		}
+		*rv = NULL;
+	    }
+	}
+
+    }
 
     if(F_ON(F_BLANK_KEYMENU,ps_global)){
 	FOOTER_ROWS(ps_global) = 3;
@@ -149,16 +180,16 @@ helper_internal(HelpType text, char *frag, char *title, int flags)
      * Turn it into a charstar with digested html
      */
     do{
-	init_helper_getc(shown_text);
+	init_helper_getc(is_external ? external_text : shown_text);
 	init_handles(&handles);
 
 	memset(&hscroll, 0, sizeof(HELP_SCROLL_S));
-	hscroll.help_source = shown_text;
+	hscroll.help_source = is_external ? external_text : shown_text;
 	if((store = so_get(CharStar, NULL, EDIT_ACCESS)) != NULL){
 	    gf_set_so_writec(&pc, store);
 	    gf_filter_init();
 
-	    if(!struncmp(shown_text[0], "<html>", 6))
+	    if(!struncmp(hscroll.help_source[0], "<html>", 6) || is_external)
 	      gf_link_filter(gf_html2plain,
 			     gf_html2plain_opt("x-alpine-help:",
 					       ps_global->ttyo->screen_cols,
@@ -205,18 +236,18 @@ helper_internal(HelpType text, char *frag, char *title, int flags)
 		    sargs.text.handles = sargs.text.handles->next;
 
 		if(!(sargs.bar.title = title)){
-		    if(!struncmp(shown_text[0], "<html>", 6)){
+		    if(!struncmp(hscroll.help_source[0], "<html>", 6) || is_external){
 			char *p;
 			int   i;
 
 			/* if we're looking at html, look for a <title>
 			 * in the <head>... */
 			for(i = 1;
-			    shown_text[i]
-			      && struncmp(shown_text[i], "</head>", 7);
+			    hscroll.help_source[0][i]
+			      && struncmp(hscroll.help_source[i], "</head>", 7);
 			    i++)
-			  if(!struncmp(shown_text[i], "<title>", 7)){
-			      strncpy(tmp_20k_buf, &shown_text[i][7], SIZEOF_20KBUF);
+			  if(!struncmp(hscroll.help_source[i], "<title>", 7)){
+			      strncpy(tmp_20k_buf, &hscroll.help_source[i][7], SIZEOF_20KBUF);
 			      tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
 			      if((p = strchr(tmp_20k_buf, '<')) != NULL)
 				*p = '\0';
@@ -336,6 +367,12 @@ helper_internal(HelpType text, char *frag, char *title, int flags)
     }
     while(cmd == MC_RESIZE);
 
+    if(external_text != NULL){
+      for(rv = external_text; *rv != NULL; *rv++)
+	fs_give((void **) &*rv);
+      fs_give((void **) external_text);
+    }
+    if(help_text) fs_give((void **) &help_text);
     return(cmd);
 }
 
