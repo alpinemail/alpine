@@ -1,0 +1,54 @@
+Scripts in this directory can be useful to those that use Alpine in conjunction with other 
+tools, such as fetchmail. 
+
+ooauth2.py:
+-----------
+The script ooauth2.py is a python script that can be used to obtain the initial refresh token 
+and access token for an app, or to renew an access token, and in both cases obtain the encoded 
+base64 encoded string that is used to add to an authorization command in an IMAP or SMTP 
+server.
+
+ * In order to get the initial refresh token and access token, determine the tenant
+   you will use. The default is 'common'. You also need to supply the client-id of
+   your app.
+
+   ooauth2  [--tenant=common] --client_id=f21d...  --generate_refresh_and_access_token
+
+   The script will give you a url and a code. Open the url with a browser and enter
+   the code where requested. You will be redirected to login with your username
+   and password. After a succesful login, you will be asked to authorize
+   the app. Once you have authorized the app, close that window and return to
+   this script. Press "ENTER" and you will see your refresh-token, access-token
+   and total amount of time (in seconds) that your token is valid. This is typically
+   3600 seconds (one hour). Please note that the refresh token and access token are
+   very long strings, each one them should be saved in a file one line long each.
+
+ * You can also use this script to generate a new access_token. In order to do this
+   you need the tenant, the client-id, and a refresh-token. Then you would run this
+   script as
+
+   ooauth2 [--tenant=common] --client_id=f21d... --refresh_token=MCRagxlHaZfUvV9kG0lnBk...
+
+   as an advice copy and paste the refresh token that you were given into a file,
+   and replace the command line option
+      --refresh_token=MCRagxlHaZfUvV9kG0lnBk...
+   by
+      --refresh_token=`cat filename`
+
+ * The last way to use this script is to use the previous commands, but add
+   --encoded to any of the previous commands. This will produce a base64 string that
+   can be added to an IMAP "AUTHENTICATE XOAUTH2" command, or a "AUTH XOAUTH2" SMTP
+   command, to login to that server. The access token will not be displayed, only
+   the encoded base64 string. If you use this option, you must also provide
+   the --user option. For example:
+
+    ooauth2  [--tenant=common] --client_id=f21d... --generate_refresh_and_access_token \
+     --encoded --user=YourID@outlook.com
+
+   or
+
+   ooauth2 [--tenant=common] --client_id=f21d... --refresh_token=MCRagxlHaZfUvV9kG0lnBk... \
+   --encoded --user=YourID@outlook.com
+
+A complete set of instructions, with images showing this process, can be found at
+http://alpine.x10host.com/scripts/ooauth2.html
