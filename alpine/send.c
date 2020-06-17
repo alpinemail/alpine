@@ -1221,6 +1221,10 @@ pine_simple_send(ENVELOPE *outgoing,	/* envelope for outgoing message */
 	    if(role && role->from && !ps_global->never_allow_changing_from){
 		mail_free_address (&outgoing->from);
 	        outgoing->from = copyaddrlist(role->from);
+		if(!(flagsarg & SS_NULLRP)){
+		   fs_give((void **) &outgoing->return_path);
+		   outgoing->return_path = rfc822_cpy_adr(outgoing->from);
+		}
 	    }
 	    if(rolep) *rolep = role;
 	   }

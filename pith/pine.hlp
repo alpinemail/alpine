@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 448 2020-06-14 15:53:58
+Alpine Commit 449 2020-06-17 00:53:57
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -208,6 +208,9 @@ Bugs addressed:
 <UL>
    <LI> Selecting by subject might not copy the subject of the current message
      to the selection text correctly. Reported by Iosif Fettich.
+
+   <LI> Alpine does not set the return path correctly when using a role while bouncing
+    a message. Reported by Dr. C. Griewatsch.
 </UL>
 
 <P>
