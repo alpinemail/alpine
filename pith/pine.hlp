@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 449 2020-06-17 00:53:57
+Alpine Commit 450 2020-06-17 12:40:13
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -187,39 +187,24 @@ problems you find with this release.
 <H2>New in Alpine <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)</H2>
 
 <P> Additions include:
+
 <UL>
 <LI> Implementation of XOAUTH2 authentication support for Outlook.
      Based on documentation suggested by Andrew C Aitchison.
 
-<LI> Creation of Alpine's Privacy Policy. This is presented as a link to an online
-    document from the Release Notes (Link at the top of this document.) Upon user request,
-    Alpine downloads and displays this document. Links to the privacy policy are
-    also displayed when a user starts Alpine for the first time, or when a user
-    starts a new version of Alpine. There is no default exit greeting command for
-    these screens, and to exit the user must press "E", instead of the old default,
-    which was the RETURN command. The RETURN command will open the handle on which
-    the cursor is on, which by default is the Privacy Policy.
-</UL>
-
-<P>
-Bugs addressed:
-<P>
-
-<UL>
-   <LI> Selecting by subject might not copy the subject of the current message
-     to the selection text correctly. Reported by Iosif Fettich.
-
-   <LI> Alpine does not set the return path correctly when using a role while bouncing
-    a message. Reported by Dr. C. Griewatsch.
-</UL>
-
-<P>
-Version 2.22 addresses bugs found in previous releases and has several additions as well.
-<P> Additions include:
-
-<UL>
 <LI> Add support for the OAUTHBEARER authentication method in Gmail. Thanks to
      Alexander Perlis for suggesting it and explaining how the method works.
+
+<LI> Creation of Alpine's Privacy Policy. This is presented as a link to
+    an online document from the Release Notes (Link at the top of this
+    document.) Upon user request, Alpine downloads and displays this
+    document. Links to the privacy policy are also displayed when a user
+    starts Alpine for the first time, or when a user starts a new version
+    of Alpine. There is no default exit greeting command for these
+    screens, and to exit the user must press "E", instead of the old
+    default, which was the RETURN command. The RETURN command will open
+    the handle on which the cursor is on, which by default is the Privacy
+    Policy.
 
 <LI> Support for the SASL-IR IMAP extension that avoids a round trip during
      authentication. Similar support added for the SMTP, NNTP and POP3 
@@ -255,8 +240,15 @@ Version 2.22 addresses bugs found in previous releases and has several additions
 </UL>
 
 <P>
-Bugs that have been addressed include:
+Bugs addressed:
+
 <UL>
+   <LI> Selecting by subject might not copy the subject of the current message
+     to the selection text correctly. Reported by Iosif Fettich.
+
+   <LI> Alpine does not set the return path correctly when using a role while bouncing
+    a message. Reported by Dr. C. Griewatsch.
+
 <LI>Bug in PC-Alpine that made Alpine go into an infinite loop and
     consume CPU when it was iconized. Reported by Holger Schieferdecker in
     comp.mail.pine.
