@@ -69,7 +69,7 @@ long auth_ntlm_client (authchallenge_t challenger, authrespond_t responder,char 
     fs_give ((void **) &challenge);
     mm_login (mb, user, &pass, *trial);
     if (!pass) {		/* user requested abort */
-      (*responder) (stream, NIL, 0);
+      (*responder) (stream, base, NIL, 0);
       *trial = 0;		/* cancel subsequent attempts */
       ret = LONGT;		/* will get a BAD response back */
     } else {
@@ -89,13 +89,13 @@ long auth_ntlm_client (authchallenge_t challenger, authrespond_t responder,char 
       }
       buildSmbNtlmAuthRequest (&request, user, NULL);
 				/* send a negotiate message */
-      if ((*responder) (stream, NIL, (void *) &request, SmbLength (&request)) &&
+      if ((*responder) (stream, base, (void *) &request, SmbLength (&request)) &&
 	  (challenge = (*challenger) (stream, &clen))) {
 				/* interpret the challenge message */
 	buildSmbNtlmAuthResponse (challenge, &response, user, pass);
         fs_give ((void **) &challenge);
 				/* send a response message */
-	if ((*responder) (stream, NIL, (void *) &response, SmbLength (&response))) {
+	if ((*responder) (stream, base, (void *) &response, SmbLength (&response))) {
 	  if (challenge = (*challenger) (stream, &clen))
 	    fs_give ((void **) &challenge);
 	  else {
