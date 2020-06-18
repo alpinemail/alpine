@@ -1,7 +1,7 @@
 /* 
  * Copyright 2016-2020 Eduardo Chappa
  *
- * Last Edited: Jan 26, 2020 Eduardo Chappa <alpine.chappa@gmx.com>
+ * Last Edited: Jun 18, 2020 Eduardo Chappa <alpine.chappa@yandex.com>
  *
  */
 /* ========================================================================
@@ -891,6 +891,16 @@ MAILSTREAM *imap_open (MAILSTREAM *stream)
       return NIL;		/* lost during greeting */
     }
 
+				/* STARTTLS is not allowed in PREAUTH state */
+    if (LOCAL->netstream && !strcmp (reply->key,"PREAUTH")){
+      sslstart_t stls = (sslstart_t) mail_parameters (NIL,GET_SSLSTART,NIL);
+      if (!LOCAL->gotcapability) imap_capability (stream);
+      if (LOCAL->netstream
+	 && stls && LOCAL->cap.starttls && !mb.sslflag && !mb.notlsflag && mb.tlsflag){
+	 mm_log("STARTTLS not allowed on PREAUTH state. Closing Connection", ERROR);
+	 return NIL;
+      }
+    }
 				/* if connected and not preauthenticated */
     if (LOCAL->netstream && strcmp (reply->key,"PREAUTH")) {
       sslstart_t stls = (sslstart_t) mail_parameters (NIL,GET_SSLSTART,NIL);

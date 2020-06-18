@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 450 2020-06-17 12:40:13
+Alpine Commit 451 2020-06-18 03:25:21
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -243,6 +243,14 @@ problems you find with this release.
 Bugs addressed:
 
 <UL>
+ <LI> Security Bug: Alpine can be configured to start a secure connection using /tls
+      on an insecure connection. However, if the connection is PREAUTH, Alpine
+      will not upgrade the connection to a secure connection, because a client
+      must not issue a STARTTLS to a server that supports it in authenticated
+      state. This makes Alpine continue to use an insecure connection with the
+      server, exposing user data. Reported by Damian Poddebniak and Fabian
+      Ising from Münster University of Applied Sciences.
+
    <LI> Selecting by subject might not copy the subject of the current message
      to the selection text correctly. Reported by Iosif Fettich.
 
