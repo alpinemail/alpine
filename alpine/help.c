@@ -140,6 +140,7 @@ helper_internal(HelpType text, char *frag, char *title, int flags)
 	if(status != HTTP_OK){
 	    shown_text = NO_HELP;
 	    if(help_text) fs_give((void **) &help_text);
+	    return MC_FINISH;
 	}
 	else{
 	    is_external = 1;

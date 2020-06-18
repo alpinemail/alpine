@@ -937,7 +937,10 @@ http_open (unsigned char *url)
   stream->netstream = net_open (&mb, NIL, mb.port ? mb.port : HTTPTCPPORT,
 		 (NETDRIVER *) mail_parameters (NIL,GET_SSLDRIVER,NIL),
 		 "*https", mb.port ? mb.port : HTTPSSLPORT);
-  if(!stream->netstream) http_close(stream);
+  if(!stream->netstream){
+      http_close(stream);
+      stream = NIL;
+  }
   return stream;
 }
 
@@ -1048,12 +1051,8 @@ http_get(unsigned char *url, int *code)
   HTTPSTREAM *stream;
 
   *code = -1;
-  if(!url) return response;
-  stream = http_open(url);
-  if(!stream){
-    fs_give((void **) &url);
+  if(!url || !(stream = http_open(url)))
     return response;
-  }
 
   http_request = http_request_get();
   http_request->request = http_request_line("GET", stream->urltail, HTTP_1_1_VERSION);
