@@ -107,6 +107,7 @@ pre_screen_config_want_to(char *question, int dflt, int on_ctrl_C)
          on_ctrl_C    -- Answer returned on ^C
 	 help         -- Two line help text
 	 flags        -- Flags to modify behavior
+			 WT_DING	  - ding the bell when asking.
 			 WT_FLUSH_IN      - Discard pending input.
 			 WT_SEQ_SENSITIVE - Caller is sensitive to sequence
 			                    number changes caused by
@@ -122,6 +123,11 @@ want_to(char *question, int dflt, int on_ctrl_C, HelpType help, int flags)
     char *free_this = NULL, *free_this2 = NULL, *prompt;
     int	  rv, width;
     size_t len;
+
+    if((flags & WT_DING) && F_OFF(F_QUELL_BEEPS, ps_global)){
+        Writechar(BELL, 0);
+        fflush(stdout);
+    }
 
     if(!ps_global->ttyo)
       return(pre_screen_config_want_to(question, dflt, on_ctrl_C));

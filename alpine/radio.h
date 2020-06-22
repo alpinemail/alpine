@@ -68,6 +68,7 @@ typedef struct esckey {
 #define	WT_NORM		 0x00		/* flags modifying want_to       */
 #define	WT_FLUSH_IN	 0x01		/* discard pending input         */
 #define	WT_SEQ_SENSITIVE 0x02 		/* Sensitive to seq # changes  */
+#define WT_DING		 0x04		/* Question needs attention!	*/
 
 
 /* exported prototypes */

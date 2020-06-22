@@ -3232,7 +3232,7 @@ quit_screen(struct pine *pine_state)
        && pine_state->mail_stream != NULL
        && new_mail(1, VeryBadTime, NM_STATUS_MSG | NM_DEFER_SORT) > 0
        && (quit = want_to(_("Quit even though new mail just arrived"), 'y', 0,
-			  NO_HELP, WT_NORM)) != 'y'){
+			  NO_HELP, WT_NORM | WT_DING)) != 'y'){
 	refresh_sort(pine_state->mail_stream, pine_state->msgmap, SRT_VRB);
         pine_state->next_screen = pine_state->prev_screen;
         return;

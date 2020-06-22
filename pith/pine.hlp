@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 453 2020-06-18 15:08:35
+Alpine Commit 455 2020-06-21 20:14:16
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -183,6 +183,15 @@ new additions to Alpine, please check it periodically.
 This is a development version of Alpine. These enhancements are
 released after the release of version 2.22. Please report any
 problems you find with this release.
+
+<P> Additions include:
+
+<UL>
+<LI> Alpine will ding the terminal bell when asking  about quitting
+     when new mail arrives. This is consistent with Alpine dinging the
+     bell when new mail arrives. Bell will not ding if it is disabled
+     for status messages. Suggested by Chime Hart.
+</UL>
 
 <H2>New in Alpine <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)</H2>
 
