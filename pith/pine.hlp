@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 456 2020-06-26 12:10:33
+Alpine Commit 457 2020-06-26 12:26:06
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -181,7 +181,7 @@ new additions to Alpine, please check it periodically.
 
 <P>
 This is a development version of Alpine. These enhancements are
-released after the release of version 2.22. Please report any
+released after the release of version 2.23. Please report any
 problems you find with this release.
 
 <P> Additions include:
@@ -189,7 +189,7 @@ problems you find with this release.
 <UL>
 <LI> Alpine will ding the terminal bell when asking  about quitting
      when new mail arrives. This is consistent with Alpine dinging the
-     bell when new mail arrives. Bell will not ding if it is disabled
+     bell when new mail arrives. The bell will not ding if it is disabled
      for status messages. Suggested by Chime Hart.
 
 <LI> Expansion of the configuration screen for XOAUTH2 to include
@@ -201,7 +201,9 @@ problems you find with this release.
      <A HREF="h_xoauth2_config_screen">Learn more</A>.
 </UL>
 
-<H2>New in Alpine <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)</H2>
+<P>
+Version 2.23 addresses bugs found in previous releases and has several
+additions as well.
 
 <P> Additions include:
 
@@ -252,7 +254,7 @@ problems you find with this release.
      to be used to validate certificates of remote servers.
 
 <LI> Remove sleep of 5 seconds for mailcap programs that use the terminal
-     to display content. Suggested by Carl Edquist. In addition, remove
+     to display content. Suggested by Carl Edquist. In addition, remove the
      configurable process table command and its corresponding sleep time.
 </UL>
 
@@ -287,7 +289,7 @@ Bugs addressed:
     encoding. Reported by Jean Chevalier.
 
 <LI> Alpine would not redraw the screen when a check for new mail in an
-    incoming folder failed due to a failurec while validating the server 
+    incoming folder failed due to a failure while validating the server 
     certificate, and the user did not allow the connection to proceed.
 
 <LI> Crash in Alpine while resizing the screen when using any of the tokens
