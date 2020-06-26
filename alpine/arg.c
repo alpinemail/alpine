@@ -83,7 +83,9 @@ static char args_err_missing_copyabook[] =	N_("missing argument for option \"-co
 static char args_err_missing_server_name[] =	N_("missing server name. Example: -xoauth2-server Gmail");
 static char args_err_missing_client_id[] =	N_("missing client-id name. Example: -xoauth2-client-id 760.someserver.com");
 static char args_err_missing_client_secret[] =	N_("missing client-secret name. Example: -xoauth2-client-secret V56i0fa_");
-static char args_err_missing_xoauth_option[] =  N_("at least one of the arguments -xoauth2-server, or -xoauth2-client-id, or -xoauth2-client-secret is missing.");
+static char args_err_missing_tenant[] =	N_("missing tenant value. Example: -xoauth2-tenant common");
+static char args_err_missing_user[] =	N_("missing username value. Example: -xoauth2-user user@example.com");
+static char args_err_missing_xoauth_option[] =  N_("at least one of the arguments -xoauth2-server, or -xoauth2-client-id, xoauth2-tenant, or -xoauth2-client-secret is missing.");
 
 static char *args_pine_args[] = {
 N_("Possible Starting Arguments for Alpine program:"),
@@ -217,9 +219,7 @@ pine_args(struct pine *pine_state, int argc, char **argv, ARGDATA_S *args)
     char *sort                = NULL;
     char *pinerc_file         = NULL;
     char *lc		      = NULL;
-    char *xoauth2_server      = NULL;
-    char *xoauth2_client_id   = NULL;
-    char *xoauth2_client_secret = NULL;
+    XOAUTH2_INFO_S x;
     int   do_help             = 0;
     int   do_conf             = 0;
     int   usage               = 0;
@@ -232,6 +232,7 @@ pine_args(struct pine *pine_state, int argc, char **argv, ARGDATA_S *args)
     av = argv;
     memset(args, 0, sizeof(ARGDATA_S));
     args->action = aaFolder;
+    memset((void *) &x, 0, sizeof(XOAUTH2_INFO_S));
 
     pine_state->pine_name = (lc = last_cmpnt(argv[0])) ? lc : (lc = argv[0]);
 #ifdef	DOS
@@ -556,9 +557,9 @@ Loop: while(--ac > 0)
 	      else if(strcmp(*av, "xoauth2-server") == 0){
 		  if(--ac){
 		      if((str = *++av) != NULL){
-			  if(xoauth2_server)
-			     fs_give((void **) &xoauth2_server);
-			  xoauth2_server = cpystr(str);
+			  if(x.name)
+			     fs_give((void **) &x.name);
+			  x.name = cpystr(str);
 		      }
 		  }
 		  else{
@@ -570,9 +571,9 @@ Loop: while(--ac > 0)
 	      else if(strcmp(*av, "xoauth2-client-id") == 0){
 		  if(--ac){
 		      if((str = *++av) != NULL){
-			  if(xoauth2_client_id)
-			     fs_give((void **) &xoauth2_client_id);
-			  xoauth2_client_id = cpystr(str);
+			  if(x.client_id)
+			     fs_give((void **) &x.client_id);
+			  x.client_id = cpystr(str);
 		      }
 		  }
 		  else{
@@ -584,13 +585,41 @@ Loop: while(--ac > 0)
 	      else if(strcmp(*av, "xoauth2-client-secret") == 0){
 		  if(--ac){
 		      if((str = *++av) != NULL){
-			  if(xoauth2_client_secret)
-			     fs_give((void **) &xoauth2_client_secret);
-			  xoauth2_client_secret = cpystr(str);
+			  if(x.client_secret)
+			     fs_give((void **) &x.client_secret);
+			  x.client_secret = cpystr(str);
 		      }
 		  }
 		  else{
 		      display_args_err(_(args_err_missing_client_secret), NULL, 1);
+		      ++usage;
+		  }
+		  goto Loop;
+	      }
+	      else if(strcmp(*av, "xoauth2-tenant") == 0){
+		  if(--ac){
+		      if((str = *++av) != NULL){
+			  if(x.tenant)
+			     fs_give((void **) &x.tenant);
+			  x.tenant = cpystr(str);
+		      }
+		  }
+		  else{
+		      display_args_err(_(args_err_missing_tenant), NULL, 1);
+		      ++usage;
+		  }
+		  goto Loop;
+	      }
+	      else if(strcmp(*av, "xoauth2-user") == 0){
+		  if(--ac){
+		      if((str = *++av) != NULL){
+			  if(x.users)
+			     fs_give((void **) &x.users);
+			  x.users = cpystr(str);
+		      }
+		  }
+		  else{
+		      display_args_err(_(args_err_missing_user), NULL, 1);
 		      ++usage;
 		  }
 		  goto Loop;
@@ -942,21 +971,15 @@ Loop: while(--ac > 0)
 	exit(-1);
     }
 
-    if((xoauth2_server || xoauth2_client_id || xoauth2_client_secret)
-	&& !(xoauth2_server && xoauth2_client_id && xoauth2_client_secret)){
-	display_args_err(_(args_err_missing_xoauth_option), NULL, 1);
-	++usage;
-    }
-
     if(do_help || usage)
       args_help(); 
 
     if(usage)
       exit(-1);
 
-    if(xoauth2_server){
+    if(x.name){
       char *tmp1, *tmp2;
-      tmp2 = xoauth_config_line(xoauth2_server, xoauth2_client_id, xoauth2_client_secret);
+      tmp2 = xoauth_config_line(&x);
       if(tmp2){
         tmp1 = fs_get((strlen(ps_global->vars[V_XOAUTH2_INFO].name) + strlen(tmp2) + 2)*sizeof(char));
 	if(tmp1){

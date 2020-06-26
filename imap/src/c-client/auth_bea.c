@@ -121,21 +121,9 @@ long auth_oauthbearer_client (authchallenge_t challenger,authrespond_t responder
 		+ strlen(BEARER_HOST) + strlen(mb->orighost) + 1
 		+ strlen(BEARER_PORT) + strlen(ports) + 1
 		+ strlen(OAUTH2_BEARER) + strlen(oauth2.access_token) + 2;
-      t = response = (char *) fs_get (rlen);
-      for (u = BEARER_ACCOUNT; *u; *t++ = *u++);
-      for (u = user; *u; *t++ = *u++);
-      *t++ = ',';
-      *t++ = '\001';		/* delimiting ^A */
-      for (u = BEARER_HOST; *u; *t++ = *u++);
-      for (u = mb->orighost; *u; *t++ = *u++);
-      *t++ = '\001';		/* delimiting ^A */
-      for (u = BEARER_PORT; *u; *t++ = *u++);
-      for (u = ports; *u; *t++ = *u++);
-      *t++ = '\001';		/* delimiting ^A */
-      for (u = OAUTH2_BEARER; *u; *t++ = *u++);
-      for (u = oauth2.access_token; *u; *t++ = *u++);
-      *t++ = '\001';		/* delimiting ^A */
-      *t++ = '\001';		/* delimiting ^A */
+      response = (char *) fs_get (rlen+1);
+      sprintf(response, "%s%s,\001%s%s\001%s%s\001%s%s\001\001", BEARER_ACCOUNT, user,
+		BEARER_HOST, mb->orighost, BEARER_PORT, ports, OAUTH2_BEARER, oauth2.access_token);
       if ((*responder) (stream,base,response,rlen)) {
 	if ((challenge = (*challenger) (stream,&clen)) != NULL)
 	  fs_give ((void **) &challenge);
@@ -159,6 +147,9 @@ long auth_oauthbearer_client (authchallenge_t challenger,authrespond_t responder
       fs_give ((void **) &response);
     }
   }
+  if(oauth2.param[OA2_Id].value) fs_give((void **) &oauth2.param[OA2_Id].value);
+  if(oauth2.param[OA2_Secret].value) fs_give((void **) &oauth2.param[OA2_Secret].value);
+  if(oauth2.param[OA2_Tenant].value) fs_give((void **) &oauth2.param[OA2_Tenant].value);
   if (!ret || !oauth2.name)
       *trial = 65535; 			/* don't retry if bad protocol */
   return ret;

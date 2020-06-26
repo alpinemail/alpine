@@ -14,96 +14,356 @@
 
 #include "headers.h"
 #include "xoauth2conf.h"
-#include "xoauth2.h"
 #include "keymenu.h"
 #include "status.h"
 #include "confscroll.h"
+#include "init.h"
 #include "../pith/state.h"
 #include "../pith/conf.h"
 #include "../pith/list.h"
+#include "../pith/mailcmd.h"
 
 extern OAUTH2_S alpine_oauth2_list[];
 
 XOAUTH2_INFO_S xoauth_default[] = {
-  { GMAIL_NAME, GMAIL_ID, GMAIL_SECRET},
-  { OUTLOOK_NAME, OUTLOOK_ID, OUTLOOK_SECRET},
-  { NULL, NULL, NULL}
+  { GMAIL_NAME, GMAIL_ID, GMAIL_SECRET, GMAIL_TENANT, NULL},
+  { OUTLOOK_NAME, OUTLOOK_ID, OUTLOOK_SECRET, OUTLOOK_TENANT, NULL},
+  { NULL, NULL, NULL, NULL, NULL}
 };
 
+typedef enum {Xname = 0, Xid, Xsecret, Xtenant, Xuser, Xend} XTYPES;
 
-#define NXSERVERS (sizeof(xoauth_default)/sizeof(xoauth_default[0])-1)
-#define XOAUTH2_CLIENT_ID       _("Client-Id")
-#define XOAUTH2_CLIENT_SECRET   _("Client-Secret")
-#define XNAME			"/NAME="
-#define XID			"/ID="
-#define XSECRET			"/SECRET="
+typedef struct xoauh2_info_val_s {
+  char *screen_name;
+  char *pinerc_name;
+} XOAUTH2_INFO_VAL_S;
 
+/* the order here must match the order in XTYPES above */
+XOAUTH2_INFO_VAL_S x_default[] = {
+   {NULL, 		"/NAME="},
+   {"Client-Id",	"/ID="},
+   {"Client-Secret",	"/SECRET="},
+   {"Tenant",		"/TENANT="},
+   {"Username",		"/USER="},
+   {NULL, 		NULL}
+};
+
+#define XNAME	x_default[Xname].pinerc_name
+#define XID	x_default[Xid].pinerc_name
+#define XSECRET	x_default[Xsecret].pinerc_name
+#define XTENANT	x_default[Xtenant].pinerc_name
+#define XUSER	x_default[Xuser].pinerc_name
+
+#define XOAUTH2_CLIENT_ID	x_default[Xid].screen_name
+#define XOAUTH2_CLIENT_SECRET	x_default[Xsecret].screen_name
+#define XOAUTH2_TENANT		x_default[Xtenant].screen_name
+#define XOAUTH2_USERS		x_default[Xuser].screen_name
+
+char *list_to_array(char **);
+char **array_to_list(char *);
 void write_xoauth_configuration(struct variable  *, struct variable **, EditWhich);
+char **xoauth2_conf_dedup_and_merge(char ***);
+int  same_xoauth2_info(XOAUTH2_INFO_S, XOAUTH2_INFO_S);
+XOAUTH2_INFO_S *xoauth_info_choice(XOAUTH2_INFO_S **, char *);
+int xoauth2_info_tool(struct pine *, int, CONF_S **, unsigned int);
+
+int
+same_xoauth2_info(XOAUTH2_INFO_S x, XOAUTH2_INFO_S y)
+{
+   int rv = 0;
+   if(x.name && y.name && !strcmp(x.name, y.name)
+	&& x.client_id && y.client_id && !strcmp(x.client_id, y.client_id)
+	&& ((!x.client_secret && !y.client_secret)
+		|| (x.client_secret && y.client_secret && !strcmp(x.client_secret, y.client_secret)))
+	&& ((!x.tenant && !y.tenant) || (x.tenant && y.tenant && !strcmp(x.tenant, y.tenant))))
+	rv = 1;
+   return rv;
+}
 
 char *
-xoauth_config_line(char *server, char *id, char *secret)
+list_to_array(char **list)
+{
+   char *rv;
+   int i;
+   size_t n;
+
+   if(list == NULL || *list == NULL) return NULL;
+
+   for(i = 0, n = 0; list[i] != NULL; i++)
+      n += strlen(list[i]) + 1;
+
+   rv = fs_get(n*sizeof(char));
+   *rv = '\0';
+   for(i = 0; list[i] != NULL; i++){
+      strcat(rv, list[i]);
+      if(list[i+1] != NULL) strcat(rv, ",");
+   }
+   return rv;
+}
+
+
+char **array_to_list(char *array)
+{
+   int i;
+   char *u;
+
+   if(array == NULL || *array == '\0') return NULL;
+
+   for(u = array, i = 0; u  && *u; u++)
+       if(*u == ',') i++;
+
+   return parse_list(array, i+1, 0,NULL);
+}
+
+char *
+xoauth_config_line(XOAUTH2_INFO_S *x)
 {
   size_t n;
   char *rv;
+  int i;
 
-  n = strlen(XNAME) + strlen(XID) + strlen(XSECRET) 
-	    + strlen(server) + strlen(id) + strlen(secret) + 9;
+  if(x == NULL) return NULL;
+
+  n = strlen(XNAME) + strlen(x->name) + strlen(XID) + strlen(x->client_id)
+	+ strlen(x->client_secret ? XSECRET : "") + strlen(x->client_secret ? x->client_secret : "")
+	+ strlen(x->tenant ? XTENANT : "") + strlen(x->tenant ? x->tenant : "")
+	+ strlen(XUSER) + strlen(x->users ? x->users : "")
+	+ 2 + 3 + (x->client_secret ? 3 : 0) + (x->tenant ? 3 : 0) + 3 + 1;
   rv = fs_get(n*sizeof(char));
-  sprintf(rv, "%s\"%s\" %s\"%s\" %s\"%s\"", XNAME, server, XID, id, 
-						XSECRET, secret);
+  sprintf(rv, "%s\"%s\" %s\"%s\"", XNAME, x->name, XID, x->client_id);
+  if(x->client_secret)
+     sprintf(rv + strlen(rv), " %s\"%s\"", XSECRET, x->client_secret);
+  if(x->tenant)
+     sprintf(rv + strlen(rv), " %s\"%s\"", XTENANT, x->tenant);
+  sprintf(rv + strlen(rv), " %s\"%s\"", XUSER, x->users ? x->users : "");
   return rv;
 }
 
-/* call this function when id and secret are unknown.
- * precedence is as follows:
- * If the user has configured something, return that;
- * else if we are already using a value, return that;
- * else return default values.
- */
-void
-oauth2_get_client_info(unsigned char *name, char **id, char **secret)
+int
+xoauth2_info_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags)
 {
-  int i;
-  char **lval, *name_lval, *idp, *secretp;
+   int rv = 0;
 
-  *id = *secret = NULL;
+   switch(cmd){
+      case MC_CHOICE:
+	*((*cl)->d.x.selected) = (*cl)->d.x.pat;
+	rv = simple_exit_cmd(flags);
 
-  /* first check the value configured by the user */
+      case MC_EXIT:
+	rv = simple_exit_cmd(flags);
+	break;
+
+      default:
+	rv = -1;
+   }
+
+   if(rv > 0)
+     ps->mangled_body = 1;
+
+   return rv;
+}
+
+XOAUTH2_INFO_S *
+xoauth_info_choice(XOAUTH2_INFO_S **xinfo, char *user)
+{
+   int i, n, rv;
+   if(!ps_global->ttyo){
+	char *s;
+	char prompt[1024];
+	char reply[1024];
+	int sel;
+	for(i = n = 0; xinfo[i] != NULL; i++)
+	   n += strlen(xinfo[i]->client_id); + 5;	/* number, parenthesis, space */
+	n += strlen(xinfo[0]->name) + strlen(user);
+	n += 1024;	/* large enough to display to lines of 80 characters in UTF-8 */
+	s = fs_get(n*sizeof(char));
+	sprintf(s, _("Alpine cannot determine which client-id to use for the username <%s> for your %s account. "), user, xinfo[0]->name);
+	sprintf(s + strlen(s), _("Please select the client-id to use from the following list.\n\n"));
+	for(i = 0; xinfo[i]; i++)
+	   sprintf(s + strlen(s), " %d) %.70s\n", i+1, xinfo[i]->client_id);
+	sprintf(s + strlen(s), "%s", "\n\n");
+
+	display_init_err(s, 0);
+
+	strncpy(prompt, _("Enter your selection number: "), sizeof(prompt));
+	prompt[sizeof(prompt)-1] = '\0';
+
+	do{
+	   rv = optionally_enter(reply, 0, 0, sizeof(reply), prompt, NULL, NO_HELP, 0);
+	   sel = atoi(reply) - 1;
+	   rv = (sel >= 0 && sel < i) ? 0 : -1;
+	} while (rv != 0);
+	return copy_xoauth2_info(xinfo[rv]);
+   }
+   else{
+      CONF_S  *ctmp = NULL, *first_line = NULL;
+      XOAUTH2_INFO_S *x_sel = NULL;
+      OPT_SCREEN_S   screen;
+      char tmp[1024];
+
+      dprint((9, "xoauth2 select client-id screen"));
+      ps_global->next_screen = SCREEN_FUN_NULL;
+
+      memset(&screen, 0, sizeof(screen));
+
+      for(i = 0; i < sizeof(tmp) && i < ps_global->ttyo->screen_cols; i++)
+	  tmp[i] = '-';
+      tmp[i] = '\0';
+
+      new_confline(&ctmp);
+      ctmp->flags |= CF_NOSELECT;
+      ctmp->value = cpystr(tmp);
+
+      new_confline(&ctmp);
+      ctmp->flags |= CF_NOSELECT;
+      ctmp->value = cpystr(_("Select a Client-ID to use with this account"));
+
+      new_confline(&ctmp);
+      ctmp->flags |= CF_NOSELECT;
+      ctmp->value = cpystr(tmp);
+
+      new_confline(&ctmp);
+      ctmp->flags |= CF_NOSELECT | CF_B_LINE;
+
+      sprintf(tmp, _("Alpine cannot determine which client-id to use for the username <%s>"), user);
+      new_confline(&ctmp);
+      ctmp->flags |= CF_NOSELECT;
+      ctmp->value = cpystr(tmp);
+
+      sprintf(tmp, _("for your %s account. Please select the client-id to use from the following list.\n\n"), xinfo[0]->name);
+      new_confline(&ctmp);
+      ctmp->flags |= CF_NOSELECT;
+      ctmp->value = cpystr(tmp);
+
+      new_confline(&ctmp);
+      ctmp->flags |= CF_NOSELECT | CF_B_LINE;
+
+      for(i = 0; xinfo[i] != NULL; i++){
+	new_confline(&ctmp);
+        if(!first_line)
+          first_line = ctmp;
+
+        ctmp->value        = cpystr(xinfo[i]->client_id);
+        ctmp->d.x.selected = &x_sel;
+        ctmp->d.x.pat      = copy_xoauth2_info(xinfo[i]);
+        ctmp->keymenu      = &xoauth2_id_select_km;
+        ctmp->help         = NO_HELP;
+        ctmp->help_title   = NULL;
+        ctmp->tool         = xoauth2_info_tool;
+        ctmp->flags        = CF_STARTITEM;
+        ctmp->valoffset    = 4;
+      }
+     (void)conf_scroll_screen(ps_global, &screen, first_line, _("SELECT CLIENT_ID"),
+                             _("xoauth2"), 0, NULL);
+      return x_sel;
+   }
+   return NULL;
+}
+
+/* Get the client-id, etc. for server "name" associated to user "user" */
+XOAUTH2_INFO_S *
+oauth2_get_client_info(unsigned char *name, char *user)
+{
+  int i, j, matches;
+  char ***alval, **lval;
+  XOAUTH2_INFO_S *x, **xinfo;
+
+  if(name == NULL || *name == '\0' || user == NULL || *user == '\0')
+    return NULL;
+
+  matches = 0;
+  /* first count how many servers  */
   lval = ps_global->vars[V_XOAUTH2_INFO].current_val.l;
   for(i = 0; lval && lval[i]; i++){
-     xoauth_parse_client_info(lval[i], &name_lval, &idp, &secretp);
-     if(name_lval && !strcmp(name_lval, name)){
-	*id = idp ? cpystr(idp) : NULL;
-	*secret = secretp ? cpystr(secretp) : NULL;
-     }
-     if(name_lval) fs_give((void **) &name_lval);
-     if(idp) fs_give((void **) &idp);
-     if(secretp) fs_give((void **) &secretp);
-     break;
+     x = xoauth_parse_client_info(lval[i]);
+     if(x && x->name && name && !strcmp(x->name, name))
+	matches++;
+     free_xoauth2_info(&x);
   }
-
-  if(*id && **id && *secret && **secret) return;
-
-  /* if not, now see if we already have a value set, and use that */
-  for(i = 0; alpine_oauth2_list[i].name != NULL; i++){
-     if(!strcmp(alpine_oauth2_list[i].name, name)){
-        *id = alpine_oauth2_list[i].param[OA2_Id].value 
-		? cpystr(alpine_oauth2_list[i].param[OA2_Id].value) : NULL;
-        *secret = alpine_oauth2_list[i].param[OA2_Secret].value
-		? cpystr(alpine_oauth2_list[i].param[OA2_Secret].value) : NULL;
-	break;
-     }
-  }
-
-  if(*id && **id && *secret && **secret) return;
 
   /* if nothing, use the default value */
-  for(i = 0; xoauth_default[i].name != NULL; i++)
-     if(!strcmp(xoauth_default[i].name, name)){
-        *id = cpystr(xoauth_default[i].client_id);
-        *secret = cpystr(xoauth_default[i].client_secret);
-	break;
+  for(i = 0; xoauth_default[i].name != NULL && strcmp(xoauth_default[i].name, name); i++);
+  if(xoauth_default[i].name) matches++;
+
+  if(matches == 0) return NULL;
+  if(matches == 1) return copy_xoauth2_info(&xoauth_default[i]);
+
+  /* more than one match, see if it is a duplicate client-id entry */
+  xinfo = fs_get((matches + 1)*sizeof(XOAUTH2_INFO_S *));
+  memset((void *)xinfo, 0, (matches + 1)*sizeof(XOAUTH2_INFO_S *));
+  matches = 0;	/* restart the recount, it might go lower! */
+  for(i = 0; lval && lval[i]; i++){
+     x = xoauth_parse_client_info(lval[i]);
+     if(x && x->name && name && !strcmp(x->name, name)){
+	for(j = 0; xinfo && xinfo[j] && !same_xoauth2_info(*x, *xinfo[j]); j++);
+	if(!xinfo[j]) xinfo[matches++] = copy_xoauth2_info(x);
      }
+     free_xoauth2_info(&x);
+  }
+  for(i = 0; xoauth_default[i].name != NULL && strcmp(xoauth_default[i].name, name); i++){
+     for(j = 0; xinfo && xinfo[j] && !same_xoauth2_info(xoauth_default[i], *xinfo[j]); j++);
+     if(xoauth_default[i].name && !xinfo[j]) xinfo[matches++] = copy_xoauth2_info(&xoauth_default[i]);
+  }
+
+  /* if after removing the duplicate entries, we only have one, use it */
+  if(matches == 1){
+     x = copy_xoauth2_info(xinfo[0]);
+     free_xoauth2_info(&xinfo[0]);
+     fs_give((void **) xinfo);
+     return x;
+  }
+
+  /* we have more than one match, now check if any of them matches the given user */
+  matches = 0;
+  for(i = 0; xinfo && xinfo[i]; i++){
+      lval = array_to_list(xinfo[i]->users);
+      for(j = 0; lval && lval[j] && strucmp(lval[j], user); j++);
+      if(lval && lval[j]){
+	 matches++;
+	 free_xoauth2_info(&x);
+	 x = copy_xoauth2_info(xinfo[i]);
+      }
+      if(lval) free_list_array(&lval);
+  }
+
+  /* only one server matches the username */
+  if(matches == 1){
+     for(i = 0; xinfo[i] != NULL; i++)
+         free_xoauth2_info(&xinfo[i]);
+     fs_give((void **) xinfo);
+     return x;
+  }
+
+  free_xoauth2_info(&x);
+  /* We either have no matches, or have more than one match!
+   * in either case, let the user pick what they want */
+   x = xoauth_info_choice(xinfo, user);
+   for(i = 0; xinfo[i] != NULL; i++)
+      free_xoauth2_info(&xinfo[i]);
+   fs_give((void **) xinfo);
+
+   /* Once the user chose a client-id, save it so we do not ask again */
+   if(x != NULL){
+      int n = x->users ? strlen(x->users) + 1 : 0;
+      char ***alval, **l;
+
+      fs_resize((void **) &x->users, (n + strlen(user) + 1)*sizeof(char));
+      x->users[n > 0 ? n - 1 : 0] = '\0';
+      if(n > 0) strcat(x->users, ",");
+      strcat(x->users, user);
+      alval = ALVAL(&ps_global->vars[V_XOAUTH2_INFO], Main);
+      lval = *alval;
+
+      for(n = 0; lval && lval[n]; n++);
+      fs_resize((void **) &lval, (n+2)*sizeof(char *));
+      lval[n] = xoauth_config_line(x);
+      lval[n+1] = NULL;
+      *alval = xoauth2_conf_dedup_and_merge(&lval);
+      set_current_val(&ps_global->vars[V_XOAUTH2_INFO], FALSE, FALSE);
+      write_pinerc(ps_global, Main, WRP_NONE);
+   }
+
+   return x;
 }
 
 /* write vlist to v 
@@ -113,30 +373,69 @@ oauth2_get_client_info(unsigned char *name, char **id, char **secret)
 void
 write_xoauth_configuration(struct variable  *v, struct variable **vlist, EditWhich ew)
 {
-  int i, j, k;
-  size_t n;
-  char ***alval, **lval, *p, *q, *l;
+  int i, j, k, m, n;
+  XOAUTH2_INFO_S *x = NULL, *y;
+  char ***alval, **lval, **l;
+  char *p;
+
+  for (i = 0, n = 0; vlist[i] != NULL; i++)	/* count number of lines we need */
+      if(!strcmp(vlist[i]->name, XOAUTH2_USERS))
+	n++;
+  lval = fs_get((n+1)*sizeof(char *));
+  memset((void *) lval, 0, (n+1)*sizeof(char *));
 
   alval  = ALVAL(v, ew);
-  for (i = 0, k = 0; vlist[i] != NULL;){
-      if(PVAL(vlist[i], ew)){
-	j = i/2;	/* this is the location in the alpine_oauth2_list array */
-	i = 2*j;	/* reset i */
-	p = PVAL(vlist[i], ew);
-	if(p == NULL) p = vlist[i]->current_val.p;
-	q = PVAL(vlist[i+1], ew);
-	if(q == NULL) q = vlist[i+1]->current_val.p;
-	if(k == 0) lval = fs_get((NXSERVERS +1)*sizeof(char *));
-	lval[k++] = xoauth_config_line(alpine_oauth2_list[j].name, p, q);
-	if(alpine_oauth2_list[j].param[OA2_Id].value)
-	   fs_give((void **) &alpine_oauth2_list[j].param[OA2_Id].value);
-	if(alpine_oauth2_list[j].param[OA2_Secret].value)
-	   fs_give((void **) &alpine_oauth2_list[j].param[OA2_Secret].value);
-	alpine_oauth2_list[j].param[OA2_Id].value = cpystr(p);
-	alpine_oauth2_list[j].param[OA2_Secret].value = cpystr(q);
-	i += 2;
+  for (i = 0, k = 0; vlist[i] != NULL; i++){
+      if(x == NULL){
+	 x = new_xoauth2_info();
+	 x->name = cpystr(vlist[i]->descrip);	/* hack! but makes life so much easier! */
+	 for(m = 0; xoauth_default[m].name != NULL
+		    && strcmp(xoauth_default[m].name, x->name); m++);
       }
-      else i++;
+      if (x->client_id == NULL && !strcmp(vlist[i]->name, XOAUTH2_CLIENT_ID)){
+	 p = PVAL(vlist[i], ew);
+	 if (p == NULL) p = vlist[i]->current_val.p;
+	 if(p != NULL)
+	    x->client_id = cpystr(p);
+	 continue;
+      }
+      if (x->client_secret == NULL
+	  && m >= 0
+	  && xoauth_default[m].client_secret
+	  && !strcmp(vlist[i]->name, XOAUTH2_CLIENT_SECRET)){
+	 p = PVAL(vlist[i], ew);
+	 if (p == NULL) p = vlist[i]->current_val.p;
+	 if(p != NULL)
+	    x->client_secret = cpystr(p);
+	 continue;
+      }
+      if (x->tenant == NULL
+	  && m >= 0
+	  && xoauth_default[m].tenant
+	  && !strcmp(vlist[i]->name, XOAUTH2_TENANT)){
+	 p = PVAL(vlist[i], ew);
+	 if (p == NULL) p = vlist[i]->current_val.p;
+	 if(p != NULL)
+	    x->tenant = cpystr(p);
+	 continue;
+      }
+      if (x->users == NULL && !strcmp(vlist[i]->name, XOAUTH2_USERS)){
+	 l = LVAL(vlist[i], ew);
+	 x->users = list_to_array(l);
+      }
+      /* don't let it get to here until we are done! */
+      lval[k++] = xoauth_config_line(x);
+      if(alpine_oauth2_list[j].param[OA2_Id].value)
+	fs_give((void **) &alpine_oauth2_list[j].param[OA2_Id].value);
+      if(alpine_oauth2_list[j].param[OA2_Secret].value)
+	fs_give((void **) &alpine_oauth2_list[j].param[OA2_Secret].value);
+      if(alpine_oauth2_list[j].param[OA2_Tenant].value)
+	fs_give((void **) &alpine_oauth2_list[j].param[OA2_Tenant].value);
+      alpine_oauth2_list[j].param[OA2_Id].value = cpystr(x->client_id);
+      alpine_oauth2_list[j].param[OA2_Secret].value = x->client_secret ? cpystr(x->client_secret) : NULL;
+      alpine_oauth2_list[j].param[OA2_Tenant].value = x->tenant ? cpystr(x->tenant) : NULL;
+	/* get ready for next run */
+      free_xoauth2_info(&x);
   }
   if(k > 0){
      lval[k] = NULL;
@@ -150,25 +449,26 @@ write_xoauth_configuration(struct variable  *v, struct variable **vlist, EditWhi
 
 
 /* parse line of the form
-  /NAME="text" /ID="text" /SECRET="text"
+  /NAME="text" /ID="text" /TENANT="text" /SECRET="text" /USER="text"
  */
-void
-xoauth_parse_client_info(char *lvalp, char **namep, char **idp, char **secretp)
+XOAUTH2_INFO_S *
+xoauth_parse_client_info(char *lvalp)
 {
   char *s, *t, c;
-  *namep = *idp = *secretp = NULL;
+  XOAUTH2_INFO_S *x;
 
-  if (lvalp == NULL) return;
+  if (lvalp == NULL) return NULL;
 
+  x = new_xoauth2_info();
   if((s = strstr(lvalp, XNAME)) != NULL){
 	s += strlen(XNAME);
 	if(*s == '"') s++;
 	for(t = s; *t && *t != '"' && *t != ' '; t++);
 	c = *t;
 	*t = '\0';
-	*namep = cpystr(s);
+	if (*s) x->name = cpystr(s);
 	*t = c;
-  }
+  } else x->name = NULL;
 
   if((s = strstr(lvalp, XID)) != NULL){
 	s += strlen(XID);
@@ -176,9 +476,19 @@ xoauth_parse_client_info(char *lvalp, char **namep, char **idp, char **secretp)
 	for(t = s; *t && *t != '"' && *t != ' '; t++);
 	c = *t;
 	*t = '\0';
-	*idp = cpystr(s);
+	if (*s) x->client_id = cpystr(s);
 	*t = c;
-  }
+  } else x->client_id = NULL;
+
+  if((s = strstr(lvalp, XTENANT)) != NULL){
+	s += strlen(XTENANT);
+	if(*s == '"') s++;
+	for(t = s; *t && *t != '"' && *t != ' '; t++);
+	c = *t;
+	*t = '\0';
+	if (*s) x->tenant = cpystr(s);
+	*t = c;
+  } else x->tenant = NULL;
 
   if((s = strstr(lvalp, XSECRET)) != NULL){
 	s += strlen(XSECRET);
@@ -186,11 +496,247 @@ xoauth_parse_client_info(char *lvalp, char **namep, char **idp, char **secretp)
 	for(t = s; *t && *t != '"' && *t != ' '; t++);
 	c = *t;
 	*t = '\0';
-	*secretp = cpystr(s);
+	if (*s) x->client_secret = cpystr(s);
 	*t = c;
-  }
+  } else x->client_secret = NULL;
+
+  if((s = strstr(lvalp, XUSER)) != NULL){
+	s += strlen(XUSER);
+	if(*s == '"') s++;
+	for(t = s; *t && *t != '"' && *t != ' '; t++);
+	c = *t;
+	*t = '\0';
+	if(*s)	x->users = cpystr(s);
+	*t = c;
+  } else x->users = NULL;
+
+  return x;
 }
 
+char **
+xoauth2_conf_dedup_and_merge(char ***alval)
+{
+   int i, j, k, l, n, m;
+   char **lval, **rv;
+   XOAUTH2_INFO_S *x, *y;
+
+   if(alval == NULL || *alval == NULL || **alval == NULL)
+      return NULL;
+
+   lval = *alval;
+   for(i = 0; lval[i] != NULL; i++);	/* count how many entries */
+
+   rv = fs_get((i+1)*sizeof(char *));
+   memset((void *)rv, 0, (i+1)*sizeof(char *));
+
+   for (i = 0;  lval[i] != NULL; i++){
+       x = xoauth_parse_client_info(lval[i]);
+       for (j = 0; rv[j] != NULL; j++){
+           y = xoauth_parse_client_info(rv[j]);
+	   /* check if this is the same data. If so, merge the users into one and discard the old data */
+	   if(same_xoauth2_info(*x, *y)){
+	      char **l1, **l2, **l3;
+	      int k, n;
+	      /* merge user1 with user2, save in x->users */
+	      l1 = array_to_list(x->users);
+	      l2 = array_to_list(y->users);
+
+	      for(n = 0; l1 && l1[n]; n++);
+	      for(m = 0; l2 && l2[m]; m++, n++);
+	      l3 = fs_get((n+1)*sizeof(char*));
+	      memset((void *) l3, 0, (n+1)*sizeof(char *));
+
+	      for(l = 0, n = 0; l1 && l1[l]; l++){
+		  for(k = 0; l1 && l1[j] && l3[k] && strucmp(l1[l], l3[k]); k++);
+		  if(l3[k] == NULL && l1 && l1[l] != NULL)
+		     l3[n++] = cpystr(l1[l]);
+	      }
+	      for(l = 0; l2 && l2[l]; l++){
+		  for(k = 0; l2 && l2[l] && l3[k] && strucmp(l2[l], l3[k]); k++);
+		  if(l3[k] == NULL && l2 && l2[l] != NULL)
+		     l3[n++] = cpystr(l2[l]);
+	      }
+	      l3[n++] = NULL;
+	      if(x->users) fs_give((void **) &x->users);
+	      x->users = list_to_array(l3);
+	      fs_give((void **) &rv[j]);
+	      rv[j] = xoauth_config_line(x);
+
+	      if(l1) free_list_array(&l1);
+	      if(l2) free_list_array(&l2);
+	      if(l3) free_list_array(&l3);
+	      free_xoauth2_info(&y);
+	      break;
+	   }
+	   free_xoauth2_info(&y);
+       }
+       if(rv[j] == NULL) rv[j] = cpystr(lval[i]);
+   }
+   return rv;
+}
+
+/*
+ * X = new value, Y = default configuration
+ */
+void
+write_xoauth_conf_entry(XOAUTH2_INFO_S *x, XOAUTH2_INFO_S *y, CONF_S **cl, CONF_S **clb, CONF_S **fline,
+	struct variable ***varlistp, int *pp, int ln, int key)
+{
+   CONF_S *ctmpb = *clb;
+   struct variable **varlist;
+   int i, p = *pp;
+   char tmp[1024], tmp2[16];
+
+   i = 2;	/* client_id and users always appear */
+   if(x->client_secret) i++;
+   if(x->tenant) i++;
+
+   sprintf(tmp2, "%d", key);
+   fs_resize((void **) varlistp, (p + i + 1)*sizeof(struct variable **));
+   memset((void *) *varlistp + p*sizeof(struct variable *), 0,  (i + 1)*sizeof(struct variable *));
+   varlist = *varlistp;
+
+   new_confline(cl)->var = NULL;
+   if(fline && !*fline) *fline = *cl;
+   (*cl)->flags    |= CF_NOSELECT;
+   (*cl)->help      = NO_HELP;
+   (*cl)->valoffset = 1;
+   (*cl)->value     = cpystr(x->name);
+   (*cl)->varname   = NULL;
+   (*cl)->varnamep  = ctmpb = *cl;
+
+   /* Setup client-id variable */
+   varlist[p] = fs_get(sizeof(struct variable));
+   memset((void *) varlist[p], 0, sizeof(struct variable));
+   varlist[p]->name = cpystr(XOAUTH2_CLIENT_ID);
+   varlist[p]->is_used = 1;
+   varlist[p]->is_user = 1;
+   varlist[p]->main_user_val.p = x->client_id && y->client_id
+		&& strcmp(x->client_id, y->client_id) ? cpystr(x->client_id) : NULL;
+   varlist[p]->global_val.p = y->client_id ? cpystr(y->client_id) : NULL;
+   varlist[p]->dname   = cpystr(tmp2);		/* hack, but makes life easier! */
+   varlist[p]->descrip = cpystr(x->name);	/* hack, but makes life easier! */
+   set_current_val(varlist[p], FALSE, FALSE);
+
+   /* Write client-id variable */
+   new_confline(cl)->var = varlist[p];
+   utf8_snprintf(tmp, sizeof(tmp), "   %-*.100w =", ln, XOAUTH2_CLIENT_ID);
+   tmp[sizeof(tmp)-1] = '\0';
+   (*cl)->varname   = cpystr(tmp);
+   (*cl)->varmem    = p++;
+   (*cl)->valoffset = ln + 3 + 3;
+   (*cl)->value     = pretty_value(ps_global, *cl);
+   (*cl)->keymenu   = &config_xoauth2_text_keymenu;
+   (*cl)->help      = h_config_xoauth2_client_id;
+   (*cl)->tool      = text_tool;
+   (*cl)->varnamep  = ctmpb;
+
+   /* Set up client-secret variable */
+   if(x->client_secret){
+     varlist[p] = fs_get(sizeof(struct variable));
+     memset((void *) varlist[p], 0, sizeof(struct variable));
+     varlist[p]->name = cpystr(XOAUTH2_CLIENT_SECRET);
+     varlist[p]->is_used = 1;
+     varlist[p]->is_user = 1;
+     varlist[p]->main_user_val.p = y->client_secret
+		&& strcmp(x->client_secret, y->client_secret)
+		? cpystr(x->client_secret) : NULL;
+     varlist[p]->global_val.p = y->client_secret ? cpystr(y->client_secret) : NULL;
+     varlist[p]->dname   = cpystr(tmp2);	/* hack, but makes life easier! */
+     varlist[p]->descrip = cpystr(x->name);	/* hack, but makes life easier! */
+     set_current_val(varlist[p], FALSE, FALSE);
+
+     /* Write client-secret variable */
+     new_confline(cl)->var = varlist[p];
+     utf8_snprintf(tmp, sizeof(tmp), "   %-*.100w =", ln, XOAUTH2_CLIENT_SECRET);
+     tmp[sizeof(tmp)-1] = '\0';
+     (*cl)->varname   = cpystr(tmp);
+     (*cl)->varmem    = p++;
+     (*cl)->valoffset = ln + 3 + 3;
+     (*cl)->value     = pretty_value(ps_global, *cl);
+     (*cl)->keymenu   = &config_xoauth2_text_keymenu;
+     (*cl)->help      = h_config_xoauth2_client_secret;
+     (*cl)->tool      = text_tool;
+     (*cl)->varnamep  = ctmpb;
+   }
+
+   /* Set up tenant variable */
+   if(x->tenant){
+     varlist[p] = fs_get(sizeof(struct variable));
+     memset((void *) varlist[p], 0, sizeof(struct variable));
+     varlist[p]->name = cpystr(XOAUTH2_TENANT);
+     varlist[p]->is_used = 1;
+     varlist[p]->is_user = 1;
+     varlist[p]->main_user_val.p = y->tenant && strcmp(x->tenant, y->tenant)
+		? cpystr(x->tenant) : NULL;
+     varlist[p]->global_val.p = y->tenant ? cpystr(y->tenant) : NULL;
+     varlist[p]->dname   = cpystr(tmp2);	/* hack, but makes life easier! */
+     varlist[p]->descrip = cpystr(x->name);	/* hack, but makes life easier! */
+     set_current_val(varlist[p], FALSE, FALSE);
+
+     /* Write client-secret variable */
+     new_confline(cl)->var = varlist[p];
+     utf8_snprintf(tmp, sizeof(tmp), "   %-*.100w =", ln, XOAUTH2_TENANT);
+     tmp[sizeof(tmp)-1] = '\0';
+     (*cl)->varname   = cpystr(tmp);
+     (*cl)->varmem    = p++;
+     (*cl)->valoffset = ln + 3 + 3;
+     (*cl)->value     = pretty_value(ps_global, *cl);
+     (*cl)->keymenu   = &config_xoauth2_text_keymenu;
+     (*cl)->help      = h_config_xoauth2_tenant;
+     (*cl)->tool      = text_tool;
+     (*cl)->varnamep  = ctmpb;
+   }
+
+   /* Setup users variable */
+   varlist[p] = fs_get(sizeof(struct variable));
+   memset((void *) varlist[p], 0, sizeof(struct variable));
+   varlist[p]->name = cpystr(XOAUTH2_USERS);
+   varlist[p]->is_used = 1;
+   varlist[p]->is_user = 1;
+   varlist[p]->is_list = 1;
+   varlist[p]->main_user_val.l = x->users ? array_to_list(x->users) : NULL;
+   varlist[p]->dname   = cpystr(tmp2);		/* hack, but makes life easier! */
+   varlist[p]->descrip = cpystr(x->name);	/* hack, but makes life easier! */
+   set_current_val(varlist[p], FALSE, FALSE);
+
+   /* Write user variable */
+   new_confline(cl)->var = varlist[p];
+   utf8_snprintf(tmp, sizeof(tmp), "   %-*.100w =", ln, XOAUTH2_USERS);
+   tmp[sizeof(tmp)-1] = '\0';
+   (*cl)->varname   = cpystr(tmp);
+   (*cl)->valoffset = ln + 3 + 3;
+   (*cl)->keymenu   = &config_xoauth2_wshuf_keymenu;
+   (*cl)->help      = h_config_xoauth2_username;
+   if(x->users){
+      int z;
+      for(z = 0; varlist[p]->main_user_val.l[z]; z++){
+	if(z) new_confline(cl);
+	(*cl)->var       = varlist[p];
+	(*cl)->varmem    = z;
+	(*cl)->valoffset = ln + 3 + 3;
+	(*cl)->value     = pretty_value(ps_global, *cl);
+	(*cl)->keymenu   = &config_xoauth2_wshuf_keymenu;
+	(*cl)->tool      = text_tool;
+	(*cl)->varnamep  = ctmpb = *cl;
+      }
+   }
+   else {
+	(*cl)->varmem = 0;
+	(*cl)->value = pretty_value(ps_global, *cl);
+	(*cl)->keymenu = &config_xoauth2_wshuf_keymenu;
+	(*cl)->tool    = text_tool;
+	(*cl)->varnamep  = ctmpb = *cl;
+   }
+   p++;
+   *pp = p;
+   *varlistp = varlist;
+   *clb = ctmpb;
+
+   /* Separate servers with a blank line */
+   new_confline(cl);
+   (*cl)->flags    |= CF_NOSELECT | CF_B_LINE;
+}
 
 /*----------------------------------------------------------------------
   Screen to add client_id and client_secret for a service
@@ -199,19 +745,20 @@ xoauth_parse_client_info(char *lvalp, char **namep, char **idp, char **secretp)
 void
 alpine_xoauth2_configuration(struct pine *ps, int edit_exceptions)
 {
-    struct variable gmail_client_id_var, gmail_client_secret_var;
-    struct variable outlook_client_id_var, outlook_client_secret_var;
-    struct variable *varlist[2*NXSERVERS + 1];
-    char	    tmp[MAXPATH+1], *pval, **lval;
-    char	    *id, *secret;
-    char	    *name_lval, *id_lval, *id_conf, *id_def, *secret_lval, *secret_conf, *secret_def;
-    int		    i, j, k, l, ln = 0, readonly_warning = 0, pos;
-    CONF_S	   *ctmpa = NULL, *ctmpb, *first_line = NULL;
+    struct variable **varlist = NULL;
+    char	    tmp[MAXPATH+1], *pval, **lval, ***alval;
+    char	    *s, *extraname = NULL;
+    char	    *name, *id, *tenant, *secret, **user;
+    char	    *name_lval, *id_lval, *tenant_lval, *secret_lval, *user_lval,
+		    *id_def, *tenant_def, *secret_def;
+    int		    i, j, k, l, p, q, ln = 0, readonly_warning = 0, pos;
+    CONF_S	   *ctmpa = NULL, *ctmpb, *first_line;
     FEATURE_S	   *feature;
     PINERC_S       *prc = NULL;
     OPT_SCREEN_S    screen;
     int             expose_hidden_config, add_hidden_vars_title = 0;
     SAVED_CONFIG_S *vsave;
+    XOAUTH2_INFO_S  x, *y;
 
     dprint((3, "--  alpine_xoauth2_configuration --\n"));
 
@@ -239,127 +786,49 @@ alpine_xoauth2_configuration(struct pine *ps, int edit_exceptions)
 
     mailcap_free(); /* free resources we won't be using for a while */
 
-    varlist[0] = &gmail_client_id_var;
-    varlist[1] = &gmail_client_secret_var;
-    varlist[2] = &outlook_client_id_var;
-    varlist[3] = &outlook_client_secret_var;
-    varlist[2*NXSERVERS] = NULL;
-
-    for(i = 0; i < 2*NXSERVERS; i++)
-      memset((void *) varlist[i], 0, sizeof(struct variable));
-
     pos = -1;
+    ln = strlen(XOAUTH2_CLIENT_ID);
+    i = strlen(XOAUTH2_CLIENT_SECRET);
+    if(ln < i) ln = i;
+    i = strlen(XOAUTH2_TENANT);
+    if(ln < i) ln = i;
+    i = strlen(XOAUTH2_USERS);
+    if(ln < i) ln = i;
+
+    alval = ALVAL(&ps->vars[V_XOAUTH2_INFO], ew);
+    lval = *alval = xoauth2_conf_dedup_and_merge(alval);
+    set_current_val(&ps_global->vars[V_XOAUTH2_INFO], FALSE, FALSE);
+    write_pinerc(ps_global, ew, WRP_NONE);
+
     do {
         ctmpa = first_line = NULL;
 
-        ln = strlen(XOAUTH2_CLIENT_ID);
-        i = strlen(XOAUTH2_CLIENT_SECRET);
-        if(ln < i) ln = i;
-
-	lval  = LVAL(&ps->vars[V_XOAUTH2_INFO], ew);
-
-        for(i = 0, l = 0; alpine_oauth2_list[i].name != NULL; i++){
-	   id_conf = id_def = secret_conf = secret_def = NULL;
-	   name_lval = id_lval = secret_lval = NULL;
-
-	   id_conf = alpine_oauth2_list[i].param[OA2_Id].value;
-	   secret_conf = alpine_oauth2_list[i].param[OA2_Secret].value;
-
-	   for(j = 0; xoauth_default[j].name != NULL; j++)
-	      if(!strcmp(alpine_oauth2_list[i].name, xoauth_default[j].name))
-		break;
-
-	   if(xoauth_default[j].name != NULL){
-	     id_def = xoauth_default[j].client_id;
-	     secret_def = xoauth_default[j].client_secret;
+        for(i = 0, p = 0; xoauth_default[i].name != NULL; i++){
+	   /* always start with the default configuration */
+	   for(k = 0, q = 0; lval && lval[k]; k++){
+		y = xoauth_parse_client_info(lval[k]);
+		if(same_xoauth2_info(xoauth_default[i], *y))
+		   break;
+		free_xoauth2_info(&y);
 	   }
-
-	   /* fix this: the purpose is to search for the name in lval */
-	   for(k = 0; lval && lval[k]; k++){
-	      xoauth_parse_client_info(lval[k], &name_lval, &id_lval, &secret_lval);
-	      if(name_lval && !strcmp(name_lval, alpine_oauth2_list[i].name))
-		break;
-	      if (name_lval) fs_give((void **) &name_lval);
-	      if (id_lval) fs_give((void **) &id_lval);
-	      if (secret_lval) fs_give((void **) &secret_lval);
+	   if(lval == NULL || lval[k] == NULL)
+	       write_xoauth_conf_entry(&xoauth_default[i], &xoauth_default[i], &ctmpa, &ctmpb,
+						&first_line, &varlist, &p, ln, -i-1);
+	   for(k = 0, q = 0; lval && lval[k]; k++){
+	      y = xoauth_parse_client_info(lval[k]);
+	      if(y && (!y->name || strcmp(y->name, xoauth_default[i].name))){
+		free_xoauth2_info(&y);
+		continue;
+	      }
+	      if(y->client_id == NULL)
+		 y->client_id = cpystr(xoauth_default[i].client_id);
+	      if(y->client_secret == NULL && xoauth_default[i].client_secret != NULL)
+		 y->client_secret = cpystr(xoauth_default[i].client_secret);
+	      if(y->tenant == NULL && xoauth_default[i].tenant != NULL)
+		 y->tenant = cpystr(xoauth_default[i].tenant);
+	      write_xoauth_conf_entry(y, &xoauth_default[i], &ctmpa, &ctmpb, &first_line, &varlist, &p, ln, k);
+	      free_xoauth2_info(&y);
 	   }
-
-	   /* Here we have three values. The one being used by c-client in
-	    * id_conf, secret_conf. The default value in Alpine, obtained
-	    * by the programmer by registering Alpine, and the value
-	    * configured in Alpine by the user in id_lval, and secret_lval.
-	    *
-	    * The rules are:
-	    *  1. If id_lval && secret_lval are not null, we use those.
-	    *  2. else we use the default values.
-	    */
-	    id = id_lval ? id_lval : id_def;
-	    secret = secret_lval ? secret_lval : secret_def;
-
-	   new_confline(&ctmpa)->var = NULL;
-	   if(!first_line) first_line = ctmpa;
-
-	   /*  Write Name of provider first */
-	   ctmpa->flags	    |= CF_NOSELECT;
-	   ctmpa->help	     = NO_HELP;
-	   ctmpa->valoffset  = 1;
-	   ctmpa->value	     = cpystr(alpine_oauth2_list[i].name);
-	   ctmpa->varname  = NULL;
-           ctmpa->varnamep = ctmpb = ctmpa;
-
-
-	   /* Setup client-id variable */
-	   varlist[l]->name = cpystr(XOAUTH2_CLIENT_ID);
-	   varlist[l]->is_used = 1;
-	   varlist[l]->is_user = 1;
-	   varlist[l]->main_user_val.p = strcmp(id, id_def)? cpystr(id) : NULL;
-	   varlist[l]->global_val.p = cpystr(id_def);
-	   set_current_val(varlist[l], FALSE, FALSE);
-
-	   /* Write client-id variable */
-	   new_confline(&ctmpa)->var = varlist[l];
-	   utf8_snprintf(tmp, sizeof(tmp), "   %-*.100w =", ln, XOAUTH2_CLIENT_ID);
-	   tmp[sizeof(tmp)-1] = '\0';
-	   ctmpa->varname   = cpystr(tmp);
-	   ctmpa->varmem    = l++;
-	   ctmpa->valoffset = ln + 3 + 3;
-	   ctmpa->value     = pretty_value(ps, ctmpa);
-	   ctmpa->keymenu   = &config_text_keymenu;
-	   ctmpa->help      = h_config_xoauth2_client_id;
-	   ctmpa->tool      = text_tool;
-	   ctmpa->varnamep  = ctmpb;
-
-	   /* Set up client-secret variable */
-	   varlist[l]->name = cpystr(XOAUTH2_CLIENT_SECRET);
-	   varlist[l]->is_used = 1;
-	   varlist[l]->is_user = 1;
-	   varlist[l]->main_user_val.p = secret && secret_def && strcmp(secret, secret_def) ? cpystr(secret) : NULL;
-	   varlist[l]->global_val.p = secret_def ? cpystr(secret_def) : NULL;
-	   set_current_val(varlist[l], FALSE, FALSE);
-
-	   /* Write client-secret variable */
-	   if(secret){
-	     new_confline(&ctmpa)->var = varlist[l];
-	     utf8_snprintf(tmp, sizeof(tmp), "   %-*.100w =", ln, XOAUTH2_CLIENT_SECRET);
-	     tmp[sizeof(tmp)-1] = '\0';
-	     ctmpa->varname   = cpystr(tmp);
-	     ctmpa->varmem    = l++;
-	     ctmpa->valoffset = ln + 3 + 3;
-	     ctmpa->value     = pretty_value(ps, ctmpa);
-	     ctmpa->keymenu   = &config_text_keymenu;
-	     ctmpa->help      = h_config_xoauth2_client_secret;
-	     ctmpa->tool      = text_tool;
-	     ctmpa->varnamep  = ctmpb;
-	   }
-
-	   /* Separate servers with a blank line */
-	   new_confline(&ctmpa);
-	   ctmpa->flags    |= CF_NOSELECT | CF_B_LINE;
-
-	   /* clean up the house */
-	   if(id_lval) fs_give((void **) &id_lval);
-	   if(secret_lval) fs_give((void **) &secret_lval);
-	   if(name_lval) fs_give((void **) &name_lval);
 	}
 
 	vsave = save_config_vars(ps, expose_hidden_config);
@@ -379,6 +848,88 @@ alpine_xoauth2_configuration(struct pine *ps, int edit_exceptions)
 		write_pinerc(ps, ew, WRP_NONE);
 		break;
 
+	      case 4:				/* add a service */
+		{char service[MAILTMPLEN+1];
+		 char prompt[MAILTMPLEN+1];
+		 int flags = OE_DISALLOW_HELP;
+		 strncpy(prompt, _("Enter service name: "), sizeof(prompt));
+		 prompt[sizeof(prompt) - 1] = '\0';
+		 service[0] = '\0';
+		 if(optionally_enter(service,
+                        -(ps_global->ttyo ? FOOTER_ROWS(ps_global) : 3),
+                         0, sizeof(service), prompt, NULL, NO_HELP, &flags) == 0){
+		    for(i = 0; xoauth_default[i].name != NULL && strucmp(xoauth_default[i].name, service); i++);
+		    if(xoauth_default[i].name == NULL)
+			q_status_message1(SM_ORDER, 3, 3, _("Service %s not known"), service);
+		    else{
+			char **list;
+			ClearScreen();
+			ps_global->mangled_screen = 1;
+			for(j = 0; lval && lval[j]; j++);
+			list = fs_get((j+2)*sizeof(char *));
+			memset((void *)list, 0, (j+2)*sizeof(char *));
+			list[0] = xoauth_config_line(&xoauth_default[i]);
+			for(i = 0; lval && lval[i]; i++)
+			   list[i+1] = cpystr(lval[i]);
+			if(lval) free_list_array(&lval);
+			*alval = lval = list;
+			for(i = 0; varlist && varlist[i]; i++){
+			   free_variable_values(varlist[i]);
+			   if(varlist[i]->descrip) fs_give((void **) &varlist[i]->descrip);
+			   if(varlist[i]->dname) fs_give((void **) &varlist[i]->dname);
+			   fs_give((void **) &varlist[i]);
+			}
+			if(varlist) fs_give((void **) varlist);
+		    }
+		 }
+		}
+		break;
+
+	      case 5:				/* delete a service */
+		{ int m, key;
+		  XOAUTH2_INFO_S *x;
+		  char question[MAILTMPLEN];
+
+		   for(i = 0, m = 1, j = 0; varlist[i] && m < pos;)
+			if(!varlist[i]->is_list){
+			   i++; m++;
+			} else {
+			    if(varlist[i]->current_val.l[j++]) m++;
+			    else{
+				j = 0; m += 2; i++;
+			    }
+			}
+		   key = atoi(varlist[i]->dname);	/* this hack avoids we rebuild varlist again */
+		   if(key >= 0){
+			x = xoauth_parse_client_info(lval[key]);
+			snprintf(question, sizeof(question), _("Delete this configuration for %s "), x->name);
+			free_xoauth2_info(&x);
+			if(want_to(question, 'n', 'n', NO_HELP, WT_NORM) != 'y')
+			   break;
+		        for(i = key; lval && lval[i] && lval[i+1]; i++){
+			   fs_give((void **) &lval[i]);
+			   lval[i] = cpystr(lval[i+1]);
+			}
+			fs_give((void **) &lval[i]);
+		   }
+		   else {
+			q_status_message(SM_ORDER, 3, 3, _("Cannot delete default configuration"));
+			break;
+		   }
+		   if(lval && lval[0] == NULL)
+		     free_list_array(&lval);
+		   *alval = lval;
+		   pos = 1;	/* reset at the top */
+		   for(i = 0; varlist && varlist[i]; i++){
+		       free_variable_values(varlist[i]);
+		       if(varlist[i]->descrip) fs_give((void **) &varlist[i]->descrip);
+		       if(varlist[i]->dname) fs_give((void **) &varlist[i]->dname);
+		       fs_give((void **) &varlist[i]);
+		   }
+		   if(varlist) fs_give((void **) varlist);
+		}
+		break;
+
 	      case 10:
 		revert_to_saved_config(ps, vsave, expose_hidden_config);
 		if(prc)
@@ -392,8 +943,15 @@ alpine_xoauth2_configuration(struct pine *ps, int edit_exceptions)
 	}
     } while (pos >= 0);
 
+   for(i = 0; varlist && varlist[i]; i++){
+       free_variable_values(varlist[i]);
+       if(varlist[i]->descrip) fs_give((void **) &varlist[i]->descrip);
+       if(varlist[i]->dname) fs_give((void **) &varlist[i]->dname);
+       fs_give((void **) &varlist[i]);
+   }
+   if(varlist) fs_give((void **) varlist);
+
 #ifdef _WINDOWS
     mswin_set_quit_confirm (F_OFF(F_QUIT_WO_CONFIRM, ps_global));
 #endif
 }
-

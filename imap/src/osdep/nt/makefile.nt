@@ -29,7 +29,7 @@
 EXTRAAUTHENTICATORS =
 EXTRADRIVERS = 
 EXTRACFLAGS =
-AUTHENTICATORS = ext md5 pla bea oa2 log
+AUTHENTICATORS = ext md5 pla log bea oa2
 DRIVERS = imap nntp pop3 mbx mtx tenex unix
 CREATEDRIVER = mbx
 APPENDDRIVER = unix

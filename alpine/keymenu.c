@@ -1433,6 +1433,34 @@ struct key config_text_keys[] =
 	ENDKEY_MENU};
 INST_KEY_MENU(config_text_keymenu, config_text_keys);
 
+struct key config_xoauth2_text_keys[] =
+       {HELP_MENU,
+	OTHER_MENU,
+	EXIT_SETUP_MENU,
+	{"C", "[" N_("Change Val") "]", {MC_EDIT,3,{'c',ctrl('M'),ctrl('J')}}, KS_NONE},
+	PREV_MENU,
+	NEXT_MENU,
+	PREVPAGE_MENU,
+	NEXTPAGE_MENU,
+	{"A", N_("Add Value"), {MC_ADD,1,{'a'}}, KS_NONE},
+	{"D", N_("Delete Val"), {MC_DELETE,1,{'d'}}, KS_NONE},
+	PRYNTTXT_MENU,
+	WHEREIS_MENU,
+
+	HELP_MENU,
+	OTHER_MENU,
+	{"^A", N_("Add Server"), {MC_XSADD,1,{ctrl('A')}}, KS_NONE},
+	{"^D", N_("Del Server"), {MC_XSDELETE,1,{ctrl('d')}}, KS_NONE},
+	NULL_MENU,
+	{"^H", N_("Conf Help"), {MC_XSHELP,1,{ctrl('h')}}, KS_NONE},
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	HOMEKEY_MENU,
+	ENDKEY_MENU};
+INST_KEY_MENU(config_xoauth2_text_keymenu, config_xoauth2_text_keys);
+
 
 struct key config_text_to_charsets_keys[] = 
        {HELP_MENU,
@@ -1769,6 +1797,21 @@ struct key role_select_keys[] =
 	WHEREIS_MENU};
 INST_KEY_MENU(role_select_km, role_select_keys);
 
+struct key xoauth2_id_select_keys[] =
+       {HELP_MENU,
+	NULL_MENU,
+        {"E", N_("Exit"), {MC_EXIT,1,{'e'}}, KS_EXITMODE},
+	{"S", "[" N_("Select") "]", {MC_CHOICE,3,{'s',ctrl('M'),ctrl('J')}}, KS_NONE},
+	{"P", N_("PrevID"), {MC_PREVITEM, 1, {'p'}}, KS_NONE},
+	{"N", N_("NextID"), {MC_NEXTITEM, 2, {'n', TAB}}, KS_NONE},
+	PREVPAGE_MENU,
+	NEXTPAGE_MENU,
+	HOMEKEY_MENU,
+	ENDKEY_MENU,
+	NULL_MENU,
+	WHEREIS_MENU};
+INST_KEY_MENU(xoauth2_id_select_km, xoauth2_id_select_keys);
+
 
 struct key role_config_keys[] = 
        {HELP_MENU,
@@ -1829,6 +1872,33 @@ struct key config_text_wshuf_keys[] =
 	ENDKEY_MENU};
 INST_KEY_MENU(config_text_wshuf_keymenu, config_text_wshuf_keys);
 
+struct key config_xoauth2_wshuf_keys[] =
+       {HELP_MENU,
+	OTHER_MENU,
+	EXIT_SETUP_MENU,
+	{"C", "[" N_("Change Val") "]", {MC_EDIT,3,{'c',ctrl('M'),ctrl('J')}}, KS_NONE},
+	PREV_MENU,
+	NEXT_MENU,
+	PREVPAGE_MENU,
+	NEXTPAGE_MENU,
+	{"A", N_("Add Value"), {MC_ADD,1,{'a'}}, KS_NONE},
+	{"D", N_("Delete Val"), {MC_DELETE,1,{'d'}}, KS_NONE},
+	PRYNTTXT_MENU,
+	WHEREIS_MENU,
+
+        HELP_MENU,
+	OTHER_MENU,
+	{"^A", N_("Add Server"), {MC_XSADD,1,{ctrl('A')}}, KS_NONE},
+	{"^D", N_("Del Server"), {MC_XSDELETE,1,{ctrl('d')}}, KS_NONE},
+	{"$", N_("Shuffle"), {MC_SHUFFLE,1,{'$'}}, KS_NONE},
+	{"^H", N_("Conf Help"), {MC_XSHELP,1,{ctrl('h')}}, KS_NONE},
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	NULL_MENU,
+	HOMEKEY_MENU,
+	ENDKEY_MENU};
+INST_KEY_MENU(config_xoauth2_wshuf_keymenu, config_xoauth2_wshuf_keys);
 
 struct key config_text_wshufandfldr_keys[] = 
        {HELP_MENU,

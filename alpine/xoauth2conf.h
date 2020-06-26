@@ -16,12 +16,14 @@
 #define XOAUTH2_CONFIG
 
 #include "confscroll.h"
+#include "xoauth2.h"
 #include "../pith/state.h"
 
 /* exported prototypes */
 void	alpine_xoauth2_configuration(struct pine *, int);
-void	xoauth_parse_client_info(char *, char **, char **, char **);
-void	oauth2_get_client_info(unsigned char *, char **, char **);
-char	*xoauth_config_line(char *, char *, char *);
+XOAUTH2_INFO_S *xoauth_parse_client_info(char *);
+XOAUTH2_INFO_S *oauth2_get_client_info(unsigned char *, char *);
+char	*xoauth_config_line(XOAUTH2_INFO_S *);
+void write_xoauth_conf_entry(XOAUTH2_INFO_S *, XOAUTH2_INFO_S *, CONF_S **, CONF_S **, CONF_S **, struct variable ***, int *, int, int);
 
 #endif /* XOAUTH2_CONFIG */

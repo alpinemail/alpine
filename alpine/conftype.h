@@ -100,6 +100,10 @@ typedef struct conf_line {
 	    char       *exportval;
 	    ScreenMode *listmode;
 	} t;
+	struct xoauth2_conf {
+	    XOAUTH2_INFO_S  *pat;
+	    XOAUTH2_INFO_S **selected;
+	} x;
     } d;
 } CONF_S;
 

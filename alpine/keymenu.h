@@ -217,7 +217,9 @@ struct key_menu {
 #define MC_ADDHEADER	804
 #define MC_XOAUTH2	805
 #define MC_EXTERNAL	806
-
+#define MC_XSADD	807
+#define MC_XSDELETE	808
+#define MC_XSHELP	809
 
 /* Commands for S/MIME screens */
 #define MC_TRUST	900
@@ -629,6 +631,7 @@ extern struct key_menu	cancel_keymenu,
 			role_select_km,
 			role_conf_km,
 			config_text_wshuf_keymenu,
+			config_xoauth2_wshuf_keymenu,
 			config_text_wshufandfldr_keymenu,
 			config_role_file_keymenu,
 			config_role_file_res_keymenu,
@@ -647,6 +650,8 @@ extern struct key_menu	cancel_keymenu,
 			config_role_afrom_keymenu,
 			config_checkbox_keymenu,
 			config_text_keymenu,
+			xoauth2_id_select_km,
+			config_xoauth2_text_keymenu,
 			config_text_to_charsets_keymenu,
 			config_radiobutton_keymenu,
 			config_yesno_keymenu,

@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 455 2020-06-21 20:14:16
+Alpine Commit 456 2020-06-26 12:10:33
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -191,6 +191,14 @@ problems you find with this release.
      when new mail arrives. This is consistent with Alpine dinging the
      bell when new mail arrives. Bell will not ding if it is disabled
      for status messages. Suggested by Chime Hart.
+
+<LI> Expansion of the configuration screen for XOAUTH2 to include
+     username, and tenant.
+
+<LI> If a user has more than one client-id for a service, Alpine tries to
+     asks the user which client-id to use and associates that client-id to
+     the credentials in the XOAUTH2 configuration screen.
+     <A HREF="h_xoauth2_config_screen">Learn more</A>.
 </UL>
 
 <H2>New in Alpine <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)</H2>
@@ -1715,6 +1723,44 @@ This implementation of XOAUTH2 knows the list of servers that it can
 access using the same credentials, so Alpine will be able to read and send 
 emails using the same Access Token. You will not have to create 
 Access and Refresh Tokens for the IMAP and SMTP servers separately.
+
+<P>
+&lt;End of help&gt;
+</BODY>
+</HTML>
+====== h_xoauth2_config_screen ======
+<HTML>
+<HEAD>
+<TITLE>XOAUTH2 Configuration Screen</TITLE>
+</HEAD>
+<BODY>
+<H1>XOAUTH2 Configuration Screen</H1>
+
+The XOAUTH2 configuration screen helps you connect your client-id and
+other configuration information about the service you want to use with
+Alpine.
+
+<P> Alpine provides a default configuration for you. For some providers
+this configuration does not work, and requires you to get your own
+Client-ID for Alpine. Depending on the service, you might need extra information,
+such as a Client-Secret or a Tenant.
+
+<P> If the default configuration of Alpine does not work for you, you can simply
+replace the default configuration of Alpine by your new configuration. If for
+any reason you need to have a second client-id, you can use the ^A command to
+add a new configuration for one of the supported services by Alpine.
+
+<P> If you wish to delete a configuration for a service, place the cursor
+on the configuration you want to delete and press ^D.
+
+<P> When you have more than one client-id for the same service, is is convenient
+to fill up the username field. This will tell Alpine that that specific configuration
+is to be used with the username(s) specified in that variable. If Alpine cannot
+detemine which configuration to use, it will ask you to select the correct
+Client-ID for your connection. This could happen when you are trying to login to
+your account. The client-id you select will be used by Alpine for that and future
+connections to that server.
+
 
 <P>
 &lt;End of help&gt;
@@ -16080,6 +16126,53 @@ a reputable provider or compile the source code by yourself. The official
 source code of this project is located at
 
 <P><CENTER><A HREF="http://repo.or.cz/alpine.git">http://repo.or.cz/alpine.git</A>.</CENTER>
+
+<P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+======= h_config_xoauth2_tenant =======
+<HTML>
+<HEAD>
+<TITLE>Tenant Explained</TITLE>
+</HEAD>
+<BODY>
+<H1>Tenant Explained</H1>
+
+The tenant is a way in which a service can either restrict an app to access
+only certain portions of its service. For example, a service may allow
+an app to have access to your work data, or school data, and not every app
+is allowed to access this data, or the access is not allowed for all accounts,
+but only those restructed in the tenant.
+
+<P> When Alpine registers with an email service provider, it does so with the
+intention that you can use Alpine for any of your needs (work, school or
+personal), and the client-id and tenant that it uses would allow you access to
+only your work email, say, and not your personal email, because the app is
+trusted only at work, and so the client-id and tenant are good for that
+organization only.
+<P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+======= h_config_xoauth2_username =======
+<HTML>
+<HEAD>
+<TITLE>Username Explained</TITLE>
+</HEAD>
+<BODY>
+<H1>Username Explained</H1>
+
+This variable is a list of usernames for which the configuration for the
+given service is valid. You may have more than one username for which this
+configuration is correct.
+
+<P>
+Alpine will use the usernames in this list to associate your username with
+the correct configuration in Alpine. If Alpine cannot determine which configuration
+to use, Alpine will offer you a list of client-ids that you have configured
+for that service and ask you to pick one. Your answer will be saved  in your
+.pinerc file.
 
 <P>
 &lt;End of help on this topic&gt;

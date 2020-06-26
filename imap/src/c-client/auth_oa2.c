@@ -140,15 +140,8 @@ long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder, cha
     else {
       unsigned long rlen = strlen(OAUTH2_USER) + strlen(user)
 			+ strlen(OAUTH2_BEARER) + strlen(oauth2.access_token) + 1 + 2;
-      char *response = (char *) fs_get (rlen);
-      char *t = response;	/* copy authorization id */
-      for (u = OAUTH2_USER; *u; *t++ = *u++);
-      for (u = user; *u; *t++ = *u++);
-      *t++ = '\001';		/* delimiting ^A */
-      for (u = OAUTH2_BEARER; *u; *t++ = *u++);
-      for (u = oauth2.access_token; *u; *t++ = *u++);
-      *t++ = '\001';		/* delimiting ^A */
-      *t++ = '\001';		/* delimiting ^A */
+      char *response = (char *) fs_get (rlen + 1);
+      sprintf(response, "%s%s\001%s%s\001\001", OAUTH2_USER, user, OAUTH2_BEARER, oauth2.access_token);
       if ((*responder) (stream,base,response,rlen)) {
 	if ((challenge = (*challenger) (stream,&clen)) != NULL)
 	  fs_give ((void **) &challenge);
@@ -172,6 +165,9 @@ long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder, cha
       fs_give ((void **) &response);
     }
   }
+  if(oauth2.param[OA2_Id].value) fs_give((void **) &oauth2.param[OA2_Id].value);
+  if(oauth2.param[OA2_Secret].value) fs_give((void **) &oauth2.param[OA2_Secret].value);
+  if(oauth2.param[OA2_Tenant].value) fs_give((void **) &oauth2.param[OA2_Tenant].value);
   if (!ret || !oauth2.name)
       *trial = 65535; 			/* don't retry if bad protocol */
   return ret;

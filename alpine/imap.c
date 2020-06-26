@@ -145,7 +145,8 @@ OAUTH2_S alpine_oauth2_list[] =
    {"imap.gmail.com", "smtp.gmail.com", NULL, NULL},
    {{"client_id", NULL},
     {"client_secret", NULL},
-    {"code", NULL},		/* not used */
+    {"tenant", NULL},		/* not used */
+    {"code", NULL},		/* access code from the authorization process */
     {"refresh_token", NULL},
     {"scope", "https://mail.google.com/"},
     {"redirect_uri", "urn:ietf:wg:oauth:2.0:oob"},
@@ -173,6 +174,7 @@ OAUTH2_S alpine_oauth2_list[] =
    {"outlook.office365.com", "smtp.office365.com", NULL, NULL},
    {{"client_id", NULL},
     {"client_secret", NULL},		/* not used, but needed */
+    {"tenant", NULL},			/* used */
     {"code", NULL},			/* not used, not needed */
     {"refresh_token", NULL},
     {"scope", "offline_access https://outlook.office.com/IMAP.AccessAsUser.All https://outlook.office.com/SMTP.Send"},
@@ -184,11 +186,11 @@ OAUTH2_S alpine_oauth2_list[] =
     {"device_code", NULL}		/* only used for frst time set up */
    },
    {{NULL, NULL, {OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End}}, /* Get Access Code, Not used */
-    {"POST", "https://login.microsoftonline.com/common/oauth2/v2.0/devicecode",	/* first time use and get device code information */
+    {"POST", "https://login.microsoftonline.com/\001/oauth2/v2.0/devicecode",	/* first time use and get device code information */
 	{OA2_Id, OA2_Scope, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End}},
-    {"POST", "https://login.microsoftonline.com/common/oauth2/v2.0/token",	/* Get first Refresh Token and Access token  */
-	{OA2_Id, OA2_Redirect, OA2_DeviceCode, OA2_End, OA2_End, OA2_End}},
-    {"POST", "https://login.microsoftonline.com/common/oauth2/v2.0/token",	/* Get access token from refresh token */
+    {"POST", "https://login.microsoftonline.com/\001/oauth2/v2.0/token",	/* Get first Refresh Token and Access token  */
+	{OA2_Id, OA2_Redirect, OA2_DeviceCode, OA2_End, OA2_End, OA2_End, OA2_End}},
+    {"POST", "https://login.microsoftonline.com/\001/oauth2/v2.0/token",	/* Get access token from refresh token */
 	{OA2_Id, OA2_RefreshToken, OA2_Scope, OA2_GrantTypefromRefreshToken, OA2_End, OA2_End, OA2_End}}
    },
    {NULL, NULL, NULL, 0, 0, NULL},	/* device_code information */

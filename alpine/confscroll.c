@@ -33,6 +33,7 @@ static char rcsid[] = "$Id: confscroll.c 1169 2008-08-27 06:42:06Z hubert@u.wash
 #include "talk.h"
 #include "setup.h"
 #include "smime.h"
+#include "xoauth2conf.h"
 #include "../pith/state.h"
 #include "../pith/flag.h"
 #include "../pith/list.h"
@@ -1317,6 +1318,28 @@ no_down:
 
 	    q_status_message(SM_ORDER,0,3, _("Moved to bottom"));
 	    break;
+
+	  case MC_XSHELP:					/* help! */
+	    if(FOOTER_ROWS(ps) == 1 && km_popped == 0){
+		km_popped = 2;
+		ps->mangled_footer = 1;
+		break;
+	    }
+
+	    prev_redrawer = ps_global->redrawer;
+	    helper(h_xoauth2_config_screen, "XOAUTH2 CONFIGURATION SCREEN", HLPD_SIMPLE);
+	    ps_global->redrawer = prev_redrawer;
+	    ps->mangled_screen = 1;
+	    break;
+
+	  case MC_XSDELETE:			/* Send caller to delete XOAUTH2 info */
+	  case MC_XSADD:			/* Send caller to add XOAUTH2 info */
+	     if(pos){
+		*pos = get_confline_number(screen->current);
+		done++;
+		retval = cmd == MC_XSADD ? 4 : 5;
+	     }
+	     break;
 
 	  case MC_REPAINT:			/* redraw the display */
 	  case MC_RESIZE:

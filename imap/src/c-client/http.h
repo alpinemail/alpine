@@ -73,6 +73,7 @@ typedef struct http_header_data_s {
 #define HTTP_1_1_VERSION	"HTTP/1.1"
 #define HTTP_OK			200
 #define HTTP_BAD		400
+#define HTTP_UNAUTHORIZED	401
 
 #define GET_HTTPPORT (long) 490
 #define SET_HTTPPORT (long) 491

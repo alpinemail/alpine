@@ -1929,6 +1929,7 @@ int PFLUSH (void);
 
 typedef enum {OA2_Id = 0,
 	      OA2_Secret,
+	      OA2_Tenant,
 	      OA2_Code,
 	      OA2_RefreshToken,
 	      OA2_Scope,
@@ -1986,10 +1987,21 @@ typedef struct deviceproc_s {
   char code_wait;		/* code to say keep waiting */
 } OAUTH2_DEVICEPROC_S;
 
+typedef struct xoauth_default_s {
+   unsigned char *name;
+   char *client_id;
+   char *client_secret;
+   char *tenant;
+   char *users;
+} XOAUTH2_INFO_S;
+
 /* Supporting external functions for XOAUTH2 and OAUTHBEARER */
 typedef char *(*oauth2getaccesscode_t) (unsigned char *, char *, OAUTH2_S *, int *);
-typedef void (*oauth2clientinfo_t)(unsigned char *name, char **id, char **secret);
+typedef XOAUTH2_INFO_S *(*oauth2clientinfo_t)(unsigned char *name, char *user);
 typedef void (*oauth2deviceinfo_t)(OAUTH2_S *, char *method);
 void mm_login_oauth2_c_client_method (NETMBX *, char *, char *, OAUTH2_S *, unsigned long, int *);
 char *oauth2_generate_state(void);
 void oauth2deviceinfo_get_accesscode(void *, void *);
+XOAUTH2_INFO_S *new_xoauth2_info(void);
+void    free_xoauth2_info(XOAUTH2_INFO_S **);
+XOAUTH2_INFO_S *copy_xoauth2_info(XOAUTH2_INFO_S *);
