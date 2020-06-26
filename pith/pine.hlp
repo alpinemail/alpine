@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 457 2020-06-26 12:26:06
+Alpine Commit 458 2020-06-26 12:28:12
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -202,7 +202,15 @@ problems you find with this release.
 </UL>
 
 <P>
-Version 2.23 addresses bugs found in previous releases and has several
+Bugs addressed:
+
+<UL>
+<LI>  When Alpine starts a PREAUTH connection, it might still ask the user
+to login. Reported by Frank Tobin.
+</UL>
+
+<P>
+Version 2.23 has new additions and addresses bugs found in previous releases and has several
 additions as well.
 
 <P> Additions include:

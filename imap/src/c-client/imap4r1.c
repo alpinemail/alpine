@@ -800,7 +800,7 @@ long imap_status (MAILSTREAM *stream,char *mbx,long flags)
 
 MAILSTREAM *imap_open (MAILSTREAM *stream)
 {
-  unsigned long i,j;
+  unsigned long i,j, preauthed;
   char *s,tmp[MAILTMPLEN],usr[MAILTMPLEN];
   NETMBX mb;
   IMAPPARSEDREPLY *reply = NIL;
@@ -891,8 +891,9 @@ MAILSTREAM *imap_open (MAILSTREAM *stream)
       return NIL;		/* lost during greeting */
     }
 
+    preauthed = !strcmp (reply->key,"PREAUTH");
 				/* STARTTLS is not allowed in PREAUTH state */
-    if (LOCAL->netstream && !strcmp (reply->key,"PREAUTH")){
+    if (LOCAL->netstream && preauthed){
       sslstart_t stls = (sslstart_t) mail_parameters (NIL,GET_SSLSTART,NIL);
       if (!LOCAL->gotcapability) imap_capability (stream);
       if (LOCAL->netstream
@@ -902,7 +903,7 @@ MAILSTREAM *imap_open (MAILSTREAM *stream)
       }
     }
 				/* if connected and not preauthenticated */
-    if (LOCAL->netstream && strcmp (reply->key,"PREAUTH")) {
+    if (LOCAL->netstream && !preauthed) {
       sslstart_t stls = (sslstart_t) mail_parameters (NIL,GET_SSLSTART,NIL);
 				/* get server capabilities */
       if (!LOCAL->gotcapability) imap_capability (stream);
