@@ -593,7 +593,7 @@ write_xoauth_conf_entry(XOAUTH2_INFO_S *x, XOAUTH2_INFO_S *y, CONF_S **cl, CONF_
 
    sprintf(tmp2, "%d", key);
    fs_resize((void **) varlistp, (p + i + 1)*sizeof(struct variable **));
-   memset((void *) *varlistp + p*sizeof(struct variable *), 0,  (i + 1)*sizeof(struct variable *));
+   memset((void *) (*varlistp + p*sizeof(struct variable *)), 0,  (i + 1)*sizeof(struct variable *));
    varlist = *varlistp;
 
    new_confline(cl)->var = NULL;
