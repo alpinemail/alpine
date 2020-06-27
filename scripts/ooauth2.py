@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Copyright 2020, Eduardo Chappa <eduardo.chappa@gmx.com>
 # Based on the oauth2.py script Copyright 2012 Google Inc.
@@ -68,7 +68,7 @@ import base64
 import json
 from optparse import OptionParser
 import sys
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 # The URL root for authorizations (device code, refresh token and access token)
 MICROSOFT_BASE_URL = 'https://login.microsoftonline.com'
@@ -123,14 +123,14 @@ def AccountsUrl(tenant, command):
   return '%s/%s/%s' % (MICROSOFT_BASE_URL, tenant, command)
 
 def UrlEscape(text):
-  return urllib.quote(text, safe='~-._')
+  return urllib.parse.quote(text, safe='~-._')
 
 def UrlUnescape(text):
-  return urllib.unquote(text)
+  return urllib.parse.unquote(text)
 
 def FormatUrlParams(params):
   param_fragments = []
-  for param in sorted(params.iteritems(), key=lambda x: x[0]):
+  for param in sorted(iter(params.items()), key=lambda x: x[0]):
     param_fragments.append('%s=%s' % (param[0], UrlEscape(param[1])))
   return '&'.join(param_fragments)
 
@@ -139,7 +139,7 @@ def GeneratePermissionUrl(tenant, client_id, scope=SCOPE):
   params['client_id'] = client_id
   params['scope'] = scope
   request_url = AccountsUrl(tenant, 'oauth2/v2.0/devicecode')
-  response = urllib.urlopen(request_url, urllib.urlencode(params)).read()
+  response = urllib.request.urlopen(request_url, urllib.parse.urlencode(params).encode()).read()
   return json.loads(response)
 
 def AuthorizeTokens(tenant, client_id, DeviceCode):
@@ -148,7 +148,7 @@ def AuthorizeTokens(tenant, client_id, DeviceCode):
   params['device_code'] = DeviceCode
   params['grant_type'] = GRANT_TYPE
   request_url = AccountsUrl(tenant, 'oauth2/v2.0/token')
-  response = urllib.urlopen(request_url, urllib.urlencode(params)).read()
+  response = urllib.request.urlopen(request_url, urllib.parse.urlencode(params).encode()).read()
   return json.loads(response)
 
 def GenerateAccessToken(tenant, client_id, refresh_token, scope=SCOPE):
@@ -158,16 +158,17 @@ def GenerateAccessToken(tenant, client_id, refresh_token, scope=SCOPE):
   params['grant_type'] = scope
   params['grant_type'] = 'refresh_token'
   request_url = AccountsUrl(tenant, 'oauth2/v2.0/token')
-  response = urllib.urlopen(request_url, urllib.urlencode(params)).read()
+  response = urllib.request.urlopen(request_url, urllib.parse.urlencode(params)).read()
   return json.loads(response)['access_token']
 
-def Oauth2String(user, access_token):
-  return base64.b64encode('user=%s\1auth=Bearer %s\1\1' % (user, access_token))
+def Oauth2EncodedString(user, access_token):
+  rawstring = 'user=%s\1auth=Bearer %s\1\1' % (user, access_token)
+  return base64.b64encode(str.encode(rawstring)).decode()
 
 def RequireOptions(options, *args):
   missing = [arg for arg in args if getattr(options, arg) is None]
   if missing:
-    print 'Missing options: %s' % ' '.join(missing)
+    print('Missing options: %s' % ' '.join(missing))
     sys.exit(-1)
 
 def main(argv):
@@ -177,26 +178,26 @@ def main(argv):
     RequireOptions(options, 'tenant', 'refresh_token')
     access_token = GenerateAccessToken(options.tenant, options.client_id, options.refresh_token, options.scope)
     if options.encoded:
-	RequireOptions(options, 'user')
-        print '%s' % Oauth2String(options.user, access_token)
+        RequireOptions(options, 'user')
+        print('%s' % Oauth2EncodedString(options.user, access_token))
     else:
-        print '%s' % access_token
+        print('%s' % access_token)
   elif options.generate_refresh_and_access_token:
     RequireOptions(options, 'tenant', 'client_id')
     response = GeneratePermissionUrl(options.tenant, options.client_id, options.scope)
-    print '%s' % response['message']
-    raw_input('Go to the URL above, complete the authorizaion process, and press ENTER when you are done')
+    print('%s' % response['message'])
+    input('Go to the URL above, complete the authorizaion process, and press ENTER when you are done')
     response = AuthorizeTokens(options.tenant, options.client_id, response['device_code'])
-    print 'Refresh Token: %s' % response['refresh_token']
+    print('Refresh Token: %s' % response['refresh_token'])
     if options.encoded:
-	RequireOptions(options, 'user')
-        print '%s' % Oauth2String(options.user, response['access_token'])
+        RequireOptions(options, 'user')
+        print('%s' % Oauth2EncodedString(options.user, response['access_token']))
     else:
-        print 'Access Token: %s' % response['access_token']
-    print 'Access Token Expiration Seconds: %s' % response['expires_in']
+        print('Access Token: %s' % response['access_token'])
+    print('Access Token Expiration Seconds: %s' % response['expires_in'])
   else:
     options_parser.print_help()
-    print 'Nothing to do, exiting.'
+    print('Nothing to do, exiting.')
     return
 
 if __name__ == '__main__':
