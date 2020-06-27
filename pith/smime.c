@@ -2488,10 +2488,14 @@ body_to_bio(BODY *body)
     if((len=BIO_ctrl_pending(bio)) > 1){
 	BUF_MEM *biobuf = NULL;
 
+	/* this code used to truncate without closing the bio, and 
+	   then resetting the memory, causing non validation in
+	   signatures. Fix contributed by Bernd Edlinger.
+	 */
 	BIO_get_mem_ptr(bio, &biobuf);
-	if(biobuf){
-	    BUF_MEM_grow(biobuf, len-2);	/* remove CRLF */
-	}
+	BIO_set_close(bio, 0);
+	BUF_MEM_grow(biobuf, len-2);	/* remove CRLF */
+	BIO_set_mem_buf(bio, biobuf, 1);
     }
 
     return bio;
