@@ -19237,7 +19237,52 @@ if test -n "$WEB_BUILD" ; then
 TCL_VERSIONS_DOT="tcl8.6 tcl8.5 tcl8.4 tcl8.3"
 TCL_VERSIONS_NODOT="`echo ${TCL_VERSIONS_DOT} | ${SED} 's/\.//g'`"
 TCL_VERSIONS="${TCL_VERSIONS_DOT} ${TCL_VERSIONS_NODOT} tcl"
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing Tcl_Eval" >&5
+    if test -n "$alpine_TCLINC" ; then
+    as_ac_Header=`$as_echo "ac_cv_header_$alpine_TCLINC/tcl.h" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$alpine_TCLINC/tcl.h" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+
+else
+
+	WEB_BUILD=
+
+fi
+
+
+    if test -z "$WEB_BUILD" ; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: Tcl Include file NOT found" >&5
+$as_echo "$as_me: Tcl Include file NOT found" >&6;}
+    fi
+  else
+    ac_fn_c_check_header_mongrel "$LINENO" "tcl.h" "ac_cv_header_tcl_h" "$ac_includes_default"
+if test "x$ac_cv_header_tcl_h" = xyes; then :
+
+else
+
+	for base in /usr /usr/local ; do
+	 for dir in ${TCL_VERSIONS} ; do
+	  if test -f $base/include/$dir/tcl.h ; then
+	    CPPFLAGS="$CPPFLAGS -I$base/include/$dir"
+	    found=yes
+	    break
+	  fi
+	 done
+	 if test "x$found" = "xyes" ; then
+	    break
+	 fi
+	done
+	if test "$found" != "yes" ; then
+	    WEB_BUILD=
+	    { $as_echo "$as_me:${as_lineno-$LINENO}: header file tcl.h NOT found: Web Alpine will not be built" >&5
+$as_echo "$as_me: header file tcl.h NOT found: Web Alpine will not be built" >&6;}
+	fi
+
+fi
+
+
+  fi
+  if test -n "$WEB_BUILD" ; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing Tcl_Eval" >&5
 $as_echo_n "checking for library containing Tcl_Eval... " >&6; }
 if ${ac_cv_search_Tcl_Eval+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -19293,55 +19338,11 @@ if test "$ac_res" != no; then :
 
 else
 
-      WEB_BUILD=
+        WEB_BUILD=
 
 fi
 
-
-    if test -n "$alpine_TCLINC" ; then
-    as_ac_Header=`$as_echo "ac_cv_header_$alpine_TCLINC/tcl.h" | $as_tr_sh`
-ac_fn_c_check_header_mongrel "$LINENO" "$alpine_TCLINC/tcl.h" "$as_ac_Header" "$ac_includes_default"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
-
-else
-
-	WEB_BUILD=
-
-fi
-
-
-    if test -z "$WEB_BUILD" ; then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: Tcl Include file NOT found" >&5
-$as_echo "$as_me: Tcl Include file NOT found" >&6;}
     fi
-  else
-    ac_fn_c_check_header_mongrel "$LINENO" "tcl.h" "ac_cv_header_tcl_h" "$ac_includes_default"
-if test "x$ac_cv_header_tcl_h" = xyes; then :
-
-else
-
-	for base in /usr /usr/local ; do
-	 for dir in ${TCL_VERSIONS} ; do
-	  if test -f $base/include/$dir/tcl.h ; then
-	    CPPFLAGS="$CPPFLAGS -I$base/include/$dir"
-	    found=yes
-	    break
-	  fi
-	 done
-	 if test "x$found" = "xyes" ; then
-	    break
-	 fi
-	done
-	if test "$found" != "yes" ; then
-	    WEB_BUILD=
-	    { $as_echo "$as_me:${as_lineno-$LINENO}: header file tcl.h NOT found: Web Alpine will not be built" >&5
-$as_echo "$as_me: header file tcl.h NOT found: Web Alpine will not be built" >&6;}
-	fi
-
-fi
-
-
-  fi
 fi
 
 if test "x$alpine_REGEX" != "xyes" ; then

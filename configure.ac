@@ -1706,11 +1706,6 @@ if test -n "$WEB_BUILD" ; then
 TCL_VERSIONS_DOT="tcl8.6 tcl8.5 tcl8.4 tcl8.3"
 TCL_VERSIONS_NODOT="`echo ${TCL_VERSIONS_DOT} | ${SED} 's/\.//g'`"
 TCL_VERSIONS="${TCL_VERSIONS_DOT} ${TCL_VERSIONS_NODOT} tcl"
-  AC_SEARCH_LIBS([Tcl_Eval],[$alpine_TCLLIB ${TCL_VERSIONS}],,
-    [
-      WEB_BUILD=
-    ])
-
   dnl look for header file
   if test -n "$alpine_TCLINC" ; then
     AC_CHECK_HEADER($alpine_TCLINC/tcl.h,,
@@ -1741,6 +1736,12 @@ TCL_VERSIONS="${TCL_VERSIONS_DOT} ${TCL_VERSIONS_NODOT} tcl"
 	fi
       ])
   fi
+  if test -n "$WEB_BUILD" ; then
+    AC_SEARCH_LIBS([Tcl_Eval],[$alpine_TCLLIB ${TCL_VERSIONS}],,
+      [
+        WEB_BUILD=
+      ])
+    fi
 fi
 
 dnl Local or supplied regex?
