@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 465 2020-06-28 03:00:38
+Alpine Commit 466 2020-06-28 14:06:09
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -211,6 +211,11 @@ Bugs addressed:
 <LI> Invalid signatures created by Alpine, when built with recent
      releases of the Openssl-1.1.1 series (but not in the Openssl-1.0.1 series).
      Fix contributed by Bernd Edlinger.
+
+<LI> After returning from the directory side of a dual-folder, sometimes 
+     Alpine would return to the first folder in the parent directory or to 
+     the dual-folder. The fix is to return to the original dual-folder as 
+     intended. Reported by Holger Trapp.
 </UL>
 
 <P>

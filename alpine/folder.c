@@ -3526,8 +3526,12 @@ folder_lister_parent(FSTATE_S *fs, CONTEXT_S *context, int index, int force_pare
 	folder_select_preserve(context);
 	oldir[0] = '\0';
 	if((s = strrindex(context->dir->ref, context->dir->delim)) != NULL){
+	    char *u, *v;
 	    *s = '\0';
-	    if((s = strrindex(context->dir->ref, context->dir->delim)) != NULL){
+	    u = strrindex(context->dir->ref, context->dir->delim);
+	    v = strrindex(context->dir->ref, '}');
+	    s = u < v ?  v : u;
+	    if(s != NULL){
 		strncpy(oldir, s+1, sizeof(oldir)-1);
 		oldir[sizeof(oldir)-1] = '\0';
 	    }
