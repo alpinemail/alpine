@@ -447,9 +447,9 @@ oauth2_get_access_code(unsigned char *url, char *method, OAUTH2_S *oauth2, int *
 	   so_puts(in_store, _(" If this is your first time setting up this type of authentication and you have a G-Suite account, please follow the steps below. "));
 	   so_puts(in_store, _("</P><P> First you must register Alpine with Google and create a client-id and client-secret. The steps below explain how to do this. If you already did that, then you can skip to the <A HREF=\"#secondpart\">second part</A> to continue with the setup process."));
 	   so_puts(in_store, _("<UL> "));
-	   so_puts(in_store, _("<LI>First, login to <A HREF=\"https://console.developers.google.com\">https://console.developers.google.com</A>,"));
+	   so_puts(in_store, _("<LI>First, login to <A HREF=\"https://console.developers.google.com\">https://console.developers.google.com</A> "));
 	   so_puts(in_store, _("and create a project. The name of the project is not important."));
-	   so_puts(in_store, _("<LI> Go to the Consent Screen and make your app INTERNAL."));
+	   so_puts(in_store, _("<LI> Go to the Consent Screen and make your app INTERNAL, if your account is a G-Suite account, and EXTERNAL if it is a personal account."));
 	   so_puts(in_store, _("<LI> Create OAUTH Credentials."));
 	   so_puts(in_store, _("</UL> "));
 	   so_puts(in_store, _("<P> As a result of this process, you will get a client-id and a client-secret."));
