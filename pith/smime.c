@@ -2493,9 +2493,9 @@ body_to_bio(BODY *body)
 	   signatures. Fix contributed by Bernd Edlinger.
 	 */
 	BIO_get_mem_ptr(bio, &biobuf);
-	BIO_set_close(bio, 0);
+	BIO_set_close(bio, BIO_NOCLOSE);
 	BUF_MEM_grow(biobuf, len-2);	/* remove CRLF */
-	BIO_set_mem_buf(bio, biobuf, 1);
+	BIO_set_mem_buf(bio, biobuf, BIO_CLOSE);
     }
 
     return bio;
