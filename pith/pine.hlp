@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 469 2020-06-28 23:10:19
+Alpine Commit 470 2020-06-29 00:41:56
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -233,6 +233,10 @@ Bugs addressed:
 <LI> When an attachment is deleted and the original message is saved, Alpine
      might write only a part of the name of the file deleted. Reported by Holger
      Trapp.
+
+<LI> URLs that are surrounded by white space are not cleaned by Alpine before
+     passing them to the browser, resulting in no display of the URL when Alpine
+     tries to open it. Reported by Gregory Heytings.
 </UL>
 
 <P>

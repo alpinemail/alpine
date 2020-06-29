@@ -5028,6 +5028,8 @@ html_a(HANDLER_S *hd, int ch, int cmd)
 	     * we were giving some "base" string, proceed ala RFC1808...
 	     */
 	    if(href){
+		if(href->value)
+		   removing_leading_and_trailing_white_space(href->value);
 		if(HTML_BASE(hd->html_data) && !rfc1738_scan(href->value, &n)){
 		    html_a_relative(HTML_BASE(hd->html_data), href->value, h);
 		}
