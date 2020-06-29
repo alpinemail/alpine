@@ -92,7 +92,7 @@ BODY	   *copy_body(BODY *, BODY *);
 PARAMETER  *copy_parameters(PARAMETER *);
 ENVELOPE   *copy_envelope(ENVELOPE *);
 char	   *reply_in_reply_to(ENVELOPE *);
-char	   *generate_message_id(void);
+char	   *generate_message_id(ACTION_S *);
 char	   *generate_user_agent(void);
 char       *rot13(char *);
 char       *rot5n(char *);

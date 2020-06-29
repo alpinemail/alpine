@@ -973,7 +973,7 @@ gripe_gripe_to(url)
       *optstr++ = '\0';
 
     outgoing		 = mail_newenvelope();
-    outgoing->message_id = generate_message_id();
+    outgoing->message_id = generate_message_id(NULL);
 
     if((outgoing->to = gripe_token_addr(url_copy)) != NULL){
 	composer_title = _("COMPOSE TO LOCAL SUPPORT");
@@ -1078,7 +1078,7 @@ gripe_newbody(ps, body, msgno, flags)
 	    pb			     = &((*pp)->body);
 	    pp			     = &((*pp)->next);
 	    pb->type		     = TYPETEXT;
-	    pb->id		     = generate_message_id();
+	    pb->id		     = generate_message_id(NULL);
 	    pb->description	     = cpystr("Alpine Configuration Data");
 	    pb->parameter	     = mail_newbody_parameter();
 	    pb->parameter->attribute = cpystr("name");
@@ -1114,7 +1114,7 @@ gripe_newbody(ps, body, msgno, flags)
 	    pb			     = &((*pp)->body);
 	    pp			     = &((*pp)->next);
 	    pb->type		     = TYPETEXT;
-	    pb->id		     = generate_message_id();
+	    pb->id		     = generate_message_id(NULL);
 	    pb->description	     = cpystr("Recent User Input");
 	    pb->parameter	      = mail_newbody_parameter();
 	    pb->parameter->attribute  = cpystr("name");
@@ -1151,7 +1151,7 @@ gripe_newbody(ps, body, msgno, flags)
 	    pb			      = &((*pp)->body);
 	    pp			      = &((*pp)->next);
 	    pb->type		      = TYPETEXT;
-	    pb->id		      = generate_message_id();
+	    pb->id		      = generate_message_id(NULL);
 	    pb->description	      = cpystr("Local Configuration Data");
 	    pb->parameter	      = mail_newbody_parameter();
 	    pb->parameter->attribute  = cpystr("name");
@@ -1200,7 +1200,7 @@ gripe_newbody(ps, body, msgno, flags)
 		pb		      = &((*pp)->body);
 		pp		      = &((*pp)->next);
 		pb->type	      = TYPEMESSAGE;
-		pb->id		      = generate_message_id();
+		pb->id		      = generate_message_id(NULL);
 		snprintf(tmp, sizeof(tmp), "Problem Message (%ld of %ld)",
 			mn_get_cur(ps->msgmap), mn_get_total(ps->msgmap));
 		tmp[sizeof(tmp)-1] = '\0';

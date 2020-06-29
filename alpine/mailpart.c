@@ -3489,7 +3489,6 @@ forward_attachment(MAILSTREAM *stream, long int msgno, ATTACH_S *a)
 	PAT_STATE      dummy;
 
 	outgoing              = mail_newenvelope();
-	outgoing->message_id  = generate_message_id();
 	outgoing->subject     = cpystr("Forwarded attachment...");
 
 	if(nonempty_patterns(rflags, &dummy)){
@@ -3514,6 +3513,7 @@ forward_attachment(MAILSTREAM *stream, long int msgno, ATTACH_S *a)
 	  q_status_message1(SM_ORDER, 3, 4,
 			    _("Forwarding using role \"%s\""), role->nick);
 
+	outgoing->message_id  = generate_message_id(role);
 	/*
 	 * as with all text bound for the composer, build it in 
 	 * a storage object of the type it understands...
@@ -3561,7 +3561,7 @@ forward_attachment(MAILSTREAM *stream, long int msgno, ATTACH_S *a)
 
 	    /*---- The corresponding things we're attaching ----*/
 	    body->nested.part->next  = mail_newbody_part();
-	    body->nested.part->next->body.id = generate_message_id();
+	    body->nested.part->next->body.id = generate_message_id(role);
 	    copy_body(&body->nested.part->next->body, a->body);
 
 	    if(fetch_contents(stream, msgno, a->number,
@@ -3604,8 +3604,6 @@ forward_msg_att(MAILSTREAM *stream, long int msgno, ATTACH_S *a)
     REDRAFT_POS_S *redraft_pos = NULL;
 
     outgoing             = mail_newenvelope();
-    outgoing->message_id = generate_message_id();
-
     memset((void *)&reply, 0, sizeof(reply));
 
     if((outgoing->subject = forward_subject(a->body->nested.msg->env, 0)) != NULL){
@@ -3639,6 +3637,8 @@ forward_msg_att(MAILSTREAM *stream, long int msgno, ATTACH_S *a)
 	    if(role)
 	      q_status_message1(SM_ORDER, 3, 4,
 				_("Forwarding using role \"%s\""), role->nick);
+
+	    outgoing->message_id = generate_message_id(role);
 
 	    if(role && role->template){
 		char *filtered;
@@ -3919,7 +3919,7 @@ reply_msg_att(MAILSTREAM *stream, long int msgno, ATTACH_S *a)
 
 	outgoing->in_reply_to = reply_in_reply_to(a->body->nested.msg->env);
 	outgoing->references = reply_build_refs(a->body->nested.msg->env);
-	outgoing->message_id = generate_message_id();
+	outgoing->message_id = generate_message_id(role);
 
 	if(!outgoing->to && !outgoing->cc
 	   && !outgoing->bcc && !outgoing->newsgroups)

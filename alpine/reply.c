@@ -106,6 +106,7 @@ reply(struct pine *pine_state, ACTION_S *role_arg)
     REPLY_S     reply;
     void       *msgtext = NULL;
     char       *tmpfix = NULL, *prefix = NULL, *fcc = NULL, *errmsg = NULL;
+    char       *hostpart;
     long        msgno, j, totalm, rflags, *seq = NULL;
     int         i, include_text = 0, times = -1, warned = 0, rv = 0,
 		flags = RSF_QUERY_REPLY_ALL, reply_raw_body = 0;
@@ -434,7 +435,7 @@ reply(struct pine *pine_state, ACTION_S *role_arg)
     /*==========  Other miscellaneous fields ===================*/   
     outgoing->in_reply_to = reply_in_reply_to(env);
     outgoing->references = reply_build_refs(env);
-    outgoing->message_id = generate_message_id();
+    outgoing->message_id = generate_message_id(role);
 
     if(!outgoing->to &&
        !outgoing->cc &&
@@ -1518,7 +1519,6 @@ forward(struct pine *ps, ACTION_S *role_arg)
 
     memset((void *)&reply, 0, sizeof(reply));
     outgoing              = mail_newenvelope();
-    outgoing->message_id  = generate_message_id();
 
     if(ps_global->full_header == 2
        && F_ON(F_ENABLE_FULL_HDR_AND_TEXT, ps_global))
@@ -1601,6 +1601,8 @@ forward(struct pine *ps, ACTION_S *role_arg)
     if(role)
       q_status_message1(SM_ORDER, 3, 4,
 			_("Forwarding using role \"%s\""), role->nick);
+
+    outgoing->message_id  = generate_message_id(role);
 
     if(role && role->template){
 	char *filtered;
@@ -1887,7 +1889,6 @@ forward_text(struct pine *pine_state, void *text, SourceType source)
 
     if((msgtext = so_get(PicoText, NULL, EDIT_ACCESS)) != NULL){
 	env                   = mail_newenvelope();
-	env->message_id       = generate_message_id();
 	body                  = mail_newbody();
 	body->type            = TYPETEXT;
 	body->contents.text.data = (void *) msgtext;
@@ -1911,6 +1912,8 @@ forward_text(struct pine *pine_state, void *text, SourceType source)
 	if(role)
 	  q_status_message1(SM_ORDER, 3, 4, _("Composing using role \"%s\""),
 			    role->nick);
+
+	env->message_id       = generate_message_id(role);
 
 	sig = detoken(role, NULL, 2, 0, 1, NULL, NULL);
 	so_puts(msgtext, (sig && *sig) ? sig : NEWLINE);

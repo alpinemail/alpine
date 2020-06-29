@@ -11116,7 +11116,7 @@ peMessageBounce(Tcl_Interp *interp, imapuid_t uid, int objc, Tcl_Obj **objv)
 
 	    outgoing->return_path = rfc822_cpy_adr(outgoing->from);
 	    if(!outgoing->message_id)
-	      outgoing->message_id = generate_message_id();
+	      outgoing->message_id = generate_message_id(NULL);
 
 	    /* NO FCC  */
 
@@ -11229,7 +11229,7 @@ peSendSpamReport(long rawno, char *to, char *subj, char *errbuf)
     outgoing->from	  = generate_from();
     outgoing->subject	  = cpystr(subj);
     outgoing->return_path = rfc822_cpy_adr(outgoing->from);
-    outgoing->message_id  = generate_message_id();
+    outgoing->message_id  = generate_message_id(NULL);
 
     rfc822_date(wtmp_20k_buf);
     outgoing->date = (unsigned char *) cpystr(wtmp_20k_buf);
@@ -12570,7 +12570,7 @@ peMsgCollected(Tcl_Interp *interp, MSG_COL_S *md, char *err, long flags)
 	rfc822_date(wtmp_20k_buf);
 	md->outgoing->date = (unsigned char *) cpystr(wtmp_20k_buf);
 	md->outgoing->return_path = rfc822_cpy_adr(md->outgoing->from);
-	md->outgoing->message_id = generate_message_id();
+	md->outgoing->message_id = generate_message_id(NULL);
 
 	body = mail_newbody();
 
@@ -12596,7 +12596,7 @@ peMsgCollected(Tcl_Interp *interp, MSG_COL_S *md, char *err, long flags)
 		*np = mail_newbody_part();
 
 		if(a->file){
-		    (*np)->body.id = generate_message_id();
+		    (*np)->body.id = generate_message_id(NULL);
 		    (*np)->body.description = cpystr(a->l.f.description);
 
 		    /* set name parameter */

@@ -656,7 +656,7 @@ compose_mail(char *given_to, char *fcc_arg, ACTION_S *role_arg,
 	  ps_global->hostname = cpystr(ps_global->maildomain);
 	else
 	  ps_global->hostname = cpystr(hostpart);	/* all for nothing */
-        outgoing->message_id = generate_message_id();
+        outgoing->message_id = generate_message_id(role);
 	/* undo the changes above */
 	fs_give((void **) &ps_global->hostname);
 	ps_global->hostname = cpystr(hostpart);
@@ -1151,6 +1151,11 @@ pine_simple_send(ENVELOPE *outgoing,	/* envelope for outgoing message */
 
     while(!done){
 	int flags;
+
+	if(outgoing->message_id)
+	  fs_give((void **) &outgoing->message_id);
+
+	outgoing->message_id = generate_message_id(role);
 
 	if(outgoing->remail){
 	   if(role)
@@ -3827,7 +3832,7 @@ pine_send(ENVELOPE *outgoing, struct mail_bodystruct **body,
 		    if(outgoing->message_id)
 		      fs_give((void **) &outgoing->message_id);
 
-		    outgoing->message_id = generate_message_id();
+		    outgoing->message_id = generate_message_id(role);
 
 		    continue;
 		}
@@ -3983,7 +3988,7 @@ pine_send(ENVELOPE *outgoing, struct mail_bodystruct **body,
 		if(outgoing->message_id)
 		  fs_give((void **) &outgoing->message_id);
 
-		outgoing->message_id = generate_message_id();
+		outgoing->message_id = generate_message_id(role);
 
 		continue;		/* if we got here, there was a prob */
 	    }
@@ -4064,7 +4069,7 @@ pine_send(ENVELOPE *outgoing, struct mail_bodystruct **body,
 		if(outgoing->message_id)
 		  fs_give((void **) &outgoing->message_id);
 
-		outgoing->message_id = generate_message_id();
+		outgoing->message_id = generate_message_id(role);
 
 		continue;
 	    }
@@ -5684,7 +5689,7 @@ outgoing2strings(METAENV *header, struct mail_bodystruct *bod, void **text,
 		    (*ppa)->size  = cpystr(byte_string(
 						   send_body_size(&part->body)));
 		    if(!part->body.id)
-		      part->body.id = generate_message_id();
+		      part->body.id = generate_message_id(NULL);
 
 		    (*ppa)->id   = cpystr(part->body.id);
 		    (*ppa)->next = NULL;
@@ -6061,7 +6066,7 @@ create_message_body(struct mail_bodystruct **b, PATMT *attach, int flow_it)
         
         p->next			   = mail_newbody_part();
         p			   = p->next;
-        p->body.id		   = generate_message_id();
+        p->body.id		   = generate_message_id(NULL);
         p->body.contents.text.data = file_contents;
 
 	/*

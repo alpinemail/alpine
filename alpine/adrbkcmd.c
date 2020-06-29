@@ -4528,7 +4528,6 @@ ab_forward(struct pine *ps, long int cur_line, int agg)
     }
 
     outgoing             = mail_newenvelope();
-    outgoing->message_id = generate_message_id();
     if(agg && as.selections > 1)
       outgoing->subject = cpystr("Forwarded address book entries from Alpine");
     else
@@ -4586,13 +4585,14 @@ ab_forward(struct pine *ps, long int cur_line, int agg)
 	goto bomb;
     }
 
+    outgoing->message_id = generate_message_id(role);
 
     /*---- create the attachment, and write abook entry into it ----*/
     *pp             = mail_newbody_part();
     pb              = &((*pp)->body);
     pb->type        = TYPETEXT;
     pb->encoding    = ENCOTHER;  /* let data decide */
-    pb->id          = generate_message_id();
+    pb->id          = generate_message_id(role);
     pb->subtype     = cpystr("DIRECTORY");
     if(agg && as.selections > 1)
       pb->description = cpystr("Alpine addressbook entries");

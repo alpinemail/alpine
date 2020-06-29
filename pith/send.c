@@ -826,7 +826,7 @@ redraft_work(MAILSTREAM **streamp, long int cont_msg, ENVELOPE **outgoing,
 	    if((*outgoing)->message_id)
 	      fs_give((void **)&(*outgoing)->message_id);
 
-	    (*outgoing)->message_id = generate_message_id();
+	    (*outgoing)->message_id = generate_message_id(role ? *role : NULL);
 	}
 
 	if(b && b->type != TYPETEXT){

@@ -1741,7 +1741,6 @@ url_local_mailto_and_atts(char *url, PATMT *attachlist)
     ACTION_S  *role = NULL;
 
     outgoing		 = mail_newenvelope();
-    outgoing->message_id = generate_message_id();
     body		 = mail_newbody();
     body->type		 = TYPETEXT;
     if((body->contents.text.data = (void *) so_get(PicoText,NULL,EDIT_ACCESS)) != NULL){
@@ -1833,6 +1832,7 @@ url_local_mailto_and_atts(char *url, PATMT *attachlist)
 	if(role)
 	  q_status_message1(SM_ORDER, 3, 4, "Composing using role \"%s\"",
 			    role->nick);
+	outgoing->message_id = generate_message_id(role);
 
 	if(!was_a_body && role && role->template){
 	    char *filtered;

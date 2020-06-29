@@ -1313,7 +1313,7 @@ reply_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
 	    /*--- The second part, what ever it is ---*/
 	    part->next    = mail_newbody_part();
 	    part          = part->next;
-	    part->body.id = generate_message_id();
+	    part->body.id = generate_message_id(NULL);
 	    copy_body(&(part->body), orig_body);
 
 	    /*
@@ -2199,7 +2199,7 @@ forward_mime_msg(MAILSTREAM *stream, long int msgno, char *section, ENVELOPE *en
     *partp		= mail_newbody_part();
     b			= &(*partp)->body;
     b->type		= TYPEMESSAGE;
-    b->id		= generate_message_id();
+    b->id		= generate_message_id(NULL);
     b->description	= cpystr("Forwarded Message");
     b->nested.msg	= mail_newmsg();
     b->disposition.type = cpystr("inline");
@@ -2550,7 +2550,7 @@ forward_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_bod
 	/*--- The second part, what ever it is ---*/
 	part->next               = mail_newbody_part();
 	part                     = part->next;
-	part->body.id            = generate_message_id();
+	part->body.id            = generate_message_id(NULL);
 	copy_body(&(part->body), orig_body);
 
 	/*
@@ -2596,7 +2596,6 @@ bounce_msg_body(MAILSTREAM *stream,
     gf_io_t   pc;
 
     *outgoingp		 = mail_newenvelope();
-    (*outgoingp)->message_id = generate_message_id();
     (*outgoingp)->subject    = cpystr(subject ? subject : "Resent mail....");
 
     /*
@@ -3108,7 +3107,7 @@ fetch_contents(MAILSTREAM *stream, long int msgno, char *section, struct mail_bo
     int   got_one = 0;
 
     if(!body->id)
-      body->id = generate_message_id();
+      body->id = generate_message_id(NULL);
           
     if(body->type == TYPEMULTIPART){
 	char  subsection[256], *subp;
@@ -3344,17 +3343,22 @@ Uniqueness is guaranteed by using the host name, process id, date to the
 second and a single unique character
 *----------------------------------------------------------------------*/
 char *
-generate_message_id(void)
+generate_message_id(ACTION_S *role)
 {
-    char        *id;
-    char	*leftpart;
-    char        *hostpart;
+    char  *id, *leftpart, *hostpart, *prehostpart;
+
+    if(role && role->from)
+      prehostpart = cpystr(role->from->host ? role->from->host : "huh");
+    else if(ps_global->maildomain)  /* as in generate_from() */
+      prehostpart = cpystr(ps_global->maildomain);
+    else
+      prehostpart = cpystr(ps_global->hostname);
 
     if(F_ON(F_ROT13_MESSAGE_ID, ps_global)){
-       hostpart  = rot13(ps_global->hostname);
+       hostpart  = rot13(prehostpart);
        leftpart  = rot13(oauth2_generate_state());
     } else {
-       hostpart	 = cpystr(ps_global->hostname);
+       hostpart	 = prehostpart;
        leftpart  = oauth2_generate_state();
     }
 
@@ -3363,6 +3367,7 @@ generate_message_id(void)
 
     fs_give((void **) &hostpart);
     fs_give((void **) &leftpart);
+    prehostpart = NULL;
 
     return(id);
 }

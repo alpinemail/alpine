@@ -572,9 +572,9 @@ save(struct pine *state, MAILSTREAM *stream, CONTEXT_S *context, char *folder,
 		p = flags + strlen(flags);
 		snprintf(p, newlen+1, "%s", "\\DELETED");
 
-		id = generate_message_id();
+		id = oauth2_generate_state();
 		idused = id ? id : "<xyz>";
-		snprintf(dummymsg, sizeof(dummymsg), "Date: Thu, 18 May 2006 00:00 -0700\r\nFrom: dummy@example.com\r\nSubject: dummy\r\nMessage-ID: %s\r\n\r\ndummy\r\n", idused);
+		snprintf(dummymsg, sizeof(dummymsg), "Date: Thu, 18 May 2006 00:00 -0700\r\nFrom: dummy@example.com\r\nSubject: dummy\r\nMessage-ID: %s@example.com\r\n\r\ndummy\r\n", idused);
 
 		/*
 		 * We need to get the uid of the message we are about to
