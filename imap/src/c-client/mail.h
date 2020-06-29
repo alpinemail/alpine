@@ -2005,3 +2005,4 @@ void oauth2deviceinfo_get_accesscode(void *, void *);
 XOAUTH2_INFO_S *new_xoauth2_info(void);
 void    free_xoauth2_info(XOAUTH2_INFO_S **);
 XOAUTH2_INFO_S *copy_xoauth2_info(XOAUTH2_INFO_S *);
+char *oauth2_generate_state(void);

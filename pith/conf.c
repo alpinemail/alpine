@@ -2909,7 +2909,7 @@ feature_list(int index)
 
 /* Sending Prefs */
 	{"disable-sender", "Do Not Generate Sender Header",
-	 F_DISABLE_SENDER, h_config_disable_sender, PREF_SEND, 0},
+	 F_DISABLE_SENDER, h_config_disable_sender, PREF_SEND, 1},
 	{"use-sender-not-x-sender", "Use Sender Instead of X-X-Sender",
 	 F_USE_SENDER_NOT_X, h_config_use_sender_not_x, PREF_SEND, 0},
 	{"quell-flowed-text", "Do Not Send Flowed Text",
@@ -3281,7 +3281,7 @@ feature_list(int index)
 	{"quell-timezone-comment-when-sending", "Suppress Timezone Comment When Sending",
 	 F_QUELL_TIMEZONE, h_config_quell_tz_comment, PREF_MISC, 0},
 	{"suppress-user-agent-when-sending", NULL,
-	 F_QUELL_USERAGENT, h_config_suppress_user_agent, PREF_MISC, 0},
+	 F_QUELL_USERAGENT, h_config_suppress_user_agent, PREF_MISC, 1},
 	{"tab-checks-recent", "Tab Checks for Recent Messages",
 	 F_TAB_CHK_RECENT, h_config_tab_checks_recent, PREF_MISC, 0},
 	{"termdef-takes-precedence", NULL,

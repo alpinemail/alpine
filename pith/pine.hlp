@@ -194,18 +194,33 @@ problems you find with this release.
 <LI> Expansion of the configuration screen for XOAUTH2 to include
      username, and tenant.
 
+<LI> If a user has more than one client-id for a service, Alpine tries to
+     asks the user which client-id to use and associates that client-id to
+     the credentials in the XOAUTH2 configuration screen.
+     <A HREF="h_xoauth2_config_screen">Learn more</A>.
+
 <LI> Addition of a link to the Apache License 2.0 (see above). This is 
      available from the Release Notes as well as the welcome screen.
+
+<LI> Modifications to protect the privacy of users:
+<UL>
+<LI> Alpine does not generate Sender or X-X-Sender by default
+     by enabling  <a href="h_config_disable_sender"><!--#echo var="FEAT_disable-sender"--></a>
+     as the default.
+<LI> Alpine does not disclose User Agent by default by enabling
+     <A HREF="h_config_suppress_user_agent"><!--#echo var="FEAT_suppress-user-agent-when-sending"--></A>
+     by default.
+<LI> Alpine uses the domain in the From: header of a message
+     to generate a message-id and suppresses all information
+     about Alpine, version, revision, and time of generation
+     of the message-id from this header. This information is
+     replaced by a random string.
+</UL>
 
 <LI> Alpine will ding the terminal bell when asking  about quitting
      when new mail arrives. This is consistent with Alpine dinging the
      bell when new mail arrives. The bell will not ding if it is disabled
      for status messages. Suggested by Chime Hart.
-
-<LI> If a user has more than one client-id for a service, Alpine tries to
-     asks the user which client-id to use and associates that client-id to
-     the credentials in the XOAUTH2 configuration screen.
-     <A HREF="h_xoauth2_config_screen">Learn more</A>.
 
 <LI> When messages are selected, pressing the &quot;;&quot; command to broaden or narrow
      a search, now offers the possibility to completely replace the search, and

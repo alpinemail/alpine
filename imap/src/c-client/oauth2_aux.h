@@ -18,7 +18,6 @@
 #define OA2_CODE_SUCCESS	0
 
 void mm_login_oauth2_c_client_method (NETMBX *, char *, char *, OAUTH2_S *, unsigned long, int *);
-char *oauth2_generate_state(void);
 void oauth2deviceinfo_get_accesscode(void *, void *);
 
 #endif /* C_CLIENT_OAUTH2_AUX_INCLUDED */
