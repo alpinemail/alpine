@@ -199,6 +199,12 @@ problems you find with this release.
      asks the user which client-id to use and associates that client-id to
      the credentials in the XOAUTH2 configuration screen.
      <A HREF="h_xoauth2_config_screen">Learn more</A>.
+
+<LI> When messages are selected, pressing the &quot;;&quot; command to broaden or narrow
+     a search, now offers the possibility to completely replace the search, and
+     is almost equivalent to being a shortcut to &quot;unselect all messages, and select
+     again&quot;. The difference is that cancelling this command will not unselect
+     all currently selected messages. Suggested by Holger Trapp.
 </UL>
 
 <P>

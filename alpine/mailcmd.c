@@ -132,6 +132,7 @@ ESCKEY_S sel_opts1[] = {
     {'b', 'b', "B", N_("Broaden selctn")},
     {'n', 'n', "N", N_("Narrow selctn")},
     {'f', 'f', "F", N_("Flip selected")},
+    {'r', 'r', "R", N_("Replace selctn")},
     {-1, 0, NULL, NULL}
 };
 
@@ -6921,7 +6922,7 @@ int
 aggregate_select(struct pine *state, MSGNO_S *msgmap, int q_line, CmdWhere in_index)
 {
     long          i, diff, old_tot, msgno, raw;
-    int           q = 0, rv = 0, narrow = 0, hidden, ret = -1;
+    int           p = 0, q = 0, rv = 0, narrow = 0, hidden, ret = -1;
     ESCKEY_S     *sel_opts;
     MESSAGECACHE *mc;
     SEARCHSET    *limitsrch = NULL;
@@ -6998,6 +6999,9 @@ aggregate_select(struct pine *state, MSGNO_S *msgmap, int q_line, CmdWhere in_in
 
 	  case 'n' :			/* narrow selection */
 	    narrow++;
+	  case 'r' : 			/* replace selection */
+	    p = 1;			/* set flag we want to replace */
+	    sel_opts -= 2;		/* re-enable first two options */
 	  case 'b' :			/* broaden selection */
 	    q = 0;			/* offer criteria prompt */
 	    break;
@@ -7030,6 +7034,17 @@ aggregate_select(struct pine *state, MSGNO_S *msgmap, int q_line, CmdWhere in_in
 	    else
 	      break;
 	}
+    }
+
+     /* When we are replacing the search, unselect all messages first, unless
+      * we are cancelling, in whose case, leave the screen as is, because we
+      * are cancelling!
+      */
+    if(p == 1 && q != 'x'){
+	msgno = any_lflagged(msgmap, MN_SLCT);
+	diff    = (!msgno) ? mn_get_total(msgmap) : 0L;
+	agg_select_all(state->mail_stream, msgmap, &diff,
+		       any_lflagged(msgmap, MN_SLCT) <= 0L);
     }
 
     /*
