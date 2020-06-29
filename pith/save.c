@@ -48,6 +48,7 @@ int	  save_ex_mask_types(char *, unsigned long *, gf_io_t);
 int	  save_ex_explain_body(BODY *, unsigned long *, gf_io_t);
 int	  save_ex_explain_parts(BODY *, int, unsigned long *, gf_io_t);
 int	  save_ex_output_line(char *, unsigned long *, gf_io_t);
+int	  save_ex_output_text(char *, int, unsigned long *, gf_io_t);
 
 
 /*
@@ -1612,8 +1613,8 @@ save_ex_explain_body(struct mail_bodystruct *body, long unsigned int *len, gf_io
 int
 save_ex_explain_parts(struct mail_bodystruct *body, int depth, long unsigned int *len, gf_io_t pc)
 {
-    char	  tmp[MAILTMPLEN], buftmp[MAILTMPLEN];
-    unsigned long ilen;
+    char	  *tmp, namebuf[MAILTMPLEN], descbuf[MAILTMPLEN];
+    unsigned long ilen, tmplen;
     char *name = parameter_val(body->parameter, "name");
 
     if(!name){
@@ -1621,39 +1622,46 @@ save_ex_explain_parts(struct mail_bodystruct *body, int depth, long unsigned int
 	 !strucmp(body->disposition.type, "ATTACHMENT"))
       name = parameter_val(body->disposition.parameter, "filename");
     }
+    if(name)
+      rfc1522_decode_to_utf8((unsigned char *)namebuf, sizeof(namebuf), name);
 
+   if(body->description && *body->description)
+      rfc1522_decode_to_utf8((unsigned char *)descbuf, sizeof(descbuf), body->description);
+
+    ilen = 0;
     if(body->type == TYPEMULTIPART) {   /* multipart gets special handling */
 	PART *part = body->nested.part;	/* first body part */
 
 	*len = 0;
-	if(body->description && *body->description){	/* MAILTMPLEN = sizeof(tmp) */
-	    snprintf(tmp, sizeof(tmp), "%*.*sA %s/%.*s%.10s%.100s%.10s segment described",
-		    depth, depth, " ", body_type_names(body->type),
-		    MAILTMPLEN-300, body->subtype ? body->subtype : "Unknown",
-		    name ? " (Name=\"" : "",
-		    name ? (char *) rfc1522_decode_to_utf8((unsigned char *)tmp_20k_buf,
-				SIZEOF_20KBUF, name) : "",
-		    name ? "\")" : "");
-	    if(!save_ex_output_line(tmp, len, pc))
+	if(body->description && *body->description){
+	    tmplen = strlen(_("A ")) + strlen(body_type_names(body->type)) + 1
+		     + strlen(body->subtype ? body->subtype : "Unknown")
+		     + strlen(name ? " (Name=\"" : "")
+		     + strlen(name ? namebuf : "")
+		     + strlen(name ? "\"" : "") + strlen(_(" segment described as "))
+		     + strlen(descbuf) + strlen(_(" containing:")) + 1;
+	    tmp = fs_get((tmplen + 1)*sizeof(char));
+	    sprintf(tmp, "%s%s/%s%s%s%s%s%s%s", _("A "),
+		     body_type_names(body->type), body->subtype ? body->subtype : "Unknown",
+		    name ? " (Name=\"" : "",  name ? namebuf : "", name ? "\")" : "",
+		    _(" segment described as "), descbuf, _(" containing:"));
+	    if(!save_ex_output_text(tmp, depth, len, pc))
 	      return(0);
-
-	    snprintf(buftmp, sizeof(buftmp), "%.75s", body->description);
-	    snprintf(tmp, sizeof(tmp), "%*.*s  as \"%.50s\" containing:", depth, depth, " ",
-		    (char *) rfc1522_decode_to_utf8((unsigned char *)tmp_20k_buf,
-						    SIZEOF_20KBUF, buftmp));
 	}
-	else{						/* MAILTMPLEN = sizeof(tmp) */
-	    snprintf(tmp, sizeof(tmp), "%*.*sA %s/%.*s%.10s%.100s%.10s segment containing:",
-		    depth, depth, " ",
-		    body_type_names(body->type),
-		    MAILTMPLEN-300, body->subtype ? body->subtype : "Unknown",
-		    name ? " (Name=\"" : "",
-		    name ? (char *) rfc1522_decode_to_utf8((unsigned char *)tmp_20k_buf,
-				SIZEOF_20KBUF, name) : "",
-		    name ? "\")" : "");
+	else{
+	    tmplen = strlen(_("A ")) + strlen(body_type_names(body->type)) + 1
+		     + strlen(body->subtype ? body->subtype : "Unknown")
+		     + strlen(name ? " (Name=\"" : "")
+		     + strlen(name ? namebuf : "")
+		     + strlen(name ? "\"" : "") + strlen(_(" segment containing:")) + 1;
+	    tmp = fs_get((tmplen + 1)*sizeof(char));
+	    sprintf(tmp, "%s%s/%s%s%s%s%s", _("A "),
+		     body_type_names(body->type), body->subtype ? body->subtype : "Unknown",
+		    name ? " (Name=\"" : "",  name ? namebuf : "", name ? "\")" : "",
+		    _(" segment containing:"));
 	}
 
-	if(save_ex_output_line(tmp, &ilen, pc))
+	if(save_ex_output_text(tmp, depth, &ilen, pc))
 	  *len += ilen;
 	else
 	  return(0);
@@ -1666,38 +1674,86 @@ save_ex_explain_parts(struct mail_bodystruct *body, int depth, long unsigned int
 	    return(0);
 	while ((part = part->next) != NULL);	/* until done */
     }
-    else{					/* MAILTMPLEN = sizeof(tmp) */
-	snprintf(tmp, sizeof(tmp), "%*.*sA %s/%.*s%.10s%.100s%.10s segment of about %s bytes%s",
-		depth, depth, " ",
-		body_type_names(body->type), 
-		MAILTMPLEN-300, body->subtype ? body->subtype : "Unknown",
-		name ? " (Name=\"" : "",
-		name ? (char *) rfc1522_decode_to_utf8((unsigned char *)tmp_20k_buf,
-				SIZEOF_20KBUF, name) : "",
-		name ? "\")" : "",
-		comatose((body->encoding == ENCBASE64)
+    else{
+	char *comatosep = comatose((body->encoding == ENCBASE64)
 			   ? ((body->size.bytes * 3)/4)
-			   : body->size.bytes),
-		body->description ? "," : ".");
-	if(!save_ex_output_line(tmp, len, pc))
-	  return(0);
+			   : body->size.bytes);
+	tmplen = strlen(_("A ")) + strlen(body_type_names(body->type)) + 1
+		 + strlen(body->subtype && *body->subtype ? body->subtype : "Unknown")
+		 + strlen(name ? " (Name=\"" : "")
+		 + strlen(name ? namebuf : "")
+		 + strlen(name ? "\"" : "") + strlen(_(" segment of about "))
+		 + strlen(comatosep) + strlen(_(" bytes")) + 1
+		 + strlen(body->description && *body->description ? _(" described as \"") : "")
+		 + strlen(body->description && *body->description ? descbuf : "")
+		 + strlen(body->description && *body->description ? "\"": "")
+		 + 1;
+	tmp = fs_get((tmplen + 1)*sizeof(char));
+	sprintf(tmp, "%s%s/%s%s%s%s%s%s%s%s%s%s%s",
+		_("A "),
+		body_type_names(body->type),
+		body->subtype && *body->subtype ? body->subtype : "Unknown",
+		name ? " (Name=\"" : "",  name ? namebuf : "", name ? "\")" : "",
+		_(" segment of about "),
+		comatosep,
+		_(" bytes"),
+		body->description && *body->description ? "," : ".",
+		body->description && *body->description ? " described as \"" : "",
+		body->description && *body->description ? descbuf : "",
+		body->description && *body->description ? "\"" : "");
 
-	if(body->description && *body->description){	/* MAILTMPLEN = sizeof(tmp) */
-	    snprintf(buftmp, sizeof(buftmp), "%.75s", body->description);
-	    snprintf(tmp, sizeof(tmp), "%*.*s   described as \"%.*s\"", depth, depth, " ",
-		    MAILTMPLEN-100,
-		    (char *) rfc1522_decode_to_utf8((unsigned char *)tmp_20k_buf,
-						    SIZEOF_20KBUF, buftmp));
-	    if(save_ex_output_line(tmp, &ilen, pc))
+	    if(save_ex_output_text(tmp, depth, &ilen, pc))
 	      *len += ilen;
 	    else
 	      return(0);
-	}
     }
 
     return(1);
 }
 
+/* save output one line at the time. This uses save_ex_output_line, which
+ * only allows 68 characters of text per line, so what we do is to get justify
+ * the input text to 68 characters long. If it is not possible to do this,
+ * we chop the line at 68 characters and move the remaining text to the next
+ * line.
+ */
+int
+save_ex_output_text(char *text, int depth, unsigned long *len, gf_io_t pc)
+{
+   int starti, i, j, startpos, pos, rv;
+   int line_len = 68 - depth;
+   char tmp[100];	/* a number bigger than 68, we justify text here. */
+   char *s;
+   unsigned long ilen;
+
+   rv = 0;
+   pos = 0;
+   do {
+     ilen = 0;
+     sprintf(tmp, "%*.*s", depth, depth, " ");
+     startpos = pos;
+     for(starti = i = depth; i < 68 && text[pos] != '\0'; i++, pos++){
+	tmp[i] = text[pos];
+	if(tmp[i] == ' '){				/* save when we reach a space */
+	   starti = i;
+	   startpos = pos;
+	}
+     }
+     tmp[i] = '\0';
+     if(i == 68){
+	if(text[pos] != '\0' && text[pos] != ' '){	/* if we are not at the end of a word */
+	   if(startpos < pos && starti != depth){	/* rewind */
+	      tmp[starti] = '\0';
+	      pos = startpos;
+	   }
+	}
+     }
+     rv += save_ex_output_line(tmp, &ilen, pc);
+     *len += ilen;
+   }
+   while (text[pos] != '\0');
+   return rv;
+}
 
 int
 save_ex_output_line(char *line, long unsigned int *len, gf_io_t pc)

@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 466 2020-06-28 14:06:09
+Alpine Commit 467 2020-06-28 19:55:50
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -216,6 +216,10 @@ Bugs addressed:
      Alpine would return to the first folder in the parent directory or to 
      the dual-folder. The fix is to return to the original dual-folder as 
      intended. Reported by Holger Trapp.
+
+<LI> When an attachment is deleted and the original message is saved, Alpine
+     might write only a part of the name of the file deleted. Reported by Holger
+     Trapp.
 </UL>
 
 <P>
