@@ -6999,6 +6999,8 @@ aggregate_select(struct pine *state, MSGNO_S *msgmap, int q_line, CmdWhere in_in
 
 	  case 'n' :			/* narrow selection */
 	    narrow++;
+	    q = 0;
+	    break;
 	  case 'r' : 			/* replace selection */
 	    p = 1;			/* set flag we want to replace */
 	    sel_opts -= 2;		/* re-enable first two options */
