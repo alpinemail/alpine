@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 467 2020-06-28 19:55:50
+Alpine Commit 469 2020-06-28 23:10:19
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -171,6 +171,10 @@ is available as is a world wide web based version designed to run under the
 Apache web server.
 
 <P>
+Alpine is a free email program. Your use of Alpine is subject to the terms of the <A 
+href="h_apache_license">Apache License 2.0</A>.
+
+<P>
 Alpine's privacy policy is a living, online only, document, which can be found at
 <A href="h_privacy_policy">http://alpine.x10host.com/privacy.html</A>.
 By following the previous link,  Alpine
@@ -187,13 +191,16 @@ problems you find with this release.
 <P> Additions include:
 
 <UL>
+<LI> Expansion of the configuration screen for XOAUTH2 to include
+     username, and tenant.
+
+<LI> Addition of a link to the Apache License 2.0 (see above). This is 
+     available from the Release Notes as well as the welcome screen.
+
 <LI> Alpine will ding the terminal bell when asking  about quitting
      when new mail arrives. This is consistent with Alpine dinging the
      bell when new mail arrives. The bell will not ding if it is disabled
      for status messages. Suggested by Chime Hart.
-
-<LI> Expansion of the configuration screen for XOAUTH2 to include
-     username, and tenant.
 
 <LI> If a user has more than one client-id for a service, Alpine tries to
      asks the user which client-id to use and associates that client-id to
@@ -2589,6 +2596,10 @@ select Setup/Config to see many of the options available to you. Also note
 that all screens have context-sensitive help text available.
 
 <P>
+Alpine is a free email program. Your use of Alpine is subject to the terms of the <A 
+href="h_apache_license">Apache License 2.0</A>.
+
+<P>
 Alpine's privacy policy is a living, online only, document, which can be found at
 <A href="h_privacy_policy">http://alpine.x10host.com/privacy.html</A>.
 By following the previous link,  Alpine
@@ -2620,6 +2631,10 @@ The Release Notes may be viewed by pressing
 &quot;R&quot; now or while in the MAIN MENU.
 
 <P>
+Alpine is a free email program. Your use of Alpine is subject to the terms of the <A 
+href="h_apache_license">Apache License 2.0</A>.
+
+<P>
 Alpine's privacy policy is a living, online only, document, which can be found at
 <A href="h_privacy_policy">http://alpine.x10host.com/privacy.html</A>.
 By following the previous link,  Alpine
@@ -2647,6 +2662,11 @@ this version of Alpine before.  This version's significant changes are
 documented in the Release Notes, which may be viewed by pressing 
 &quot;R&quot; now or while in the MAIN MENU.
 <P>
+
+<P>
+Alpine is a free email program. Your use of Alpine is subject to the terms of the <A 
+href="h_apache_license">Apache License 2.0</A>.
+
 <P>
 Alpine's privacy policy is a living, online only, document, which can be found at
 <A href="h_privacy_policy">http://alpine.x10host.com/privacy.html</A>.
@@ -38099,3 +38119,6 @@ Use 'p' to toggle between preserving or not preserving the original To:
 and Cc: fields of the message. Enter ^C to cancel message.
 ========== h_privacy_policy ==========
 x-alpine-http:http://alpine.x10host.com/privacy.html
+========== h_apache_license ==========
+x-alpine-http:http://alpine.x10host.com/legal/apache_license.html
+
