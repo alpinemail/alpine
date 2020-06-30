@@ -603,7 +603,6 @@ compose_mail(char *given_to, char *fcc_arg, ACTION_S *role_arg,
 	int impl, template_len = 0;
 	long rflags = ROLE_COMPOSE;
 	PAT_STATE dummy;
-	char *hostpart;
 
         /*=================  Compose new message ===============*/
         body         = mail_newbody();
@@ -644,24 +643,7 @@ compose_mail(char *given_to, char *fcc_arg, ACTION_S *role_arg,
 	  q_status_message1(SM_ORDER, 3, 4, _("Composing using role \"%s\""),
 			    role->nick);
 
-	/*
-	 * set ps_global->hostname to something sensible, if possible,
-	 * for purposes of generating a message id
-	 */
-	hostpart = cpystr(ps_global->hostname);
-	fs_give((void **) &ps_global->hostname);
-	if(role && role->from)
-	  ps_global->hostname = cpystr(role->from->host ? role->from->host : "huh");
-	else if(ps_global->maildomain)	/* as in generate_from() */
-	  ps_global->hostname = cpystr(ps_global->maildomain);
-	else
-	  ps_global->hostname = cpystr(hostpart);	/* all for nothing */
         outgoing->message_id = generate_message_id(role);
-	/* undo the changes above */
-	fs_give((void **) &ps_global->hostname);
-	ps_global->hostname = cpystr(hostpart);
-	fs_give((void **) &hostpart);
-
 	/*
 	 * The type of storage object allocated below is vitally
 	 * important.  See SIMPLIFYING ASSUMPTION #37
