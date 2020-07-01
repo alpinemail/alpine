@@ -13,9 +13,12 @@ rem ========================================================================
 
 rem These are the default values, which we might override below
 rem by setting them to older versions
-set CRYPTO_VERSION=45
-set SSL_VERSION=47
-set TLS_VERSION=19
+
+rem Default flags. These are in effect when openssl and libressl are disabled.
+set MESSAGE=Not including OPENSSL or LIBRESSL support
+set sslflags=
+set ssllibes=
+set sslextralibes="crypt32.lib"
 
 if "%1"=="" goto blank
 if "%1"=="wnt" goto wnt
@@ -38,38 +41,44 @@ echo         clean      -- to remove obj, lib, and exe files from source
 goto fini
 
 :wxp
+if not defined ALPINE_LIBRESSL set ALPINE_LIBRESSL=%cd%\libressl
+if NOT exist "%ALPINE_LIBRESSL%" goto wntbuild
+set MESSAGE=including LIBRESSL support
 set CRYPTO_VERSION=41
 set SSL_VERSION=43
 set TLS_VERSION=15
-set BIT=32
 set windows32build=-DWXPBUILD -D__MINGW_USE_VC2005_COMPAT
+set sslflags=-I\"%ALPINE_LIBRESSL%\"\include -I\"%ALPINE_LIBRESSL%\"\include\openssl -DENABLE_WINDOWS_UNIXSSL
+set ssllibes=\"%ALPINE_LIBRESSL%\"\x86\libcrypto-%CRYPTO_VERSION%.lib \"%ALPINE_LIBRESSL%\"\x86\libssl-%SSL_VERSION%.lib \"%ALPINE_LIBRESSL%\"\x86\libtls-%TLS_VERSION%.lib
+set sslextralibes=
 goto wntbuild
 
 :w32
-rem this port uses the default values for libcrypto and friends.
-set BIT=32
+if not defined ALPINE_OPENSSL set ALPINE_OPENSSL=%cd%\openssl
+if NOT exist "%ALPINE_OPENSSL%" goto wntbuild
+set MESSAGE=including OPENSSL support
 set windows32build=-DW32BITSBUILD -D__MINGW_USE_VC2005_COMPAT
+set sslflags=-I\"%ALPINE_OPENSSL%\"\include\ -I\"%ALPINE_OPENSSL%\"\include\openssl -DENABLE_WINDOWS_UNIXSSL -DOPENSSL_1_1_0
+set ssllibes=\"%ALPINE_OPENSSL%\"\lib\libcrypto.lib \"%ALPINE_OPENSSL%\"\lib\libssl.lib
+set sslextralibes=
 goto wntbuild
+
 :wnt
-rem this port uses the default values for libcrypto and friends.
-set BIT=64
+if not defined ALPINE_OPENSSL set ALPINE_OPENSSL=%cd%\openssl
+if NOT exist "%ALPINE_OPENSSL%" goto wntbuild
+set MESSAGE=including OPENSSL support
 set windows32build=
+set sslflags=-I\"%ALPINE_OPENSSL%\"\include\ -I\"%ALPINE_OPENSSL%\"\include\openssl -DENABLE_WINDOWS_UNIXSSL -DOPENSSL_1_1_0
+set ssllibes=\"%ALPINE_OPENSSL%\"\lib\libcrypto.lib \"%ALPINE_OPENSSL%\"\lib\libssl.lib 
+set sslextralibes=
+goto wntbuild
+
 :wntbuild
 echo PC-Alpine for Windows/Winsock (Win32) build sequence
 set cclntmake=makefile.nt
 set alpinemake=makefile.wnt
-if not defined ALPINE_LIBRESSL set ALPINE_LIBRESSL=%cd%\libressl
-if exist "%ALPINE_LIBRESSL%" goto yeslibresslwnt
-echo NOT including LIBRESSL functionality
-set libresslflags=
-set libressllibes=
-set libresslextralibes="crypt32.lib"
+echo %MESSAGE%
 goto ldapincludewnt
-:yeslibresslwnt
-echo including LIBRESSL functionality
-set libresslflags=-I\"%ALPINE_LIBRESSL%\"\include\"%BIT%\" -I\"%ALPINE_LIBRESSL%\"\include\"%BIT%\"\openssl -DENABLE_WINDOWS_LIBRESSL
-set libressllibes=\"%ALPINE_LIBRESSL%\"\x86\libcrypto-%CRYPTO_VERSION%.lib \"%ALPINE_LIBRESSL%\"\x86\libssl-%SSL_VERSION%.lib \"%ALPINE_LIBRESSL%\"\x86\libtls-%TLS_VERSION%.lib
-set libresslextralibes=
 :ldapincludewnt
 if not defined ALPINE_LDAP set ALPINE_LDAP=%cd%\ldap
 if exist "%ALPINE_LDAP%" goto yesldapwnt
@@ -82,9 +91,9 @@ echo including LDAP functionality
 set ldapflags=-I\"%ALPINE_LDAP%\"\inckit -DENABLE_LDAP
 set ldaplibes=\"%ALPINE_LDAP%\"\binaries\release\ldap32.lib
 :noldapwnt
-set extracflagsnq=/DWINVER=0x0501 /Zi -Od %ldapflags% %libresslflags% %windows32build% -D_USE_32BIT_TIME_T -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -DSPCL_REMARKS=\"\\\"\\\"\"
-set extralibes="%libresslextralibes%"
-set extralibesalpine="%ldaplibes% %libressllibes%"
+set extracflagsnq=/DWINVER=0x0501 /Zi -Od %ldapflags% %sslflags% %windows32build% -D_USE_32BIT_TIME_T -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -DSPCL_REMARKS=\"\\\"\\\"\"
+set extralibes="%sslextralibes%"
+set extralibesalpine="%ldaplibes% %ssllibes%"
 set extrarcflags="/D_PCP_WNT"
 set extramakecommand=
 goto buildsetup
@@ -93,18 +102,10 @@ goto buildsetup
 echo Krb5ized PC-Alpine for Windows/Winsock (Win32) build sequence
 set cclntmake=makefile.w2k
 set alpinemake=makefile.wnt
-if not defined ALPINE_LIBRESSL set ALPINE_LIBRESSL=%cd%\libressl
-if exist "%ALPINE_LIBRESSL%" goto yeslibresslw2k
-echo NOT including LIBRESSL functionality
-set libresslflags=
-set libressllibes=
-set libresslextralibes="crypt32.lib"
+set sslflags=
+set ssllibes=
+set sslextralibes="crypt32.lib"
 goto ldapincludew2k
-:yeslibresslw2k
-echo including LIBRESSL functionality
-set libresslflags=-I\"%ALPINE_LIBRESSL%\"\include -I\"%ALPINE_LIBRESSL%\"\include\openssl -DENABLE_WINDOWS_LIBRESSL 
-set libressllibes=\"%ALPINE_LIBRESSL%\"\x86\libcrypto-45.lib \"%ALPINE_LIBRESSL%\"\x86\libssl-47.lib \"%ALPINE_LIBRESSL%\"\x86\libtls-19.lib
-set libresslextralibes=
 :ldapincludew2k
 if not defined ALPINE_LDAP set ALPINE_LDAP=%cd%\ldap
 if exist "%ALPINE_LDAP%" goto yesldapw2k
@@ -117,9 +118,9 @@ echo including LDAP functionality
 set ldapflags=-I\"%ALPINE_LDAP%\"\inckit -DENABLE_LDAP
 set ldaplibes=\"%ALPINE_LDAP%\"\binaries\release\ldap32.lib
 :noldapw2k
-set extracflagsnq=/DWINVER=0x0501 /Zi -Od %ldapflags% %libresslflags% -D_USE_32BIT_TIME_T -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -DSPCFC_WINVER=\"\\\" 2000\\\"\" -DSPCL_REMARKS=\"\\\" with krb5\\\"\"
-set extralibes="secur32.lib %libresslextralibes%"
-set extralibesalpine="secur32.lib crypt32.lib %ldaplibes% %libressllibes%"
+set extracflagsnq=/DWINVER=0x0501 /Zi -Od %ldapflags% %sslflags% -D_USE_32BIT_TIME_T -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -DSPCFC_WINVER=\"\\\" 2000\\\"\" -DSPCL_REMARKS=\"\\\" with krb5\\\"\"
+set extralibes="secur32.lib %sslextralibes%"
+set extralibesalpine="secur32.lib crypt32.lib %ldaplibes% %ssllibes%"
 set extrarcflags="/D_PCP_W2K"
 set extramakecommand=
 goto buildsetup
@@ -175,12 +176,12 @@ rem copy /Y "%ALPINE_IMAP%"\src\osdep\nt\* c-client-dll\ > garbageout.txt
 rem del garbageout.txt
 if not exist mailutil mkdir mailutil
 copy /Y "%ALPINE_IMAP%"\src\mailutil\* mailutil\ > garbageout.txt
-del garbageout.txt
 if defined ALPINE_LIBRESSL del /Q libressl\x86\lib*.lib
 if defined ALPINE_LIBRESSL del /Q alpine\lib*.dll
 if defined ALPINE_LIBRESSL copy /Y libressl\x86\"%1%"\* libressl\x86\ > garbageout.txt
-if defined ALPINE_LIBRESSL copy /Y alpine\DLL\"%1%"\* alpine\ > garbageout.txt
-if defined ALPINE_LIBRESSL del garbageout.txt
+if defined ALPINE_LIBRESSL copy /Y alpine\DLL\"%1%\"\* alpine\ > garbageout.txt
+if defined ALPINE_OPENSSL copy /Y alpine\DLL\openssl\* alpine\ > garbageout.txt
+del garbageout.txt
 goto build
 
 :build
@@ -203,7 +204,7 @@ goto nobuildmailutil
 :yesbuildmailutil
 echo Building mailutil
 cd mailutil
-nmake -nologo -f %cclntmake% EXTRACFLAGS=%extracflags% LIBRESSLLIBS="%libressllibes%" %extramakecommand%
+nmake -nologo -f %cclntmake% EXTRACFLAGS=%extracflags% LIBRESSLLIBS="%ssllibes%" %extramakecommand%
 if errorlevel 1 goto bogus
 cd ..
 :nobuildmailutil
@@ -268,7 +269,7 @@ goto buildalpine
 :buildalpine
 echo Building alpine...
 cd alpine
-nmake -nologo -f %alpinemake% wnt=1 EXTRACFLAGS=%extracflags% LIBRESSLLIBS="%libressllibes%" EXTRALIBES=%extralibesalpine% LDAPLIBS=%ldaplibes% EXTRALDFLAGS=%extraldflags% EXTRARCFLAGS=%extrarcflags% %extramakecommand%
+nmake -nologo -f %alpinemake% wnt=1 EXTRACFLAGS=%extracflags% EXTRALIBES=%extralibesalpine% LDAPLIBS=%ldaplibes% EXTRALDFLAGS=%extraldflags% EXTRARCFLAGS=%extrarcflags% %extramakecommand%
 if errorlevel 1 goto bogus
 cd ..
 goto nobuildmapi
