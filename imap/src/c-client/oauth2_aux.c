@@ -127,7 +127,7 @@ void
 mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
 			OAUTH2_S *oauth2, unsigned long trial, int *tryanother)
 {
-   int i, status;
+   int status;
    char *s = NULL;
    JSON_S *json = NULL;
 
@@ -307,7 +307,6 @@ void oauth2deviceinfo_get_accesscode(void *inp, void *outp)
   OAUTH2_S *oauth2 = oad->xoauth2;
   OAUTH2_DEVICECODE_S *dcode = &oauth2->devicecode;
   int done = 0, status, rv;
-  HTTP_PARAM_S params[OAUTH2_PARAM_NUMBER];
   JSON_S *json;
 
   if(dcode->device_code && oauth2->param[OA2_DeviceCode].value == NULL)

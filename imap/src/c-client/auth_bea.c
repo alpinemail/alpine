@@ -48,7 +48,6 @@ long auth_oauthbearer_client (authchallenge_t challenger,authrespond_t responder
 			char *service,NETMBX *mb,void *stream, unsigned long port,
 			unsigned long *trial,char *user)
 {
-  char *u;
   void *challenge;
   unsigned long clen;
   long ret = NIL;
@@ -114,7 +113,7 @@ long auth_oauthbearer_client (authchallenge_t challenger,authrespond_t responder
     else {
       char ports[10];
       unsigned long rlen;
-      char *t, *response;
+      char *response;
 
       sprintf(ports, "%lu", port);
       rlen = strlen(BEARER_ACCOUNT) + strlen(user) + 1 + 1

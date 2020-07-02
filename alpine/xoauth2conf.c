@@ -373,7 +373,7 @@ oauth2_get_client_info(unsigned char *name, char *user)
 void
 write_xoauth_configuration(struct variable  *v, struct variable **vlist, EditWhich ew)
 {
-  int i, j, k, m, n;
+  int i, k, m, n;
   XOAUTH2_INFO_S *x = NULL, *y;
   char ***alval, **lval, **l;
   char *p;
@@ -384,6 +384,7 @@ write_xoauth_configuration(struct variable  *v, struct variable **vlist, EditWhi
   lval = fs_get((n+1)*sizeof(char *));
   memset((void *) lval, 0, (n+1)*sizeof(char *));
 
+  m = -1;
   alval  = ALVAL(v, ew);
   for (i = 0, k = 0; vlist[i] != NULL; i++){
       if(x == NULL){
@@ -425,17 +426,9 @@ write_xoauth_configuration(struct variable  *v, struct variable **vlist, EditWhi
       }
       /* don't let it get to here until we are done! */
       lval[k++] = xoauth_config_line(x);
-      if(alpine_oauth2_list[j].param[OA2_Id].value)
-	fs_give((void **) &alpine_oauth2_list[j].param[OA2_Id].value);
-      if(alpine_oauth2_list[j].param[OA2_Secret].value)
-	fs_give((void **) &alpine_oauth2_list[j].param[OA2_Secret].value);
-      if(alpine_oauth2_list[j].param[OA2_Tenant].value)
-	fs_give((void **) &alpine_oauth2_list[j].param[OA2_Tenant].value);
-      alpine_oauth2_list[j].param[OA2_Id].value = cpystr(x->client_id);
-      alpine_oauth2_list[j].param[OA2_Secret].value = x->client_secret ? cpystr(x->client_secret) : NULL;
-      alpine_oauth2_list[j].param[OA2_Tenant].value = x->tenant ? cpystr(x->tenant) : NULL;
 	/* get ready for next run */
       free_xoauth2_info(&x);
+      m = -1;
   }
   if(k > 0){
      lval[k] = NULL;
