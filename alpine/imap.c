@@ -3379,8 +3379,8 @@ write_passfile(pinerc, l)
    char *authend, *authtype;
 #ifdef	WINCRED
 # if	(WINCRED > 0)
-    char  target[MAILTMPLEN];
-    char  blob[MAILTMPLEN];
+    char  target[4*MAILTMPLEN];
+    char  blob[4*MAILTMPLEN];
     CREDENTIAL cred;
     LPTSTR ltarget = 0;
 
@@ -3430,8 +3430,8 @@ write_passfile(pinerc, l)
 
 #elif	APPLEKEYCHAIN
     int   rc;
-    char  target[MAILTMPLEN];
-    char  blob[MAILTMPLEN];
+    char  target[4*MAILTMPLEN];
+    char  blob[4*MAILTMPLEN];
     SecKeychainItemRef itemRef = NULL;
 
     if(using_passfile == 0)
