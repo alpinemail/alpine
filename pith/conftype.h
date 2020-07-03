@@ -124,7 +124,7 @@ typedef	enum {    V_PERSONAL_NAME = 0
 		, V_DOWNLOAD_CMD_PREFIX
 		, V_MAILCAP_PATH
 		, V_MIMETYPE_PATH
-#if !defined(_WINDOWS) || defined(WINDOWS_LIBRESSL_CERTS)
+#if !defined(_WINDOWS) || defined(WINDOWS_UNIXSSL_CERTS)
 		, V_SSLCAPATH
 		, V_SSLCAFILE
 #endif

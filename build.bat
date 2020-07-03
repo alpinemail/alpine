@@ -23,7 +23,6 @@ set sslextralibes="crypt32.lib"
 if "%1"=="" goto blank
 if "%1"=="wnt" goto wnt
 if "%1"=="wxp" goto wxp
-if "%1"=="w32" goto w32
 if "%1"=="w2k" goto w2k
 if "%1"=="clean" goto clean
 echo Unknown build command: %1 %2 %3 %4
@@ -34,7 +33,6 @@ echo Must specify build command!
 echo usage: BUILD cmd
 echo   where "cmd" is one of either:
 echo         wnt        -- Windows
-echo         w32        -- Windows 32 bits (not Windows XP)
 echo         wxp        -- Windows XP
 echo         w2k        -- Windows with Win2k Kerb
 echo         clean      -- to remove obj, lib, and exe files from source
@@ -50,16 +48,6 @@ set TLS_VERSION=15
 set windows32build=-DWXPBUILD -D__MINGW_USE_VC2005_COMPAT
 set sslflags=-I\"%ALPINE_LIBRESSL%\"\include -I\"%ALPINE_LIBRESSL%\"\include\openssl -DENABLE_WINDOWS_UNIXSSL
 set ssllibes=\"%ALPINE_LIBRESSL%\"\x86\libcrypto-%CRYPTO_VERSION%.lib \"%ALPINE_LIBRESSL%\"\x86\libssl-%SSL_VERSION%.lib \"%ALPINE_LIBRESSL%\"\x86\libtls-%TLS_VERSION%.lib
-set sslextralibes=
-goto wntbuild
-
-:w32
-if not defined ALPINE_OPENSSL set ALPINE_OPENSSL=%cd%\openssl
-if NOT exist "%ALPINE_OPENSSL%" goto wntbuild
-set MESSAGE=including OPENSSL support
-set windows32build=-DW32BITSBUILD -D__MINGW_USE_VC2005_COMPAT
-set sslflags=-I\"%ALPINE_OPENSSL%\"\include\ -I\"%ALPINE_OPENSSL%\"\include\openssl -DENABLE_WINDOWS_UNIXSSL -DOPENSSL_1_1_0
-set ssllibes=\"%ALPINE_OPENSSL%\"\lib\libcrypto.lib \"%ALPINE_OPENSSL%\"\lib\libssl.lib
 set sslextralibes=
 goto wntbuild
 

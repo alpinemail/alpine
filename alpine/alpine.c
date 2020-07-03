@@ -472,7 +472,7 @@ main(int argc, char **argv)
 
     init_vars(pine_state, process_init_cmds);
 
-#if !defined(_WINDOWS) || defined(WINDOWS_LIBRESSL_CERTS)
+#if !defined(_WINDOWS) || defined(WINDOWS_UNIXSSL_CERTS)
     set_system_certs_path(pine_state);
     set_system_certs_container(pine_state);
 #endif
