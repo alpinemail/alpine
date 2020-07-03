@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 479 2020-07-03 02:14:30
+Alpine Commit 480 2020-07-03 11:34:14
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -252,6 +252,9 @@ Bugs addressed:
 <LI> URLs that are surrounded by white space are not cleaned by Alpine before
      passing them to the browser, resulting in no display of the URL when Alpine
      tries to open it. Reported by Gregory Heytings.
+
+<LI>  When Alpine is built without smime, password file functionality might
+      fail. Reported by Andres Fehr.
 </UL>
 
 <P>

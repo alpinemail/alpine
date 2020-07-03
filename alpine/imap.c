@@ -3192,6 +3192,7 @@ read_passfile(pinerc, l)
     int   i, j, n, rv = 0;
     size_t len;
     char *tmptext = NULL;
+    struct stat sbuf;
 #ifdef SMIME
     char tmp2[MAILTMPLEN];
     char *text = NULL, *text2 = NULL;
@@ -3210,7 +3211,13 @@ read_passfile(pinerc, l)
 	return(using_passfile);
     };
 
-#ifdef SMIME
+#ifndef SMIME
+    if(our_stat(tmp, &sbuf) == 0)
+       len = sbuf.st_size;
+    else
+       len = 0;
+    fp = our_fopen(tmp, "rb");	/* reopen to read data */
+#else
     /* the next call initializes the key/certificate pair used to
      * encrypt and decrypt a password file. The details of how this is
      * done is in the file pith/smime.c. During this setup we might call
@@ -3294,14 +3301,6 @@ read_passfile(pinerc, l)
 
 	   default: break;
 	}
-    }
-    else{
-       struct stat sbuf;
-       if(our_stat(tmp, &sbuf) == 0)
-	  len = sbuf.st_size;
-       else
-	  len = 0;
-       fp = our_fopen(tmp, "rb");	/* reopen to read data */
     }
 #endif /* SMIME */
 
