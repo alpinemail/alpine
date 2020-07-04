@@ -1165,6 +1165,7 @@ process_debug_str(char *debug_str)
 	}
     }
 
+    if(usage >= 0) ps_global->write_debug_file++;
     if(!new_style_debug_arg){
 #ifdef CSRIMALLOC
 	ps_global->debug_malloc =

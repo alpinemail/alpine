@@ -224,16 +224,18 @@ AC_ARG_WITH(web-bin,
 
 dnl disable debug, turned on by default
 AC_MSG_CHECKING([option: debugging is enabled])
-AC_ARG_ENABLE(debug, AS_HELP_STRING([--disable-debug],[Exclude debug messages from source]))
+AC_ARG_ENABLE(debug, AS_HELP_STRING([--disable-debug],[Exclude debug from the binary]))
 if test x$enable_debug != "xno" ; then
   AM_CFLAGS="$AM_CFLAGS -g"
-  AC_DEFINE([DEBUG], [1], [Compile in debugging])
-  AC_DEFINE([DEBUGJOURNAL], [1], [Display debug messages in journal])
   AC_MSG_RESULT([yes])
 else
-dnl ??? set AM_CFLAGS to optimize ???
   AC_MSG_RESULT([no])
 fi
+dnl we want debug messages to be compiled into the binary, but only write to a file
+dnl upon user request.
+AC_DEFINE([DEBUG], [1], [Compile in debugging])
+AC_DEFINE([DEBUGJOURNAL], [1], [Display debug messages in journal])
+
 
 dnl disable optimization, on by default
 AC_MSG_CHECKING([option: optimization is enabled])

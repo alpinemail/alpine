@@ -74,7 +74,7 @@ init_debug(void)
     char newfname[MAXPATH+1], filename[MAXPATH+1], *dfile = NULL;
     int i, fd;
 
-    if(!(debug || ps_global->debug_imap || ps_global->debug_tcp))
+    if(!((debug || ps_global->debug_imap || ps_global->debug_tcp) &&  ps_global->write_debug_file))
       return;
 
     for(i = ps_global->debug_nfiles - 1; i > 0; i--){

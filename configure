@@ -1578,7 +1578,7 @@ Optional Features:
   --enable-dmalloc        Enable dmalloc debugging
   --enable-osx-universal-binaries
                           Produce universal binaries under OS X [[default=no]]
-  --disable-debug         Exclude debug messages from source
+  --disable-debug         Exclude debug from the binary
   --disable-optimization  Exclude optimizing compiler flags
   --disable-mouse         Disable mouse support
   --enable-quotas         Enable disk quota checking on startup
@@ -15157,18 +15157,19 @@ fi
 
 if test x$enable_debug != "xno" ; then
   AM_CFLAGS="$AM_CFLAGS -g"
-
-$as_echo "#define DEBUG 1" >>confdefs.h
-
-
-$as_echo "#define DEBUGJOURNAL 1" >>confdefs.h
-
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
+
+$as_echo "#define DEBUG 1" >>confdefs.h
+
+
+$as_echo "#define DEBUGJOURNAL 1" >>confdefs.h
+
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking option: optimization is enabled" >&5
 $as_echo_n "checking option: optimization is enabled... " >&6; }

@@ -130,6 +130,7 @@ struct pine {
     char        *html_dir;
 
     HTML_LOG_S  *html_dir_list;
+    unsigned     write_debug_file:1;	/* should we write debug to a file */
     unsigned	 signal_in_progress:1;	/* we are handling a signal */
     unsigned     mangled_footer:1; 	/* footer needs repainting */
     unsigned     mangled_header:1;	/* header needs repainting */

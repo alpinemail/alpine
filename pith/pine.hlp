@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 480 2020-07-03 11:34:14
+Alpine Commit 481 2020-07-04 02:42:49
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -227,6 +227,10 @@ problems you find with this release.
      is almost equivalent to being a shortcut to &quot;unselect all messages, and select
      again&quot;. The difference is that cancelling this command will not unselect
      all currently selected messages. Suggested by Holger Trapp.
+
+<LI> Alpine will not write debug files unless started with the option -d, 
+     so for example &quot;alpine -d 2&quot; will generate a debug file at level 2, 
+     but just issuing the alpine command will not write any debug to a file.
 </UL>
 
 <P>
