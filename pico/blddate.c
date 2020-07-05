@@ -46,6 +46,7 @@ main(argc, argv)
 	    1900 + t->tm_year);
 
     fprintf(outfile, "char hoststamp[]=\"random-pc\";\n");
+    fprintf(outfile, "char *configoptions[] = \"\"";\n");
 
     fclose(outfile);
 

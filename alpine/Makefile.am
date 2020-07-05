@@ -52,3 +52,4 @@ CLEANFILES = date.c
 date.c:
 	echo "char datestamp[]="\"$(ALPINE_DATESTAMP)\"";" > date.c
 	echo "char hoststamp[]="\"$(ALPINE_HOSTSTAMP)\"";" >> date.c
+	echo "char configoptions[]="\"`../config.status --config`\"";" >> date.c

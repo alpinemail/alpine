@@ -38,7 +38,9 @@ static char rcsid[] = "$Id: arg.c 900 2008-01-05 01:13:26Z hubert@u.washington.e
 int  process_debug_str(char *);
 void args_add_attach(PATMT **, char *, int);
 int  pinerc_cmdline_opt(char *);
+void display_config_options(char *, char *);
 
+extern char configoptions[];
 
 /*
  * Name started as to invoke function key mode
@@ -192,7 +194,68 @@ N_("\tNote: All of -xoauth options above must be used, if any of them is used"),
 NULL
 };
 
+void
+display_config_options(char *configopts, char *defprefix)
+{
+  char *copts = configopts ? cpystr(configopts) : NULL;
+  char **options = NULL;
+  char *s, *t, *prefix;
+  int len, nlines, pending;
 
+  for(nlines = 0, s = copts; s != NULL;  nlines++){
+     s = strchr(s, '\'');
+     if(s != NULL) s++;
+  }
+  options = fs_get((nlines/2 + 4)*sizeof(char *));	/* 4 in worst case scenario */
+  memset((void *) options, 0, (nlines/2 + 4)*sizeof(char *));
+  for(s = copts, len = 0, nlines = 0; s != NULL; ){
+     pending = 0;
+     prefix = len == 0 ? (nlines == 0 ? defprefix : "  ") : " ";
+     if((s = strchr(s, '\'')) != NULL){
+	t = strchr(s+1, '\'');
+	*t = '\0';
+	if(!strncmp(s+1, "CFLAGS=", 7)
+	    || !strncmp(s+1, "CC=", 3)
+	    || !strncmp(s+1, "LIBS=", 5)
+	    || !strncmp(s+1, "CPP=", 4)
+	    || !strncmp(s+1, "CPPFLAGS=", 9)
+	    || !strncmp(s+1, "LT_SYS_LIBRARY_PATH=", 20)
+	    || !strncmp(s+1, "LDFLAGS=", 8)){
+	   display_args_err(s+1, NULL, 0);
+	   *t++ = '\'';
+	   s = t;
+	   continue;
+	}
+	if(len + strlen(prefix) + strlen(s+1) > 74 ){
+	   if(len == 0){
+	      options[nlines] = fs_get((strlen(prefix) + strlen(s+1) + 3)*sizeof(char));
+	      sprintf(options[nlines++], "%s%s \\", prefix, s+1);
+	   }
+	   else{
+	      strcat(options[nlines++], " \\");
+	      pending++;
+	   }
+	   len = 0;
+	}
+	else{
+	   if(len == 0){
+	      options[nlines] = fs_get(76*sizeof(char));
+	      *options[nlines] = '\0';
+	   }
+	   strcat(options[nlines], prefix);
+	   strcat(options[nlines], s+1);
+	   len = strlen(options[nlines]);
+	}
+	if(t != NULL)
+	   *t = '\'';
+	if(!pending)
+	   s = t ? t + 1 : NULL;
+     }
+  }
+  display_args_err(NULL, options, 0);
+  free_list_array(&options);
+  fs_give((void **) &copts);
+}
 
 /*
  *  Parse the command line args.
@@ -1002,6 +1065,10 @@ Loop: while(--ac > 0)
 		 datestamp, hoststamp);
 	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
 	display_args_err(tmp_20k_buf, NULL, 0);
+	if(*configoptions){
+	  display_args_err(_("Alpine was built with the following options:"), NULL, 0);
+	  display_config_options(configoptions, "./configure ");
+	}
 	exit(0);
     }
 

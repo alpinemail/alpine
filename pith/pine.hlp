@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 481 2020-07-04 02:42:49
+Alpine Commit 482 2020-07-05 00:48:47
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -216,6 +216,9 @@ problems you find with this release.
      of the message-id from this header. This information is
      replaced by a random string.
 </UL>
+
+<LI> Unix Alpine displays configure options and flags when 
+     invoked as &quot;alpine -v&quot;. Suggested by Matt Ackeret.
 
 <LI> Alpine will ding the terminal bell when asking  about quitting
      when new mail arrives. This is consistent with Alpine dinging the
