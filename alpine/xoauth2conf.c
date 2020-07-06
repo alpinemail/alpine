@@ -300,10 +300,9 @@ oauth2_get_client_info(unsigned char *name, char *user)
      }
      free_xoauth2_info(&x);
   }
-  for(i = 0; xoauth_default[i].name != NULL && strcmp(xoauth_default[i].name, name); i++){
-     for(j = 0; xinfo && xinfo[j] && !same_xoauth2_info(xoauth_default[i], *xinfo[j]); j++);
-     if(xoauth_default[i].name && !xinfo[j]) xinfo[matches++] = copy_xoauth2_info(&xoauth_default[i]);
-  }
+  for(i = 0; xoauth_default[i].name != NULL && strcmp(xoauth_default[i].name, name); i++);
+  for(j = 0; xinfo && xinfo[j] && !same_xoauth2_info(xoauth_default[i], *xinfo[j]); j++);
+  if(!xinfo[j]) xinfo[matches++] = copy_xoauth2_info(&xoauth_default[i]);
 
   /* if after removing the duplicate entries, we only have one, use it */
   if(matches == 1){
