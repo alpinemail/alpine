@@ -579,13 +579,7 @@ write_xoauth_conf_entry(XOAUTH2_INFO_S *x, XOAUTH2_INFO_S *y, CONF_S **cl, CONF_
    int i, p = *pp;
    char tmp[1024], tmp2[16];
 
-   i = 2;	/* client_id and users always appear */
-   if(x->client_secret) i++;
-   if(x->tenant) i++;
-
    sprintf(tmp2, "%d", key);
-   fs_resize((void **) varlistp, (p + i + 1)*sizeof(struct variable **));
-   memset((void *) (*varlistp + p*sizeof(struct variable *)), 0,  (i + 1)*sizeof(struct variable *));
    varlist = *varlistp;
 
    new_confline(cl)->var = NULL;
@@ -743,7 +737,7 @@ alpine_xoauth2_configuration(struct pine *ps, int edit_exceptions)
     char	    *name, *id, *tenant, *secret, **user;
     char	    *name_lval, *id_lval, *tenant_lval, *secret_lval, *user_lval,
 		    *id_def, *tenant_def, *secret_def;
-    int		    i, j, k, l, p, q, ln = 0, readonly_warning = 0, pos;
+    int		    i, j, k, l, p, q, ln = 0, readonly_warning = 0, pos, count_vars;
     CONF_S	   *ctmpa = NULL, *ctmpb, *first_line;
     FEATURE_S	   *feature;
     PINERC_S       *prc = NULL;
@@ -794,6 +788,43 @@ alpine_xoauth2_configuration(struct pine *ps, int edit_exceptions)
 
     do {
         ctmpa = first_line = NULL;
+
+        for(i = 0, count_vars = 0; xoauth_default[i].name != NULL; i++){
+	   /* always start with the default configuration */
+	   for(k = 0, q = 0; lval && lval[k]; k++){
+		y = xoauth_parse_client_info(lval[k]);
+		if(same_xoauth2_info(xoauth_default[i], *y))
+		   break;
+		free_xoauth2_info(&y);
+	   }
+	   if(lval == NULL || lval[k] == NULL){
+		count_vars += 2;
+		if(xoauth_default[i].client_secret) count_vars++;
+		if(xoauth_default[i].tenant) count_vars++;
+	   }
+	   for(k = 0; lval && lval[k]; k++){
+	      y = xoauth_parse_client_info(lval[k]);
+	      if(y && (!y->name || strcmp(y->name, xoauth_default[i].name))){
+		free_xoauth2_info(&y);
+		continue;
+	      }
+	      count_vars += 2;
+	      if(xoauth_default[i].client_secret != NULL) count_vars++;
+	      if(xoauth_default[i].tenant != NULL) count_vars++;
+	      free_xoauth2_info(&y);
+	   }
+	}
+
+	for(i = 0; varlist && varlist[i]; i++){
+	    free_variable_values(varlist[i]);
+	    if(varlist[i]->descrip) fs_give((void **) &varlist[i]->descrip);
+	    if(varlist[i]->dname) fs_give((void **) &varlist[i]->dname);
+	    fs_give((void **) &varlist[i]);
+	}
+	if(varlist) fs_give((void **) varlist);
+
+	varlist = fs_get((count_vars + 1)*sizeof(struct variable *));
+	memset((void *) varlist, 0, (count_vars +1)*sizeof(struct variable *));
 
         for(i = 0, p = 0; xoauth_default[i].name != NULL; i++){
 	   /* always start with the default configuration */
@@ -934,14 +965,6 @@ alpine_xoauth2_configuration(struct pine *ps, int edit_exceptions)
 		break;
 	}
     } while (pos >= 0);
-
-   for(i = 0; varlist && varlist[i]; i++){
-       free_variable_values(varlist[i]);
-       if(varlist[i]->descrip) fs_give((void **) &varlist[i]->descrip);
-       if(varlist[i]->dname) fs_give((void **) &varlist[i]->dname);
-       fs_give((void **) &varlist[i]);
-   }
-   if(varlist) fs_give((void **) varlist);
 
 #ifdef _WINDOWS
     mswin_set_quit_confirm (F_OFF(F_QUIT_WO_CONFIRM, ps_global));
