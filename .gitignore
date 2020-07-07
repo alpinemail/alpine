@@ -1,3 +1,6 @@
+c-client
+!contrib/carmel/c-client
+!imap/src/c-client
 ltmain.sh
 install-sh
 mkinstalldirs
