@@ -3190,7 +3190,7 @@ read_passfile(pinerc, l)
 
     char  tmp[MAILTMPLEN], *ui[5];
     int   i, j, n, rv = 0;
-    size_t len;
+    size_t len = 0;
     char *tmptext = NULL;
     struct stat sbuf;
 #ifdef SMIME
@@ -3214,8 +3214,6 @@ read_passfile(pinerc, l)
 #ifndef SMIME
     if(our_stat(tmp, &sbuf) == 0)
        len = sbuf.st_size;
-    else
-       len = 0;
     fp = our_fopen(tmp, "rb");	/* reopen to read data */
 #else
     /* the next call initializes the key/certificate pair used to
