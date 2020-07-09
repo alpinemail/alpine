@@ -386,6 +386,7 @@ void free_xoauth2_info(XOAUTH2_INFO_S **xp)
   if((*xp)->client_id) fs_give((void **) &(*xp)->client_id);
   if((*xp)->client_secret) fs_give((void **) &(*xp)->client_secret);
   if((*xp)->tenant) fs_give((void **) &(*xp)->tenant);
+  if((*xp)->flow) fs_give((void **) &(*xp)->flow);
   if((*xp)->users) fs_give((void **) &(*xp)->users);
   fs_give((void **) xp);
 }
@@ -400,6 +401,7 @@ XOAUTH2_INFO_S *copy_xoauth2_info(XOAUTH2_INFO_S *x)
   if(x->client_id) y->client_id = cpystr(x->client_id);
   if(x->client_secret) y->client_secret = cpystr(x->client_secret);
   if(x->tenant) y->tenant = cpystr(x->tenant);
+  if(x->flow) y->flow = cpystr(x->flow);
   if(x->users) y->users = cpystr(x->users);
   return y;
 }

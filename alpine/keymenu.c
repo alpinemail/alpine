@@ -1797,6 +1797,21 @@ struct key role_select_keys[] =
 	WHEREIS_MENU};
 INST_KEY_MENU(role_select_km, role_select_keys);
 
+struct key xoauth2_flow_select_keys[] =
+       {HELP_MENU,
+	NULL_MENU,
+        {"E", N_("Exit"), {MC_EXIT,1,{'e'}}, KS_EXITMODE},
+	{"S", "[" N_("Select") "]", {MC_CHOICE,3,{'s',ctrl('M'),ctrl('J')}}, KS_NONE},
+	{"P", N_("PrevFlow"), {MC_PREVITEM, 1, {'p'}}, KS_NONE},
+	{"N", N_("NextFlow"), {MC_NEXTITEM, 2, {'n', TAB}}, KS_NONE},
+	PREVPAGE_MENU,
+	NEXTPAGE_MENU,
+	HOMEKEY_MENU,
+	ENDKEY_MENU,
+	NULL_MENU,
+	WHEREIS_MENU};
+INST_KEY_MENU(xoauth2_flow_select_km, xoauth2_flow_select_keys);
+
 struct key xoauth2_id_select_keys[] =
        {HELP_MENU,
 	NULL_MENU,

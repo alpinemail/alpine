@@ -1993,6 +1993,7 @@ typedef struct xoauth_default_s {
    char *client_secret;
    char *tenant;
    char *users;
+   char *flow;
 } XOAUTH2_INFO_S;
 
 /* Supporting external functions for XOAUTH2 and OAUTHBEARER */

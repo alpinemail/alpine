@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 486 2020-07-07 14:25:41
+Alpine Commit 488 2020-07-09 00:16:30
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -16229,6 +16229,40 @@ personal), and the client-id and tenant that it uses would allow you access to
 only your work email, say, and not your personal email, because the app is
 trusted only at work, and so the client-id and tenant are good for that
 organization only.
+<P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+======= h_config_xoauth2_flow =======
+<HTML>
+<HEAD>
+<TITLE>Flow Explained</TITLE>
+</HEAD>
+<BODY>
+<H1>Flow Explained</H1>
+
+The first time you connect to a service to authorize Alpine access to your
+email, you will have to do a certain number of steps, which typically involve
+to login to your account using a browser, and agreeing to give Alpine certain
+rights to access your account.
+
+<P>
+How this process is going to be done depends on the service. Some services
+allow you to give access to Alpine and later generate a code that you
+input into Alpine, while others give you a code you have to use before you
+approve access to Alpine to access your email.
+
+<P> An example of a service that gives you a code after you authorize
+Alpine is Gmail, and this process is called internally as &quot;Authorize&quot;.
+An example of a service that gives you a code before you authorize Alpine
+is Outlook, and this process is called &quot;Device&quot;. However, some services,
+like Outlook, offer both services, and you can choose which flow you would like
+to use. You
+can choose between the &quot;Authorize&qupt; and &quot;Device&quot; in these servers.
+If you forget to configure
+this, Alpine will ask you in these situations which method to use before it starts
+to setup the process to get your authrization.
+
 <P>
 &lt;End of help on this topic&gt;
 </BODY>

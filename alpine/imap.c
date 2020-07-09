@@ -40,6 +40,8 @@ static char rcsid[] = "$Id: imap.c 1266 2009-07-14 18:39:12Z hubert@u.washington
 #include "busy.h"
 #include "titlebar.h"
 #include "xoauth2.h"
+#include "xoauth2conf.h"
+#include "confscroll.h"
 #include "init.h"
 #include "../pith/state.h"
 #include "../pith/conf.h"
@@ -103,6 +105,8 @@ void  mm_login_alt_cue(NETMBX *);
 long  pine_tcptimeout_noscreen(long, long, char *);
 int   answer_cert_failure(int, MSGNO_S *, SCROLL_S *);
 int   oauth2_auth_answer(int, MSGNO_S *, SCROLL_S *);
+OAUTH2_S *oauth2_select_flow(char *);
+int    xoauth2_flow_tool(struct pine *, int, CONF_S **, unsigned int);
 
 #ifdef	LOCAL_PASSWD_CACHE
 int   read_passfile(char *, MMLOGIN_S **);
@@ -199,8 +203,158 @@ OAUTH2_S alpine_oauth2_list[] =
     0, 		/* first time indicator */
     0		/* client secret required */
   },
+  {"Outlook",
+   {"outlook.office365.com", "smtp.office365.com", NULL, NULL},
+   {{"client_id", NULL},
+    {"client_secret", NULL},		/* not used, but needed */
+    {"tenant", NULL},			/* used */
+    {"code", NULL},			/* used during authorization */
+    {"refresh_token", NULL},
+    {"scope", "offline_access https://outlook.office.com/IMAP.AccessAsUser.All https://outlook.office.com/SMTP.Send"},
+    {"redirect_uri", "http://localhost"},
+    {"grant_type", "authorization_code"},
+    {"grant_type", "refresh_token"},
+    {"response_type", "code"},
+    {"state", NULL},			/* not used */
+    {"device_code", NULL}		/* not used */
+   },
+   {{"GET", "https://login.microsoftonline.com/\001/oauth2/v2.0/authorize",	/* Get Access Code */
+	{OA2_Id, OA2_Scope, OA2_Redirect, OA2_Response, OA2_End, OA2_End, OA2_End}},
+    {NULL, NULL, {OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End}}, /* device code, not used */
+    {"POST", "https://login.microsoftonline.com/\001/oauth2/v2.0/token",	/* Get first Refresh Token and Access token  */
+	{OA2_Id, OA2_Redirect, OA2_Scope, OA2_GrantTypeforAccessToken, OA2_Secret, OA2_Code, OA2_End}},
+    {"POST", "https://login.microsoftonline.com/\001/oauth2/v2.0/token",	/* Get access token from refresh token */
+	{OA2_Id, OA2_RefreshToken, OA2_Scope, OA2_GrantTypefromRefreshToken, OA2_Secret, OA2_End, OA2_End}}
+   },
+   {NULL, NULL, NULL, 0, 0, NULL},	/* device_code information, not used */
+    NULL, 	/* access token */
+    0, 		/* expiration time */
+    0, 		/* first time indicator */
+    1		/* client secret required */
+  },
   { NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0},
 };
+
+int
+xoauth2_flow_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags)
+{
+   int rv = 0;
+
+   switch(cmd){
+      case MC_CHOICE:
+        *((*cl)->d.xf.selected) = (*cl)->d.xf.pat;
+        rv = simple_exit_cmd(flags);
+
+      case MC_EXIT:
+        rv = simple_exit_cmd(flags);
+        break;
+
+      default:
+        rv = -1;
+   }
+
+   if(rv > 0)
+     ps->mangled_body = 1;
+
+   return rv;
+}
+
+OAUTH2_S *
+oauth2_select_flow(char *host)
+{
+   OAUTH2_S *oa2list, *oa2;
+   int i, n, rv;
+   char *method;
+
+   if(ps_global->ttyo){
+      CONF_S  *ctmp = NULL, *first_line = NULL;
+      OAUTH2_S *x_sel = NULL;
+      OPT_SCREEN_S   screen;
+      char tmp[1024];
+
+      dprint((9, "xoauth2 select flow"));
+      ps_global->next_screen = SCREEN_FUN_NULL;
+
+      memset(&screen, 0, sizeof(screen));
+
+      for(i = 0; i < sizeof(tmp) && i < ps_global->ttyo->screen_cols; i++)
+          tmp[i] = '-';
+      tmp[i] = '\0';
+
+      new_confline(&ctmp);
+      ctmp->flags |= CF_NOSELECT;
+      ctmp->value = cpystr(tmp);
+
+      new_confline(&ctmp);
+      ctmp->flags |= CF_NOSELECT;
+      ctmp->value = cpystr(_("Please select below the authorization flow you would like to follow:"));
+
+      new_confline(&ctmp);
+      ctmp->flags |= CF_NOSELECT;
+      ctmp->value = cpystr(tmp);
+
+      for(oa2list = alpine_oauth2_list; oa2list && oa2list->name ;oa2list++){
+	 for(i = 0; oa2list && oa2list->host && oa2list->host[i] && strucmp(oa2list->host[i], host); i++);
+	 if(oa2list && oa2list->host && i < OAUTH2_TOT_EQUIV && oa2list->host[i]){
+	    new_confline(&ctmp);
+	    if(!first_line)
+	       first_line = ctmp;
+	    method = oa2list->server_mthd[0].name ? "Authorize"
+			: (oa2list->server_mthd[1].name ? "Device" : "Unknown");
+	    sprintf(tmp, "%s (%s)", oa2list->name, method);
+	    ctmp->value        = cpystr(tmp);
+	    ctmp->d.xf.selected = &x_sel;
+	    ctmp->d.xf.pat      = oa2list;
+	    ctmp->keymenu      = &xoauth2_id_select_km;
+	    ctmp->help         = NO_HELP;
+	    ctmp->help_title   = NULL;
+	    ctmp->tool         = xoauth2_flow_tool;
+	    ctmp->flags        = CF_STARTITEM;
+	    ctmp->valoffset    = 4;
+	 }
+      }
+     (void)conf_scroll_screen(ps_global, &screen, first_line, _("SELECT AUTHORIZATION FLOW"),
+                             _("xoauth2"), 0, NULL);
+      oa2 = x_sel;
+   }
+   else{
+      char *s;
+      char prompt[1024];
+      char reply[1024];
+      int sel, j;
+
+      for(oa2list = alpine_oauth2_list; oa2list && oa2list->name ;oa2list++)
+           n += strlen(oa2list->name); + 5;       /* number, parenthesis, space */
+      n += 1024;      /* large enough to display to lines of 80 characters in UTF-8 */
+      s = fs_get(n*sizeof(char));
+      strcpy(s, _("Please select below the authorization flow you would like to follow:"));
+      sprintf(s + strlen(s), _("Please select the client-id to use from the following list.\n\n"));
+      for(j = 1, oa2list = alpine_oauth2_list; oa2list && oa2list->name ;oa2list++){
+         for(i = 0; oa2list && oa2list->host && oa2list->host[i] && strucmp(oa2list->host[i], host); i++);
+	    if(oa2list && oa2list->host && i < OAUTH2_TOT_EQUIV && oa2list->host[i])
+	       sprintf(s + strlen(s), " %d) %.70s\n", j++, oa2list->name);
+      }
+      display_init_err(s, 0);
+
+      strncpy(prompt, _("Enter your selection number: "), sizeof(prompt));
+      prompt[sizeof(prompt)-1] = '\0';
+      do{
+         rv = optionally_enter(reply, 0, 0, sizeof(reply), prompt, NULL, NO_HELP, 0);
+         sel = atoi(reply);
+         rv = (sel >= 0 && sel < i) ? 0 : -1;
+      } while (rv != 0);
+
+      for(j = 1, oa2list = alpine_oauth2_list; oa2list && oa2list->name ;oa2list++){
+         for(i = 0; oa2list && oa2list->host && oa2list->host[i] && strucmp(oa2list->host[i], host); i++);
+	 if(oa2list && oa2list->host && i < OAUTH2_TOT_EQUIV && oa2list->host[i]){
+	    if(j == sel) break;
+	    else j++;
+	 }
+      }
+      oa2 = oa2list;
+   }
+   return oa2;
+}
 
 typedef struct auth_code_s {
   char *code;
@@ -512,7 +666,8 @@ oauth2_get_access_code(unsigned char *url, char *method, OAUTH2_S *oauth2, int *
 	   ps_global->painted_footer_on_startup = 0;
 	} while (user_input.answer != 'e');
 
-	if(!struncmp(user_input.code, "https://", 8)){
+	if(!struncmp(user_input.code, "http://", 7)
+	    || !struncmp(user_input.code, "https://", 8)){
 	     char *s, *t;
 	     s = strstr(user_input.code, "code=");
 	     if(s != NULL){
@@ -594,7 +749,8 @@ try_wantto:
 	     rc = optionally_enter(token, q_line, 0, MAILTMPLEN,
 			   prompt, NULL, NO_HELP, &flags);
 	  } while (rc != 0 && rc != 1);
-	  if(!struncmp(token, "https://", 8)){
+	  if(!struncmp(token, "http://", 7)
+	     || !struncmp(token, "https://", 8)){
 	     char *s, *t;
 	     s = strstr(token, "code=");
 	     if(s != NULL){
@@ -680,7 +836,9 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
     int       save_in_init;
     int	      registered;
     int       ChangeAccessToken, ChangeRefreshToken, ChangeExpirationTime;
-    OAUTH2_S  *oa2list;
+    OAUTH2_S  *oa2list, *oa2;
+    XOAUTH2_INFO_S *x;
+
     unsigned long OldExpirationTime, NewExpirationTime, SaveExpirationTime;
 #if defined(_WINDOWS) || defined(LOCAL_PASSWD_CACHE)
     int       preserve_password = -1;
@@ -723,13 +881,25 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
 	}
     }
 
+    if(trial == 0L && !altuserforcache){
+       if(*mb->user != '\0')
+	   strncpy(user, mb->user, NETMAXUSER);
+	else{
+	   flags = OE_APPEND_CURRENT;
+	   sprintf(prompt, "%s: %s - %s: ", hostlabel, mb->orighost, userlabel);
+	   rc = optionally_enter(user, q_line, 0, NETMAXUSER,
+			   prompt, NULL, NO_HELP, &flags);
+	}
+	user[NETMAXUSER-1] = '\0';
+   }
+
     /*
      * We check to see if the server we are going to log in to is already
      * registered. This gives us a list of servers with the same
      * credentials, so we use the same credentials for all of them.
      */
 
-    for(registered = 0, oa2list = alpine_oauth2_list; 
+    for(registered = 0, oa2list = alpine_oauth2_list;
 	  oa2list && oa2list->host != NULL && oa2list->host[0] != NULL;
 	  oa2list++){
 	for(i = 0; i < OAUTH2_TOT_EQUIV 
@@ -739,6 +909,25 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
 	   registered++;
 	   break;
 	}
+    }
+
+    if(registered){
+	x = oauth2_get_client_info(oa2list->name, user);
+	if(x && x->flow){
+	    for(oa2list = alpine_oauth2_list;
+		  oa2list && oa2list->host != NULL && oa2list->host[0] != NULL;
+		  oa2list++){
+		for(i = 0; i < OAUTH2_TOT_EQUIV
+			   && oa2list->host[i] != NULL
+			   && strucmp(oa2list->host[i], mb->orighost) != 0; i++);
+		if(i < OAUTH2_TOT_EQUIV && oa2list->host[i] != NULL){
+		   char *flow = oa2list->server_mthd[0].name ? "Authorize"
+			: (oa2list->server_mthd[1].name ? "Device" : "Unknown");
+		   if(!strucmp(x->flow, flow)) break;	/* found it */
+		}
+	    }
+	}
+	/* else use the one we found earlier, the user has to configure this better */
     }
 
     if(registered){
@@ -766,18 +955,6 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
      * and use the access token.
      */
     if(trial == 0L && !altuserforcache){
-	int code;
-
-	if(*mb->user != '\0')
-	   strncpy(user, mb->user, NETMAXUSER);
-	else{
-	   flags = OE_APPEND_CURRENT;
-	   sprintf(prompt, "%s: %s - %s: ", hostlabel, mb->orighost, userlabel);
-	   rc = optionally_enter(user, q_line, 0, NETMAXUSER,
-			   prompt, NULL, NO_HELP, &flags);
-	}
-	user[NETMAXUSER-1] = '\0';
-
 	/* Search for a refresh token that is already loaded ... */
 	if(imap_get_passwd_auth(mm_login_list, &token, user, 
 	   registered ? hostlist2 : hostlist,
@@ -844,6 +1021,24 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
 	  fs_give((void **) &NewAccessToken);
     }
     else login->first_time++;
+
+    if(login->first_time){	/* count how many authorization methods we support */
+	int nmethods, i, j;
+
+	for(nmethods = 0, oa2 = alpine_oauth2_list; oa2 && oa2->name ; oa2++){
+	    for(j = 0; j < OAUTH2_TOT_EQUIV
+			&& oa2
+			&& oa2->host[j] != NULL
+			&& strucmp(oa2->host[j], mb->orighost) != 0; j++);
+	    if(oa2 && oa2->host && j < OAUTH2_TOT_EQUIV && oa2->host[j])
+		nmethods++;
+	}
+
+	if(nmethods > 1)
+	   oa2list = oauth2_select_flow(mb->orighost);
+
+	if(!oa2list) registered = 0;
+    }
 
     /* Default to saving what we already had saved */
 

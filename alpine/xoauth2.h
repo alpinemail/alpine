@@ -22,7 +22,7 @@
 
 #define OUTLOOK_NAME "Outlook"
 #define OUTLOOK_ID   "f21dcaf2-8020-469b-8135-343bfc35d046"
-#define OUTLOOK_SECRET NULL
+#define OUTLOOK_SECRET "Tk-DAcEi13-FeSsY_Ja4Y.-MyL66I.wIPt"
 #define OUTLOOK_TENANT "common"
 
 #endif /* ALPINE_XOAUTH2_INCLUDED */

@@ -104,6 +104,10 @@ typedef struct conf_line {
 	    XOAUTH2_INFO_S  *pat;
 	    XOAUTH2_INFO_S **selected;
 	} x;
+	struct xoauth2_flow {
+	    OAUTH2_S  *pat;
+	    OAUTH2_S **selected;	/* of type XOAUTH2_S */
+	} xf;
     } d;
 } CONF_S;
 

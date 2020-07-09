@@ -26,12 +26,12 @@
 extern OAUTH2_S alpine_oauth2_list[];
 
 XOAUTH2_INFO_S xoauth_default[] = {
-  { GMAIL_NAME, GMAIL_ID, GMAIL_SECRET, GMAIL_TENANT, NULL},
-  { OUTLOOK_NAME, OUTLOOK_ID, OUTLOOK_SECRET, OUTLOOK_TENANT, NULL},
-  { NULL, NULL, NULL, NULL, NULL}
+  { GMAIL_NAME, GMAIL_ID, GMAIL_SECRET, GMAIL_TENANT, NULL, NULL},
+  { OUTLOOK_NAME, OUTLOOK_ID, OUTLOOK_SECRET, OUTLOOK_TENANT, NULL, NULL},
+  { NULL, NULL, NULL, NULL, NULL, NULL}
 };
 
-typedef enum {Xname = 0, Xid, Xsecret, Xtenant, Xuser, Xend} XTYPES;
+typedef enum {Xname = 0, Xid, Xsecret, Xtenant, Xuser, XFlow, Xend} XTYPES;
 
 typedef struct xoauh2_info_val_s {
   char *screen_name;
@@ -45,6 +45,7 @@ XOAUTH2_INFO_VAL_S x_default[] = {
    {"Client-Secret",	"/SECRET="},
    {"Tenant",		"/TENANT="},
    {"Username",		"/USER="},
+   {"Auth Flow",	"/Flow="},
    {NULL, 		NULL}
 };
 
@@ -53,11 +54,13 @@ XOAUTH2_INFO_VAL_S x_default[] = {
 #define XSECRET	x_default[Xsecret].pinerc_name
 #define XTENANT	x_default[Xtenant].pinerc_name
 #define XUSER	x_default[Xuser].pinerc_name
+#define XFLOW	x_default[XFlow].pinerc_name
 
 #define XOAUTH2_CLIENT_ID	x_default[Xid].screen_name
 #define XOAUTH2_CLIENT_SECRET	x_default[Xsecret].screen_name
 #define XOAUTH2_TENANT		x_default[Xtenant].screen_name
 #define XOAUTH2_USERS		x_default[Xuser].screen_name
+#define XOAUTH2_FLOW		x_default[XFlow].screen_name
 
 char *list_to_array(char **);
 char **array_to_list(char *);
@@ -128,7 +131,9 @@ xoauth_config_line(XOAUTH2_INFO_S *x)
 	+ strlen(x->client_secret ? XSECRET : "") + strlen(x->client_secret ? x->client_secret : "")
 	+ strlen(x->tenant ? XTENANT : "") + strlen(x->tenant ? x->tenant : "")
 	+ strlen(XUSER) + strlen(x->users ? x->users : "")
-	+ 2 + 3 + (x->client_secret ? 3 : 0) + (x->tenant ? 3 : 0) + 3 + 1;
+	+ strlen(XFLOW) + strlen(x->flow ? x->flow : "")
+	+ 2 + 3 + (x->client_secret ? 3 : 0) + (x->tenant ? 3 : 0)
+	+ 3 + (x->flow ? 3 : 0) + 1;
   rv = fs_get(n*sizeof(char));
   sprintf(rv, "%s\"%s\" %s\"%s\"", XNAME, x->name, XID, x->client_id);
   if(x->client_secret)
@@ -136,6 +141,8 @@ xoauth_config_line(XOAUTH2_INFO_S *x)
   if(x->tenant)
      sprintf(rv + strlen(rv), " %s\"%s\"", XTENANT, x->tenant);
   sprintf(rv + strlen(rv), " %s\"%s\"", XUSER, x->users ? x->users : "");
+  if(x->flow)
+     sprintf(rv + strlen(rv), " %s\"%s\"", XFLOW, x->flow ? x->flow : "");
   return rv;
 }
 
@@ -419,6 +426,13 @@ write_xoauth_configuration(struct variable  *v, struct variable **vlist, EditWhi
 	    x->tenant = cpystr(p);
 	 continue;
       }
+      if (x->flow == NULL && !strcmp(vlist[i]->name, XOAUTH2_FLOW)){
+	 p = PVAL(vlist[i], ew);
+	 if (p == NULL) p = vlist[i]->current_val.p;
+	 if(p != NULL)
+	    x->flow = cpystr(p);
+	 continue;
+      }
       if (x->users == NULL && !strcmp(vlist[i]->name, XOAUTH2_USERS)){
 	 l = LVAL(vlist[i], ew);
 	 x->users = list_to_array(l);
@@ -491,6 +505,16 @@ xoauth_parse_client_info(char *lvalp)
 	if (*s) x->client_secret = cpystr(s);
 	*t = c;
   } else x->client_secret = NULL;
+
+  if((s = strstr(lvalp, XFLOW)) != NULL){
+	s += strlen(XFLOW);
+	if(*s == '"') s++;
+	for(t = s; *t && *t != '"' && *t != ' '; t++);
+	c = *t;
+	*t = '\0';
+	if(*s)	x->flow = cpystr(s);
+	*t = c;
+  } else x->flow = NULL;
 
   if((s = strstr(lvalp, XUSER)) != NULL){
 	s += strlen(XUSER);
@@ -674,6 +698,33 @@ write_xoauth_conf_entry(XOAUTH2_INFO_S *x, XOAUTH2_INFO_S *y, CONF_S **cl, CONF_
      (*cl)->varnamep  = ctmpb;
    }
 
+   /* Set up flow variable */
+   if(x->flow){
+     varlist[p] = fs_get(sizeof(struct variable));
+     memset((void *) varlist[p], 0, sizeof(struct variable));
+     varlist[p]->name = cpystr(XOAUTH2_FLOW);
+     varlist[p]->is_used = 1;
+     varlist[p]->is_user = 1;
+     varlist[p]->main_user_val.p = cpystr(x->flow);
+     varlist[p]->global_val.p = cpystr(x->flow);
+     varlist[p]->dname   = cpystr(tmp2);	/* hack, but makes life easier! */
+     varlist[p]->descrip = cpystr(x->name);	/* hack, but makes life easier! */
+     set_current_val(varlist[p], FALSE, FALSE);
+
+     /* Write client-secret variable */
+     new_confline(cl)->var = varlist[p];
+     utf8_snprintf(tmp, sizeof(tmp), "   %-*.100w =", ln, XOAUTH2_FLOW);
+     tmp[sizeof(tmp)-1] = '\0';
+     (*cl)->varname   = cpystr(tmp);
+     (*cl)->varmem    = p++;
+     (*cl)->valoffset = ln + 3 + 3;
+     (*cl)->value     = pretty_value(ps_global, *cl);
+     (*cl)->keymenu   = &config_xoauth2_text_keymenu;
+     (*cl)->help      = h_config_xoauth2_flow;
+     (*cl)->tool      = text_tool;
+     (*cl)->varnamep  = ctmpb;
+   }
+
    /* Setup users variable */
    varlist[p] = fs_get(sizeof(struct variable));
    memset((void *) varlist[p], 0, sizeof(struct variable));
@@ -738,6 +789,7 @@ alpine_xoauth2_configuration(struct pine *ps, int edit_exceptions)
     char	    *name_lval, *id_lval, *tenant_lval, *secret_lval, *user_lval,
 		    *id_def, *tenant_def, *secret_def;
     int		    i, j, k, l, p, q, ln = 0, readonly_warning = 0, pos, count_vars;
+    XTYPES	    m;
     CONF_S	   *ctmpa = NULL, *ctmpb, *first_line;
     FEATURE_S	   *feature;
     PINERC_S       *prc = NULL;
@@ -773,13 +825,10 @@ alpine_xoauth2_configuration(struct pine *ps, int edit_exceptions)
     mailcap_free(); /* free resources we won't be using for a while */
 
     pos = -1;
-    ln = strlen(XOAUTH2_CLIENT_ID);
-    i = strlen(XOAUTH2_CLIENT_SECRET);
-    if(ln < i) ln = i;
-    i = strlen(XOAUTH2_TENANT);
-    if(ln < i) ln = i;
-    i = strlen(XOAUTH2_USERS);
-    if(ln < i) ln = i;
+    for(ln = 0, m = Xid; m < Xend; m++){
+	i = strlen(x_default[m].screen_name);
+	if(ln < i) ln = i;
+    }
 
     alval = ALVAL(&ps->vars[V_XOAUTH2_INFO], ew);
     lval = *alval = xoauth2_conf_dedup_and_merge(alval);
@@ -798,7 +847,7 @@ alpine_xoauth2_configuration(struct pine *ps, int edit_exceptions)
 		free_xoauth2_info(&y);
 	   }
 	   if(lval == NULL || lval[k] == NULL){
-		count_vars += 2;
+		count_vars += 3;
 		if(xoauth_default[i].client_secret) count_vars++;
 		if(xoauth_default[i].tenant) count_vars++;
 	   }
@@ -808,7 +857,7 @@ alpine_xoauth2_configuration(struct pine *ps, int edit_exceptions)
 		free_xoauth2_info(&y);
 		continue;
 	      }
-	      count_vars += 2;
+	      count_vars += 3;
 	      if(xoauth_default[i].client_secret != NULL) count_vars++;
 	      if(xoauth_default[i].tenant != NULL) count_vars++;
 	      free_xoauth2_info(&y);
@@ -834,10 +883,22 @@ alpine_xoauth2_configuration(struct pine *ps, int edit_exceptions)
 		   break;
 		free_xoauth2_info(&y);
 	   }
-	   if(lval == NULL || lval[k] == NULL)
-	       write_xoauth_conf_entry(&xoauth_default[i], &xoauth_default[i], &ctmpa, &ctmpb,
+	   if(lval == NULL || lval[k] == NULL){
+	       OAUTH2_S *oa2list;
+	       for(oa2list = alpine_oauth2_list; oa2list; oa2list++){
+		  if(!strcmp(oa2list->name,xoauth_default[i].name)){
+		     xoauth_default[i].flow = cpystr(oa2list->server_mthd[0].name ? "Authorize"
+                      : (oa2list->server_mthd[1].name ? "Device" : "Unknown"));
+		     write_xoauth_conf_entry(&xoauth_default[i], &xoauth_default[i], &ctmpa, &ctmpb,
 						&first_line, &varlist, &p, ln, -i-1);
+		     fs_give((void **) &xoauth_default[i].flow);
+		     break;	/* just one entry, set the default to the first entry */
+		  }
+	       }
+	   }
 	   for(k = 0, q = 0; lval && lval[k]; k++){
+	      OAUTH2_S *oa2list, *oa2;
+
 	      y = xoauth_parse_client_info(lval[k]);
 	      if(y && (!y->name || strcmp(y->name, xoauth_default[i].name))){
 		free_xoauth2_info(&y);
@@ -849,6 +910,11 @@ alpine_xoauth2_configuration(struct pine *ps, int edit_exceptions)
 		 y->client_secret = cpystr(xoauth_default[i].client_secret);
 	      if(y->tenant == NULL && xoauth_default[i].tenant != NULL)
 		 y->tenant = cpystr(xoauth_default[i].tenant);
+	      for(oa2 = NULL, oa2list = alpine_oauth2_list; oa2 == NULL && oa2list; oa2list++)
+		 if(!strcmp(oa2list->name, y->name)) oa2 = oa2list;
+	      if(y->flow == NULL)
+		y->flow = cpystr(oa2->server_mthd[0].name ? "Authorize"
+                      : (oa2->server_mthd[1].name ? "Device" : "Unknown"));
 	      write_xoauth_conf_entry(y, &xoauth_default[i], &ctmpa, &ctmpb, &first_line, &varlist, &p, ln, k);
 	      free_xoauth2_info(&y);
 	   }
