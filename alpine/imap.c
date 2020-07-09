@@ -174,7 +174,7 @@ OAUTH2_S alpine_oauth2_list[] =
     0, 		/* first time indicator */
     1		/* client secret required */
   },
-  {"Outlook",
+  {OUTLOOK_NAME,
    {"outlook.office365.com", "smtp.office365.com", NULL, NULL},
    {{"client_id", NULL},
     {"client_secret", NULL},		/* not used, but needed */
@@ -203,7 +203,7 @@ OAUTH2_S alpine_oauth2_list[] =
     0, 		/* first time indicator */
     0		/* client secret required */
   },
-  {"Outlook",
+  {OUTLOOK_NAME,
    {"outlook.office365.com", "smtp.office365.com", NULL, NULL},
    {{"client_id", NULL},
     {"client_secret", NULL},		/* not used, but needed */
@@ -232,7 +232,7 @@ OAUTH2_S alpine_oauth2_list[] =
     0, 		/* first time indicator */
     1		/* client secret required */
   },
-  {"Yandex",
+  {YANDEX_NAME,
    {"imap.yandex.com", "smtp.yandex.com", NULL, NULL},
    {{"client_id", NULL},
     {"client_secret", NULL},		/* not used, but needed */
@@ -620,19 +620,19 @@ oauth2_get_access_code(unsigned char *url, char *method, OAUTH2_S *oauth2, int *
 	   !(out_store = so_get(CharStar, NULL, EDIT_ACCESS)))
 	  goto try_wantto;
 
-	so_puts(in_store, "<HTML><P>");
+	so_puts(in_store, "<HTML><BODY><P>");
 	sprintf(tmp, _("<CENTER>Authorizing Alpine Access to %s Email Services</CENTER>"), oauth2->name);
 	so_puts(in_store, tmp);
-	sprintf(tmp, _("</P><P>Alpine is attempting to log you into your %s account, using the %s method."), oauth2->name, method),
+	sprintf(tmp, _("<P>Alpine is attempting to log you into your %s account, using the %s method."), oauth2->name, method),
 	so_puts(in_store, tmp);
 
-        if(strucmp(oauth2->name, "Gmail") == 0){
-	   so_puts(in_store, _(" If this is your first time setting up this type of authentication and you have a G-Suite account, please follow the steps below. "));
-	   so_puts(in_store, _("</P><P> First you must register Alpine with Google and create a client-id and client-secret. The steps below explain how to do this. If you already did that, then you can skip to the <A HREF=\"#secondpart\">second part</A> to continue with the setup process."));
+        if(strucmp(oauth2->name, GMAIL_NAME) == 0){
+	   so_puts(in_store, _(" If this is your first time setting up this type of authentication, please follow the steps below. "));
+	   so_puts(in_store, _("</P><P> First you must register Alpine with Google and create a client-id and client-secret. If you already did that, then you can skip to the authorization step, and continue with the process outlined below."));
 	   so_puts(in_store, _("<UL> "));
 	   so_puts(in_store, _("<LI>First, login to <A HREF=\"https://console.developers.google.com\">https://console.developers.google.com</A> "));
 	   so_puts(in_store, _("and create a project. The name of the project is not important."));
-	   so_puts(in_store, _("<LI> Go to the Consent Screen and make your app INTERNAL, if your account is a G-Suite account, and EXTERNAL if it is a personal account."));
+	   so_puts(in_store, _("<LI> Go to the Consent Screen and make your app INTERNAL, if your account is a G-Suite account, or EXTERNAL if it is a personal gmail.com account."));
 	   so_puts(in_store, _("<LI> Create OAUTH Credentials."));
 	   so_puts(in_store, _("</UL> "));
 	   so_puts(in_store, _("<P> As a result of this process, you will get a client-id and a client-secret."));
@@ -642,7 +642,7 @@ oauth2_get_access_code(unsigned char *url, char *method, OAUTH2_S *oauth2, int *
 	   so_puts(in_store, _("</P><P> If you completed these steps successfully, you are ready to move to the second part, where you will authorize Gmail to give access to Alpine to access your email."));
 	}
 
-	so_puts(in_store, _("</P><P><A NAME=\"secondpart\">In order</A> to authorize Alpine to access your email, Alpine needs to open the following URL:"));
+	so_puts(in_store, _("</P><P>In order to authorize Alpine to access your email, Alpine needs to open the following URL:"));
 	so_puts(in_store,"</P><P>");
 	sprintf(tmp_20k_buf, _("<A HREF=\"%s\">%s</A>"), url, url);
 	so_puts(in_store, tmp_20k_buf);
@@ -658,7 +658,7 @@ oauth2_get_access_code(unsigned char *url, char *method, OAUTH2_S *oauth2, int *
 	so_puts(in_store, _(" If you do not see a code, copy the url of the page you were redirected to and again press 'C' and copy and paste it into the prompt. "));
 	so_puts(in_store, _(" Once you have completed this process,  Alpine will proceed with authentication."));
 	so_puts(in_store, _(" If you do not wish to proceed, cancel by pressing 'E' to exit"));
-	so_puts(in_store, _("</P></HTML>"));
+	so_puts(in_store, _("</P></BODY></HTML>"));
 
 	so_seek(in_store, 0L, 0);
 	init_handles(&handles);
