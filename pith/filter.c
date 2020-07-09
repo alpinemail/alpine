@@ -9192,7 +9192,7 @@ gf_html_cid2file(FILTER_S *f, int cmd)
 		   }
 		   else f->n = 0;
 		   GF_PUTC(f->next, '\"');
-		   GF_PUTC(f->next, c);
+		   /* no need to write "c" right now to the stream. It will be written below */
 		   state = ASCII_ISSPACE(c) ? 1 : 0;
 		   RESET_FILTER(f);
 		}
