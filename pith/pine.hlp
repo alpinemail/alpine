@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 489 2020-07-09 01:58:37
+Alpine Commit 490 2020-07-09 10:17:35
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -262,6 +262,8 @@ Bugs addressed:
 
 <LI>  When Alpine is built without smime, password file functionality might
       fail. Reported by Andres Fehr.
+
+<LI> Crash in PC-Alpine when using the eXternal command.
 </UL>
 
 <P>

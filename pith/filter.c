@@ -9063,21 +9063,23 @@ cid_tempfile_name(char *line, long n, int *is_cidp)
 {
     int f2 = 0;
     int i, found;
-    char *s, *t = NULL, *u;
+    char *s, *t = NULL, *u, c;
     char imgfile[1024];
     char *extp = NULL;
 
-
+    c = line[n];
+    line[n] = '\0';
     s = NULL;
     *is_cidp = 0;
     if(n > 0){
-	if (line[0] == '\"') f2 = 1;
+	if (line[0] == '\"')
+	  f2 = 1;
 	if (n - f2 > 3){
 	   if (!struncmp(line+f2, "cid:", 4)){
 	       *is_cidp = 1;
 	       f2 += 4;
 	       s = fs_get((n - f2 + 4)*sizeof(char));
-	       snprintf(s, n - f2 + 2, "<%s", line+f2);
+	       sprintf(s,  "<%s", line+f2);
 	       if (s[strlen(s)-1] == '\"')
 		  s[strlen(s)-1] = '>';
 	       else{
@@ -9120,6 +9122,7 @@ cid_tempfile_name(char *line, long n, int *is_cidp)
 	   }
 	}
     }
+    line[n] = c;
     return s;
 }
 
