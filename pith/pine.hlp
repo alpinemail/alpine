@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 490 2020-07-09 10:17:35
+Alpine Commit 491 2020-07-09 11:58:15
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -198,6 +198,9 @@ problems you find with this release.
      asks the user which client-id to use and associates that client-id to
      the credentials in the XOAUTH2 configuration screen.
      <A HREF="h_xoauth2_config_screen">Learn more</A>.
+
+<LI> Addition of Yandex.com to the list of services that Alpine can use XOAUTH2 to
+     authenticate for reading and sending email.
 
 <LI> Addition of a link to the Apache License 2.0 (see above). This is 
      available from the Release Notes as well as the welcome screen.

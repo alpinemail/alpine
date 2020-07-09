@@ -232,6 +232,35 @@ OAUTH2_S alpine_oauth2_list[] =
     0, 		/* first time indicator */
     1		/* client secret required */
   },
+  {"Yandex",
+   {"imap.yandex.com", "smtp.yandex.com", NULL, NULL},
+   {{"client_id", NULL},
+    {"client_secret", NULL},		/* not used, but needed */
+    {"tenant", NULL},			/* not used */
+    {"code", NULL},			/* used during authorization */
+    {"refresh_token", NULL},
+    {"scope", NULL},			/* not needed, so not used */
+    {"redirect_uri", "https://oauth.yandex.ru/verification_code"},
+    {"grant_type", "authorization_code"},
+    {"grant_type", "refresh_token"},
+    {"response_type", "code"},
+    {"state", NULL},			/* not used */
+    {"device_code", NULL}		/* not used */
+   },
+   {{"GET", "https://oauth.yandex.com/authorize",	/* Get Access Code */
+	{OA2_Id, OA2_Redirect, OA2_Response, OA2_End, OA2_End, OA2_End, OA2_End}},
+    {NULL, NULL, {OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End}}, /* device code, not used */
+    {"POST", "https://oauth.yandex.com/token",	/* Get first Refresh Token and Access token  */
+	{OA2_Id, OA2_Redirect, OA2_GrantTypeforAccessToken, OA2_Secret, OA2_Code, OA2_End, OA2_End}},
+    {"POST", "https://login.microsoftonline.com/\001/oauth2/v2.0/token",	/* Get access token from refresh token */
+	{OA2_Id, OA2_RefreshToken, OA2_GrantTypefromRefreshToken, OA2_Secret, OA2_End, OA2_End, OA2_End}}
+   },
+   {NULL, NULL, NULL, 0, 0, NULL},	/* device_code information, not used */
+    NULL, 	/* access token */
+    0, 		/* expiration time */
+    0, 		/* first time indicator */
+    1		/* client secret required */
+  },
   { NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0},
 };
 
