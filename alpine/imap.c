@@ -252,7 +252,7 @@ OAUTH2_S alpine_oauth2_list[] =
     {NULL, NULL, {OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End}}, /* device code, not used */
     {"POST", "https://oauth.yandex.com/token",	/* Get first Refresh Token and Access token  */
 	{OA2_Id, OA2_Redirect, OA2_GrantTypeforAccessToken, OA2_Secret, OA2_Code, OA2_End, OA2_End}},
-    {"POST", "https://login.microsoftonline.com/\001/oauth2/v2.0/token",	/* Get access token from refresh token */
+    {"POST", "https://oauth.yandex.com/token",	/* Get access token from refresh token */
 	{OA2_Id, OA2_RefreshToken, OA2_GrantTypefromRefreshToken, OA2_Secret, OA2_End, OA2_End, OA2_End}}
    },
    {NULL, NULL, NULL, 0, 0, NULL},	/* device_code information, not used */
