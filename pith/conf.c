@@ -756,10 +756,8 @@ static struct variable variables[] = {
 	NULL,			cf_text_disable_drivers},
 {"disable-these-authenticators",	0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0,
 	NULL,			cf_text_disable_auths},
-#ifdef DF_ENCRYPTION_RANGE
 {"encryption-protocol-range",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	NULL,			cf_text_encryption_range},
-#endif
 {"remote-abook-metafile",		0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0,
 	NULL,			cf_text_remote_abook_metafile},
 {"remote-abook-history",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
@@ -1621,9 +1619,7 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
 
     GLO_PRINTER			= cpystr(DF_DEFAULT_PRINTER);
     GLO_ELM_STYLE_SAVE		= cpystr(DF_ELM_STYLE_SAVE);
-#ifdef DF_ENCRYPTION_RANGE
     GLO_ENCRYPTION_RANGE	= cpystr(DF_ENCRYPTION_RANGE);
-#endif
     GLO_SAVE_BY_SENDER		= cpystr(DF_SAVE_BY_SENDER);
     GLO_HEADER_IN_REPLY		= cpystr(DF_HEADER_IN_REPLY);
     GLO_INBOX_PATH		= cpystr("inbox");
@@ -2353,9 +2349,7 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     set_current_val(&vars[V_FORCED_ABOOK_ENTRY], TRUE, TRUE);
     set_current_val(&vars[V_DISABLE_DRIVERS], TRUE, TRUE);
     set_current_val(&vars[V_DISABLE_AUTHS], TRUE, TRUE);
-#ifdef DF_ENCRYPTION_RANGE
     set_current_val(&vars[V_ENCRYPTION_RANGE], TRUE, TRUE);
-#endif
 
     set_current_val(&vars[V_VIEW_HEADERS], TRUE, TRUE);
     /* strip spaces and colons */
@@ -7893,10 +7887,8 @@ config_help(int var, int feature)
 	return(h_config_disable_drivers);
       case V_DISABLE_AUTHS :
 	return(h_config_disable_auths);
-#ifdef DF_ENCRYPTION_RANGE
       case V_ENCRYPTION_RANGE :
 	return(h_config_encryption_range);
-#endif
       case V_REMOTE_ABOOK_METADATA :
 	return(h_config_abook_metafile);
       case V_REPLY_STRING :
@@ -8218,6 +8210,12 @@ printer_value_check_and_adjust(void)
     return(!ok);
 }
 
+#ifdef _WINDOWS
+#include <schannel.h>
+#include <Schnlsp.h>
+#else
+#include <openssl/ssl.h>
+#endif /* _WINDOWS */
 
 char **
 get_supported_options(void)
@@ -8269,14 +8267,50 @@ get_supported_options(void)
       config[cnt] = cpystr(_("  TLS and SSL"));
       tmp[0] = tmp[1] = ' ';
       tmp[2] = '\0';
-      strcat(tmp, "TLSv1, ");
-      strcat(tmp, "TLSv1.1, ");
-      strcat(tmp, "TLSv1.2, ");
-#ifdef TLS1_3_VERSION
-      strcat(tmp, "TLSv1.3, ");
-#endif /* TLS1_3_VERSION */
-      tmp[strlen(tmp)-2] = '.';
-      tmp[strlen(tmp)-1] = '\0';
+#ifdef _WINDOWS
+  #ifdef SP_PROT_SSL3
+     strcat(tmp, "SSLv3, ");
+  #endif /* SP_PROT_SSL3 */
+  #ifdef SP_PROT_TLS1
+     strcat(tmp, "TLSv1, ");
+  #endif /* SP_PROT_TLS1 */
+  #ifdef SP_PROT_TLS1_1
+     strcat(tmp, "TLSv1.1, ");
+  #endif /* SP_PROT_TLS1 */
+  #ifdef SP_PROT_TLS1_2
+     strcat(tmp, "TLSv1.2, ");
+  #endif /* SP_PROT_TLS1_2 */
+  #ifdef SP_PROT_TLS1_3
+     strcat(tmp, "TLSv1.3, ");
+  #endif /* SP_PROT_TLS1_3 */
+#else
+  #ifdef SSL3_VERSION
+      #ifndef OPENSSL_NO_SSL3_METHOD
+        strcat(tmp, "SSLv3, ");
+      #endif /* OPENSSL_NO_SSL3_METHOD */
+  #endif /* SSL3_VERSION */
+  #ifdef TLS1_VERSION
+      #ifndef OPENSSL_NO_TLS1_METHOD
+        strcat(tmp, "TLSv1, ");
+      #endif /* OPENSSL_NO_TLS1_METHOD */
+  #endif /* TLS1_VERSION */
+  #ifdef TLS1_1_VERSION
+      #ifndef OPENSSL_NO_TLS1_1_METHOD
+        strcat(tmp, "TLSv1.1, ");
+      #endif /* OPENSSL_NO_TLS1_1_METHOD */
+  #endif /* TLS1_1_VERSION */
+  #ifdef TLS1_2_VERSION
+      #ifndef OPENSSL_NO_TLS1_2_METHOD
+        strcat(tmp, "TLSv1.2, ");
+      #endif /* OPENSSL_NO_TLS1_2_METHOD */
+  #endif /* TLS1_2_VERSION */
+  #ifdef TLS1_3_VERSION
+      #ifndef OPENSSL_NO_TLS1_3_METHOD
+        strcat(tmp, "TLSv1.3, ");
+      #endif /* OPENSSL_NO_TLS1_3_METHOD */
+  #endif /* TLS1_3_VERSION */
+#endif /* _WINDOWS */
+    tmp[strlen(tmp)-2] = '\0';
     }
     else
       config[cnt] = cpystr(_("  None (no TLS or SSL)"));

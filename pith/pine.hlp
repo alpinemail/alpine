@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 493 2020-07-10 00:56:09
+Alpine Commit 494 2020-07-17 01:43:03
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -237,6 +237,10 @@ problems you find with this release.
 <LI> Alpine will not write debug files unless started with the option -d, 
      so for example &quot;alpine -d 2&quot; will generate a debug file at level 2, 
      but just issuing the alpine command will not write any debug to a file.
+
+<LI> Experimental: Attempt to implement the Encryption Range in Windows. It works
+     in Windows 10, and it should work in Windows 8.1. It needs testing in
+     Windows 7 and Windows Vista.
 </UL>
 
 <P>

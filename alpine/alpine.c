@@ -662,7 +662,6 @@ main(int argc, char **argv)
 	  }
     }
 
-#ifdef DF_ENCRYPTION_RANGE
     if(ps_global->VAR_ENCRYPTION_RANGE
 	&& ps_global->VAR_ENCRYPTION_RANGE[0]){
 	char *min_s, *max_s, *s;
@@ -725,7 +724,7 @@ main(int argc, char **argv)
            mail_parameters(NULL, SET_ENCRYPTION_RANGE_MAX, (void *) &max_v);
 	}
     }
-#endif /* DF_ENCRYPTION_RANGE */
+
 
     /*
      * setup alternative authentication driver preference for IMAP opens

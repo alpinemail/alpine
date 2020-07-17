@@ -571,8 +571,6 @@
 #define DEFAULT_SSLCAPATH "C:\\libressl\\ssl\\certs"
 #define DEFAULT_SSLCAFILE "C:\\libressl\\ssl\\certs\\cert.pem"
 #endif /* WXPBUILD */
-#else
-#undef DF_ENCRYPTION_RANGE
 #endif /* defined(ENABLE_WINDOWS_UNIXSSL) &&  defined(WXPBUILD) */ 
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */

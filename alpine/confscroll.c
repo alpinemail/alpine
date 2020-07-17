@@ -343,9 +343,7 @@ exclude_config_var(struct pine *ps, struct variable *var, int allow_hard_to_conf
       case V_GLOB_ADDRBOOK :
       case V_DISABLE_DRIVERS :
       case V_DISABLE_AUTHS :
-#ifdef DF_ENCRYPTION_RANGE
       case V_ENCRYPTION_RANGE :
-#endif
       case V_REMOTE_ABOOK_METADATA :
       case V_REMOTE_ABOOK_HISTORY :
       case V_REMOTE_ABOOK_VALIDITY :
@@ -5780,9 +5778,7 @@ fix_side_effects(struct pine *ps, struct variable *var, int revert)
 		        var == &ps->vars[V_NEWS_SPEC] ||
 		        var == &ps->vars[V_DISABLE_DRIVERS] ||
 		        var == &ps->vars[V_DISABLE_AUTHS] ||
-#ifdef DF_ENCRYPTION_RANGE
 		        var == &ps->vars[V_ENCRYPTION_RANGE] ||
-#endif
 #if !defined(_WINDOWS) || defined(ENABLE_WINDOWS_UNIXSSL_CERTS)
 			var == &ps->vars[V_SSLCAPATH] ||
 			var == &ps->vars[V_SSLCAFILE] ||

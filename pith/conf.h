@@ -267,10 +267,8 @@
 #define GLO_REMOTE_ABOOK_HISTORY     vars[V_REMOTE_ABOOK_HISTORY].global_val.p
 #define VAR_REMOTE_ABOOK_VALIDITY    vars[V_REMOTE_ABOOK_VALIDITY].current_val.p
 #define GLO_REMOTE_ABOOK_VALIDITY    vars[V_REMOTE_ABOOK_VALIDITY].global_val.p
-#ifdef DF_ENCRYPTION_RANGE
 #define GLO_ENCRYPTION_RANGE         vars[V_ENCRYPTION_RANGE].global_val.p
 #define VAR_ENCRYPTION_RANGE	     vars[V_ENCRYPTION_RANGE].current_val.p
-#endif
   /* Elm style save is obsolete in Pine 3.81 (see saved msg name rule) */
 #define VAR_ELM_STYLE_SAVE           vars[V_ELM_STYLE_SAVE].current_val.p
 #define GLO_ELM_STYLE_SAVE           vars[V_ELM_STYLE_SAVE].global_val.p

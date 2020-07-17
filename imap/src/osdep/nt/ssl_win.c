@@ -1,5 +1,5 @@
 /* ========================================================================
- * Copyright 2018 Eduardo Chappa
+ * Copyright 2018-2020 Eduardo Chappa
  * Copyright 2008-2009 Mark Crispin
  * ========================================================================
  */
@@ -153,7 +153,84 @@ SSLSTREAM *ssl_open (char *host,char *service,unsigned long port)
   return stream ? ssl_start (stream,host,port) : NIL;
 }
 
-  
+#ifdef SP_PROT_SSL3
+  #ifdef MIN_ENCRYPTION
+  #undef MIN_ENCRYPTION
+  #endif /* MIN_ENCRYPTION */
+  #define MIN_ENCRYPTION SP_PROT_SSL3
+  #ifdef MAX_ENCRYPTION
+  #undef MAX_ENCRYPTION
+  #endif /* MAX_ENCRYPTION */
+  #define MAX_ENCRYPTION SP_PROT_SSL3
+#endif /* SP_PROT_SSL3 */
+#ifdef SP_PROT_TLS1
+  #ifndef MIN_ENCRYPTION
+  #define MIN_ENCRYPTION SP_PROT_TLS1
+  #endif /* MIN_ENCRYPTION */
+  #ifdef MAX_ENCRYPTION
+  #undef MAX_ENCRYPTION
+  #endif /* MAX_ENCRYPTION */
+  #define MAX_ENCRYPTION SP_PROT_TLS1
+#endif /* SP_PROT_TLS1 */
+#ifdef SP_PROT_TLS1_1
+  #ifndef MIN_ENCRYPTION
+  #define MIN_ENCRYPTION SP_PROT_TLS1_1
+  #endif /* MIN_ENCRYPTION */
+  #ifdef MAX_ENCRYPTION
+  #undef MAX_ENCRYPTION
+  #endif /* MAX_ENCRYPTION */
+  #define MAX_ENCRYPTION SP_PROT_TLS1_1
+#endif /* SP_PROT_TLS1_1 */
+#ifdef SP_PROT_TLS1_2
+  #ifndef MIN_ENCRYPTION
+  #define MIN_ENCRYPTION SP_PROT_TLS1_2
+  #endif /* MIN_ENCRYPTION */
+  #ifdef MAX_ENCRYPTION
+  #undef MAX_ENCRYPTION
+  #endif /* MAX_ENCRYPTION */
+  #define MAX_ENCRYPTION SP_PROT_TLS1_2
+#endif /* SP_PROT_TLS1_2 */
+
+typedef struct ssl_versions_s {
+        char *name;
+        int   version;
+} SSL_VERSIONS_S;
+
+SSL_VERSIONS_S ssl_versions[] = {
+   { "no_min", MIN_ENCRYPTION },
+#ifdef SP_PROT_SSL3
+   { "ssl3",   SP_PROT_SSL3 },
+#endif /* SP_PROT_SSL3 */
+#ifdef SP_PROT_TLS1
+   { "tls1",   SP_PROT_TLS1 },
+#endif /* SP_PROT_TLS1 */
+#ifdef SP_PROT_TLS1_1
+   { "tls1_1", SP_PROT_TLS1_1 },
+#endif /* SP_PROT_TLS1_1 */
+#ifdef SP_PROT_TLS1_2
+   { "tls1_2", SP_PROT_TLS1_2 },
+#endif /* SP_PROT_TLS1_2 */
+   { "no_max", MAX_ENCRYPTION },  /* set this last in the list */
+   { NULL, 0 },
+};
+
+int
+pith_ssl_encryption_version(char *s)
+{
+  int i;
+
+  if (s == NULL || *s == '\0')
+     return -1;
+
+  for (i = 0; ssl_versions[i].name != NULL; i++)
+      if (strcmp(ssl_versions[i].name, s) == 0)
+	break;
+
+  if (strcmp(s, "no_max") == 0) i--;
+
+  return ssl_versions[i].name != NULL ? ssl_versions[i].version : -1;
+}
+
 /* SSL authenticated open
  * Accepts: host name
  *	    service name
@@ -201,6 +278,9 @@ static SSLSTREAM *ssl_start (TCPSTREAM *tstream,char *host,unsigned long flags)
   PWSTR whost = NIL;
   char *buf = (char *) fs_get (ssltsz);
   unsigned long size = 0;
+  int minv = *(int *) mail_parameters(NULL, GET_ENCRYPTION_RANGE_MIN, NULL);
+  int maxv = *(int *) mail_parameters(NULL, GET_ENCRYPTION_RANGE_MAX, NULL);
+  int i, client_request, range;
   sslcertificatequery_t scq =
     (sslcertificatequery_t) mail_parameters (NIL,GET_SSLCERTIFICATEQUERY,NIL);
   sslfailure_t sf = (sslfailure_t) mail_parameters (NIL,GET_SSLFAILURE,NIL);
@@ -210,7 +290,30 @@ static SSLSTREAM *ssl_start (TCPSTREAM *tstream,char *host,unsigned long flags)
 				/* initialize TLS credential */
   memset (&tlscred,0,sizeof (SCHANNEL_CRED));
   tlscred.dwVersion = SCHANNEL_CRED_VERSION;
-  tlscred.grbitEnabledProtocols = SP_PROT_TLS1;
+  client_request = (flags & NET_TRYTLS1) ? SP_PROT_TLS1
+		    : (flags & NET_TRYTLS1_1) ? SP_PROT_TLS1_1
+		    : (flags & NET_TRYTLS1_2) ? SP_PROT_TLS1_2
+		    : 0;
+  /*
+   * if no special request, negotiate the maximum the client is configured
+   * to negotiate.
+   */
+  if(client_request == 0)
+    client_request = maxv;
+
+  if(client_request < minv || client_request > maxv)
+    return NIL;         /* out of range? bail out */
+
+  if (flags & NET_TRYTLS1) range = SP_PROT_TLS1;
+  else if (flags & NET_TRYTLS1_1) range = SP_PROT_TLS1_1;
+  else if (flags & NET_TRYTLS1_2) range = SP_PROT_TLS1_2;
+  else {
+     for(i = 0, range; ssl_versions[i].name != NULL; i++)
+      range |= (ssl_versions[i].version >= minv 
+		&& ssl_versions[i].version <= maxv)
+	      ? ssl_versions[i].version : 0;
+  }
+  tlscred.grbitEnabledProtocols = range;
 
 				/* acquire credentials */
   if (sft->AcquireCredentialsHandle
@@ -496,13 +599,6 @@ static char *ssl_getline_work (SSLSTREAM *stream,unsigned long *size,
   else *contd = LONGT;		/* continuation needed */
   return ret;
 }
-
-/* not implemented yet */
-int pith_ssl_encryption_version(char *s)
-{
-return 0;
-}
-
 
 char *ssl_getsize(SSLSTREAM* stream, unsigned long size)
 {
