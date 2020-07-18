@@ -381,6 +381,10 @@ CONF_TXT_T cf_text_mimetype_path[] =	"Sets the search path for the mimetypes con
 CONF_TXT_T cf_text_system_certs_path[] = "Sets the path for the system ssl certificates issued by a trusted\n# certificate authority. Note that this could be a list of paths, if the same\n# pinerc is used in different systems. Alpine always chooses the first one that\n# it finds. Value must be an absolute path.";
 
 CONF_TXT_T cf_text_system_certs_file[] = "Sets the path for the system ssl file container of certificates issued by a\n# certificate authority. Note that this could be a list of container files,\n# if the same pinerc is used in different systems. Alpine always chooses the,\n# first one that it finds. Value must be an absolute path.";
+
+CONF_TXT_T cf_text_user_certs_path[] = "Sets the path for additional ssl certificates that the user trusts. Note\n#that this could be a list of paths, if the same\n# pinerc is used in different systems. Alpine always chooses the first one that\n# it finds. Value must be an absolute path.";
+
+CONF_TXT_T cf_text_user_certs_file[] = "Sets the path for a file that contains certificates that a user trusts.\nNote that this could be a list of container files,\n# if the same pinerc is used in different systems. Alpine always chooses the,\n# first one that it finds. Value must be an absolute path.";
 #endif
 
 CONF_TXT_T cf_text_newmail_fifo_path[] = "Sets the filename for the newmail fifo (named pipe). Unix only.";
@@ -670,6 +674,10 @@ static struct variable variables[] = {
 	"System CACerts Dir",	cf_text_system_certs_path},
 {"system-certs-file",			0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0,
 	"System CACerts File",	cf_text_system_certs_file},
+{"user-certs-path",			0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0,
+	"User Certs Dir", cf_text_user_certs_file},
+{"user-certs-file",			0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0,
+	"User Certs File", cf_text_user_certs_file},
 #endif
 {"url-viewers",				0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0,
 	"URL-Viewers",		cf_text_browser},
@@ -1740,6 +1748,56 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     GLO_SSLCAFILE		= parse_list(DEFAULT_SSLCAFILE, 1,
 					     PL_REMSURRQUOT, NULL);
 #endif /* DEFAULT_SSLCAFILE */
+#ifdef DEFAULT_SSLUSERCAPATH
+    { char **l, path[MAXPATH+1];
+      int i;
+      l = parse_list(DEFAULT_SSLUSERCAPATH, 1,
+					     PL_REMSURRQUOT, NULL);
+      if(l && *l && **l){
+	for(i = 0; l[i] && *l[i]; i++){
+	   path[0] = '\0';
+	   if(ps_global->VAR_OPER_DIR){
+	      if(strlen(ps_global->VAR_OPER_DIR) + strlen(l[i]) < MAXPATH)
+		build_path(path, ps_global->VAR_OPER_DIR, l[i], MAXPATH);
+	   }
+	   else if(ps_global->home_dir){
+	    if(strlen(ps_global->home_dir) + strlen(l[i]) < MAXPATH)
+	      build_path(path, ps_global->home_dir, l[i], MAXPATH);
+	   }
+	   if(path[0]){
+	      fs_give((void **) &l[i]);
+	      l[i] = cpystr(path);
+	   }
+	}
+      }
+      GLO_SSLUSERCAPATH  = l;
+    }
+#endif /* DEFAULT_SSLUSERCAPATH */
+#ifdef DEFAULT_SSLUSERCAFILE
+    { char **l, path[MAXPATH+1];
+      int i;
+      l = parse_list(DEFAULT_SSLUSERCAFILE, 1,
+					     PL_REMSURRQUOT, NULL);
+      if(l && *l && **l){
+	for(i = 0; l[i] && *l[i]; i++){
+	   path[0] = '\0';
+	   if(ps_global->VAR_OPER_DIR){
+	      if(strlen(ps_global->VAR_OPER_DIR) + strlen(l[i]) < MAXPATH)
+		build_path(path, ps_global->VAR_OPER_DIR, l[i], MAXPATH);
+	   }
+	   else if(ps_global->home_dir){
+	    if(strlen(ps_global->home_dir) + strlen(l[i]) < MAXPATH)
+	      build_path(path, ps_global->home_dir, l[i], MAXPATH);
+	   }
+	   if(path[0]){
+	      fs_give((void **) &l[i]);
+	      l[i] = cpystr(path);
+	   }
+	}
+      }
+      GLO_SSLUSERCAFILE  = l;
+    }
+#endif /* DEFAULT_SSLUSERCAFILE */
 #ifdef	DF_VAR_SPELLER
     GLO_SPELLER			= cpystr(DF_VAR_SPELLER);
 #endif
@@ -2379,6 +2437,8 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
 #if !defined(_WINDOWS) || defined(WINDOWS_UNIXSSL_CERTS)
     set_current_val(&vars[V_SSLCAPATH], TRUE, TRUE);
     set_current_val(&vars[V_SSLCAFILE], TRUE, TRUE);
+    set_current_val(&vars[V_USERSSLCAPATH], TRUE, TRUE);
+    set_current_val(&vars[V_USERSSLCAFILE], TRUE, TRUE);
 #endif
 #if !defined(DOS) && !defined(OS2) && !defined(LEAVEOUTFIFO)
     set_current_val(&vars[V_FIFOPATH], TRUE, TRUE);
@@ -7088,11 +7148,42 @@ set_system_certs_container(struct pine *ps)
 { 
   char **l;
 
-  for (l = ps->vars[V_SSLCAPATH].current_val.l; l && *l; l++){
+  for (l = ps->vars[V_SSLCAFILE].current_val.l; l && *l; l++){
       if(is_absolute_path(*l)
 	  && can_access(*l, ACCESS_EXISTS) == 0
 	  && can_access(*l, READ_ACCESS) == 0){
            mail_parameters(NULL, SET_SSLCAFILE, (void *) *l);
+           break;
+      }
+  }
+}
+
+void
+set_user_certs_path(struct pine *ps)
+{
+  char **l;
+
+  for (l = ps->vars[V_USERSSLCAPATH].current_val.l; l && *l; l++){
+      if(is_absolute_path(*l)
+	  && can_access(*l, ACCESS_EXISTS) == 0
+	  && can_access(*l, READ_ACCESS) == 0){
+           mail_parameters(NULL, SET_SSLAPPCAPATH, (void *) *l);
+           break;
+      }
+  }
+}
+
+
+void
+set_user_certs_container(struct pine *ps)
+{
+  char **l;
+
+  for (l = ps->vars[V_USERSSLCAFILE].current_val.l; l && *l; l++){
+      if(is_absolute_path(*l)
+	  && can_access(*l, ACCESS_EXISTS) == 0
+	  && can_access(*l, READ_ACCESS) == 0){
+           mail_parameters(NULL, SET_SSLAPPCAFILE, (void *) *l);
            break;
       }
   }
@@ -7958,6 +8049,10 @@ config_help(int var, int feature)
 	return(h_config_system_certs_path);
       case V_SSLCAFILE :
 	return(h_config_system_certs_file);
+      case V_USERSSLCAPATH :
+	return(h_config_user_certs_path);
+      case V_USERSSLCAFILE :
+	return(h_config_user_certs_file);
 #endif
 #if !defined(DOS) && !defined(OS2) && !defined(LEAVEOUTFIFO)
       case V_FIFOPATH :

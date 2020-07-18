@@ -475,6 +475,8 @@ main(int argc, char **argv)
 #if !defined(_WINDOWS) || defined(WINDOWS_UNIXSSL_CERTS)
     set_system_certs_path(pine_state);
     set_system_certs_container(pine_state);
+    set_user_certs_path(pine_state);
+    set_user_certs_container(pine_state);
 #endif
 
 #ifdef SMIME

@@ -5782,6 +5782,8 @@ fix_side_effects(struct pine *ps, struct variable *var, int revert)
 #if !defined(_WINDOWS) || defined(ENABLE_WINDOWS_UNIXSSL_CERTS)
 			var == &ps->vars[V_SSLCAPATH] ||
 			var == &ps->vars[V_SSLCAFILE] ||
+			var == &ps->vars[V_USERSSLCAPATH] ||
+			var == &ps->vars[V_USERSSLCAFILE] ||
 #endif
 		        var == &ps->vars[V_RSHPATH] ||
 		        var == &ps->vars[V_RSHCMD] ||

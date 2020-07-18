@@ -421,6 +421,11 @@ static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags)
     SSL_CTX_load_verify_locations (stream->context, CAfile, CApath);
   else				/* set default paths to CAs... */
   SSL_CTX_set_default_verify_paths (stream->context);
+				/* Load app certificates */
+  CAfile = (char *) mail_parameters (NIL,GET_SSLAPPCAFILE,NIL);
+  CApath = (char *) mail_parameters (NIL,GET_SSLAPPCAPATH,NIL);
+  if (CAfile != NIL || CApath != NIL)
+    SSL_CTX_load_verify_locations (stream->context, CAfile, CApath);
 				/* want to send client certificate? */
   if (scc && (s = (*scc) ()) && (sl = strlen (s))) {
     if ((cert = PEM_read_bio_X509 (bio = BIO_new_mem_buf (s,sl),NIL,NIL,NIL)) != NULL) {

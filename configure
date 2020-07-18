@@ -16997,6 +16997,16 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+cat >>confdefs.h <<_ACEOF
+#define DEFAULT_SSLUSERCAPATH ".alpine-certs"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define DEFAULT_SSLUSERCAFILE ".alpine-certs/certs.pem"
+_ACEOF
+
+
 
 # Check whether --with-passfile was given.
 if test "${with_passfile+set}" = set; then :

@@ -45,6 +45,8 @@ static int server_nli = 0;	/* server and not logged in */
 static int logtry = 3;		/* number of login tries */
 static char *sslCApath = NIL;	/* non-standard CA path */
 static char *sslCAfile = NIL;	/* non-standard CA container */
+static char *sslAppCApath = NIL;  /* App SSL Certs CA path */
+static char *sslAppCAfile = NIL;  /* App SSL CA container */
 				/* block notification */
 static blocknotify_t mailblocknotify = mm_blocknotify;
 				/* callback to get username */
@@ -142,6 +144,20 @@ void *env_parameters (long function,void *value)
     break;
   case GET_SSLCAFILE:
     ret = (void *) sslCAfile;
+    break;
+  case SET_SSLAPPCAPATH:		/* this can be set null */
+    if (sslAppCApath) fs_give ((void **) &sslAppCApath);
+    sslAppCApath = value ? cpystr ((char *) value) : value;
+    break;
+  case GET_SSLAPPCAPATH:
+    ret = (void *) sslAppCApath;
+    break;
+  case SET_SSLCAFILE:		/* this can be set null */
+    if (sslAppCAfile) fs_give ((void **) &sslAppCAfile);
+    sslAppCAfile = value ? cpystr ((char *) value) : value;
+    break;
+  case GET_SSLAPPCAFILE:
+    ret = (void *) sslAppCAfile;
     break;
   }
   return ret;

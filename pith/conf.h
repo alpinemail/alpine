@@ -138,6 +138,10 @@
 #define GLO_SSLCAPATH		     vars[V_SSLCAPATH].global_val.l
 #define VAR_SSLCAFILE		     vars[V_SSLCAFILE].current_val.l
 #define GLO_SSLCAFILE		     vars[V_SSLCAFILE].global_val.l
+#define VAR_SSLUSERCAPATH	     vars[V_USERSSLCAPATH].current_val.l
+#define GLO_SSLUSERCAPATH	     vars[V_USERSSLCAPATH].global_val.l
+#define VAR_SSLUSERCAFILE	     vars[V_USERSSLCAFILE].current_val.l
+#define GLO_SSLUSERCAFILE	     vars[V_USERSSLCAFILE].global_val.l
 #endif
 #define VAR_INDEX_COLOR_STYLE	     vars[V_INDEX_COLOR_STYLE].current_val.p
 #define GLO_INDEX_COLOR_STYLE	     vars[V_INDEX_COLOR_STYLE].global_val.p
@@ -919,6 +923,8 @@ void	   panic1(char *, char *);
 #if !defined(_WINDOWS) || defined(WINDOWS_UNIXSSL_CERTS)
 void	   set_system_certs_path(struct pine *);
 void	   set_system_certs_container(struct pine *);
+void	   set_user_certs_path(struct pine *);
+void	   set_user_certs_container(struct pine *);
 #endif
 
 /* mandatory to implement prototypes */

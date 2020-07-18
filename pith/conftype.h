@@ -127,6 +127,8 @@ typedef	enum {    V_PERSONAL_NAME = 0
 #if !defined(_WINDOWS) || defined(WINDOWS_UNIXSSL_CERTS)
 		, V_SSLCAPATH
 		, V_SSLCAFILE
+		, V_USERSSLCAPATH
+		, V_USERSSLCAFILE
 #endif
 		, V_BROWSER
 		, V_HISTORY

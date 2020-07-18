@@ -626,6 +626,8 @@ PINEVAR_UNQUOTED(default-printer, DF_DEFAULT_PRINTER, [ANSI_PRINTER], [Default p
 AC_DEFINE_UNQUOTED([DF_PUBLIC_CONTAINER], "PublicContainer", [Name of default public container])
 AC_DEFINE_UNQUOTED([DF_PRIVATE_CONTAINER], "PrivateContainer", [Name of default private container])
 AC_DEFINE_UNQUOTED([DF_CA_CONTAINER], "CAContainer", [Name of default certificate authority container])
+AC_DEFINE_UNQUOTED([DEFAULT_SSLUSERCAPATH], ".alpine-certs", [Default directory for user trusted certificates])
+AC_DEFINE_UNQUOTED([DEFAULT_SSLUSERCAFILE], ".alpine-certs/certs.pem", [Name of default container for user trusted certificates])
 
 dnl set PASSFILE?
 AC_ARG_WITH(passfile,

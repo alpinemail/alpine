@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 494 2020-07-17 01:43:03
+Alpine Commit 495 2020-07-18 00:53:30
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -192,7 +192,7 @@ problems you find with this release.
 
 <UL>
 <LI> Expansion of the configuration screen for XOAUTH2 to include
-     username, and tenant.
+     username, authorization flow, and tenant.
 
 <LI> If a user has more than one client-id for a service, Alpine tries to
      asks the user which client-id to use and associates that client-id to
@@ -241,6 +241,11 @@ problems you find with this release.
 <LI> Experimental: Attempt to implement the Encryption Range in Windows. It works
      in Windows 10, and it should work in Windows 8.1. It needs testing in
      Windows 7 and Windows Vista.
+
+<LI> Addition of variables <A HREF="h_config_user_certs_path"><!--#echo var="VAR_user-certs-path"--></A>
+     and <A HREF="h_config_user_certs_file"><!--#echo var="VAR_user-certs-file"--></A>
+     which allow a user to specify locations for certificates that the user
+     trusts.
 </UL>
 
 <P>
@@ -22518,9 +22523,9 @@ allows for users to be able to use the same pinerc file in different systems.
 Example of values for this option might be:
 
 <PRE>
-System Certs Path = /etc/ssl/certs/cert.pem
-                    /usr/local/ssl/ca-root-nss.crt
-                    C:\\libressl\\ssl\\certs\\cert.pem
+System CACerts File = /etc/ssl/certs/cert.pem
+                      /usr/local/ssl/ca-root-nss.crt
+                      C:\\libressl\\ssl\\certs\\cert.pem
 <PRE>
 
 <P>
@@ -22532,6 +22537,71 @@ be obtained by first executing the command
 and adding &quot;/certs&quot; to that value. In Windows the default location
 for the certificates is C:\\libressl\\ssl\\certs\\cert.pem. This value was set 
 by LibreSSL developers, and this option can be used to override this default.
+
+<P>
+&lt;End of help on this topic&gt;
+</BODY></HTML>
+====== h_config_user_certs_path ======
+<HTML>
+<HEAD>
+<TITLE>OPTION: <!--#echo var="VAR_user-certs-path"--></TITLE>
+</HEAD>
+<BODY>
+<H1>OPTION: <!--#echo var="VAR_user-certs-path"--></H1>
+
+(UNIX ALPINE ONLY)
+This directory is used by Alpine to store certificates that a user
+trusts. Alpine will use the first directory in this list that exists in your
+system and can be accessed. This allows for users to be able to
+use the same pinerc file in different systems. The default location
+is ~/.alpine-certs.
+
+<P>
+In addition to the certificates stored in this directory, Alpine also
+trusts certificates saved in the container file referenced in the
+configuration variable
+<A HREF="h_config_user_certs_file"><!--#echo var="VAR_user-certs-file"--></A>.
+
+<P>
+Example of values for this option might be:
+
+<PRE>
+User Certs Dir = /home/fred/.alpine-certs
+                 C:\\Users\\Admin\\alpine-certs
+<PRE>
+
+<P>
+&lt;End of help on this topic&gt;
+</BODY></HTML>
+====== h_config_user_certs_file ======
+<HTML>
+<HEAD>
+<TITLE>OPTION: <!--#echo var="VAR_user-certs-file"--></TITLE>
+</HEAD>
+<BODY>
+<H1>OPTION: <!--#echo var="VAR_user-certs-file"--></H1>
+
+(UNIX ALPINE ONLY)
+This option sets the location of a container file that holds certificate
+authority (CA) certificates that the user trusts. Its value is the
+full path referencing the location of this file. Alpine will use the first
+container in this list that exists and can be accessed in your system. This
+allows for users to be able to use the same pinerc file in different
+systems. The default location is ~/.alpine-certs/certs.pem.
+
+<P>
+In addition to the certificates stored in this directory, Alpine also
+trusts certificates saved in the directory referenced in the
+configuration variable
+<A HREF="h_config_user_certs_path"><!--#echo var="VAR_user-certs-path"--></A>.
+
+<P>
+Example of values for this option might be:
+
+<PRE>
+User Certs File = /home/fred/.alpine-certs/certs.pem
+                  C:\\libressl\\ssl\\certs\\cert.pem
+<PRE>
 
 <P>
 &lt;End of help on this topic&gt;

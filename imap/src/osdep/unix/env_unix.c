@@ -74,6 +74,8 @@ static char *blackBoxDir = NIL;	/* black box directory name */
 static char *blackBoxDefaultHome = NIL;
 static char *sslCApath = NIL;	/* non-standard CA path */
 static char *sslCAfile = NIL;	/* non-standard CA container */
+static char *sslAppCApath = NIL;  /* App SSL CA path */
+static char *sslAppCAfile = NIL;  /* App SSL CA container */
 static short anonymous = NIL;	/* is anonymous */
 static short blackBox = NIL;	/* is a black box */
 static short closedBox = NIL;	/* is a closed box (uses chroot() jail) */
@@ -353,6 +355,20 @@ void *env_parameters (long function,void *value)
     break;
   case GET_SSLCAFILE:
     ret = (void *) sslCAfile;
+    break;
+  case SET_SSLAPPCAPATH:		/* this can be set null */
+    if (sslAppCApath) fs_give ((void **) &sslAppCApath);
+    sslAppCApath = value ? cpystr ((char *) value) : value;
+    break;
+  case GET_SSLAPPCAPATH:
+    ret = (void *) sslAppCApath;
+    break;
+  case SET_SSLAPPCAFILE:		/* this can be set null */
+    if (sslAppCAfile) fs_give ((void **) &sslAppCAfile);
+    sslAppCAfile = value ? cpystr ((char *) value) : value;
+    break;
+  case GET_SSLAPPCAFILE:
+    ret = (void *) sslAppCAfile;
     break;
   case SET_LISTMAXLEVEL:
     list_max_level = (long) value;

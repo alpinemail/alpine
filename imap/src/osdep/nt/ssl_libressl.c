@@ -8,7 +8,7 @@
  *
  * Author:	Eduardo Chappa, based on ssl_unix.c
  *
- * Last Edited:	January 25, 2020
+ * Last Edited:	July 17, 2020
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -413,6 +413,10 @@ static char *ssl_start_work(SSLSTREAM *stream, char *host, unsigned long flags)
 	    SSL_CTX_load_verify_locations (stream->context, CAfile, CApath);
 	else 		/* otherwise we set default paths to CAs... */
 	    SSL_CTX_set_default_verify_paths(stream->context);
+	CAfile = (char *) mail_parameters (NIL,GET_SSLAPPCAFILE,NIL);
+	CApath = (char *) mail_parameters (NIL,GET_SSLAPPCAPATH,NIL);
+	if (CAfile != NIL || CApath != NIL)
+	  SSL_CTX_load_verify_locations (stream->context, CAfile, CApath);
 	/* want to send client certificate? */
 	if (scc && (s = (*scc) ()) && (sl = strlen(s))) {
 		if ((cert = PEM_read_bio_X509(bio = BIO_new_mem_buf(s, sl), NIL, NIL, NIL)) != NIL) {

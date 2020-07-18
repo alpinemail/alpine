@@ -42,6 +42,12 @@
 /* Default configuration value */
 #undef DEFAULT_SAVE
 
+/* Name of default container for user trusted certificates */
+#undef DEFAULT_SSLUSERCAFILE
+
+/* Default directory for user trusted certificates */
+#undef DEFAULT_SSLUSERCAPATH
+
 /* Default configuration value */
 #undef DF_AB_SORT_RULE
 
