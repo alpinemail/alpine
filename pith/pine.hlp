@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 495 2020-07-18 00:53:30
+Alpine Commit 496 2020-07-19 02:52:27
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -276,6 +276,10 @@ Bugs addressed:
       fail. Reported by Andres Fehr.
 
 <LI> Crash in PC-Alpine when using the eXternal command.
+
+<LI> Fix in Macs that made Alpine abort a ssh connection to an imap server.
+     Reported and asisted by Wang Kang.
+
 </UL>
 
 <P>

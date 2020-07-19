@@ -45,7 +45,7 @@ extern int errno;		/* just in case */
 #include "ftl_unix.c"
 #include "nl_unix.c"
 #include "env_unix.c"
-#define fork vfork
+
 #include "getspnam.c"
 #include "tcp_unix.c"
 #include "gr_wait4.c"
