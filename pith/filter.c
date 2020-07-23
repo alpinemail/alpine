@@ -7798,10 +7798,6 @@ html_element_output(FILTER_S *f, int ch)
       html_output(f, ch);
 }
 
-#define ISHEX_DIGIT(X)	(isdigit((X)) || \
-			((X) >= 'a' && (X) <= 'f') || \
-			((X) >= 'A' && (X) <= 'F'))
-
 /*
  * collect html entity and return its UCS value when done.
  *
