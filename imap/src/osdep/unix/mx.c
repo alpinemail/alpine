@@ -148,7 +148,8 @@ DRIVER mxdriver = {
   mx_expunge,			/* expunge deleted messages */
   mx_copy,			/* copy messages to another mailbox */
   mx_append,			/* append string message to mailbox */
-  NIL				/* garbage collect stream */
+  NIL,				/* garbage collect stream */
+  NIL				/* renew stream */
 };
 
 				/* prototype stream */

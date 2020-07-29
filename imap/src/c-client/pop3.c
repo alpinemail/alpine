@@ -154,7 +154,8 @@ DRIVER pop3driver = {
   pop3_expunge,			/* expunge deleted messages */
   pop3_copy,			/* copy messages to another mailbox */
   pop3_append,			/* append string message to mailbox */
-  NIL				/* garbage collect stream */
+  NIL,				/* garbage collect stream */
+  NIL				/* renew stream */
 };
 
 				/* prototype stream */

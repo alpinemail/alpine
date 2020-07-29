@@ -1154,6 +1154,10 @@ typedef struct mail_stream {
   void *local;			/* pointer to driver local data */
   char *mailbox;		/* mailbox name (canonicalized) */
   char *original_mailbox;	/* mailbox name (non-canonicalized) */
+  struct {
+    char *name;			/* AUTHENTICATE method */
+    unsigned long expiration;	/* expiration time for authentication */
+  } auth;
   unsigned short use;		/* stream use count */
   unsigned short sequence;	/* stream sequence */
   unsigned int inbox : 1;	/* stream open on an INBOX */
@@ -1582,6 +1586,8 @@ DRIVER {
   long (*append) (MAILSTREAM *stream,char *mailbox,append_t af,void *data);
 				/* garbage collect stream */
   void (*gc) (MAILSTREAM *stream,long gcflags);
+				/* renew stream */
+  long (*renew) (MAILSTREAM *stream, MAILSTREAM *m);
 };
 
 
@@ -1706,6 +1712,7 @@ long mail_rename (MAILSTREAM *stream,char *old,char *newname);
 char *mail_utf7_valid (char *mailbox);
 long mail_status (MAILSTREAM *stream,char *mbx,long flags);
 long mail_status_default (MAILSTREAM *stream,char *mbx,long flags);
+long mail_renew_stream (MAILSTREAM *stream);
 MAILSTREAM *mail_open (MAILSTREAM *stream,char *name,long options);
 MAILSTREAM *mail_open_work (DRIVER *d,MAILSTREAM *stream,char *name,
 			    long options);
@@ -2011,3 +2018,4 @@ XOAUTH2_INFO_S *new_xoauth2_info(void);
 void    free_xoauth2_info(XOAUTH2_INFO_S **);
 XOAUTH2_INFO_S *copy_xoauth2_info(XOAUTH2_INFO_S *);
 char *oauth2_generate_state(void);
+void renew_accesstoken(MAILSTREAM *);

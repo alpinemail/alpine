@@ -118,6 +118,31 @@ new_mail(int force_arg, CheckPointTime time_for_check_point, int flags)
     if(!force && sp_unsorted_newmail(ps_global->mail_stream))
       force = !(flags & NM_DEFER_SORT);
 
+    /* Some servers prefer to close the connection when the access token expires,
+     * while some others prefer to keep the connection alive. This means we
+     * need to check if the access token is about to expire, and if so renew
+     * the access token and the stream. Under normal circumstances this is done
+     * invisible to the user. Hide error messages here, in case there are any.
+     * The worst thing that could happen is that the user will SEE the error
+     * later, when the connection is closed by the server (and the error will
+     * be seen then.)  Sending error messages at this time will confuse users.
+     * Avoid it now.
+     */
+    for(i = 0; i < ps_global->s_pool.nstream; i++){
+	m = ps_global->s_pool.streams[i];
+	if(m && m->auth.name
+	   && (!strucmp(m->auth.name, OA2NAME) || !strucmp(m->auth.name, BEARERNAME))
+	   && now + 60 > m->auth.expiration){	/* procastinate doing this */
+	      int skip = m->auth.expiration == 0 ? 1 : 0;
+	      dprint((9, "renew_accesstoken: %s: now = %lu, auth = %s, expiration = %lu\n", STREAMNAME(m), now, m->auth.name, m->auth.expiration));
+	      ps_global->noshow_error = 1;	/* make this invisible to the user */
+	      renew_accesstoken(m);
+	      if(skip == 0) mail_renew_stream(m);
+	      ps_global->noshow_error = 0;	/* return to normal status */
+	      dprint((9, "renew_accesstoken: %s: result: expiration = %lu\n", STREAMNAME(m), m->auth.expiration));
+	}
+    }
+
     if(!ps_global->mail_stream
        || !(timeo || force || sp_a_locked_stream_changed()))
       return(-1);

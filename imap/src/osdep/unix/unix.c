@@ -194,7 +194,8 @@ DRIVER unixdriver = {
   unix_expunge,			/* expunge deleted messages */
   unix_copy,			/* copy messages to another mailbox */
   unix_append,			/* append string message to mailbox */
-  NIL				/* garbage collect stream */
+  NIL,				/* garbage collect stream */
+  NIL				/* renew stream */
 };
 
 				/* prototype stream */

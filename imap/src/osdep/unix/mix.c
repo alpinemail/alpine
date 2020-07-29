@@ -207,7 +207,8 @@ DRIVER mixdriver = {
   mix_expunge,			/* expunge deleted messages */
   mix_copy,			/* copy messages to another mailbox */
   mix_append,			/* append string message to mailbox */
-  NIL				/* garbage collect stream */
+  NIL,				/* garbage collect stream */
+  NIL				/* renew stream */
 };
 
 				/* prototype stream */

@@ -165,7 +165,8 @@ DRIVER mbxdriver = {
   mbx_expunge,			/* expunge deleted messages */
   mbx_copy,			/* copy messages to another mailbox */
   mbx_append,			/* append string message to mailbox */
-  NIL				/* garbage collect stream */
+  NIL,				/* garbage collect stream */
+  NIL				/* renew stream */
 };
 
 				/* prototype stream */

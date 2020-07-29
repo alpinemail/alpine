@@ -170,6 +170,7 @@ long imap_delete (MAILSTREAM *stream,char *mailbox);
 long imap_rename (MAILSTREAM *stream,char *old,char *newname);
 long imap_manage (MAILSTREAM *stream,char *mailbox,char *command,char *arg2);
 long imap_status (MAILSTREAM *stream,char *mbx,long flags);
+long imap_renew (MAILSTREAM *stream,MAILSTREAM *m);
 MAILSTREAM *imap_open (MAILSTREAM *stream);
 IMAPPARSEDREPLY *imap_rimap (MAILSTREAM *stream,char *service,NETMBX *mb,
 			     char *usr,char *tmp);
@@ -316,7 +317,8 @@ DRIVER imapdriver = {
   imap_expunge,			/* expunge deleted messages */
   imap_copy,			/* copy messages to another mailbox */
   imap_append,			/* append string message to mailbox */
-  imap_gc			/* garbage collect stream */
+  imap_gc,			/* garbage collect stream */
+  imap_renew			/* renew stream */
 };
 
 				/* prototype stream */
@@ -793,6 +795,22 @@ long imap_status (MAILSTREAM *stream,char *mbx,long flags)
   return ret;			/* success */
 }
 
+/* IMAP renew
+ * Accepts: stream to renew
+ * returns 0 if success, 1 if failure
+ */
+long imap_renew (MAILSTREAM *stream, MAILSTREAM *m)
+{
+  IMAPLOCAL *MLOCAL = (IMAPLOCAL *) m->local;
+  NETSTREAM *xnetstream;
+
+  xnetstream = LOCAL->netstream;
+  LOCAL->netstream = MLOCAL->netstream;
+  MLOCAL->netstream = xnetstream;
+
+  return 0L;
+}
+
 /* IMAP open
  * Accepts: stream to open
  * Returns: stream to use on success, NIL on failure
@@ -1210,7 +1228,11 @@ long imap_auth (MAILSTREAM *stream,NETMBX *mb,char *tmp,char *usr)
 	  while (compare_cstring ((reply = imap_reply (stream,tag))->tag,tag))
 	    imap_soutr (stream,"*");
 				/* good if SASL ok and success response */
-	if (ok && imap_OK (stream,reply)) return T;
+	if (ok && imap_OK (stream,reply)){
+	   if(stream->auth.name) fs_give((void **) &stream->auth.name);
+	   stream->auth.name = cpystr(at->name);	/* save method name */
+	   return T;
+	}
 	if (!trial) {		/* if main program requested cancellation */
 	  mm_log ("IMAP Authentication cancelled",ERROR);
 	  return NIL;

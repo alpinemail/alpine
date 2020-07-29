@@ -143,7 +143,8 @@ DRIVER mtxdriver = {
   mtx_expunge,			/* expunge deleted messages */
   mtx_copy,			/* copy messages to another mailbox */
   mtx_append,			/* append string message to mailbox */
-  NIL				/* garbage collect stream */
+  NIL,				/* garbage collect stream */
+  NIL				/* renew stream */
 };
 
 				/* prototype stream */

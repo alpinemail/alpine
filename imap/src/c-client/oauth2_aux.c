@@ -405,3 +405,48 @@ XOAUTH2_INFO_S *copy_xoauth2_info(XOAUTH2_INFO_S *x)
   if(x->users) y->users = cpystr(x->users);
   return y;
 }
+
+/* This function does not create a refresh token and and
+ * an access token, but uses an already known refresh token
+ * to generate a refresh token on an ALREADY OPEN stream.
+ * The assumption is that the user has already unlocked all
+ * passwords and the app can access them from some source
+ * (key chain/credentials/memory) to go through this
+ * process seamlessly.
+ */
+void renew_accesstoken(MAILSTREAM *stream)
+{
+    OAUTH2_S oauth2;
+    NETMBX mb;
+    char user[MAILTMPLEN];
+    int tryanother;
+    unsigned long trial = 0;
+
+    memset((void *) &oauth2, 0, sizeof(OAUTH2_S));
+    mail_valid_net_parse(stream->original_mailbox, &mb);
+    user[0] = '\0';
+    mm_login_method (&mb, user, (void *) &oauth2, trial, stream->auth.name);
+
+    if(oauth2.param[OA2_State].value)
+      fs_give((void **) &oauth2.param[OA2_State].value);
+
+    if(stream->auth.expiration == 0){
+       stream->auth.expiration = oauth2.expiration;
+       return;
+    }
+
+    if(oauth2.access_token)
+      fs_give((void **) &oauth2.access_token);
+
+    oauth2.param[OA2_State].value = oauth2_generate_state();
+
+    mm_login_oauth2_c_client_method (&mb, user, stream->auth.name, &oauth2, trial, &tryanother);
+
+    if(oauth2.access_token)
+	mm_login_method (&mb, user, (void *) &oauth2, trial, stream->auth.name);
+
+    stream->auth.expiration = oauth2.expiration;
+    if(oauth2.param[OA2_Id].value) fs_give((void **) &oauth2.param[OA2_Id].value);
+    if(oauth2.param[OA2_Secret].value) fs_give((void **) &oauth2.param[OA2_Secret].value);
+    if(oauth2.param[OA2_Tenant].value) fs_give((void **) &oauth2.param[OA2_Tenant].value);
+}

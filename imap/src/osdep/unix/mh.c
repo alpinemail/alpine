@@ -148,7 +148,8 @@ DRIVER mhdriver = {
   mh_expunge,			/* expunge deleted messages */
   mh_copy,			/* copy messages to another mailbox */
   mh_append,			/* append string message to mailbox */
-  NIL				/* garbage collect stream */
+  NIL,				/* garbage collect stream */
+  NIL				/* renew stream */
 };
 
 				/* prototype stream */

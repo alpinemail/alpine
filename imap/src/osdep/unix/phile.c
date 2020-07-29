@@ -134,7 +134,8 @@ DRIVER philedriver = {
   phile_expunge,		/* expunge deleted messages */
   phile_copy,			/* copy messages to another mailbox */
   phile_append,			/* append string message to mailbox */
-  NIL				/* garbage collect stream */
+  NIL,				/* garbage collect stream */
+  NIL				/* renew stream */
 };
 
 				/* prototype stream */

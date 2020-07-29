@@ -334,7 +334,8 @@ DRIVER mmdfdriver = {
   mmdf_expunge,			/* expunge deleted messages */
   mmdf_copy,			/* copy messages to another mailbox */
   mmdf_append,			/* append string message to mailbox */
-  NIL				/* garbage collect stream */
+  NIL,				/* garbage collect stream */
+  NIL				/* renew stream */
 };
 
 				/* prototype stream */

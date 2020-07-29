@@ -152,7 +152,8 @@ DRIVER tenexdriver = {
   tenex_expunge,		/* expunge deleted messages */
   tenex_copy,			/* copy messages to another mailbox */
   tenex_append,			/* append string message to mailbox */
-  NIL				/* garbage collect stream */
+  NIL,				/* garbage collect stream */
+  NIL				/* renew stream */
 };
 
 				/* prototype stream */

@@ -1238,6 +1238,17 @@ long mail_status_default (MAILSTREAM *stream,char *mbx,long flags)
   return T;			/* success */
 }
 
+/* Mail renew stream
+ * Accepts: stream to renew
+ * returns: 0 for success, 1 for failure
+ */
+long mail_renew_stream (MAILSTREAM *stream)
+{
+  MAILSTREAM *m = mail_open(NIL, stream->original_mailbox, OP_SILENT);
+  long rv = stream && m ? (stream->dtb->renew)(stream, m) : 1;
+  mail_close(m);
+  return rv;
+}
 /* Mail open
  * Accepts: candidate stream for recycling
  *	    mailbox name

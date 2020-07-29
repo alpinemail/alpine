@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 496 2020-07-19 02:52:27
+Alpine Commit 498 2020-07-28 20:52:25
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -193,6 +193,9 @@ problems you find with this release.
 <UL>
 <LI> Expansion of the configuration screen for XOAUTH2 to include
      username, authorization flow, and tenant.
+
+<LI> XOAUTH2: automatic renew of access token and connection to a server
+     within 60 seconds of expiration of the access token.
 
 <LI> If a user has more than one client-id for a service, Alpine tries to
      asks the user which client-id to use and associates that client-id to

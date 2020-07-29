@@ -888,7 +888,7 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
     ps_global->no_newmail_check_from_optionally_enter = 1;
 
     /* make sure errors are seen */
-    if(ps_global->ttyo)
+    if(ps_global->ttyo && !ps_global->noshow_error)
       flush_status_messages(0);
 
     token = NULL;	/* start from scratch */

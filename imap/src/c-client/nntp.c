@@ -202,7 +202,8 @@ DRIVER nntpdriver = {
   nntp_expunge,			/* expunge deleted messages */
   nntp_copy,			/* copy messages to another mailbox */
   nntp_append,			/* append string message to mailbox */
-  NIL				/* garbage collect stream */
+  NIL,				/* garbage collect stream */
+  NIL				/* renew stream */
 };
 
 				/* prototype stream */
