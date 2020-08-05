@@ -965,7 +965,7 @@ char *tcp_canonical (char *name)
   blocknotify_t bn = (blocknotify_t) mail_parameters (NIL,GET_BLOCKNOTIFY,NIL);
   void *data;
 				/* look like domain literal? */
-  if (name[0] == '[' && name[strlen (name) - 1] == ']') return name;
+  if (name[0] == '[' && name[strlen (name) - 1] == ']') return cpystr(name);
   (*bn) (BLOCK_DNSLOOKUP,NIL);	/* quell alarms */
   data = (*bn) (BLOCK_SENSITIVE,NIL);
   if (tcpdebug) {
