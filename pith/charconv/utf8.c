@@ -283,7 +283,7 @@ convert_to_utf8(char *str, char *fromcharset, int flags)
 	    }
 	    /* else no conversion necessary */
 
-	    if(result.data)
+	    if(result.data && result.data != src.data)
 	      fs_give((void **) &result.data);
 	    result.size = 0;
 

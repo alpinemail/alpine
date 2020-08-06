@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 499 2020-08-05 03:09:13
+Alpine Commit 500 2020-08-05 18:43:02
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -260,6 +260,10 @@ Bugs addressed:
 
 <LI> When Alpine opens a folder in a server whose address is given numerically
      it might crash due to an incorrect freeing of memory. Reported by Wang Kang.
+
+<LI> Crash when Alpine frees memory on a system where LC_CTYPE is not 
+     configured, and the user calls the file browser to attach files to
+     a message. Reported by Luis Gerardo Tejero.
 
 <LI> Invalid signatures created by Alpine, when built with recent
      releases of the Openssl-1.1.1 series (but not in the Openssl-1.0.1 series).
