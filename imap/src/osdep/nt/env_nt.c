@@ -152,7 +152,7 @@ void *env_parameters (long function,void *value)
   case GET_SSLAPPCAPATH:
     ret = (void *) sslAppCApath;
     break;
-  case SET_SSLCAFILE:		/* this can be set null */
+  case SET_SSLAPPCAFILE:		/* this can be set null */
     if (sslAppCAfile) fs_give ((void **) &sslAppCAfile);
     sslAppCAfile = value ? cpystr ((char *) value) : value;
     break;
