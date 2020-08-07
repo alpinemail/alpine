@@ -731,7 +731,7 @@ scroll_handle_prompt(HANDLE_S *handle, int force)
 	{'n', 'n', "N", N_("No")},
 	{0, 'x', "X", ""},
 	{0, 'i', "I", ""},
-	{-2, 'r', "R", N_("setRole")},
+	{-2, 'r', "R", NULL},
 	{-2, 0, NULL, NULL},
 	{0, 'u', "U", N_("editURL")},
 	{0, 'a', "A", N_("editApp")},
@@ -889,6 +889,7 @@ scroll_handle_prompt(HANDLE_S *handle, int force)
 	  prompt[sizeof(prompt) - 1] = '\0';
 
 	  launch_opts[4].ch = 'r';
+	  launch_opts[4].label = N_("setRole");
 	}
 	else
 	  snprintf(prompt, sizeof(prompt), "View selected %s %s%s%s%.*s%s ? ",
