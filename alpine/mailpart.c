@@ -3108,14 +3108,7 @@ display_vevent_summary(long int msgno, ATTACH_S *a, int flags, int depth)
 	return;
     }
 
-    if((out_store = so_get(CharStar, NULL, EDIT_ACCESS)) == NULL){
-	q_status_message(SM_ORDER | SM_DING, 3, 3,
-			 _("Error allocating space to write Calendar")); 
-	return;
-    }
-
     gf_set_so_readc(&gc, in_store);
-    gf_set_so_writec(&pc, out_store);
 
     for(vesy = vsummary, k = 0; vesy; vesy = vesy->next, k++){
        if(depth >= 0 && k !=  depth)
@@ -3253,6 +3246,13 @@ display_vevent_summary(long int msgno, ATTACH_S *a, int flags, int depth)
 
     do{
 	so_seek(in_store, 0L, 0);
+	if((out_store = so_get(CharStar, NULL, EDIT_ACCESS)) == NULL){
+	   q_status_message(SM_ORDER | SM_DING, 3, 3,
+			 _("Error allocating space to write Calendar"));
+	   return;
+	}
+
+	gf_set_so_writec(&pc, out_store);
 
 	init_handles(&handles);
 	gf_filter_init();
