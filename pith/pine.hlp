@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 503 2020-08-13 09:42:11
+Alpine Commit 504 2020-08-27 20:15:43
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -249,6 +249,9 @@ problems you find with this release.
      and <A HREF="h_config_user_certs_file"><!--#echo var="VAR_user-certs-file"--></A>
      which allow a user to specify locations for certificates that the user
      trusts.
+
+<LI> Ignore non-empty initial challenge in the GSSAPI authenticaor. Based
+     on a patch written by Jarek Polok, but submitted by Ignacio Reguero.
 </UL>
 
 <P>

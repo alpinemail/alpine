@@ -100,12 +100,15 @@ responder,char *base,
   *trial = 65535;		/* never retry */
 				/* get initial (empty) challenge */
   if ((chal.value = (*challenger) (stream,(unsigned long *) &chal.length)) != NULL) {
+#if 0				/* ignore non-empty challenge */
     if (chal.length) {		/* abort if challenge non-empty */
       mm_log ("Server bug: non-empty initial GSSAPI challenge",WARN);
       (*responder) (stream,NIL,NIL,0);
       ret = LONGT;		/* will get a BAD response back */
     }
-    else if (mb->authuser[0] && strcmp (mb->authuser,myusername ())) {
+    else
+#endif /* if 0 */
+    if (mb->authuser[0] && strcmp (mb->authuser,myusername ())) {
       mm_log ("Can't use Kerberos: invalid /authuser",WARN);
       (*responder) (stream,NIL,NIL,0);
       ret = LONGT;		/* will get a BAD response back */
