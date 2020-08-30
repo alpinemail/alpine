@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 504 2020-08-27 20:15:43
+Alpine Commit 505 2020-08-29 18:58:26
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -250,8 +250,12 @@ problems you find with this release.
      which allow a user to specify locations for certificates that the user
      trusts.
 
-<LI> Ignore non-empty initial challenge in the GSSAPI authenticaor. Based
+<LI> Ignore non-empty initial challenge in the GSSAPI authenticator. Based
      on a patch written by Jarek Polok, but submitted by Ignacio Reguero.
+
+<LI> When a server expires a refresh token, Alpine needs to cancel it
+    internally. Alpine will attempt to get a new one when it  reopens the
+    folder after it cancels it.
 </UL>
 
 <P>
@@ -293,8 +297,7 @@ Bugs addressed:
 <LI> Crash in PC-Alpine when using the eXternal command.
 
 <LI> Fix in Macs that made Alpine abort a ssh connection to an imap server.
-     Reported and asisted by Wang Kang.
-
+     Reported and assisted by Wang Kang.
 </UL>
 
 <P>

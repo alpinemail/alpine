@@ -223,11 +223,13 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
 			      case JLong  : oauth2->expiration = time(0) + *(long *) jx->value;
 				    break;
 			 }
+			 oauth2->cancel_refresh_token = 0;	/* do not cancel this token. It is good */
 			 break;
 
 	     default :  { char tmp[100];
-			    sprintf(tmp, "Oauth2 client Received Code %d", status);
-			    mm_log (tmp, ERROR);
+			  sprintf(tmp, "Oauth2 client Received Code %d", status);
+			  mm_log (tmp, ERROR);
+			  oauth2->cancel_refresh_token++;
 			}
 			break;
 	}
@@ -284,13 +286,16 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
 			     if(jx && jx->jtype == JString)
 			       oauth2->expiration = time(0) + atol((char *) jx->value);
 
+			     oauth2->cancel_refresh_token = 0;	/* do not cancel this token. It is good */
+
 			     break;
 
 	     case HTTP_BAD :  break;
 
 		default   :  { char tmp[100];
 			       sprintf(tmp, "Oauth2 Client Received Code %d", status);
-			       fatal (tmp);
+			       mm_log (tmp, ERROR);
+			       oauth2->cancel_refresh_token++;
 			     }
 	  }
 
@@ -356,13 +361,15 @@ void oauth2deviceinfo_get_accesscode(void *inp, void *outp)
 			  }
 
 			rv = OA2_CODE_SUCCESS;
+			oauth2->cancel_refresh_token = 0;	/* do not cancel this token. It is good */
 
 			break;
 
 	     default :  { char tmp[100];
 			  sprintf(tmp, "Oauth device Received Code %d", status);
 			  mm_log (tmp, ERROR);
-			 }
+			  oauth2->cancel_refresh_token++;
+			}
      }
 
      json_free(&json);

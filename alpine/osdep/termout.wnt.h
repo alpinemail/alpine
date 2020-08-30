@@ -39,7 +39,7 @@ void scroll_setrange(long, long);
 /* dialog stuff */
 int init_install_get_vars(void);
 int os_argsdialog(char **);
-int os_login_dialog(NETMBX *, char *, int, char *, int, int, int, int *);
+int os_login_dialog(NETMBX *, char *, int, char **, int, int, int, int *);
 int os_flagmsgdialog(struct flag_table *);
 int os_sortdialog(DLG_SORTPARAM *);
 int os_config_dialog(char *, int, int *, int);

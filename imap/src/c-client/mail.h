@@ -1989,6 +1989,7 @@ typedef struct oauth2_s {
    unsigned long expiration;
    unsigned int first_time:1;	/* this is the first time we get credentials for this account */
    unsigned int require_secret:1;	/* this server requires a client-secret */
+   int cancel_refresh_token;	/* ask client to cancel refresh token */
 } OAUTH2_S;
 
 typedef struct deviceproc_s {

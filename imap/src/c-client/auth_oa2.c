@@ -124,10 +124,11 @@ long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder, cha
         */
 
        if(!tryanother
-	  && (oauth2.access_token 
+	  && (oauth2.access_token
 	  || (!RefreshToken && oauth2.param[OA2_RefreshToken].value)
 	  || (RefreshToken && oauth2.param[OA2_RefreshToken].value
-	      && strcmp(RefreshToken, oauth2.param[OA2_RefreshToken].value))))
+	      && strcmp(RefreshToken, oauth2.param[OA2_RefreshToken].value)
+	  || oauth2.cancel_refresh_token)))
          mm_login_method (mb, user, (void *) &oauth2, *trial, OA2NAME);
     }
 

@@ -737,7 +737,7 @@ os_argsdialog (char **arg_text)
  */
 int
 os_login_dialog (NETMBX *mb, char *user_utf8, int userlen,
-		 char *pwd_utf8, int pwdlen, int pwc, int fixuser, int *prespass)
+		 char **pwd_utf8, int pwdlen, int pwc, int fixuser, int *prespass)
 {
     DLGPROC	dlgprc;
     HINSTANCE	hInst;
@@ -760,7 +760,7 @@ os_login_dialog (NETMBX *mb, char *user_utf8, int userlen,
     dlgpw.userlen = userlen;
 
     dlgpw.pwd = (LPTSTR)fs_get(pwdlen*sizeof(TCHAR));
-    pwd_lptstr = utf8_to_lptstr(pwd_utf8);
+    pwd_lptstr = utf8_to_lptstr(*pwd_utf8);
     _tcsncpy(dlgpw.pwd, pwd_lptstr, pwdlen - 1);
     dlgpw.pwd[pwdlen - 1] = '\0';
     fs_give((void **) &pwd_lptstr);
@@ -786,8 +786,8 @@ os_login_dialog (NETMBX *mb, char *user_utf8, int userlen,
 
 	tpwd_utf8 = lptstr_to_utf8(dlgpw.pwd);
 	if(tpwd_utf8){
-	    strncpy(pwd_utf8, tpwd_utf8, pwdlen - 1);
-	    pwd_utf8[pwdlen - 1] = '\0';
+	    strncpy(*pwd_utf8, tpwd_utf8, pwdlen - 1);
+	    (*pwd_utf8)[pwdlen - 1] = '\0';
 	    fs_give((void **) &tpwd_utf8);
 	}
 	if(prespass)

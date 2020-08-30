@@ -172,7 +172,8 @@ OAUTH2_S alpine_oauth2_list[] =
     NULL, 	/* access token */
     0, 		/* expiration time */
     0, 		/* first time indicator */
-    1		/* client secret required */
+    1,		/* client secret required */
+    0		/* Cancel refresh token */
   },
   {OUTLOOK_NAME,
    {"outlook.office365.com", "smtp.office365.com", NULL, NULL},
@@ -201,7 +202,8 @@ OAUTH2_S alpine_oauth2_list[] =
     NULL, 	/* access token */
     0, 		/* expiration time */
     0, 		/* first time indicator */
-    0		/* client secret required */
+    0,		/* client secret required */
+    0		/* Cancel refresh token */
   },
   {OUTLOOK_NAME,
    {"outlook.office365.com", "smtp.office365.com", NULL, NULL},
@@ -230,7 +232,8 @@ OAUTH2_S alpine_oauth2_list[] =
     NULL, 	/* access token */
     0, 		/* expiration time */
     0, 		/* first time indicator */
-    1		/* client secret required */
+    1,		/* client secret required */
+    0		/* Cancel refresh token */
   },
   {YANDEX_NAME,
    {"imap.yandex.com", "smtp.yandex.com", NULL, NULL},
@@ -259,9 +262,10 @@ OAUTH2_S alpine_oauth2_list[] =
     NULL, 	/* access token */
     0, 		/* expiration time */
     0, 		/* first time indicator */
-    1		/* client secret required */
+    1,		/* client secret required */
+    0		/* Cancel refresh token */
   },
-  { NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0},
+  { NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0},
 };
 
 int
@@ -292,7 +296,7 @@ OAUTH2_S *
 oauth2_select_flow(char *host)
 {
    OAUTH2_S *oa2list, *oa2;
-   int i, n, rv;
+   int i, rv;
    char *method;
 
    if(ps_global->ttyo){
@@ -350,7 +354,7 @@ oauth2_select_flow(char *host)
       char *s;
       char prompt[1024];
       char reply[1024];
-      int sel, j;
+      int sel, n = 0, j;
 
       for(oa2list = alpine_oauth2_list; oa2list && oa2list->name ;oa2list++)
            n += strlen(oa2list->name); + 5;       /* number, parenthesis, space */
@@ -1011,7 +1015,7 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
     user[NETMAXUSER-1] = '\0';
 
     /* The Old* variables is what c_client knows */
-    OldRefreshToken   = login->param[OA2_RefreshToken].value;
+    OldRefreshToken   = login->cancel_refresh_token ? NULL : login->param[OA2_RefreshToken].value;
     OldAccessToken    = login->access_token;
     OldExpirationTime = login->expiration;
 
@@ -1020,7 +1024,7 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
     NewExpirationTime = 0L;
     ChangeAccessToken = ChangeRefreshToken = ChangeExpirationTime = 0;
 
-    if(token && *token){
+    if(token && *token && !login->cancel_refresh_token){
        char *s, *t;
 
        s = token;
@@ -1049,7 +1053,9 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
        if(NewAccessToken && (NewExpirationTime == 0L || !*NewAccessToken)) 
 	  fs_give((void **) &NewAccessToken);
     }
-    else login->first_time++;
+
+    if(NewRefreshToken == NULL)
+       login->first_time++;
 
     if(login->first_time){	/* count how many authorization methods we support */
 	int nmethods, i, j;
@@ -1071,7 +1077,7 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
 
     /* Default to saving what we already had saved */
 
-    SaveRefreshToken = NewRefreshToken;
+    SaveRefreshToken = login->cancel_refresh_token ? NULL : NewRefreshToken;
     SaveAccessToken  = NewAccessToken;
     SaveExpirationTime = NewExpirationTime;
 
@@ -1131,10 +1137,11 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
        oa2list->access_token = SaveAccessToken;
        oa2list->expiration = SaveExpirationTime;
        oa2list->first_time = login->first_time;
-      *login = *oa2list;	/* load login pointer */
+       oa2list->cancel_refresh_token = login->cancel_refresh_token;
+       *login = *oa2list;	/* load login pointer */
     }
 
-    if(!ChangeAccessToken && !ChangeRefreshToken)
+    if(!ChangeAccessToken && !ChangeRefreshToken && !login->cancel_refresh_token)
        return;
 
     /* get ready to save this information. The format will be
@@ -2027,8 +2034,15 @@ mm_login_work(NETMBX *mb, char *user, char **pwd, long int trial,
 	flags = F_ON(F_QUELL_ASTERISKS, ps_global) ? OE_PASSWD_NOAST : OE_PASSWD;
 	flags |= OE_KEEP_TRAILING_SPACE;
 #ifdef _WINDOWS
-	rc = os_login_dialog(mb, user, NETMAXUSER, tmp, NETMAXPASSWD, 0, 1,
+	{
+	char *tmpp;
+	tmpp = fs_get(NETMAXPASSWD*sizeof(char));
+	rc = os_login_dialog(mb, user, NETMAXUSER, &tmpp, NETMAXPASSWD, 0, 1,
 			     &preserve_password);
+	strncpy(tmp, tmpp, sizeof(tmp));
+	tmp[sizeof(tmp)-1] = '\0';
+	if(tmpp) fs_give((void **)&tmpp);
+	}
 #else /* !_WINDOWS */
         rc = optionally_enter(tmp, q_line, 0, NETMAXPASSWD,
 			      prompt, NULL, help, &flags);
