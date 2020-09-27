@@ -58,6 +58,7 @@
 
 #define direct dirent
 
+int safe_flock (int, int);
 #define flock safe_flock
 
 #define utime portable_utime
