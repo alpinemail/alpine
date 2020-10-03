@@ -248,6 +248,9 @@ free_pine_struct(struct pine **pps)
 
     if((*pps)->msgmap)
       msgno_give(&(*pps)->msgmap);
+
+    if((*pps)->id)
+      free_id(&(*pps)->id);
     
     free_vars(*pps);
 

@@ -326,6 +326,16 @@ void mail_link (DRIVER *driver)
   driver->next = NIL;		/* this driver is the end of the list */
 }
 
+void free_id(IDLIST **idp)
+{
+   if(!idp || !*idp) return;
+
+   if((*idp)->name) fs_give((void **) &(*idp)->name);
+   if((*idp)->value) fs_give((void **) &(*idp)->value);
+   if((*idp)->next) free_id (&(*idp)->next);
+   fs_give((void **)idp);
+}
+
 /* Mail manipulate driver parameters
  * Accepts: mail stream
  *	    function code

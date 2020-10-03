@@ -170,6 +170,8 @@ OAUTH2_S alpine_oauth2_list[] =
    },
    {NULL, NULL, NULL, 0, 0, NULL},	/* device_code information */
     NULL, 	/* access token */
+    NULL,	/* special IMAP ID */
+    0,		/* do not hide */
     0, 		/* expiration time */
     0, 		/* first time indicator */
     1,		/* client secret required */
@@ -200,6 +202,8 @@ OAUTH2_S alpine_oauth2_list[] =
    },
    {NULL, NULL, NULL, 0, 0, NULL},	/* device_code information */
     NULL, 	/* access token */
+    NULL,	/* special IMAP ID */
+    0,		/* do not hide */
     0, 		/* expiration time */
     0, 		/* first time indicator */
     0,		/* client secret required */
@@ -230,6 +234,8 @@ OAUTH2_S alpine_oauth2_list[] =
    },
    {NULL, NULL, NULL, 0, 0, NULL},	/* device_code information, not used */
     NULL, 	/* access token */
+    NULL,	/* special IMAP ID */
+    0,		/* do not hide */
     0, 		/* expiration time */
     0, 		/* first time indicator */
     1,		/* client secret required */
@@ -260,12 +266,14 @@ OAUTH2_S alpine_oauth2_list[] =
    },
    {NULL, NULL, NULL, 0, 0, NULL},	/* device_code information, not used */
     NULL, 	/* access token */
+    NULL,	/* special IMAP ID */
+    0,		/* do not hide */
     0, 		/* expiration time */
     0, 		/* first time indicator */
     1,		/* client secret required */
     0		/* Cancel refresh token */
   },
-  { NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0},
+  { NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0},
 };
 
 int
@@ -981,6 +989,12 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
 	  hostlist2[j].next = &hostlist2[j+1];
     }
 
+    if(registered){	/* redo the app_id, no questions asked */
+	free_id(&ps_global->id);
+	ps_global->id = set_alpine_id(oa2list->app_id ? oa2list->app_id : PACKAGE_NAME, PACKAGE_VERSION);
+	mail_parameters(NULL, SET_IDPARAMS, (void *) ps_global->id);
+    }
+
     /*
      * We check if we have a refresh token saved somewhere, if so
      * we use it to get a new access token, otherwise we need to
@@ -1176,6 +1190,23 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
 #endif	/* LOCAL_PASSWD_CACHE */
 
     ps_global->no_newmail_check_from_optionally_enter = 0;
+}
+
+IDLIST *
+set_alpine_id(unsigned char *pname, unsigned char *pversion)
+{
+   IDLIST *id;
+
+   if(!pname || !pversion) return NULL;
+
+   id = fs_get(sizeof(IDLIST));
+   id->name  = cpystr("name");
+   id->value = cpystr(pname);
+   id->next  = fs_get(sizeof(IDLIST));
+   id->next->name  = cpystr("version");
+   id->next->value = cpystr(pversion);
+   id->next->next  = NULL;
+   return id;
 }
 
 /*----------------------------------------------------------------------
@@ -1438,6 +1469,11 @@ mm_login_work(NETMBX *mb, char *user, char **pwd, long int trial,
     /* make sure errors are seen */
     if(ps_global->ttyo)
       flush_status_messages(0);
+
+    /* redo app id in case we are loging in to an IMAP server that supports the IMAP ID extension */
+    free_id(&ps_global->id);
+    ps_global->id = set_alpine_id(PACKAGE_NAME, PACKAGE_VERSION);
+    mail_parameters(NULL, SET_IDPARAMS, (void *) ps_global->id);
 
     /*
      * Add port number to hostname if going through a tunnel or something

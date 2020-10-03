@@ -160,14 +160,6 @@ main(int argc, char **argv)
       ----------------------------------------------------------------------*/
 
     pine_state = new_pine_struct();
-    pine_state->id = fs_get(sizeof(IDLIST));
-    pine_state->id->name  = cpystr("name");
-    pine_state->id->value = cpystr(PACKAGE_NAME);
-    pine_state->id->next  = fs_get(sizeof(IDLIST));
-    pine_state->id->next->name  = cpystr("version");
-    pine_state->id->next->value = cpystr(PACKAGE_VERSION);
-    pine_state->id->next->next  = NULL;
-    mail_parameters(NULL, SET_IDPARAMS, (void *) pine_state->id);
     ps_global  = pine_state;
 
     /*

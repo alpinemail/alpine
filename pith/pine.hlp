@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 507 2020-09-27 09:53:59
+Alpine Commit 508 2020-10-03 13:43:20
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -256,6 +256,9 @@ problems you find with this release.
 <LI> When a server expires a refresh token, Alpine needs to cancel it
     internally. Alpine will attempt to get a new one when it  reopens the
     folder after it cancels it.
+
+<LI> Set up the IMAP ID at the moment of loging in to the server, rather than
+     as a one time option, in case we need to use a special IMAP ID.
 </UL>
 
 <P>

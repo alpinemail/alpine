@@ -1890,7 +1890,7 @@ void auth_link (AUTHENTICATOR *auth);
 char *mail_auth (char *mechanism,authresponse_t resp,int argc,char *argv[]);
 AUTHENTICATOR *mail_lookup_auth (unsigned long i);
 unsigned int mail_lookup_auth_name (char *mechanism,long flags);
-
+void free_id(IDLIST **);
 NETSTREAM *net_open (NETMBX *mb,NETDRIVER *dv,unsigned long port,
 		     NETDRIVER *ssld,char *ssls,unsigned long sslp);
 NETSTREAM *net_open_work (NETDRIVER *dv,char *host,char *service,
@@ -1986,6 +1986,8 @@ typedef struct oauth2_s {
    OAUTH2_SERVER_METHOD_S server_mthd[OA2_GetEnd];
    OAUTH2_DEVICECODE_S devicecode;
    char *access_token;
+   char *app_id;		/* special id for this server */
+   unsigned hide:1;		/* hide this from user */
    unsigned long expiration;
    unsigned int first_time:1;	/* this is the first time we get credentials for this account */
    unsigned int require_secret:1;	/* this server requires a client-secret */
