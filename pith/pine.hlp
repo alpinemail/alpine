@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 508 2020-10-03 13:43:20
+Alpine Commit 509 2020-10-04 10:30:23
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -191,6 +191,8 @@ problems you find with this release.
 <P> Additions include:
 
 <UL>
+<LI> Implementation of XOAUTH2 for Yahoo! Mail. <A href="h_yahoo_configuration">Learn More</A>
+
 <LI> Expansion of the configuration screen for XOAUTH2 to include
      username, authorization flow, and tenant.
 
@@ -203,7 +205,7 @@ problems you find with this release.
      <A HREF="h_xoauth2_config_screen">Learn more</A>.
 
 <LI> Addition of Yandex.com to the list of services that Alpine can use XOAUTH2 to
-     authenticate for reading and sending email.
+     authenticate for reading and sending email. <A href="h_yandex_configuration">Learn More</A>
 
 <LI> Addition of a link to the Apache License 2.0 (see above). This is 
      available from the Release Notes as well as the welcome screen.
@@ -311,10 +313,10 @@ Additions include:
 
 <UL>
 <LI> Implementation of XOAUTH2 authentication support for Outlook.
-     Based on documentation suggested by Andrew C Aitchison.
+     Based on documentation suggested by Andrew C Aitchison. <A href="h_outlook_configuration">Learn More</A>
 
 <LI> Add support for the OAUTHBEARER authentication method in Gmail. Thanks to
-     Alexander Perlis for suggesting it and explaining how the method works.
+     Alexander Perlis for suggesting it and explaining how the method works. <A href="h_gmail_configuration">Learn More</A>
 
 <LI> Creation of Alpine's Privacy Policy. This is presented as a link to
     an online document from the Release Notes (Link at the top of this
@@ -420,6 +422,7 @@ Additions include:
 
 <UL>
 <LI> Support for <A HREF="h_xoauth2">XOAUTH2</A> authentication method in Gmail.
+     <A href="h_gmail_configuration">Learn More</A>
 
 <LI> PC-Alpine builds with LibreSSL and supports S/MIME.
 
@@ -1722,6 +1725,115 @@ modifier to the server definition to create a secure encrypted connection.
 &lt;End of help&gt;
 </BODY>
 </HTML>
+====== h_gmail_configuration ======
+<HTML>
+<HEAD>
+<TITLE>Configuring Access to Gmail Using XOAUTH2</TITLE>
+</HEAD>
+<BODY>
+<H1>Configuring Access to Gmail Using XOAUTH2</H1>
+
+Gmail allows you to access their IMAP and SMTP server using either the XOAUTH2
+or OAUTHBEARER authentication method. You can choose any of them. A sample configuration for reading
+incoming mail is
+
+<P>
+inbox-path = {imap.gmail.com/ssl/user=YourId@gmail.com/auth=xoauth2}INBOX<BR>
+smtp-server = smtp.gmail.com/ssl/user=YourId@gmail.com/auth=xoauth2
+
+<P>
+Note that you can substitute /auth=xoauth2 by /auth=oauthbearer.
+
+<P>
+Gmail implements the authorize method. This means that in order to use xoauth2, you must
+open a URL, login to your Gmail account, and authorize Alpine to access your email. As a
+result of this process, you will get a <B>code</B>, which you must input back into Alpine.
+Once you have done that, Alpine will be able to get a refresh and access token, which
+Alpine will use later to read and send email.
+
+<P>
+&lt;End of help&gt;
+</BODY>
+</HTML>
+====== h_outlook_configuration ======
+<HTML>
+<HEAD>
+<TITLE>Configuring Access to Outlook Using XOAUTH2</TITLE>
+</HEAD>
+<BODY>
+<H1>Configuring Access to Outlook Using XOAUTH2</H1>
+
+Outlook allows you to access their IMAP and SMTP server using the XOAUTH2
+authentication method. A sample configuration for reading incoming mail is
+
+<P>
+inbox-path = {outlook.office365.com/ssl/user=YourId@outlook.com/auth=xoauth2}INBOX<BR>
+smtp-server = smtp.office365.com/submit/user=YourId@outlook.com/auth=xoauth2
+
+<P>
+Outlook implements the authorize and device methods to get your authorization to access
+your account. Alpine uses by default the device method, so try that one first.
+
+<P>
+&lt;End of help&gt;
+</BODY>
+</HTML>
+====== h_yahoo_configuration ======
+<HTML>
+<HEAD>
+<TITLE>Configuring Access to Yahoo! Using XOAUTH2</TITLE>
+</HEAD>
+<BODY>
+<H1>Configuring Access to Yahoo! Using XOAUTH2</H1>
+
+Yahoo! allows you to access their IMAP and SMTP server using either the XOAUTH2 or
+OAUTHBEARER authentication method. You can choose any of them. A sample configuration for
+reading incoming mail is
+
+<P>
+inbox-path = {imap.mail.yahoo.com/ssl/user=YourId@yahoo.com/auth=xoauth2}INBOX<BR>
+smtp-server = smtp.mail.yahoo.com/ssl/user=YourId@yahoo.com/auth=xoauth2
+
+<P>
+Note that you can substitute /auth=xoauth2 by /auth=oauthbearer.
+
+<P>
+Yahoo! implements the authorize method. This means that in order to use xoauth2, you must
+open a URL, login to your Yahoo! account, and authorize Alpine to access your email. As a
+result of this process, you will get a <B>code</B>, which you must input back into Alpine.
+Once you have done that, Alpine will be able to get a refresh and access token, which
+Alpine will use later to read and send email.
+
+<P>
+&lt;End of help&gt;
+</BODY>
+</HTML>
+====== h_yandex_configuration ======
+<HTML>
+<HEAD>
+<TITLE>Configuring Access to Yandex Using XOAUTH2</TITLE>
+</HEAD>
+<BODY>
+<H1>Configuring Access to Yandex Using XOAUTH2</H1>
+
+Yandex allows you to access their IMAP and SMTP server using the XOAUTH2
+authentication method. A sample configuration for reading incoming mail is
+
+<P>
+inbox-path = {imap.yandex.com/ssl/user=YourId@yandex.com/auth=xoauth2}INBOX<BR>
+smtp-server = smtp.yandex.com/ssl/user=YourId@yandex.com/auth=xoauth2
+
+<P>
+Yandex implements the authorize method. This means that in order to use xoauth2, you must
+open a URL, login to your Yandex account, and authorize Alpine to access your email. As a
+result of this process, you will get a <B>code</B>, which you must input back into Alpine.
+Once you have done that, Alpine will be able to get a refresh and access token, which
+Alpine will use later to read and send email.
+
+<P>
+&lt;End of help&gt;
+</BODY>
+</HTML>
 ====== h_xoauth2 ======
 <HTML>
 <HEAD>
@@ -1734,6 +1846,16 @@ The XOAUTH2 authenticator method is a way in which you can sign in to your
 account to read and send email. This method is different from the traditional
 username/password that users are accostumed to, and it needs to be set up
 by the user. This text will help you understand this authentication method.
+
+<P> A quick list of services supported by Alpine are (follow each link for
+specific configuration instructions)
+
+<UL>
+<LI> <A href="h_gmail_configuration">Gmail</A>
+<LI> <A href="h_outlook_configuration">Outlook</A>
+<LI> <A href="h_yahoo_configuration">Yahoo!</A>
+<LI> <A href="h_yandex_configuration">Yandex</A>
+</UL>
 
 <P>
 The most important difference between this method and other authentication
@@ -1823,9 +1945,9 @@ a new one, by getting an Access Code first, and granting authorization to
 Alpine to access your email once again.
 
 <P>
-This implementation of XOAUTH2 knows the list of servers that it can 
-access using the same credentials, so Alpine will be able to read and send 
-emails using the same Access Token. You will not have to create 
+This implementation of XOAUTH2 knows the list of servers that it can
+access using the same credentials, so Alpine will be able to read and send
+emails using the same Access Token. You will not have to create
 Access and Refresh Tokens for the IMAP and SMTP servers separately.
 
 <P>

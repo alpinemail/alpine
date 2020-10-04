@@ -241,6 +241,38 @@ OAUTH2_S alpine_oauth2_list[] =
     1,		/* client secret required */
     0		/* Cancel refresh token */
   },
+  {YAHOO_NAME,
+   {"imap.mail.yahoo.com", "smtp.mail.yahoo.com", NULL, NULL},
+   {{"client_id", NULL},
+    {"client_secret", NULL},		/* used */
+    {"tenant", NULL},			/* not used */
+    {"code", NULL},			/* used during authorization */
+    {"refresh_token", NULL},
+    {"scope", NULL},			/* not used! */
+    {"redirect_uri", "oob"},		/* https://localhost */
+    {"grant_type", "authorization_code"},
+    {"grant_type", "refresh_token"},
+    {"response_type", "code"},
+    {"state", NULL},			/* used */
+    {"device_code", NULL}		/* not used */
+   },
+   {{"GET", "https://api.login.yahoo.com/oauth2/request_auth",	/* Get Access Code */
+	{OA2_Id, OA2_Redirect, OA2_Response, OA2_State, OA2_End, OA2_End, OA2_End}},
+    {NULL, NULL, {OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End}}, /* device code, not used */
+    {"POST", "https://api.login.yahoo.com/oauth2/get_token",	/* Get first Refresh Token and Access token  */
+	{OA2_Id, OA2_Secret, OA2_Redirect, OA2_Code, OA2_GrantTypeforAccessToken, OA2_End, OA2_End}},
+    {"POST", "https://api.login.yahoo.com/oauth2/get_token",	/* Get access token from refresh token */
+	{OA2_Id, OA2_Secret, OA2_Redirect, OA2_RefreshToken, OA2_GrantTypefromRefreshToken, OA2_End, OA2_End}}
+   },
+   {NULL, NULL, NULL, 0, 0, NULL},	/* device_code information, not used */
+    NULL, 	/* access token */
+    "ALPINE_V1",	/* special IMAP ID */
+    1,		/* hide */
+    0, 		/* expiration time */
+    0, 		/* first time indicator */
+    1,		/* client secret required */
+    0		/* Cancel refresh token */
+  },
   {YANDEX_NAME,
    {"imap.yandex.com", "smtp.yandex.com", NULL, NULL},
    {{"client_id", NULL},
@@ -3650,8 +3682,8 @@ write_passfile(pinerc, l)
    char *authend, *authtype;
 #ifdef	WINCRED
 # if	(WINCRED > 0)
-    char  target[4*MAILTMPLEN];
-    char  blob[4*MAILTMPLEN];
+    char  target[10*MAILTMPLEN];
+    char  blob[10*MAILTMPLEN];
     CREDENTIAL cred;
     LPTSTR ltarget = 0;
 
@@ -3701,8 +3733,8 @@ write_passfile(pinerc, l)
 
 #elif	APPLEKEYCHAIN
     int   rc;
-    char  target[4*MAILTMPLEN];
-    char  blob[4*MAILTMPLEN];
+    char  target[10*MAILTMPLEN];
+    char  blob[10*MAILTMPLEN];
     SecKeychainItemRef itemRef = NULL;
 
     if(using_passfile == 0)
@@ -3769,11 +3801,11 @@ write_passfile(pinerc, l)
     }
 
 #else /* PASSFILE */
-    char  tmp[4*MAILTMPLEN], blob[4*MAILTMPLEN];
+    char  tmp[10*MAILTMPLEN], blob[10*MAILTMPLEN];
     int   i, n;
     FILE *fp;
 #ifdef SMIME
-    char *text = NULL, tmp2[4*MAILTMPLEN];
+    char *text = NULL, tmp2[10*MAILTMPLEN];
     int len = 0;
 #endif
 

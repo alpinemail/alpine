@@ -28,6 +28,7 @@ extern OAUTH2_S alpine_oauth2_list[];
 XOAUTH2_INFO_S xoauth_default[] = {
   { GMAIL_NAME, GMAIL_ID, GMAIL_SECRET, GMAIL_TENANT, NULL, NULL},
   { OUTLOOK_NAME, OUTLOOK_ID, OUTLOOK_SECRET, OUTLOOK_TENANT, NULL, NULL},
+  { YAHOO_NAME, YAHOO_ID, YAHOO_SECRET, YAHOO_TENANT, NULL, NULL},
   { YANDEX_NAME, YANDEX_ID, YANDEX_SECRET, YANDEX_TENANT, NULL, NULL},
   { NULL, NULL, NULL, NULL, NULL, NULL}
 };
@@ -886,7 +887,8 @@ alpine_xoauth2_configuration(struct pine *ps, int edit_exceptions)
 	   }
 	   if(lval == NULL || lval[k] == NULL){
 	       OAUTH2_S *oa2list;
-	       for(oa2list = alpine_oauth2_list; oa2list; oa2list++){
+	       for(oa2list = alpine_oauth2_list; oa2list && oa2list->name; oa2list++){
+		  if(oa2list->hide) continue;
 		  if(!strcmp(oa2list->name,xoauth_default[i].name)){
 		     xoauth_default[i].flow = cpystr(oa2list->server_mthd[0].name ? "Authorize"
                       : (oa2list->server_mthd[1].name ? "Device" : "Unknown"));
@@ -913,10 +915,11 @@ alpine_xoauth2_configuration(struct pine *ps, int edit_exceptions)
 		 y->tenant = cpystr(xoauth_default[i].tenant);
 	      for(oa2 = NULL, oa2list = alpine_oauth2_list; oa2 == NULL && oa2list; oa2list++)
 		 if(!strcmp(oa2list->name, y->name)) oa2 = oa2list;
-	      if(y->flow == NULL)
+	      if(oa2 && y->flow == NULL)
 		y->flow = cpystr(oa2->server_mthd[0].name ? "Authorize"
                       : (oa2->server_mthd[1].name ? "Device" : "Unknown"));
-	      write_xoauth_conf_entry(y, &xoauth_default[i], &ctmpa, &ctmpb, &first_line, &varlist, &p, ln, k);
+	      if(oa2 && !oa2->hide)
+		write_xoauth_conf_entry(y, &xoauth_default[i], &ctmpa, &ctmpb, &first_line, &varlist, &p, ln, k);
 	      free_xoauth2_info(&y);
 	   }
 	}
