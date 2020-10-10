@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 509 2020-10-04 10:30:23
+Alpine Commit 510 2020-10-10 00:21:51
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -183,12 +183,10 @@ it for you. Please take some time to read it and understand it.
 Since the Privacy Policy could be ammended to take into consideration
 new additions to Alpine, please check it periodically.
 
-<P>
-This is a development version of Alpine. These enhancements are
-released after the release of version 2.23. Please report any
-problems you find with this release.
+<P> Version 2.24 adds new features and addresses bugs found in previous
+releases.
 
-<P> Additions include:
+<P> New features include:
 
 <UL>
 <LI> Implementation of XOAUTH2 for Yahoo! Mail. <A href="h_yahoo_configuration">Learn More</A>
@@ -199,7 +197,7 @@ problems you find with this release.
 <LI> XOAUTH2: automatic renew of access token and connection to a server
      within 60 seconds of expiration of the access token.
 
-<LI> If a user has more than one client-id for a service, Alpine tries to
+<LI> If a user has more than one client-id for a service, Alpine
      asks the user which client-id to use and associates that client-id to
      the credentials in the XOAUTH2 configuration screen.
      <A HREF="h_xoauth2_config_screen">Learn more</A>.
@@ -259,7 +257,7 @@ problems you find with this release.
     internally. Alpine will attempt to get a new one when it  reopens the
     folder after it cancels it.
 
-<LI> Set up the IMAP ID at the moment of loging in to the server, rather than
+<LI> Set up the IMAP ID at the moment of logging in to the server, rather than
      as a one time option, in case we need to use a special IMAP ID.
 </UL>
 
@@ -1844,7 +1842,7 @@ Alpine will use later to read and send email.
 
 The XOAUTH2 authenticator method is a way in which you can sign in to your
 account to read and send email. This method is different from the traditional
-username/password that users are accostumed to, and it needs to be set up
+username/password that users are accustomed to, and it needs to be set up
 by the user. This text will help you understand this authentication method.
 
 <P> A quick list of services supported by Alpine are (follow each link for
