@@ -1,6 +1,6 @@
 Summary: Alpine mail user agent
 Name: alpine
-Version: 2.23.2
+Version: 2.24
 Release: 1
 License: Apache License
 Group: Applications/Mail

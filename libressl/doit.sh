@@ -19,4 +19,3 @@ while read LINE ; do
   cp $CERTDIR/$LINE $HERE/certs ; chmod 600 $HERE/certs/$LINE
 done < $LOF
 rm -f $LOF
-
