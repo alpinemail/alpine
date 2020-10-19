@@ -334,7 +334,7 @@ sgetline(char **ibuf, int *nchars, char *obuf, int blen)
 	retval = FIOEOF;
     }
     else{
-	len = obuf + blen;
+	len = obuf + blen - 1;
 	while (*cbuf != CR && *cbuf != LF && *cbuf != '\0'){
 	    if(bufp < len){
 		*bufp++ = *cbuf++;

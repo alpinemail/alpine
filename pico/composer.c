@@ -3665,7 +3665,7 @@ call_builder(struct headerentry *entry, int *mangled, char **err)
 	sbuflen += (6*term.t_ncol);
         line = line->next;
     }
-    
+    sbuflen++;
     if((sbuf=(char *)malloc(sbuflen * sizeof(*sbuf))) == NULL){
 	emlwrite("Can't malloc space to expand address", NULL);
 	return(-1);
