@@ -134,9 +134,9 @@ long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder, cha
 
     /* empty challenge or user requested abort or client does not have info */
     if(tryanother || !oauth2.access_token) {
-       if (!base) (*responder) (stream,base,NIL,0);
+      if (!base) (*responder) (stream,base,NIL,0);
       *trial = 0;		/* cancel subsequent attempts */
-      ret = LONGT;		/* will get a BAD response back */
+      ret = base ? NIL : LONGT;		/* will get a BAD response back */
     }
     else {
       unsigned long rlen = strlen(OAUTH2_USER) + strlen(user)
@@ -164,12 +164,12 @@ long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder, cha
 	}
       }
       fs_give ((void **) &response);
+      if (!ret)
+	*trial = 65535; 	/* don't retry if bad protocol */
     }
   }
   if(oauth2.param[OA2_Id].value) fs_give((void **) &oauth2.param[OA2_Id].value);
   if(oauth2.param[OA2_Secret].value) fs_give((void **) &oauth2.param[OA2_Secret].value);
   if(oauth2.param[OA2_Tenant].value) fs_give((void **) &oauth2.param[OA2_Tenant].value);
-  if (!ret)
-      *trial = 65535; 			/* don't retry if bad protocol */
   return ret;
 }

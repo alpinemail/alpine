@@ -146,8 +146,10 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
    }
 
    if(oauth2->param[OA2_Id].value == NULL
-	|| (oauth2->require_secret && oauth2->param[OA2_Secret].value == NULL))
+	|| (oauth2->require_secret && oauth2->param[OA2_Secret].value == NULL)){
+      *tryanother = 1;
       return;
+   }
 
    /* Do we have a method to execute? */
    if (oauth2->first_time && oauth2->server_mthd[OA2_GetDeviceCode].name){
