@@ -544,6 +544,8 @@ SyncAttach(void)
 
 		    strncpy(tp->filename, file, j);
 		    tp->filename[j] = '\0';
+
+		    if(tp->id) fs_give((void **) &tp->id);
 		}
 		else if(tp->size && strcmp(tp->size, size)){
 		    rv = 1;

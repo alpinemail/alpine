@@ -1,4 +1,106 @@
 
+                             Alpine Technical Notes
+
+   Version 2.24, October 2020
+
+Table of Contents
+
+  Introduction
+
+     * Design Goals
+     * Alpine Components
+
+  Background Details
+
+     * Domain Names
+     * RFC 2822 Compliance
+     * SMTP and Sendmail
+     * Internet Message Access Protocol (IMAP)
+     * Multipurpose Internet Mail Extensions (MIME)
+     * Folder Collections
+
+  Building and Installation
+
+     * Compile-time Options
+     * Including LDAP Functionality
+     * Including Kerberos 5 Functionality
+     * Other Alpine Compile-time Options
+     * IMAPd Compile-time Options
+     * Building the Alpine Programs
+     * Installing Alpine and Pico on UNIX Platforms
+     * Installing PC-Alpine
+     * Installing IMAPd
+     * Support Files and Environment Variables: UNIX Alpine
+     * Support Files, Environment Variables, and Registry Values:
+       PC-Alpine
+
+  Command Line Arguments
+
+     * Alpine
+     * Pico
+     * Pilot
+
+  Configuration and Preferences
+
+     * Alpine Configuration
+     * General Configuration Variables
+     * Configuration Features
+     * Hidden Config Variables and Features
+     * Retired Variables
+     * Tokens for Index and Replying
+     * Conditional Inclusion of Text for Reply-Leadin, Signatures, and
+       Templates
+     * Per Server Directory Configuration
+     * Color Configuration
+     * Index Line Color Configuration
+     * Role Configuration
+     * Filtering Configuration
+     * Scoring Configuration
+     * Other Rules Configuration
+     * Search Rules Configuration
+     * Patterns
+     * Configuring News
+       Configuration Notes
+          + Alpine in Function Key Mode
+          + Domain Settings
+          + Syntax for Collections
+          + Syntax for Folder Names
+          + Server Name Syntax
+          + Folder Namespaces
+          + What is a Mail Drop?
+          + Sorting a Folder
+          + Alternate Editor
+          + Signatures and Signature Placement
+          + Feature List Variable
+          + Configuration Inheritance
+          + Using Environment Variables
+          + SMTP Servers
+          + MIME.Types file
+          + Color Details
+          + S/MIME Overview
+          + Additional Notes on PC-Alpine
+
+  Behind the Scenes
+
+     * Address Books
+     * Remote Configuration
+     * Checkpointing
+     * Debug Files
+     * INBOX and Special Folders
+     * Internal Help Files
+     * International Character Sets
+     * Interrupted and Postponed Messages
+     * Message Status
+     * MIME: Reading a Message
+     * MIME: Sending a Message
+     * New Mail Notification
+     * NFS
+     * Printers and Printing
+     * Save and Export
+     * Sent Mail
+     * Spell Checker
+     * Terminal Emulation and Key Mapping
+
                                   Introduction
 
 Design Goals

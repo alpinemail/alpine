@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 512 2020-10-18 17:44:58
+Alpine Commit 513 2020-11-01 01:40:24
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -182,6 +182,16 @@ will connect to an external server, and will download it and display
 it for you. Please take some time to read it and understand it.
 Since the Privacy Policy could be ammended to take into consideration
 new additions to Alpine, please check it periodically.
+
+<P> These changes were made after the release of version 2.24.
+
+<P>
+Bugs addressed:
+
+<UL>
+<LI> When forwarding a message, replacing an attachment might make Alpine
+     re-attach the original attachment. Reported by Michael Traxler.
+</UL>
 
 <P> Version 2.24 adds new features and addresses bugs found in previous
 releases.
