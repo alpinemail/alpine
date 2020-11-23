@@ -101,6 +101,7 @@ void rfc822_encode_body_8bit (ENVELOPE *env,BODY *body);
 long rfc822_output_text (RFC822BUFFER *buf,BODY *body);
 void *rfc822_base64 (unsigned char *src,unsigned long srcl,unsigned long *len);
 unsigned char *rfc822_binary (void *src,unsigned long srcl,unsigned long *len);
+unsigned char *rfc822_urlbinary (void *src,unsigned long srcl,unsigned long *len);
 unsigned char *rfc822_qprint (unsigned char *src,unsigned long srcl,
 			      unsigned long *len);
 unsigned char *rfc822_8bit (unsigned char *src,unsigned long srcl,

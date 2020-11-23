@@ -2093,6 +2093,19 @@ unsigned char *rfc822_binary (void *src,unsigned long srcl,unsigned long *len)
   if (((unsigned long) (d - ret)) != *len) fatal ("rfc822_binary logic flaw");
   return ret;			/* return the resulting string */
 }
+unsigned char *rfc822_urlbinary (void *src,unsigned long srcl,unsigned long *len)
+{
+  unsigned char *s, *ret = rfc822_binary (src, srcl, len);
+
+  for(s = ret; s && *s; s++)
+     switch(*s){
+	    case '+': *s = '-'; break;
+	    case '/': *s = '_'; break;
+	    case '=': *s = '\0'; *len = s - ret; *++s = '\0'; break;
+	    default : break;
+     }
+  return ret;
+}
 
 /* Convert QUOTED-PRINTABLE contents to 8BIT
  * Accepts: source
