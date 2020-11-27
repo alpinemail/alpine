@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 516 2020-11-23 02:05:20
+Alpine Commit 517 2020-11-27 10:32:54
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -29983,20 +29983,11 @@ This feature is set by default.
 <BODY>
 <H1>FEATURE: <!--#echo var="FEAT_scramble-message-id"--></H1>
 
-Normally the Message-ID header that Alpine generates when sending a message
-contains the name of the computer from which the message is being sent.
-Some believe that this hostname could be used by spammers or could
-be used by others for nefarious purposes.
-If this feature is set, that name will be transformed with a simple
-Rot13 transformation.
+If this feature is set, the message-id header value
+will be transformed with a simple Rot13 transformation.
 The result will still have the correct syntax for a Message-ID but the
 part of the MessageID that is often a domain name will not be an actual
 domain name because the letters will be scrambled.
-<P>
-In addition, other information such as the name program, version, and
-a code for operating system used to build Alpine, will be encoded using
-the Rot13 transformation, except for the version number which will be
-encoded using a Rot5 transformation.
 <P>
 It is possible (but unlikely?) that some spam detection
 software will use that as a reason to reject the mail as spam.
@@ -30130,8 +30121,8 @@ breaks because the terminal reset resets the color state of the terminal.
 This feature affects Alpine's generation of the &quot;Sender:&quot; or
 <A HREF="h_config_use_sender_not_x">&quot;X-X-Sender&quot;</A>
 header fields.
-By default, Alpine will generate such a header in situations where the
-username or domain are not the same as
+Prior to version 2.24, Alpine generated such a header in situations where the
+username or domain were not the same as
 the &quot;From:&quot; header on the message.
 With this feature set,
 no &quot;Sender:&quot; or &quot;X-X-Sender&quot; header will be generated.
