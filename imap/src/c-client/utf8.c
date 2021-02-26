@@ -325,6 +325,8 @@ static const CHARSET utf8_csvalid[] = {
      (void *) ibm_869tab,SC_GREEK,"ISO-8859-7"},
   {"IBM874",CT_1BYTE,CF_PRIMARY | CF_DISPLAY,
      (void *) ibm_874tab,SC_THAI,"ISO-8859-11"},
+  {"ROMAN8",CT_1BYTE,CF_PRIMARY | CF_DISPLAY,
+     (void *) ibm_1051tab,SC_LATIN_1,"ISO-8859-1"},
 				/* deepest sigh */
   {"ANSI_X3.4-1968",CT_ASCII,CF_DISPLAY,
      NIL,NIL,"US-ASCII"},

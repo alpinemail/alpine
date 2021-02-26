@@ -929,6 +929,7 @@ with_system_mail_directory
 with_c_client_target
 with_bundled_tools
 with_ipv6
+with_dlopen
 with_ntlm
 '
       ac_precious_vars='build_alias
@@ -1785,6 +1786,8 @@ Optional Packages:
                           --with-bundled-tools=no
   --without-ipv6          Disable IPv6, primarily to work around resolver
                           problems
+  --without-dlopen        Do not test for dlopen because this system does not
+                          need it
   --without-ntlm          Disable NTLM client support
 
 Some influential environment variables:
@@ -17115,6 +17118,8 @@ elif test -d /usr/local/ssl ; then
   alpine_SSLDIR="/usr/local/ssl"
   alpine_SSLINCLUDE="$alpine_SSLDIR/include"
   alpine_SSLLIB="$alpine_SSLDIR/lib"
+  alpine_SSLCERTS="$alpine_SSLDIR/certs"
+  alpine_SSLTYPE="nopwd"
 else
     case $host in
     *-linux*|*-k*bsd*-gnu*|*-gnu*)
@@ -17876,6 +17881,12 @@ $as_echo "#define __EXTENSIONS__ 1" >>confdefs.h
     alpine_mode_readonly="(0600)"
     alpine_c_client_target="neb"
     ;;
+  *-*-hpux9*)
+    systype="HPP"
+    alpine_path_delim="/"
+    alpine_mode_readonly="(0600)"
+    alpine_c_client_target="gh9"
+    ;;
   *-*-dragonfly*)
     systype="DFB"
     alpine_path_delim="/"
@@ -18275,7 +18286,18 @@ $as_echo "#define HAS_TERMCAP 1" >>confdefs.h
     ;;
 esac
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing dlopen" >&5
+alpine_dlopen="yes"
+
+# Check whether --with-dlopen was given.
+if test "${with_dlopen+set}" = set; then :
+  withval=$with_dlopen;
+     alpine_dlopen=$withval
+
+fi
+
+
+if test "x$alpine_dlopen" != "xno" ; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing dlopen" >&5
 $as_echo_n "checking for library containing dlopen... " >&6; }
 if ${ac_cv_search_dlopen+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -18333,11 +18355,11 @@ else
    alpine_DL="none"
 fi
 
-if test "x$alpine_DL" = "xnone" ; then
+  if test "x$alpine_DL" = "xnone" ; then
     as_fn_error $? "No library containing dlopen found" "$LINENO" 5
     exit 1
+  fi
 fi
-
 if test "x$alpine_SSLTYPE" != "xnone" ; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking if OpenSSL is LibreSSL" >&5
 $as_echo_n "checking if OpenSSL is LibreSSL... " >&6; }

@@ -716,6 +716,8 @@ dnl is the one intended to be used.
   alpine_SSLDIR="/usr/local/ssl"
   alpine_SSLINCLUDE="$alpine_SSLDIR/include" 
   alpine_SSLLIB="$alpine_SSLDIR/lib"
+  alpine_SSLCERTS="$alpine_SSLDIR/certs"
+  alpine_SSLTYPE="nopwd"
 else
   dnl preload c-client default locations/options
   case $host in
@@ -1311,6 +1313,12 @@ case "$host" in
     alpine_mode_readonly="(0600)"
     alpine_c_client_target="neb"
     ;;
+  *-*-hpux9*)
+    systype="HPP"
+    alpine_path_delim="/"
+    alpine_mode_readonly="(0600)"
+    alpine_c_client_target="gh9"
+    ;;
   *-*-dragonfly*)
     systype="DFB"
     alpine_path_delim="/"
@@ -1461,13 +1469,22 @@ case $alpine_termdata in
     ;;
 esac
 
+dnl check if user want us to add dl or ldl before we actually test for it
+alpine_dlopen="yes"
+AC_ARG_WITH(dlopen,
+ AS_HELP_STRING([--without-dlopen],[Do not test for dlopen because this system does not need it]),
+   [
+     alpine_dlopen=$withval
+   ])
+
 dnl is -ldl present? if so, add it
-AC_SEARCH_LIBS([dlopen], [dl dld],, [ alpine_DL="none" ])
-if test "x$alpine_DL" = "xnone" ; then
+if test "x$alpine_dlopen" != "xno" ; then
+  AC_SEARCH_LIBS([dlopen], [dl dld],, [ alpine_DL="none" ])
+  if test "x$alpine_DL" = "xnone" ; then
     AC_MSG_ERROR([No library containing dlopen found])
     exit 1	
+  fi
 fi
-
 dnl Check if openssl = LibreSSL
 if test "x$alpine_SSLTYPE" != "xnone" ; then
   AC_MSG_CHECKING([if OpenSSL is LibreSSL])
