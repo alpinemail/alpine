@@ -191,6 +191,10 @@ Bugs addressed:
 <UL>
 <LI> When forwarding a message, replacing an attachment might make Alpine
      re-attach the original attachment. Reported by Michael Traxler.
+
+<LI> When an attachment is deleted, the saved message with the deleted 
+attachment contains extra null characters after the end of the 
+attachment boundary. 
 </UL>
 
 <P> Version 2.24 adds new features and addresses bugs found in previous

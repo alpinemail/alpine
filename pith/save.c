@@ -1602,6 +1602,7 @@ save_ex_explain_body(struct mail_bodystruct *body, long unsigned int *len, gf_io
       else
 	return(0);
 
+    ilen = 0;	/* maybe save_ex_explain_parts should set this to zero instead */
     if(!save_ex_explain_parts(body, 0, &ilen, pc))
       return(0);
 
