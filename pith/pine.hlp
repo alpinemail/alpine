@@ -185,6 +185,17 @@ new additions to Alpine, please check it periodically.
 
 <P> These changes were made after the release of version 2.24.
 
+<P> 
+New features include:
+
+<UL>
+<LI> Experimental: The instruction to remove the double quotes from the processing of
+     customized headers existed in pine, but it was removed in alpine. Restoring
+     old Alpine behavior. See 
+     <A href="https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=981781">this</A>
+     report for more background information.
+</UL>
+
 <P>
 Bugs addressed:
 

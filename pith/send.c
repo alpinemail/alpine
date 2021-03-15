@@ -5070,8 +5070,16 @@ customized_hdr_setup(PINEFIELD *head, char **list, CustomType cstmtype)
 		    /* give them an alloc'd default, even if empty */
 		    pf->textbuf = cpystr((*value == ':')
 					   ? skip_white_space(++value) : "");
-		    if(pf->textbuf && pf->textbuf[0])
+		    /* The instruction to remove the double quotes existed in
+		     * pine, but it was removed in alpine, but I do not know
+		     * why, so we will restore it until we understand why it
+		     * was removed. Also see:
+		     * https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=981781
+		     */
+		    if(pf->textbuf && pf->textbuf[0]){
+		      removing_double_quotes(pf->textbuf);
 		      pf->val = cpystr(pf->textbuf);
+		    }
 
 		    pf++;
 		}
