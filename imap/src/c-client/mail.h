@@ -160,6 +160,8 @@
 #define SET_OA2CLIENTINFO (long) 172
 #define GET_OA2DEVICEINFO (long) 173
 #define SET_OA2DEVICEINFO (long) 174
+#define GET_HTTPDEBUG	  (long) 175
+#define SET_HTTPDEBUG	  (long) 176
 
 	/* 2xx: environment */
 #define GET_USERNAME (long) 201
@@ -573,6 +575,7 @@
 #define PARSE (long) 3		/* mm_log parse error type */
 #define BYE (long) 4		/* mm_notify stream dying */
 #define TCPDEBUG (long) 5	/* mm_log TCP debug babble */
+#define HTTPDEBUG (long) 6	/* mm_log HTTP debug babble */
 
 
 /* Bits from mail_parse_flags().  Don't change these, since the header format

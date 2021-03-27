@@ -107,7 +107,7 @@ N_("\t\toption on the command line"),
 N_(" -bail\t\tExit if pinerc file doesn't already exist"),
 #ifdef	DEBUG
 N_(" -d n\t\tDebug - set debug level to 'n', or use the following:"),
-N_(" -d keywords...\tflush,timestamp,imap=0..4,tcp,numfiles=0..31,verbose=0..9"),
+N_(" -d keywords...\tflush,timestamp,imap=0..4,tcp,http,numfiles=0..31,verbose=0..9"),
 #endif
 N_(" -f <folder>\tFolder - give folder name to open"),
 N_(" -c <number>\tContext - which context to apply to -f arg"),
@@ -1144,6 +1144,10 @@ process_debug_str(char *debug_str)
 			|| struncmp(*p, "tcpdebug", 8) == 0){
 		    ps_global->debug_tcp = 1;
 		}
+		else if(struncmp(*p, "http", 4) == 0 
+			|| struncmp(*p, "httpdebug", 9) == 0){
+		    ps_global->debug_http = 1;
+		}
 		else if(struncmp(*p, "verbose", 7) == 0){
 		    q = *p + 7;
 		    if(!*q || !*(q+1) || *q != '=' ||
@@ -1213,8 +1217,10 @@ process_debug_str(char *debug_str)
 	}
 	else{
 	    debug = atoi(debug_str);
-	    if(debug > 9)
+	    if(debug > 9){
 	      ps_global->debug_imap = 5;
+	      ps_global->debug_http = 1;
+	    }
 	    else if(debug > 7)
 	      ps_global->debug_imap = 4;
 	    else if(debug > 6)

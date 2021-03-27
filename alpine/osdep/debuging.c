@@ -74,7 +74,7 @@ init_debug(void)
     char newfname[MAXPATH+1], filename[MAXPATH+1], *dfile = NULL;
     int i, fd;
 
-    if(!((debug || ps_global->debug_imap || ps_global->debug_tcp) &&  ps_global->write_debug_file))
+    if(!((debug || ps_global->debug_imap || ps_global->debug_tcp || ps_global->debug_http) &&  ps_global->write_debug_file))
       return;
 
     for(i = ps_global->debug_nfiles - 1; i > 0; i--){
@@ -130,7 +130,8 @@ init_debug(void)
 	dprint((0, "Starting after the reading_pinerc calls, the data in this file should\nbe encoded as UTF-8. Before that it will be in the user's native charset.\n"));
 	if(dfile && (debug > DEFAULT_DEBUG ||
 		     ps_global->debug_imap > 0 ||
-		     ps_global->debug_tcp > 0)){
+		     ps_global->debug_tcp > 0 ||
+		     ps_global->debug_http > 0)){
 	    snprintf(newfname, sizeof(newfname), "Debug file: %s (level=%d imap=%d)", dfile,
 		     debug, ps_global->debug_imap);
 	    init_error(ps_global, SM_ORDER, 3, 5, newfname);
@@ -258,6 +259,7 @@ do_debug(FILE *debug_fp)
     if(debug <= DEFAULT_DEBUG
        && !ps_global->debug_flush
        && !ps_global->debug_tcp
+       && !ps_global->debug_http
        && !ps_global->debug_timestamp
        && !ps_global->debug_imap
        && ok

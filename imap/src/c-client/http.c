@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 Eduardo Chappa
+ * Copyright 2018-2021 Eduardo Chappa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -11,10 +11,11 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <time.h>
-#include "c-client.h"
+#include "c-client.h"	/* this includes http.h */
 #include "flstring.h"
 #include "netmsg.h"
-#include "http.h"
+
+unsigned long http_debug;
 
 //char t[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$%&'*+-.^_`|~";
 static char http_notok[] = "\1\2\3\4\5\6\7\10\11\12\13\14\15\16\17\20\21\22\23\24\25\26\27\30\31\32\33\34\35\36\37\40\42\50\51\54\57\72\73\74\75\76\77\100\133\134\135\173\175\177\200\201\202\203\204\205\206\207\210\211\212\213\214\215\216\217\220\221\222\223\224\225\226\227\230\231\232\233\234\235\236\237\240\241\242\243\244\245\246\247\250\251\252\253\254\255\256\257\260\261\262\263\264\265\266\267\270\271\272\273\274\275\276\277\300\301\302\303\304\305\306\307\310\311\312\313\314\315\316\317\320\321\322\323\324\325\326\327\330\331\332\333\334\335\336\337\340\341\342\343\344\345\346\347\350\351\352\353\354\355\356\357\360\361\362\363\364\365\366\367\370\371\372\373\374\375\376\377";
@@ -107,7 +108,6 @@ unsigned char *http_response_from_reply(HTTPSTREAM *);
 
 /* HTTP function prototypes */
 int http_valid_net_parse (unsigned char *, NETMBX *);
-void *http_parameters (long function,void *value);
 
 long http_send (HTTPSTREAM *, HTTP_REQUEST_S *);
 long http_reply (HTTPSTREAM *);
@@ -130,6 +130,19 @@ HTTP_PARAM_LIST_S *http_parse_token_list(unsigned char *, int);
 PARAMETER *http_parse_parameter(unsigned char *, int);
 
 void http_parse_headers(HTTPSTREAM *);
+
+void *
+http_parameters (long function,void *value)
+{
+   void *ret = NIL;
+   switch((int) function){
+	case SET_HTTPDEBUG: http_debug = (long) value;
+	case GET_HTTPDEBUG: ret = (void *) http_debug;
+			    break;
+   }
+   return ret;
+}
+
 
 unsigned char *
 http_response_from_reply(HTTPSTREAM *stream)
@@ -941,6 +954,7 @@ http_open (unsigned char *url)
       http_close(stream);
       stream = NIL;
   }
+  stream->debug = http_debug;
   return stream;
 }
 
@@ -1104,7 +1118,9 @@ http_send (HTTPSTREAM *stream, HTTP_REQUEST_S *req)
     buffer_add(&s, req->request); buffer_add(&s, "\015\012");
     buffer_add(&s, req->header); buffer_add(&s, "\015\012");
     buffer_add(&s, req->body); buffer_add(&s, "\015\012");
-    mm_log(s, TCPDEBUG);
+
+    if(stream->debug) mm_log(s, HTTPDEBUG);
+
     ret = net_soutr (stream->netstream,s)
 	  ? http_reply (stream)
 	  : http_fake (stream,"http connection broken in command");
@@ -1159,6 +1175,8 @@ http_reply (HTTPSTREAM *stream)
   if (stream->response) fs_give ((void **) &stream->response);
   stream->response = (unsigned char *) net_getline(stream->netstream);
 
+  if(stream->debug) mm_log(stream->response, HTTPDEBUG);
+
   if(stream->response){
      buffer_add(&stream->reply, stream->response);
      buffer_add(&stream->reply, "\015\012");
@@ -1178,6 +1196,7 @@ http_reply (HTTPSTREAM *stream)
     if(stream->response){
        buffer_add(&stream->reply, stream->response);
        http_add_header_data(stream, stream->response);
+       if(stream->debug) mm_log(stream->response, HTTPDEBUG);
     }
      buffer_add(&stream->reply, "\015\012");
 //    save_header(stream->headers, stream->response);
@@ -1190,7 +1209,10 @@ http_reply (HTTPSTREAM *stream)
      size = atol(stream->header->content_length->p->vp->value);
      if (stream->response) fs_give ((void **) &stream->response);
      stream->response = (unsigned char *) net_getsize (stream->netstream, size);
-     if(stream->response) buffer_add(&stream->reply, stream->response);
+     if(stream->response){
+	buffer_add(&stream->reply, stream->response);
+	if(stream->debug) mm_log(stream->response, HTTPDEBUG);
+     }
   }
   else if (stream->header->transfer_encoding){
      HTTP_PARAM_LIST_S *p = stream->header->transfer_encoding->p;
@@ -1211,6 +1233,7 @@ http_reply (HTTPSTREAM *stream)
 	     fs_give ((void **) &stream->response);
 	     stream->response = (unsigned char *) net_getsize (stream->netstream, size);
 	     buffer_add(&stream->reply, stream->response);
+	     if(stream->debug) mm_log(stream->response, HTTPDEBUG);
 	  }
 	  if(size == 0L) done++;
 	}

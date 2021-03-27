@@ -90,6 +90,7 @@ typedef struct http_status_s {
 typedef struct http_stream {
   NETSTREAM *netstream;
   HTTP_HEADER_DATA_S *header;	/* headers sent by the server */
+  unsigned int debug : 1;	/* send debug information */
   char *url;		/* original url */
   char *urlhost;	/* get original host */
   char *urltail;	/* the part of the URL after the original host */
@@ -114,6 +115,8 @@ void http_close (HTTPSTREAM *stream);
 
 HTTP_PARAM_S *http_param_get(int);
 void http_param_free(HTTP_PARAM_S **);
+
+void *http_parameters (long,void *);
 
 /* Ugghh.... just construct the URL for a get request */
 unsigned char *http_get_param_url(unsigned char *, HTTP_PARAM_S *);

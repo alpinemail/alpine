@@ -701,6 +701,7 @@ void *mail_parameters (MAILSTREAM *stream,long function,void *value)
     if ((r = smtp_parameters (function,value)) != NULL) ret = r;
     if ((r = env_parameters (function,value)) != NULL) ret = r;
     if ((r = tcp_parameters (function,value)) != NULL) ret = r;
+    if ((r = http_parameters (function,value)) != NULL) ret = r;
     if ((r = utf8_parameters (function,value)) != NULL) ret = r;
     if (stream && stream->dtb) {/* if have stream, do for its driver only */
       if ((r = (*stream->dtb->parameters) (function,value)) != NULL) ret = r;

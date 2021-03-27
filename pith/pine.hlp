@@ -194,6 +194,9 @@ New features include:
      old Alpine behavior. See 
      <A href="https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=981781">this</A>
      report for more background information.
+<LI> Add the capability to record http debug. This is necessary to debug XOAUTH2
+     authemtication, and records sensitive login information. Do not share your
+     debug file if you use this form of debug.
 </UL>
 
 <P>

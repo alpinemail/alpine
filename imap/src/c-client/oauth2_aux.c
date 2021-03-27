@@ -20,7 +20,7 @@
  *    the deviceinfo method.
  */
 
-#include "http.h"
+/* http.h is supposed to be included, typically by including c-client.h */
 #include "json.h"
 #include "oauth2_aux.h"
 

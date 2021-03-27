@@ -1265,7 +1265,7 @@ mm_notify(MAILSTREAM *stream, char *string, long int errflg)
     /* be sure to log the message... */
 #ifdef DEBUG
     if(ps_global->debug_imap || ps_global->debugmem)
-      dprint((errflg == TCPDEBUG ? 7 : 2,
+      dprint((errflg == TCPDEBUG || errflg == HTTPDEBUG ? 7 : 2,
 	      "IMAP %2.2d:%2.2d:%2.2d %d/%d mm_notify %s: %s: %s\n",
 	      tm_now->tm_hour, tm_now->tm_min, tm_now->tm_sec,
 	      tm_now->tm_mon+1, tm_now->tm_mday,
@@ -1274,7 +1274,8 @@ mm_notify(MAILSTREAM *stream, char *string, long int errflg)
 	        (errflg == WARN)     ? "warning" :
 	         (errflg == PARSE)    ? "parse"   :
 		  (errflg == TCPDEBUG) ? "tcp"     :
-		   (errflg == BYE)      ? "bye"     : "unknown",
+		   (errflg == HTTPDEBUG) ? "http"   :
+		    (errflg == BYE)      ? "bye"     : "unknown",
 	      (stream && stream->mailbox) ? stream->mailbox : "-no folder-",
 	      string ? string : "?"));
 #endif
@@ -1357,7 +1358,9 @@ mm_log(char *string, long int errflg)
     tm_now = localtime(&now);
 
     dprint((((errflg == TCPDEBUG) && ps_global->debug_tcp) ? 1 :
-           (errflg == TCPDEBUG) ? 10 : 2,
+           (errflg == TCPDEBUG) ? 10 : 
+	   ((errflg == HTTPDEBUG) && ps_global->debug_http) ? 1 :
+	   (errflg == HTTPDEBUG) ? 10 :  2,
 	    "IMAP %2.2d:%2.2d:%2.2d %d/%d mm_log %s: %s\n",
 	    tm_now->tm_hour, tm_now->tm_min, tm_now->tm_sec,
 	    tm_now->tm_mon+1, tm_now->tm_mday,
@@ -1366,7 +1369,8 @@ mm_log(char *string, long int errflg)
 	      (errflg == WARN)     ? "warning" :
 	       (errflg == PARSE)    ? "parse"   :
 		(errflg == TCPDEBUG) ? "tcp"     :
-		 (errflg == BYE)      ? "bye"     : "unknown",
+		 (errflg == HTTPDEBUG) ? "http"   :
+		  (errflg == BYE)       ? "bye"    : "unknown",
 	    string ? string : "?"));
 
     if(errflg == ERROR && !strncmp(string, "[TRYCREATE]", 11)){

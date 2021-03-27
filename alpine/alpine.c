@@ -388,6 +388,11 @@ main(int argc, char **argv)
 #endif
       mail_parameters(NULL, SET_TCPDEBUG, (void *) TRUE);
 
+#ifndef DEBUGJOURNAL
+    if(ps_global->debug_http)
+#endif
+      mail_parameters(NULL, SET_HTTPDEBUG, (void *) TRUE);
+
 #ifdef	_WINDOWS
     mswin_setdebug(debug, debugfile);
     mswin_setdebugoncallback (imap_telemetry_on);
@@ -821,7 +826,7 @@ main(int argc, char **argv)
 				pine_pico_puts, pine_pico_seek, NULL, NULL);
 
 #ifdef	DEBUG
-    if(ps_global->debug_imap > 4 || debug > 9){
+    if(ps_global->debug_imap > 4 || debug > 9 || ps_global->debug_http > 0){
 	q_status_message(SM_ORDER | SM_DING, 5, 9,
 	      _("Warning: sensitive authentication data included in debug file"));
 	flush_status_messages(0);
@@ -1807,6 +1812,11 @@ main_menu_screen(struct pine *pine_state)
 	      mail_parameters(NULL, SET_TCPDEBUG, (void *) TRUE);
 	    else if(debug <= 7 && olddebug > 7 && !ps_global->debugmem)
 	      mail_parameters(NULL, SET_TCPDEBUG, (void *) FALSE);
+
+	    if(debug > 7 && olddebug <= 7)
+	      mail_parameters(NULL, SET_HTTPDEBUG, (void *) TRUE);
+	    else if(debug <= 7 && olddebug > 7 && !ps_global->debugmem)
+	      mail_parameters(NULL, SET_HTTPDEBUG, (void *) FALSE);
 
 	    dprint((1, "*** Debug level set to %d ***\n", debug));
 	    if(debugfile)

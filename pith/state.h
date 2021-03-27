@@ -237,6 +237,7 @@ struct pine {
     unsigned 	 debug_timestamp:1;
     unsigned 	 debug_flush:1;
     unsigned 	 debug_tcp:1;
+    unsigned 	 debug_http:1;
     unsigned 	 debug_imap:3;
     unsigned 	 debug_nfiles:5;
     unsigned     debugmem:1;
