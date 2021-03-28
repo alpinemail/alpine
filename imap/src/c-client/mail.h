@@ -1941,6 +1941,10 @@ int PFLUSH (void);
 #define OAUTH2_TOT_EQUIV        (OAUTH2_MAX_EQUIV + 2)
 #define OAUTH2_PARAM_NUMBER	(7)
 
+#define OA2_UNKNOWN	0x00	/* We do not know what method this client-id uses */
+#define OA2_DEVICE	0x01	/* Client ID obtained by client uses Device Method */
+#define OA2_AUTHORIZE	0x10	/* Client ID obtained by client uses Authorize Method */
+
 typedef enum {OA2_Id = 0,
 	      OA2_Secret,
 	      OA2_Tenant,
@@ -1995,6 +1999,7 @@ typedef struct oauth2_s {
    unsigned int first_time:1;	/* this is the first time we get credentials for this account */
    unsigned int require_secret:1;	/* this server requires a client-secret */
    int cancel_refresh_token;	/* ask client to cancel refresh token */
+   int flags;			/* options to register for this method */
 } OAUTH2_S;
 
 typedef struct deviceproc_s {

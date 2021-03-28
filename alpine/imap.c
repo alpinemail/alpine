@@ -175,7 +175,8 @@ OAUTH2_S alpine_oauth2_list[] =
     0, 		/* expiration time */
     0, 		/* first time indicator */
     1,		/* client secret required */
-    0		/* Cancel refresh token */
+    0,		/* Cancel refresh token */
+    GMAIL_FLAGS	/* default flags. For Gmail this should be set to OA2_AUTHORIZE */
   },
   {OUTLOOK_NAME,
    {"outlook.office365.com", "smtp.office365.com", NULL, NULL},
@@ -207,7 +208,8 @@ OAUTH2_S alpine_oauth2_list[] =
     0, 		/* expiration time */
     0, 		/* first time indicator */
     0,		/* client secret required */
-    0		/* Cancel refresh token */
+    0,		/* Cancel refresh token */
+    OUTLOOK_FLAGS /* default flags. For OUTLOOK this should be set to OA2_DEVICE */
   },
   {OUTLOOK_NAME,
    {"outlook.office365.com", "smtp.office365.com", NULL, NULL},
@@ -239,7 +241,8 @@ OAUTH2_S alpine_oauth2_list[] =
     0, 		/* expiration time */
     0, 		/* first time indicator */
     1,		/* client secret required */
-    0		/* Cancel refresh token */
+    0,		/* Cancel refresh token */
+    OUTLOOK_FLAGS /* default flags. For OUTLOOK this should be set to OA2_DEVICE */
   },
   {YAHOO_NAME,
    {"imap.mail.yahoo.com", "smtp.mail.yahoo.com", NULL, NULL},
@@ -271,7 +274,8 @@ OAUTH2_S alpine_oauth2_list[] =
     0, 		/* expiration time */
     0, 		/* first time indicator */
     1,		/* client secret required */
-    0		/* Cancel refresh token */
+    0,		/* Cancel refresh token */
+    YAHOO_FLAGS	/* default flags. For YAHOO this should be set to OA2_AUTHORIZE */
   },
   {YANDEX_NAME,
    {"imap.yandex.com", "smtp.yandex.com", NULL, NULL},
@@ -303,9 +307,10 @@ OAUTH2_S alpine_oauth2_list[] =
     0, 		/* expiration time */
     0, 		/* first time indicator */
     1,		/* client secret required */
-    0		/* Cancel refresh token */
+    0,		/* Cancel refresh token */
+    YANDEX_FLAGS /* defaul flags. For YANDEX this should be set to OA2_AUTHORIZE */
   },
-  { NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0},
+  { NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0},
 };
 
 int
@@ -1111,7 +1116,9 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
 			&& oa2
 			&& oa2->host[j] != NULL
 			&& strucmp(oa2->host[j], mb->orighost) != 0; j++);
-	    if(oa2 && oa2->host && j < OAUTH2_TOT_EQUIV && oa2->host[j])
+	    if(oa2 && oa2->host && j < OAUTH2_TOT_EQUIV && oa2->host[j]
+		&& ((oa2->server_mthd[0].name && (oa2->flags & OA2_AUTHORIZE))
+			    || (oa2->server_mthd[1].name && (oa2->flags & OA2_DEVICE))))
 		nmethods++;
 	}
 
