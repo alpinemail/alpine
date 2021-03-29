@@ -271,7 +271,7 @@ typedef struct adrbk {
  *         Text -- A ptr to text. For example, the ----- lines and
  *		   whitespace lines.
  *    NoAbooks  -- There are no address books at all.
- *   Beginnning -- The (imaginary) elements before the first real element
+ *   Beginning  -- The (imaginary) elements before the first real element
  *          End -- The (imaginary) elements after the last real element
  */
 typedef enum {DlNotSet, Empty, ZoomEmpty, AddFirstPers, AddFirstGlob,

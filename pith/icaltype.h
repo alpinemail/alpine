@@ -1,7 +1,7 @@
 #ifndef ICALTYPE_INCLUDED
 #define ICALTYPE_INCLUDED
 
-/* Due to the line by line processing algorithm, not all informatio
+/* Due to the line by line processing algorithm, not all information
  * is available when process some lines. In particular, when we
  * process anything that has to do with time, we do not know if
  * we are processing a date in daylight savings time or not. We

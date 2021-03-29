@@ -3253,7 +3253,7 @@ quit_screen(struct pine *pine_state)
 
 
 /*----------------------------------------------------------------------
-    The nuts and bolts of actually cleaning up and exitting pine
+    The nuts and bolts of actually cleaning up and exiting pine
 
     Args: ps -- the usual pine structure, 
 	  exit_val -- what to tell our parent

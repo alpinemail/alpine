@@ -2690,7 +2690,7 @@ possibly shown to the user.
 
 	PARSE	An RFC 822 parsing error.  Since bogus headers are
 		all-too-common in the real world, these can often be
-		ignored on the "garbage in, garbage out" princple.
+		ignored on the "garbage in, garbage out" principle.
 		However, since surprising results can be yielded when
 		trying to parse garbage, this message should be logged
 		somewhere so it can be figured out what happened.

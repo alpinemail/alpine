@@ -324,7 +324,7 @@ int             struncmp(char *, char *, int);
 #ifdef	MSC_MALLOC
 /*
  * These definitions will disable the SEGHEAP allocation routines, in
- * favor of the compliler libraries usual allocators.  This is useful
+ * favor of the compiler libraries usual allocators.  This is useful
  * when external debugging tools and the SEGHEAP debugging routines step
  * on each other...
  */

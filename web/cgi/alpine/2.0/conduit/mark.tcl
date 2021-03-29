@@ -69,7 +69,7 @@ WPEval $mark_args {
 	}
       }
     } else {
-      set reult "FAILURE: Unknown mark value: $mark"
+      set result "FAILURE: Unknown mark value: $mark"
     }
 
     cgi_puts $result

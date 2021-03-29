@@ -11,7 +11,7 @@
 
   Last Edited: Aug 31, 1994
 
-The "Carmel" mail format is cutsom mail file format that has messages
+The "Carmel" mail format is custom mail file format that has messages
 saved in individual files and an index file that references them. It
 has also been called the "pod" or "vmail" format. This is probably not
 of interest to anyone away from it's origin, though the Carmel2 format

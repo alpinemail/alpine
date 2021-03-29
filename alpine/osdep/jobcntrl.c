@@ -21,7 +21,7 @@ static char rcsid[] = "$Id: jobcntrl.c 765 2007-10-23 23:51:37Z hubert@u.washing
 
 
 /*----------------------------------------------------------------------
-     This routine returns 1 if job control is available.  Note, thiis
+     This routine returns 1 if job control is available.  Note, this
      could be some type of fake job control.  It doesn't have to be
      real BSD-style job control.
   ----*/

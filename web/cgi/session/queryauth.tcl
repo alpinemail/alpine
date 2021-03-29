@@ -19,7 +19,7 @@
 # input:
 set query_vars {
   {cid		"Missing Command ID"}
-  {authcol	"Missing Authenticaion Collection"}
+  {authcol	"Missing Authentication Collection"}
   {authfolder	"Missing Authentication Folder"}
   {authpage	"No Post Authorization Instructions"}
   {authcancel	"No Auth Cancel Instructions"}

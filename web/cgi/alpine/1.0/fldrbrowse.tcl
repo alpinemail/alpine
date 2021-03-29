@@ -170,7 +170,7 @@ if {[catch {WPNewMail $reload} newmail]} {
 # preserve vars that my have been overridden with cgi parms
 
 if {[catch {WPCmd PEFolder collections} collections]} {
-  error [list _action "Collectoin list" $collections]
+  error [list _action "Collection list" $collections]
 }
 
 set shown [split $show ,]

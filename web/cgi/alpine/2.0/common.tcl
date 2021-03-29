@@ -734,7 +734,7 @@ proc setCurrentFolder {_c _f _u} {
 	}
 
 	if {[catch {WPCmd PEMailbox trashdeleted current} result]} {
-	  WPCmd PEInfo statmsg "Detete FAILURE: $result"
+	  WPCmd PEInfo statmsg "Delete FAILURE: $result"
 	}
       }
     }

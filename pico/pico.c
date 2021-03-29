@@ -359,7 +359,7 @@ pico(PICO *pm)
 
 #ifdef	MOUSE
 #ifdef  EX_MOUSE
-	/* New mouse function for real mouse text seletion. */
+	/* New mouse function for real mouse text selection. */
 	register_mfunc(mouse_in_pico, 2, 0, term.t_nrow - (term.t_mrow+1),
 		       term.t_ncol);
 #else

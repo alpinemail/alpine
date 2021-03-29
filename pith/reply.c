@@ -1503,7 +1503,7 @@ get_addr_data(ENVELOPE *env, IndexColType type, char *buf, size_t maxlen)
 	break;
 
       /*
-       * Recips is To and Cc togeter. We hook the two adrlists together
+       * Recips is To and Cc together. We hook the two adrlists together
        * temporarily.
        */
       case iRecips:

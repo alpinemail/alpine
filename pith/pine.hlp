@@ -180,7 +180,7 @@ Alpine's privacy policy is a living, online only, document, which can be found a
 By following the previous link,  Alpine
 will connect to an external server, and will download it and display
 it for you. Please take some time to read it and understand it.
-Since the Privacy Policy could be ammended to take into consideration
+Since the Privacy Policy could be amended to take into consideration
 new additions to Alpine, please check it periodically.
 
 <P> These changes were made after the release of version 2.24.
@@ -1897,7 +1897,7 @@ program.
 At the beginning of this process, the developer of the email program 
 registers the email program with the email service provider (Gmail, 
 Outlook, etc.) In return, the email service provider creates a client-id.
-In addition, some services provice a client-secret.
+In addition, some services provide a client-secret.
 Since Alpine is an open source program, these values are part
 of the source code, and are known to everyone, and cannot be obfuscated.
 
@@ -2012,7 +2012,7 @@ on the configuration you want to delete and press ^D.
 <P> When you have more than one client-id for the same service, is is convenient
 to fill up the username field. This will tell Alpine that that specific configuration
 is to be used with the username(s) specified in that variable. If Alpine cannot
-detemine which configuration to use, it will ask you to select the correct
+determine which configuration to use, it will ask you to select the correct
 Client-ID for your connection. This could happen when you are trying to login to
 your account. The client-id you select will be used by Alpine for that and future
 connections to that server.
@@ -2825,7 +2825,7 @@ Alpine's privacy policy is a living, online only, document, which can be found a
 By following the previous link,  Alpine
 will connect to an external server, and will download it and display
 it for you. Please take some time to read it and understand it.
-Since the Privacy Policy could be ammended to take into consideration
+Since the Privacy Policy could be amended to take into consideration
 new additions to Alpine, please check it periodically. You can always
 find a link to the Privacy Policy in the <A href="h_news">Release Notes</A>.
 
@@ -2860,7 +2860,7 @@ Alpine's privacy policy is a living, online only, document, which can be found a
 By following the previous link,  Alpine
 will connect to an external server, and will download it and display
 it for you. Please take some time to read it and understand it.
-Since the Privacy Policy could be ammended to take into consideration
+Since the Privacy Policy could be amended to take into consideration
 new additions to Alpine, please check it periodically. You can always
 find a link to the Privacy Policy in the <A href="h_news">Release Notes</A>.
 
@@ -2893,7 +2893,7 @@ Alpine's privacy policy is a living, online only, document, which can be found a
 By following the previous link,  Alpine
 will connect to an external server, and will download it and display
 it for you. Please take some time to read it and understand it.
-Since the Privacy Policy could be ammended to take into consideration
+Since the Privacy Policy could be amended to take into consideration
 new additions to Alpine, please check it periodically. You can always
 find a link to the Privacy Policy in the <A href="h_news">Release Notes</A>.
 
@@ -18889,7 +18889,7 @@ to see the available Editing and Navigation commands.
 This option gives you a limited ability to take different actions depending on whether
 this is the first time Alpine has been run this month or not.
 Though it would be nice to have such an option available, this is not the
-same as whether or not this is the first time a paricular folder has been
+same as whether or not this is the first time a particular folder has been
 opened this month.
 If you want some action (probably Filtering) to take place in a folder each
 month, then you will need to be sure that the folder is opened during the
@@ -18931,7 +18931,7 @@ to see the available Editing and Navigation commands.
 This option gives you a limited ability to take different actions depending on whether
 this is the first time Alpine has been run this year or not.
 Though it would be nice to have such an option available, this is not the
-same as whether or not this is the first time a paricular folder has been
+same as whether or not this is the first time a particular folder has been
 opened this year.
 If you want some action (probably Filtering) to take place in a folder each
 year, then you will need to be sure that the folder is opened during the

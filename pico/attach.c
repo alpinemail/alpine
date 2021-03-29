@@ -780,7 +780,7 @@ ParseAttach(struct hdr_line **lp,		/* current header line      */
 		utf8 = ucs4_to_utf8_cpystr(tmp);
 		*no = atoi(utf8);		/* and the old place in list */
 		if(strcmp(number, utf8)){
-		    if(p-tmp > *off){		/* where to begin replacemnt */
+		    if(p-tmp > *off){		/* where to begin replacement */
 			UCS uu[1];
 
 			uu[0] = '\0';
@@ -1118,7 +1118,7 @@ process_tag:					/* enclosed in []         */
 		if(strcmp(sz, (lblsz) ? lblsz : prettysz(attsz))){
 		    strncpy(sz, (lblsz) ? lblsz : prettysz(attsz), szlen);
 		    sz[szlen-1] = '\0';
-		    if(p-tmp > *off){		/* where to begin replacemnt */
+		    if(p-tmp > *off){		/* where to begin replacement */
 			UCS uu[1];
 
 			uu[0] = '\0';

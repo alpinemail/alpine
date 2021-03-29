@@ -126,7 +126,7 @@ typedef struct _folder_screen {
 
 
 /*
- * Struct mananging folder_lister metadata as it gets passed
+ * Struct managing folder_lister metadata as it gets passed
  * in and back up thru scrolltool
  */
 typedef struct _folder_proc {

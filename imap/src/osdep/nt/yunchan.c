@@ -209,7 +209,7 @@ unsigned long unix_crlflen (STRING *s)
   return i;
 }
 
-/* Undoubtably, I'm going to regret these two routines in the future.  I
+/* Undoubtedly, I'm going to regret these two routines in the future.  I
  * regret them now.  Their purpose is to work around two problems in the
  * VC++ 6.0 C library:
  *  (1) tmpfile() creates the file in the current directory instead of a

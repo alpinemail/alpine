@@ -1650,7 +1650,7 @@ mtest.c:515: the `gets' function is dangerous and should not be used.
           The IMAP server also doesn't know whether your preferred
           subdirectory for mailbox files is "mail/", ".mail/", "Mail/",
           "Mailboxes/", or any of a zillion other possibilities. If one
-          such name were chosen, it would undoubtably anger the partisans
+          such name were chosen, it would undoubtedly anger the partisans
           of all the other names.
 
           It is possible to modify the software so that the default

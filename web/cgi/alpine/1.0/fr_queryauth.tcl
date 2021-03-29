@@ -23,7 +23,7 @@
 #  Input:
 set frame_vars {
   {cid		"Missing Command ID"}
-  {authcol	"Missing Authenticaion Collection"}
+  {authcol	"Missing Authentication Collection"}
   {authfolder	"Missing Authentication Folder"}
   {authpage	"Missing Post Authorization Instructions"}
   {authcancel	"Missing Auth Cancel Instructions"}

@@ -16,7 +16,7 @@ server.
 
    The script will give you a url and a code. Open the url with a browser and enter
    the code where requested. You will be redirected to login with your username
-   and password. After a succesful login, you will be asked to authorize
+   and password. After a successful login, you will be asked to authorize
    the app. Once you have authorized the app, close that window and return to
    this script. Press "ENTER" and you will see your refresh-token, access-token
    and total amount of time (in seconds) that your token is valid. This is typically

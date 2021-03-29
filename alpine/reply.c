@@ -1494,7 +1494,7 @@ get_signature_file(char *file, int prenewlines, int postnewlines, int is_sig)
    Create the outgoing envelope for the mail being forwarded, which is 
 not much more than filling in the subject, and create the message body
 of the outgoing message which requires formatting the header from the
-envelope of the original messasge.
+envelope of the original message.
   ----------------------------------------------------------------------*/
 int
 forward(struct pine *ps, ACTION_S *role_arg)
@@ -1873,7 +1873,7 @@ forward(struct pine *ps, ACTION_S *role_arg)
    Create the outgoing envelope for the mail being forwarded, which is 
 not much more than filling in the subject, and create the message body
 of the outgoing message which requires formatting the header from the
-envelope of the original messasge.
+envelope of the original message.
   ----------------------------------------------------------------------*/
 void
 forward_text(struct pine *pine_state, void *text, SourceType source)
@@ -1963,7 +1963,7 @@ forward_text(struct pine *pine_state, void *text, SourceType source)
    Create the outgoing envelope for the mail being resent, which is 
 not much more than filling in the subject, and create the message body
 of the outgoing message which requires formatting the header from the
-envelope of the original messasge.
+envelope of the original message.
   ----------------------------------------------------------------------*/
 int
 bounce(struct pine *pine_state, ACTION_S *role)

@@ -249,7 +249,7 @@ pine_mail_open(MAILSTREAM *stream, char *mailbox, long int openflags, long int *
      * mistakes caused by conflicts between the two styles. In particular, we
      * don't want to have a new-style cached stream re-opened because of the
      * old-style caching code. This can happen if a stream is passed in that
-     * is not useable, and then a new stream is opened because the passed in
+     * is not usable, and then a new stream is opened because the passed in
      * stream causes us to bypass the new caching code. Play it safe. If it
      * is an IMAP stream, just close it. This should leave it in the new-style
      * cache anyway, causing no loss. Maybe not if the cache wasn't large

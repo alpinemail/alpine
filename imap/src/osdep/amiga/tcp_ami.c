@@ -152,7 +152,7 @@ TCPSTREAM *tcp_open (char *host,char *service,unsigned long port)
       sin.sin_family = he->h_addrtype;
 				/* copy host name */
       strcpy (hostname,he->h_name);
-#ifdef HOST_NOT_FOUND		/* muliple addresses only on DNS systems */
+#ifdef HOST_NOT_FOUND		/* multiple addresses only on DNS systems */
       for (sock = -1,i = 0; (sock < 0) && (s = he->h_addr_list[i]); i++) {
 	if (i && !silent) mm_log (tmp,WARN);
 	memcpy (&sin.sin_addr,s,he->h_length);

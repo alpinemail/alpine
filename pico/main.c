@@ -427,7 +427,7 @@ main(int argc, char *argv[])
 
 #ifdef	MOUSE
 #ifdef  EX_MOUSE
-	/* New mouse function for real mouse text seletion. */
+	/* New mouse function for real mouse text selection. */
 	register_mfunc(mouse_in_pico, 2, 0, term.t_nrow - (term.t_mrow + 1),
 		       term.t_ncol);
 #else
@@ -1093,7 +1093,7 @@ pico_set_global_colors(int nc, int ntfg, int ntbg, int rtfg, int rtbg,
   memset((void *)pcolors, 0, sizeof(PCOLORS));
   /* ignore bad pair settings, also we set tbcp backwards because it will
    * be reversed later in the modeline function, so tbcp->fg is actually 
-   * tbcp->bg and viceversa.
+   * tbcp->bg and vice versa.
    */
   if(ntfg >= 0 && ntbg >= 0){	/* set normal text color */
         fg = colorx(ntfg); bg = colorx(ntbg);

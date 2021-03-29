@@ -308,7 +308,7 @@ OAUTH2_S alpine_oauth2_list[] =
     0, 		/* first time indicator */
     1,		/* client secret required */
     0,		/* Cancel refresh token */
-    YANDEX_FLAGS /* defaul flags. For YANDEX this should be set to OA2_AUTHORIZE */
+    YANDEX_FLAGS /* default flags. For YANDEX this should be set to OA2_AUTHORIZE */
   },
   { NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0},
 };
@@ -1513,7 +1513,7 @@ mm_login_work(NETMBX *mb, char *user, char **pwd, long int trial,
     if(ps_global->ttyo)
       flush_status_messages(0);
 
-    /* redo app id in case we are loging in to an IMAP server that supports the IMAP ID extension */
+    /* redo app id in case we are logging in to an IMAP server that supports the IMAP ID extension */
     free_id(&ps_global->id);
     ps_global->id = set_alpine_id(PACKAGE_NAME, PACKAGE_VERSION);
     mail_parameters(NULL, SET_IDPARAMS, (void *) ps_global->id);
@@ -3942,7 +3942,7 @@ get_passfile_passwd(pinerc, passwd, user, hostlist, altflag)
 }
 
 /*
- * get_passfile_passwd_auth - return the password contained in the special passord
+ * get_passfile_passwd_auth - return the password contained in the special password
  *            cache.  The file is assumed to be in the same directory
  *            as the pinerc with the name defined above.
  */

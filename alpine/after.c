@@ -124,7 +124,7 @@ stop_after(int join)
 	}
     }
 
-    /* not literally true uless "join" set */
+    /* not literally true unless "join" set */
     after_active = 0;
 
 #else	/* !(defined(HAVE_PTHREAD) && defined(HAVE_NANOSLEEP)) */

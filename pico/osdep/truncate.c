@@ -13,7 +13,7 @@
  *
  *	Tim Rice	tim@trr.metro.net	Mon Jun  3 16:57:26 PDT 1996
  *
- *	a quick and dirty trancate()
+ *	a quick and dirty truncate()
  *	Altos System V (5.3.1) does not have one
  *	neither does SCO Open Server Enterprise 3.0
  *

@@ -43,7 +43,7 @@
 unsigned char *ucase (unsigned char *s)
 {
   unsigned char *t;
-				/* if lowercase covert to upper */
+				/* if lowercase convert to upper */
   for (t = s; *t; t++) if ((*t >= 'a') && (*t <= 'z')) *t -= ('a' - 'A');
   return s;			/* return string */
 }
@@ -59,7 +59,7 @@ unsigned char *ucase (unsigned char *s)
 unsigned char *lcase (unsigned char *s)
 {
   unsigned char *t;
-				/* if uppercase covert to lower */
+				/* if uppercase convert to lower */
   for (t = s; *t; t++) if ((*t >= 'A') && (*t <= 'Z')) *t += ('a' - 'A');
   return s;			/* return string */
 }
