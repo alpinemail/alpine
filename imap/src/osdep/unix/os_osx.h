@@ -32,7 +32,7 @@
 #include <utime.h>
 #include <syslog.h>
 #include <sys/file.h>
-
+#include <time.h>
 
 /* Mac OS X gets this wrong as of Leopard */
 
