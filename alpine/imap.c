@@ -59,6 +59,8 @@ static char rcsid[] = "$Id: imap.c 1266 2009-07-14 18:39:12Z hubert@u.washington
 #include <wincred.h>
 #define TNAME     "UWash_Alpine_"
 #define TNAMESTAR "UWash_Alpine_*"
+#define PWDBUFFERSIZE (250)
+#define MAXPWDBUFFERSIZE (2*PWDBUFFERSIZE)	/* This number must be less than 512 */
 
 /*
  * WinCred Function prototypes
@@ -3216,6 +3218,20 @@ line_get(char *tmp, size_t len, char **textp)
 
   return 1;
 }
+
+typedef struct pwd_s {
+	char *blob;
+	char **blobarray;
+	char *host;
+	char *user;
+	char *sflags;
+	char *passwd;
+	char *orighost;
+} ALPINE_PWD_S;
+
+#define SAME_VALUE(X, Y) ((((X) == NULL && (Y) == NULL) \
+		 || ((X) && (Y) && !strcmp((X), (Y)))) ? 1 : 0)
+
 /*
  * For UNIX:
  * Passfile lines are
@@ -3227,7 +3243,7 @@ line_get(char *tmp, size_t len, char **textp)
  *
  * else for WINDOWS:
  * Use Windows credentials. The TargetName of the credential is
- * UWash_Alpine_<hostname:port>\tuser\taltflag
+ * UWash_Alpine_.partnumber-totalparts_<hostname:port>\tuser\taltflag
  * and the blob consists of
  * passwd\torighost (if different from host)
  *
@@ -3247,15 +3263,16 @@ read_passfile(pinerc, l)
     DWORD count, k;
     PCREDENTIAL *pcred;
     char *tmp, *blob, *target = NULL;
-    char *host, *user, *sflags, *passwd, *orighost;
+    ALPINE_PWD_S **pwd;
     char *ui[5];
     int i, j;
+    unsigned long m, n, p, loc;
 
     if(using_passfile == 0)
       return(using_passfile);
 
     if(!g_CredInited){
-	if(init_wincred_funcs() != 1){
+	if (init_wincred_funcs() != 1) {
 	    using_passfile = 0;
 	    return(using_passfile);
 	}
@@ -3265,72 +3282,139 @@ read_passfile(pinerc, l)
 
     using_passfile = 1;
 
-    if(g_CredEnumerateW(lfilter, 0, &count, &pcred)){
-	if(pcred){
-	    for(k = 0; k < count; k++){
-
-		host = user = sflags = passwd = orighost = NULL;
-		ui[0] = ui[1] = ui[2] = ui[3] = ui[4] = NULL;
-
+    /*  this code exists because the XOAUTH2 support makes us save
+     *	access tokens as if they were passwords. However, some servers
+     *	produce extremely long access-tokens that do not fit in the credentials
+     *	and therefore need to be split into several entries.
+     *
+     *	The plan is the following:
+     *	   step 1: Read and save all the information in the credentials
+     *	   step 2: flatten the information into one line
+     *	   step 3: process that line.
+     */
+     if (g_CredEnumerateW(lfilter, 0, &count, &pcred)) {
+	pwd = fs_get((count + 1)*sizeof(ALPINE_PWD_S *));
+	memset((void *)pwd, 0, (count + 1)*sizeof(ALPINE_PWD_S *));
+	if (pwd && pcred) {
+	    /* this is step 1 */
+	    for (k = 0; k < count; k++) {	/* go through each credential */
 		target = lptstr_to_utf8(pcred[k]->TargetName);
 		tmp = srchstr(target, TNAME);
-
-		if(tmp){
+		if (tmp) {
 		    tmp += strlen(TNAME);
-		    for(i = 0, j = 0; tmp[i] && j < 3; j++){
-			for(ui[j] = &tmp[i]; tmp[i] && tmp[i] != '\t'; i++)
-			  ;					/* find end of data */
-
-			if(tmp[i])
-			  tmp[i++] = '\0';			/* tie off data */
+		    if (*tmp == '.') {
+			tmp++;
+			m = strtoul(tmp, &tmp, 10);
+			if (*tmp == '-') {
+			    tmp++;
+			    n = strtol(tmp, &tmp, 10);
+			    if (*tmp == '_') tmp++;
+			}
+		    }
+		    else {
+			m = n = 1;
 		    }
 
-		    host   = ui[0];
-		    user   = ui[1];
-		    sflags = ui[2];
-		}
+		    ui[0] = ui[1] = ui[2] = ui[3] = ui[4] = NULL;
+		    for (i = 0, j = 0; tmp[i] && j < 3; j++) {
+			 for (ui[j] = &tmp[i]; tmp[i] && tmp[i] != '\t'; i++)
+				 ;		/* find end of data */
 
-		blob = (char *) pcred[k]->CredentialBlob;
-		if(blob){
-		    for(i = 0, j = 3; blob[i] && j < 5; j++){
-			for(ui[j] = &blob[i]; blob[i] && blob[i] != '\t'; i++)
-			  ;					/* find end of data */
-
-			if(blob[i])
-			  blob[i++] = '\0';			/* tie off data */
+			 if (tmp[i])
+			     tmp[i++] = '\0';	/* tie off data */
 		    }
 
-		    passwd   = ui[3];
-		    orighost = ui[4];
-		}
+		    /* improve this. We are trying to find where we saved
+		     * this data, and in general this is fast if there is
+		     * only a few data, which is not unreasonable, but probably
+		     * can be done better.
+		     */
+		    for (loc = 0; pwd[loc]
+			 && !(SAME_VALUE(ui[0], pwd[loc]->host)
+			      && SAME_VALUE(ui[1], pwd[loc]->user)
+			      && SAME_VALUE(ui[2], pwd[loc]->sflags)); loc++);
 
-		if(passwd && host && user){		/* valid field? */
+		    if (pwd[loc] == NULL) {
+			pwd[loc] = fs_get(sizeof(ALPINE_PWD_S));
+			memset((void *) pwd[loc], 0, sizeof(ALPINE_PWD_S));
+			pwd[loc]->blobarray = fs_get((n + 1) * sizeof(char*));
+			memset((void *) pwd[loc]->blobarray, 0, (n + 1) * sizeof(char*));
+		    }
+
+		    if (pwd[loc]->host == NULL)
+			pwd[loc]->host = ui[0] ? cpystr(ui[0]) : NULL;
+		    if (pwd[loc]->user == NULL)
+			pwd[loc]->user = ui[1] ? cpystr(ui[1]) : NULL;
+		    if (pwd[loc]->sflags == NULL)
+			pwd[loc]->sflags = ui[2] ? cpystr(ui[2]) : NULL;
+		    blob = (char *) pcred[k]->CredentialBlob;
+		    pwd[loc]->blobarray[m - 1] = blob ? cpystr(blob) : NULL;
+		}
+		if (target)  fs_give((void**)&target);
+	    }
+	    /* step 2 */
+	    for (k = 0; k < count; k++) {
+		if (pwd[k]) {
+		    for (i = 0, j = 0; pwd[k]->blobarray[j]; j++)
+			 i += strlen(pwd[k]->blobarray[j]);
+		    pwd[k]->blob = fs_get(i + 1);
+		    pwd[k]->blob[0] = '\0';
+		    for (j = 0; pwd[k]->blobarray[j]; j++) {
+			strcat(pwd[k]->blob, pwd[k]->blobarray[j]);
+			fs_give((void **) &pwd[k]->blobarray[j]);
+		    }
+		    fs_give((void **) pwd[k]->blobarray);
+		}
+		else k = count;	/* we are done with this step! */
+	    }
+	    /* step 3 */
+	    for (k = 0; k < count; k++) {
+		if (pwd[k] && pwd[k]->blob) {
+		    blob = pwd[k]->blob;
+		    for (i = 0, j = 3; blob[i] && j < 5; j++) {
+			for (ui[j] = &blob[i]; blob[i] && blob[i] != '\t'; i++)
+				  ;	/* find end of data */
+
+			if (blob[i])
+			    blob[i++] = '\0';	/* tie off data */
+		    }
+		    if (pwd[k]->passwd == NULL)
+			pwd[k]->passwd = ui[3] ? cpystr(ui[3]) : NULL;
+		    if (pwd[k]->orighost == NULL)
+			pwd[k]->orighost = ui[4] ? cpystr(ui[4]) : NULL;
+		    fs_give((void **) &pwd[k]->blob);
+		}
+	    }
+	    /* now process all lines, and free memory */
+	    for (k = 0; k < count && pwd[k] != NULL; k++){
+		if (pwd[k]->passwd && pwd[k]->host && pwd[k]->user) { /* valid field? */
 		    STRLIST_S hostlist[2];
 		    int	      flags;
 
-		    tmp = sflags ? strchr(sflags, PWDAUTHSEP) : NULL;
-		    flags = sflags ? atoi(tmp ? ++tmp : sflags) : 0;
-		    hostlist[0].name = host;
-		    if(orighost){
+		    tmp = pwd[k]->sflags ? strchr(pwd[k]->sflags, PWDAUTHSEP) : NULL;
+		    flags = pwd[k]->sflags ? atoi(tmp ? ++tmp : pwd[k]->sflags) : 0;
+		    hostlist[0].name = pwd[k]->host;
+		    if (pwd[k]->orighost) {
 			hostlist[0].next = &hostlist[1];
-			hostlist[1].name = orighost;
+			hostlist[1].name = pwd[k]->orighost;
 			hostlist[1].next = NULL;
 		    }
-		    else{
+		    else {
 			hostlist[0].next = NULL;
 		    }
-
-		    imap_set_passwd(l, passwd, user, hostlist, flags & 0x01, 0, 0);
+		    imap_set_passwd(l, pwd[k]->passwd, pwd[k]->user, hostlist, flags & 0x01, 0, 0);
 		}
-
-		if(target)
-		  fs_give((void **) &target);
+		if (pwd[k]->passwd)   fs_give((void **) &pwd[k]->passwd);
+		if (pwd[k]->user)     fs_give((void **) &pwd[k]->user);
+		if (pwd[k]->host)     fs_give((void **) &pwd[k]->host);
+		if (pwd[k]->sflags)   fs_give((void **) &pwd[k]->sflags);
+		if (pwd[k]->orighost) fs_give((void **) &pwd[k]->orighost);
+		fs_give((void **) &pwd[k]);
 	    }
-
-	    g_CredFree((PVOID) pcred);
+	    g_CredFree((PVOID)pcred);
 	}
-    }
-
+	fs_give((void **) pwd);
+     }
     return(1);
 
 # else /* old windows */
@@ -3693,8 +3777,10 @@ write_passfile(pinerc, l)
    char *authend, *authtype;
 #ifdef	WINCRED
 # if	(WINCRED > 0)
+    int i, j, k;
     char  target[10*MAILTMPLEN];
-    char  blob[10*MAILTMPLEN];
+	char  blob[10 * MAILTMPLEN], blob2[10*MAILTMPLEN], *blobp;
+	char  part[MAILTMPLEN];
     CREDENTIAL cred;
     LPTSTR ltarget = 0;
 
@@ -3704,40 +3790,51 @@ write_passfile(pinerc, l)
     dprint((9, "write_passfile\n"));
 
     for(; l; l = l->next){
+	/* determine how many parts to create first */
+	snprintf(blob, sizeof(blob), "%s%s%s",
+			l->passwd ? l->passwd : "",
+			(l->hosts&& l->hosts->next&& l->hosts->next->name)
+			? "\t" : "",
+			(l->hosts&& l->hosts->next&& l->hosts->next->name)
+			? l->hosts->next->name : "");
+	i = strlen(blob);
+	blobp = blob;
+	for (j = 1; i > MAXPWDBUFFERSIZE; j++, i -= PWDBUFFERSIZE);
 	authtype = l->passwd;
 	authend = strchr(l->passwd, PWDAUTHSEP);
-	if(authend != NULL){
-	   *authend = '\0';
-	   sprintf(blob, "%s%c%d", authtype, PWDAUTHSEP, l->altflag);
-	   *authend = PWDAUTHSEP;
+	if (authend != NULL){
+	    *authend = '\0';
+	    sprintf(blob2, "%s%c%d", authtype, PWDAUTHSEP, l->altflag);
+			*authend = PWDAUTHSEP;
         }
 	else
-	   sprintf(blob, "%d", l->altflag);
-
-	snprintf(target, sizeof(target), "%s%s\t%s\t%s",
-		 TNAME,
-		 (l->hosts && l->hosts->name) ? l->hosts->name : "",
-		 l->user ? l->user : "",
-		 blob);
-	ltarget = utf8_to_lptstr((LPSTR) target);
-
-	if(ltarget){
-	    snprintf(blob, sizeof(blob), "%s%s%s",
-		     l->passwd ? l->passwd : "", 
-		     (l->hosts && l->hosts->next && l->hosts->next->name)
-			 ? "\t" : "",
-		     (l->hosts && l->hosts->next && l->hosts->next->name)
-			 ? l->hosts->next->name : "");
-	    memset((void *) &cred, 0, sizeof(cred));
-	    cred.Flags = 0;
-	    cred.Type = CRED_TYPE_GENERIC;
-	    cred.TargetName = ltarget;
-	    cred.CredentialBlobSize = strlen(blob)+1;
-	    cred.CredentialBlob = (LPBYTE) &blob;
-	    cred.Persist = CRED_PERSIST_ENTERPRISE;
-	    g_CredWriteW(&cred, 0);
-
-	    fs_give((void **) &ltarget);
+	    sprintf(blob2, "%d", l->altflag);
+	for (k = 1, i = strlen(blob), blobp = blob; k <= j; k++) {
+	    snprintf(target, sizeof(target), "%s.%d-%d_%s\t%s\t%s",
+				TNAME, k, j,
+				(l->hosts && l->hosts->name) ? l->hosts->name : "",
+				l->user ? l->user : "",
+				blob2);
+	    ltarget = utf8_to_lptstr((LPSTR)target);
+	    if (ltarget) {
+		memset((void*)&cred, 0, sizeof(cred));
+		cred.Flags = 0;
+		cred.Type = CRED_TYPE_GENERIC;
+		cred.TargetName = ltarget;
+		if (i > MAXPWDBUFFERSIZE) {
+		    strncpy(part, blobp, PWDBUFFERSIZE);
+		    part[PWDBUFFERSIZE] = '\0';
+		    blobp += PWDBUFFERSIZE;
+		    i -= PWDBUFFERSIZE;
+		}
+		else
+		    strcpy(part, blobp);
+		cred.CredentialBlobSize = strlen(part) + 1;
+		cred.CredentialBlob = (LPBYTE)&part;
+		cred.Persist = CRED_PERSIST_ENTERPRISE;
+		g_CredWriteW(&cred, 0);
+	        fs_give((void**)&ltarget);
+	    }
 	}
     }
  #endif	/* WINCRED > 0 */

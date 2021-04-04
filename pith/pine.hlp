@@ -201,6 +201,10 @@ New features include:
      to login to outlook, since the original client-id can only be used
      for the device method. One needs a special client-id and client-secret
      to use the authorize method in Outlook.
+<LI> PC-Alpine only: Some service providers produce access tokens that are too long
+     to save them in the Windows Credentials, so they will be saved as several broken
+     pieces, which means that old versions od Alpine will NOT be able to use saved
+     passwords, once this version of Alpine is used.
 </UL>
 
 <P>
