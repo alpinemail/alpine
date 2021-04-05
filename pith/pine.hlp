@@ -202,9 +202,9 @@ New features include:
      for the device method. One needs a special client-id and client-secret
      to use the authorize method in Outlook.
 <LI> PC-Alpine only: Some service providers produce access tokens that are too long
-     to save them in the Windows Credentials, so they will be saved as several broken
-     pieces, which means that old versions od Alpine will NOT be able to use saved
-     passwords, once this version of Alpine is used.
+     to save in the Windows Credentials, so they will be saved as several broken
+     pieces, which means that old versions of Alpine will NOT be able to use saved
+     passwords once this version of Alpine is used.
 <LI> PC-Alpine: Debug files used to be created with extension .txt1, .txt2, etc.
      Rename those files so that they have extension .txt.
 </UL>
