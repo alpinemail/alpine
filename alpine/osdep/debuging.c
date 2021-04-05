@@ -72,25 +72,56 @@ init_debug(void)
 {
     char nbuf[5];
     char newfname[MAXPATH+1], filename[MAXPATH+1], *dfile = NULL;
+    char basename[MAXPATH+1];
+    struct stat sbuf;
     int i, fd;
 
     if(!((debug || ps_global->debug_imap || ps_global->debug_tcp || ps_global->debug_http) &&  ps_global->write_debug_file))
       return;
 
+    build_path(basename, ps_global->home_dir, DEBUGFILE, sizeof(basename));
+#ifdef DEBUGFILEEXT
+    if (ps_global->debug_nfiles > 0) {
+	strncpy(filename, basename, sizeof(filename) - 1);
+	filename[sizeof(filename) - 1] = '\0';
+	strncat(filename, DEBUGFILEEXT, sizeof(filename) - 1 - strlen(filename));
+	snprintf(nbuf, sizeof(nbuf), "%d", ps_global->debug_nfiles);
+	strncat(filename, nbuf, sizeof(filename) - 1 - strlen(filename));
+	our_unlink(filename);
+    }
+#endif /* DEBUGFILEEXT */
+
     for(i = ps_global->debug_nfiles - 1; i > 0; i--){
-        build_path(filename, ps_global->home_dir, DEBUGFILE, sizeof(filename));
-        strncpy(newfname, filename, sizeof(newfname)-1);
-	newfname[sizeof(newfname)-1] = '\0';
+        strncpy(filename, basename, sizeof(filename)-1);
+	filename[sizeof(filename)-1] = '\0';
 	snprintf(nbuf, sizeof(nbuf), "%d", i);
-        strncat(filename, nbuf, sizeof(filename)-1-strlen(filename));
+	strncat(filename, nbuf, sizeof(filename)-1-strlen(filename));
+#ifdef DEBUGFILEEXT
+        strncat(filename, DEBUGFILEEXT, sizeof(filename)-1-strlen(filename));
+	if (our_stat(filename, &sbuf) < 0){
+	    strncpy(filename, basename, sizeof(filename)-1);
+	    filename[sizeof(filename)-1] = '\0';
+	    strncat(filename, DEBUGFILEEXT, sizeof(filename)-1-strlen(filename));
+	    strncat(filename, nbuf, sizeof(filename)-1-strlen(filename));
+	}
+#endif  /* DEBUGFILEEXT */
+	strncpy(newfname, basename, sizeof(newfname)-1);
+	newfname[sizeof(newfname)-1] = '\0';
 	snprintf(nbuf, sizeof(nbuf), "%d", i+1);
         strncat(newfname, nbuf, sizeof(newfname)-1-strlen(newfname));
+#ifdef DEBUGFILEEXT
+        strncat(newfname, DEBUGFILEEXT, sizeof(newfname)-1-strlen(newfname));
+#endif /* DEBUGFILEEXT */
         (void)rename_file(filename, newfname);
     }
 
-    build_path(filename, ps_global->home_dir, DEBUGFILE, sizeof(filename)-1);
+    strncpy(filename, basename, sizeof(filename) - 1);
+    filename[sizeof(filename) - 1] = '\0';
     strncat(filename, "1", sizeof(filename)-1-strlen(filename));
     filename[sizeof(filename)-1] = '\0';
+#ifdef DEBUGFILEEXT
+    strncat(filename, DEBUGFILEEXT, sizeof(filename) - 1 - strlen(filename));
+#endif /* DEBUGFILEEXT */
 
     debugfile = NULL;
     dfile = filename;

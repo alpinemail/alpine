@@ -24,7 +24,10 @@
 #define DEBUG
 
 /* Default configuration value */
-#define DEBUGFILE "pinedebg.txt"
+#define DEBUGFILE "pinedebg"
+
+/* Default extension for debug files */
+#define DEBUGFILEEXT ".txt"
 
 /* Display debug messages in journal */
 #define DEBUGJOURNAL
