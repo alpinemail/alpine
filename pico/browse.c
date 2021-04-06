@@ -133,7 +133,7 @@ static	KEYMENU menu_browse[] = {
 /*
  * Default pager used by the stand-alone file browser.
  */
-#define	BROWSER_PAGER	((gmode & MDFKEY) ? "pine -k -F" : "pine -F")
+#define	BROWSER_PAGER	((gmode & MDFKEY) ? "alpine -k -F" : "alpine -F")
 
 
 /*
@@ -217,7 +217,7 @@ N_("~        ~?        Display this help text."),
 N_("~        ~Q        Quit Pilot."),
 " ",
 N_("~        ~V        View the currently selected file or open the selected directory."),
-N_("~                Note: Pilot invokes ~p~i~n~e ~-~F, or the program defined by the ~P~A~G~E~R"),
+N_("~                Note: Pilot invokes ~a~l~p~i~n~e ~-~F, or the program defined by the ~P~A~G~E~R"),
 N_("~                      environment variable, to view the file."),
 N_("~        ~L        Launch an external application program."),
 " ",

@@ -209,6 +209,8 @@ New features include:
      Rename those files so that they have extension .txt.
 <LI> Always follow ‘suppress-asterisks-in-password-prompt’ setting in the
      various password prompts. Submitted by &Eacute;tienne Deparis.
+<LI> Use 'alpine -F' instead of 'pine -F' as the browser default pager.
+     Submitted by &Eacute;tienne Deparis.
 </UL>
 
 <P>
