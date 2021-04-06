@@ -207,6 +207,8 @@ New features include:
      passwords once this version of Alpine is used.
 <LI> PC-Alpine: Debug files used to be created with extension .txt1, .txt2, etc.
      Rename those files so that they have extension .txt.
+<LI> Always follow ‘suppress-asterisks-in-password-prompt’ setting in the
+     various password prompts. Submitted by &Eacute;tienne Deparis.
 </UL>
 
 <P>

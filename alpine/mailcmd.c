@@ -366,7 +366,8 @@ alpine_smime_confirm_save(char *email)
 int 
 alpine_get_password(char *prompt, char *pass, size_t len)
 {
-  int flags = OE_PASSWD | OE_DISALLOW_HELP;
+  int flags = F_ON(F_QUELL_ASTERISKS, ps_global) ? OE_PASSWD_NOAST : OE_PASSWD;
+  flags |= OE_DISALLOW_HELP;
   pass[0] = '\0';
   return optionally_enter(pass, 
 			-(ps_global->ttyo ? FOOTER_ROWS(ps_global) : 3),

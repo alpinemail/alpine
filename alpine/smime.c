@@ -87,7 +87,8 @@ smime_get_passphrase(void)
             _("Enter passphrase for <%s>: "), (ps_global->smime && ps_global->smime->passphrase_emailaddr) ? ps_global->smime->passphrase_emailaddr[0] : "unknown");
 
     do {
-        flags = OE_PASSWD | OE_DISALLOW_HELP;
+        flags = F_ON(F_QUELL_ASTERISKS, ps_global) ? OE_PASSWD_NOAST : OE_PASSWD;
+        flags |= OE_DISALLOW_HELP;
 	((char *) ps_global->smime->passphrase)[0] = '\0';
         rc =  optionally_enter((char *) ps_global->smime->passphrase,
 			       -FOOTER_ROWS(ps_global), 0,
