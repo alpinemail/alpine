@@ -201,10 +201,11 @@ New features include:
      to login to outlook, since the original client-id can only be used
      for the device method. One needs a special client-id and client-secret
      to use the authorize method in Outlook.
-<LI> PC-Alpine only: Some service providers produce access tokens that are too long
-     to save in the Windows Credentials, so they will be saved as several broken
-     pieces, which means that old versions of Alpine will NOT be able to use saved
-     passwords once this version of Alpine is used.
+<LI> PC-Alpine only: Some service providers produce access tokens that are
+     too long to save in the Windows Credentials, so the access tokens will
+     be split and saved as several pieces. This means that old versions of
+     Alpine will NOT be able to use saved passwords once this new version of
+     Alpine is used.
 <LI> PC-Alpine: Debug files used to be created with extension .txt1, .txt2, etc.
      Rename those files so that they have extension .txt.
 <LI> Always follow ‘suppress-asterisks-in-password-prompt’ setting in the
