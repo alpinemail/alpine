@@ -201,7 +201,7 @@ ALPINE_self_signed_certificate(char *template, int version, char *pathdir, char 
 	if((req = X509_REQ_new()) != NULL
 	    && X509_REQ_set_version(req, 0L)){
 	    name = X509_REQ_get_subject_name(req);
-	    X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, "Password File Certificate and Key Pair", -1, -1, 0);
+	    X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, (unsigned char *) "Password File Certificate and Key Pair", -1, -1, 0);
 	    if(X509_REQ_set_pubkey(req, pkey)
 		&& (pcert = X509_new()) != NULL){
 		if(X509_set_version(pcert, version)
@@ -241,7 +241,6 @@ ALPINE_self_signed_certificate(char *template, int version, char *pathdir, char 
 	    build_path(tmp, pathdir, certfile, sizeof(tmp));
 	    if((fp = fopen(tmp, "w")) != NULL
 		&&(out = BIO_new_fp(fp, BIO_FP_TEXT)) != NULL){
-	      EVP_PKEY *tpubkey = X509_REQ_get0_pubkey(req);
 	      PEM_write_bio_X509(out, pcert);
 	      BIO_flush(out);
 	      BIO_free(out);

@@ -1639,14 +1639,13 @@ void
 smime_manage_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line, WhichCerts ctype, int fline)
 {
     char            tmp[200];
-    char	   *ext;
     CertList	   *data;
     int		    i;
 
     smime_init();
 
     data = DATACERT(ctype);
-    ext  = EXTCERT(ctype);
+//    ext  = EXTCERT(ctype);
 
     if(data == NULL || RENEWCERT(data))
       renew_cert_data(&data, ctype);
@@ -1711,8 +1710,6 @@ smime_manage_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line, Whi
 
       for(cl = data, i = 0; cl; cl = cl->next)
 	 if(cl->name){
-	    char *s, *t;
-
 	    new_confline(ctmp);
 	    (*ctmp)->d.s.ctype  = ctype;
 	    (*ctmp)->d.s.deleted = get_cert_deleted(ctype, i);

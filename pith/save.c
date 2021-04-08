@@ -1721,10 +1721,8 @@ save_ex_explain_parts(struct mail_bodystruct *body, int depth, long unsigned int
 int
 save_ex_output_text(char *text, int depth, unsigned long *len, gf_io_t pc)
 {
-   int starti, i, j, startpos, pos, rv;
-   int line_len = 68 - depth;
+   int starti, i, startpos, pos, rv;
    char tmp[100];	/* a number bigger than 68, we justify text here. */
-   char *s;
    unsigned long ilen;
 
    rv = 0;
@@ -1735,7 +1733,7 @@ save_ex_output_text(char *text, int depth, unsigned long *len, gf_io_t pc)
      startpos = pos;
      for(starti = i = depth; i < 68 && text[pos] != '\0'; i++, pos++){
 	tmp[i] = text[pos];
-	if(tmp[i] == ' '){				/* save when we reach a space */
+	if(tmp[i] == ' '){	/* save when we reach a space */
 	   starti = i;
 	   startpos = pos;
 	}

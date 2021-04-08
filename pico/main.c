@@ -495,10 +495,9 @@ void
 display_color_codes(void)
 {
 #define SPACES "   "
-  int i, j, k, l, a, len, len_entry, row;
+  int i, k, l, a;
   int ncolors;
   COLOR_PAIR *lastc = NULL, *newcp;
-  char *fg;
 
   /* this is the format "SPACE COLORED_SPACES = CODE SPACE" */
   vtterminalinfo(gmode & MDTCAPWINS);

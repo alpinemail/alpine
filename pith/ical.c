@@ -459,7 +459,6 @@ void
 ical_free_vtimezone(void **vtzpv)
 {
   VTIMEZONE_S **vtzp = (VTIMEZONE_S **) vtzpv;
-  TZ_comp i,j;
 
   if(vtzp == NULL || *vtzp == NULL) return;
 
@@ -487,7 +486,6 @@ void
 ical_free_valarm(void **valarmpv)
 {
   VALARM_S **valarmp = (VALARM_S **) valarmpv;
-  int i, j;
 
   if(valarmp == NULL || *valarmp == NULL) return;
 
@@ -1878,7 +1876,6 @@ ical_set_date(ICLINE_S *icl, VTIMEZONE_S *vtz)
    ICAL_PARAMETER_S *param;
    char *tz = NULL;
    struct tm ic_date;
-   time_t t;
 
    if(icl == NULL) return;
 
@@ -2183,7 +2180,6 @@ ical_vevent_summary(VCALENDAR_S *vcal)
   VEVENT_S *vevent;
   GEN_ICLINE_S *gicl;
   ICLINE_S *icl;
-  char *k;
 
   if(vcal == NULL) return NULL;
 
@@ -2542,13 +2538,13 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 	   }
 	   if(*t == ','){
 		*u = '\0';
-		rv->description[i++] = cpystr(ical_decode(s, vcal->encoding));
+		rv->description[i++] = (unsigned char *) cpystr((char *) ical_decode(s, vcal->encoding));
 		s = u = t+1;
 	   } else
 		*u++ = *t;  
 	}
 	*u = '\0';
-	rv->description[i++] = cpystr(ical_decode(s, vcal->encoding));
+	rv->description[i++] = (unsigned char *) cpystr((char *) ical_decode(s, vcal->encoding));
 	rv->description[i] = NULL;
 	fs_give((void **)&v);
      } /* end of if(description) */

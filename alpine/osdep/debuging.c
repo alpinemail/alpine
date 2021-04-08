@@ -73,7 +73,9 @@ init_debug(void)
     char nbuf[5];
     char newfname[MAXPATH+1], filename[MAXPATH+1], *dfile = NULL;
     char basename[MAXPATH+1];
+#ifdef DEBUGFILEEXT
     struct stat sbuf;
+#endif /* DEBUGFILEEXT */
     int i, fd;
 
     if(!((debug || ps_global->debug_imap || ps_global->debug_tcp || ps_global->debug_http) &&  ps_global->write_debug_file))

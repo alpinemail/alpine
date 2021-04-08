@@ -1,7 +1,3 @@
-#if !defined(lint) && !defined(DOS)
-static char rcsid[] = "$Id: imap.c 1266 2009-07-14 18:39:12Z hubert@u.washington.edu $";
-#endif
-
 /*
  * ========================================================================
  * Copyright 2013-2020 Eduardo Chappa
@@ -145,8 +141,7 @@ extern XOAUTH2_INFO_S xoauth_default[];
  * c-client for processing. Every c-client application must have its
  * own.
  */
-OAUTH2_S alpine_oauth2_list[] =
-{
+OAUTH2_S alpine_oauth2_list[] = {
   {GMAIL_NAME,
    {"imap.gmail.com", "smtp.gmail.com", NULL, NULL},
    {{"client_id", NULL},
@@ -162,12 +157,12 @@ OAUTH2_S alpine_oauth2_list[] =
     {"state", NULL},
     {"device_code", NULL}	/* not used */
    },
-   {{"GET", "https://accounts.google.com/o/oauth2/auth",	/* authorization address, get access code */
+   {{"GET", (unsigned char *) "https://accounts.google.com/o/oauth2/auth",	/* authorization address, get access code */
 	{OA2_Id, OA2_Scope, OA2_Redirect, OA2_Response, OA2_End, OA2_End, OA2_End}},
     {NULL, NULL, {OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End}},	/* Device Info information, not used */
-    {"POST", "https://accounts.google.com/o/oauth2/token",	/* Address to get refresh token from access code */
+    {"POST", (unsigned char *) "https://accounts.google.com/o/oauth2/token",	/* Address to get refresh token from access code */
 	{OA2_Id, OA2_Secret, OA2_Redirect, OA2_GrantTypeforAccessToken, OA2_Code, OA2_End, OA2_End}},
-    {"POST", "https://accounts.google.com/o/oauth2/token",	/* access token from refresh token */
+    {"POST", (unsigned char *) "https://accounts.google.com/o/oauth2/token",	/* access token from refresh token */
 	{OA2_Id, OA2_Secret, OA2_RefreshToken, OA2_GrantTypefromRefreshToken, OA2_End, OA2_End, OA2_End}}
    },
    {NULL, NULL, NULL, 0, 0, NULL},	/* device_code information */
@@ -196,11 +191,11 @@ OAUTH2_S alpine_oauth2_list[] =
     {"device_code", NULL}		/* only used for frst time set up */
    },
    {{NULL, NULL, {OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End}}, /* Get Access Code, Not used */
-    {"POST", "https://login.microsoftonline.com/\001/oauth2/v2.0/devicecode",	/* first time use and get device code information */
+    {"POST", (unsigned char *) "https://login.microsoftonline.com/\001/oauth2/v2.0/devicecode",	/* first time use and get device code information */
 	{OA2_Id, OA2_Scope, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End}},
-    {"POST", "https://login.microsoftonline.com/\001/oauth2/v2.0/token",	/* Get first Refresh Token and Access token  */
+    {"POST", (unsigned char *) "https://login.microsoftonline.com/\001/oauth2/v2.0/token",	/* Get first Refresh Token and Access token  */
 	{OA2_Id, OA2_Redirect, OA2_DeviceCode, OA2_End, OA2_End, OA2_End, OA2_End}},
-    {"POST", "https://login.microsoftonline.com/\001/oauth2/v2.0/token",	/* Get access token from refresh token */
+    {"POST", (unsigned char *) "https://login.microsoftonline.com/\001/oauth2/v2.0/token",	/* Get access token from refresh token */
 	{OA2_Id, OA2_RefreshToken, OA2_Scope, OA2_GrantTypefromRefreshToken, OA2_End, OA2_End, OA2_End}}
    },
    {NULL, NULL, NULL, 0, 0, NULL},	/* device_code information */
@@ -228,12 +223,12 @@ OAUTH2_S alpine_oauth2_list[] =
     {"state", NULL},			/* not used */
     {"device_code", NULL}		/* not used */
    },
-   {{"GET", "https://login.microsoftonline.com/\001/oauth2/v2.0/authorize",	/* Get Access Code */
+   {{"GET", (unsigned char *) "https://login.microsoftonline.com/\001/oauth2/v2.0/authorize",	/* Get Access Code */
 	{OA2_Id, OA2_Scope, OA2_Redirect, OA2_Response, OA2_End, OA2_End, OA2_End}},
     {NULL, NULL, {OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End}}, /* device code, not used */
-    {"POST", "https://login.microsoftonline.com/\001/oauth2/v2.0/token",	/* Get first Refresh Token and Access token  */
+    {"POST", (unsigned char *) "https://login.microsoftonline.com/\001/oauth2/v2.0/token",	/* Get first Refresh Token and Access token  */
 	{OA2_Id, OA2_Redirect, OA2_Scope, OA2_GrantTypeforAccessToken, OA2_Secret, OA2_Code, OA2_End}},
-    {"POST", "https://login.microsoftonline.com/\001/oauth2/v2.0/token",	/* Get access token from refresh token */
+    {"POST", (unsigned char *) "https://login.microsoftonline.com/\001/oauth2/v2.0/token",	/* Get access token from refresh token */
 	{OA2_Id, OA2_RefreshToken, OA2_Scope, OA2_GrantTypefromRefreshToken, OA2_Secret, OA2_End, OA2_End}}
    },
    {NULL, NULL, NULL, 0, 0, NULL},	/* device_code information, not used */
@@ -261,12 +256,12 @@ OAUTH2_S alpine_oauth2_list[] =
     {"state", NULL},			/* used */
     {"device_code", NULL}		/* not used */
    },
-   {{"GET", "https://api.login.yahoo.com/oauth2/request_auth",	/* Get Access Code */
+   {{"GET", (unsigned char *) "https://api.login.yahoo.com/oauth2/request_auth",	/* Get Access Code */
 	{OA2_Id, OA2_Redirect, OA2_Response, OA2_State, OA2_End, OA2_End, OA2_End}},
     {NULL, NULL, {OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End}}, /* device code, not used */
-    {"POST", "https://api.login.yahoo.com/oauth2/get_token",	/* Get first Refresh Token and Access token  */
+    {"POST", (unsigned char *) "https://api.login.yahoo.com/oauth2/get_token",	/* Get first Refresh Token and Access token  */
 	{OA2_Id, OA2_Secret, OA2_Redirect, OA2_Code, OA2_GrantTypeforAccessToken, OA2_End, OA2_End}},
-    {"POST", "https://api.login.yahoo.com/oauth2/get_token",	/* Get access token from refresh token */
+    {"POST", (unsigned char *) "https://api.login.yahoo.com/oauth2/get_token",	/* Get access token from refresh token */
 	{OA2_Id, OA2_Secret, OA2_Redirect, OA2_RefreshToken, OA2_GrantTypefromRefreshToken, OA2_End, OA2_End}}
    },
    {NULL, NULL, NULL, 0, 0, NULL},	/* device_code information, not used */
@@ -294,12 +289,12 @@ OAUTH2_S alpine_oauth2_list[] =
     {"state", NULL},			/* not used */
     {"device_code", NULL}		/* not used */
    },
-   {{"GET", "https://oauth.yandex.com/authorize",	/* Get Access Code */
+   {{"GET", (unsigned char *) "https://oauth.yandex.com/authorize",	/* Get Access Code */
 	{OA2_Id, OA2_Redirect, OA2_Response, OA2_End, OA2_End, OA2_End, OA2_End}},
     {NULL, NULL, {OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End, OA2_End}}, /* device code, not used */
-    {"POST", "https://oauth.yandex.com/token",	/* Get first Refresh Token and Access token  */
+    {"POST", (unsigned char *) "https://oauth.yandex.com/token",	/* Get first Refresh Token and Access token  */
 	{OA2_Id, OA2_Redirect, OA2_GrantTypeforAccessToken, OA2_Secret, OA2_Code, OA2_End, OA2_End}},
-    {"POST", "https://oauth.yandex.com/token",	/* Get access token from refresh token */
+    {"POST", (unsigned char *) "https://oauth.yandex.com/token",	/* Get access token from refresh token */
 	{OA2_Id, OA2_RefreshToken, OA2_GrantTypefromRefreshToken, OA2_Secret, OA2_End, OA2_End, OA2_End}}
    },
    {NULL, NULL, NULL, 0, 0, NULL},	/* device_code information, not used */
@@ -312,7 +307,36 @@ OAUTH2_S alpine_oauth2_list[] =
     0,		/* Cancel refresh token */
     YANDEX_FLAGS /* default flags. For YANDEX this should be set to OA2_AUTHORIZE */
   },
-  { NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0},
+  {NULL, 	/* Name, unsigned char * */
+   {NULL, NULL, NULL, NULL }, /* host and equivalents */
+   {{NULL, NULL},  /* client-id */
+    {NULL, NULL},  /* client-secret */
+    {NULL, NULL},  /* tenant - outlook */
+    {NULL, NULL},  /* access_code, for authorize method */
+    {NULL, NULL},  /* refresh token */
+    {NULL, NULL},  /* scope  */
+    {NULL, NULL},  /* redirect */
+    {NULL, NULL},  /* grant type for access token */
+    {NULL, NULL},  /* grant type from refresh token */
+    {NULL, NULL},  /* response */
+    {NULL, NULL},  /* state */
+    {NULL, NULL}   /* device code */
+   },
+   {{NULL, NULL, {0, 0, 0, 0, 0, 0, 0}}, /* method, server, parameters for authorize */
+    {NULL, NULL, {0, 0, 0, 0, 0, 0, 0}}, /* method, server, parameters for device login */
+    {NULL, NULL, {0, 0, 0, 0, 0, 0, 0}}, /* method, server, parameters for getting refresh token */
+    {NULL, NULL, {0, 0, 0, 0, 0, 0, 0}}  /* method, server, parameters for refreshing access token */
+   },
+   {NULL, NULL, NULL, 0, 0, NULL},	/* device_code information */
+   NULL,				/* access token */
+   NULL,				/* special IMAP ID */
+   0,					/* Hide this */
+   0,					/* expiration time */
+   0,					/* first time */
+   0,					/* require secret */
+   0,					/* cancel refresh token */
+   0					/* flags */
+  }
 };
 
 int
@@ -404,15 +428,15 @@ oauth2_select_flow(char *host)
       int sel, n = 0, j;
 
       for(oa2list = alpine_oauth2_list; oa2list && oa2list->name ;oa2list++)
-           n += strlen(oa2list->name); + 5;       /* number, parenthesis, space */
-      n += 1024;      /* large enough to display to lines of 80 characters in UTF-8 */
+           n += strlen((char *) oa2list->name) + 5;       /* number, parenthesis, space */
+      n += 1024;      /* large enough to display lines of 80 characters in UTF-8 */
       s = fs_get(n*sizeof(char));
       strcpy(s, _("Please select below the authorization flow you would like to follow:"));
       sprintf(s + strlen(s), _("Please select the client-id to use from the following list.\n\n"));
       for(j = 1, oa2list = alpine_oauth2_list; oa2list && oa2list->name ;oa2list++){
          for(i = 0; oa2list && oa2list->host && oa2list->host[i] && strucmp(oa2list->host[i], host); i++);
-	    if(oa2list && oa2list->host && i < OAUTH2_TOT_EQUIV && oa2list->host[i])
-	       sprintf(s + strlen(s), " %d) %.70s\n", j++, oa2list->name);
+	 if(oa2list && oa2list->host && i < OAUTH2_TOT_EQUIV && oa2list->host[i])
+	    sprintf(s + strlen(s), " %d) %.70s\n", j++, oa2list->name);
       }
       display_init_err(s, 0);
 
@@ -472,8 +496,7 @@ void
 oauth2_set_device_info(OAUTH2_S *oa2, char *method)
 {
    char tmp[MAILTMPLEN];
-   char *code;
-   char *name = oa2->name;
+   char *name = (char *) oa2->name;
    int aux_rv_value;
    OAUTH2_DEVICECODE_S *deviceinfo = &oa2->devicecode;
    OAUTH2_DEVICEPROC_S aux_value;
@@ -508,7 +531,7 @@ oauth2_set_device_info(OAUTH2_S *oa2, char *method)
 	}
 	else{
 	   so_puts(in_store, "</P><P>");
-	   so_puts(in_store, deviceinfo->message);
+	   so_puts(in_store, (char *) deviceinfo->message);
 	}
 	so_puts(in_store, _("</P><P> Alpine will try to use your URL Viewers setting to find a browser to open this URL."));
 	sprintf(tmp, _(" When you open this link, you will be sent to %s's servers to complete this process."), name);
@@ -569,9 +592,6 @@ oauth2_set_device_info(OAUTH2_S *oa2, char *method)
 	oauth2_elapsed_done(NULL);
     }
     else{
-	int flags, rc, q_line;
-	/* TRANSLATORS: user needs to input an access code from the server */
-	char prompt[MAILTMPLEN], token[MAILTMPLEN];
 	/*
 	 * If screen hasn't been initialized yet, use want_to.
 	 */
@@ -630,8 +650,6 @@ try_wantto:
 	if(want_to(tmp, 'n', 'x', NO_HELP, WT_NORM) == 'y'){
 	   int rv;
 	   UCS ch;
-	   q_line = -(ps_global->ttyo ? ps_global->ttyo->footer_rows : 3);
-	   flags = OE_APPEND_CURRENT;
 
 	   snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
 		"%s", _("After you are done going through the process described above, press \'y\' to continue, or \'n\' to cancel\n"));
@@ -677,7 +695,7 @@ oauth2_get_access_code(unsigned char *url, char *method, OAUTH2_S *oauth2, int *
 	sprintf(tmp, _("<P>Alpine is attempting to log you into your %s account, using the %s method."), oauth2->name, method),
 	so_puts(in_store, tmp);
 
-        if(strucmp(oauth2->name, GMAIL_NAME) == 0){
+        if(strucmp((char *) oauth2->name, (char *) GMAIL_NAME) == 0){
 	   so_puts(in_store, _(" If this is your first time setting up this type of authentication, please follow the steps below. "));
 	   so_puts(in_store, _("</P><P> First you must register Alpine with Google and create a client-id and client-secret. If you already did that, then you can skip to the authorization step, and continue with the process outlined below."));
 	   so_puts(in_store, _("<UL> "));
@@ -895,12 +913,7 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
 	        char *usethisprompt, char *altuserforcache)
 {
     char      *token, tmp[MAILTMPLEN];
-    char      prompt[4*MAILTMPLEN], value[4*MAILTMPLEN], *last;
-    char      defuser[NETMAXUSER];
-    char      hostleadin[80], hostname[200], defubuf[200];
-    char      logleadin[80], pwleadin[50];
-    char     *url_oauth2;
-    char     *tool = NULL;
+    char      prompt[4*MAILTMPLEN];
     char     *OldRefreshToken, *OldAccessToken;
     char     *NewRefreshToken, *NewAccessToken;
     char     *SaveRefreshToken, *SaveAccessToken;
@@ -910,9 +923,7 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
        login name), this is just labelling that user name. */
     char     *userlabel = _("USER");
     STRLIST_S hostlist[2], hostlist2[OAUTH2_TOT_EQUIV+1];
-    HelpType  help ;
-    int       len, rc, q_line, flags, i, j;
-    int       oespace, avail, need, save_dont_use;
+    int       len, q_line, flags, i, j;
     int       save_in_init;
     int	      registered;
     int       ChangeAccessToken, ChangeRefreshToken, ChangeExpirationTime;
@@ -967,8 +978,7 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
 	else{
 	   flags = OE_APPEND_CURRENT;
 	   sprintf(prompt, "%s: %s - %s: ", hostlabel, mb->orighost, userlabel);
-	   rc = optionally_enter(user, q_line, 0, NETMAXUSER,
-			   prompt, NULL, NO_HELP, &flags);
+	   optionally_enter(user, q_line, 0, NETMAXUSER, prompt, NULL, NO_HELP, &flags);
 	}
 	user[NETMAXUSER-1] = '\0';
    }
@@ -1111,7 +1121,7 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
        login->first_time++;
 
     if(login->first_time){	/* count how many authorization methods we support */
-	int nmethods, i, j;
+	int nmethods, j;
 
 	for(nmethods = 0, oa2 = alpine_oauth2_list; oa2 && oa2->name ; oa2++){
 	    for(j = 0; j < OAUTH2_TOT_EQUIV
@@ -1234,7 +1244,7 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
 }
 
 IDLIST *
-set_alpine_id(unsigned char *pname, unsigned char *pversion)
+set_alpine_id(char *pname, char *pversion)
 {
    IDLIST *id;
 
@@ -1529,8 +1539,7 @@ mm_login_work(NETMBX *mb, char *user, char **pwd, long int trial,
        (mb->port != ntohs(sv->s_port))){
 	snprintf(non_def_port, sizeof(non_def_port), ":%lu", mb->port);
 	non_def_port[sizeof(non_def_port)-1] = '\0';
-	dprint((9, "mm_login: using non-default port=%s\n",
-		   non_def_port ? non_def_port : "?"));
+	dprint((9, "mm_login: using non-default port=%s\n", non_def_port));
     }
 
     /*

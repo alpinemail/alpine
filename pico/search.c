@@ -469,7 +469,7 @@ replace_pat(UCS *defpat, int *wrapt, int bsearch)
   char             utf8tmp[NPMT];
   UCS              prompt[NPMT];
   UCS             *promptp;
-  int		   i, flags;
+  int		   flags;
 
     if(bsearch){
 	flags = SR_BACKWRD;

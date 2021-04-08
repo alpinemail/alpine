@@ -2768,7 +2768,6 @@ smime_extract_and_save_cert(PKCS7 *p7)
     X509 *x, *cert;
     char **email;
     int i, j, rv, already_saved;
-    long error;
 
     /* any signers for this message? */
     if((signers = PKCS7_get0_signers(p7, NULL, 0)) == NULL)
@@ -3263,7 +3262,6 @@ decrypt_file(char *fp, int *rv, PERSONAL_CERT *pc)
   PKCS7 *p7 = NULL;
   char *text, *tmp;
   BIO *in = NULL, *out = NULL;
-  int i, j;
   long unsigned int len;
   void *ret;
 

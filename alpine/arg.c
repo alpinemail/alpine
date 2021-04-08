@@ -622,7 +622,7 @@ Loop: while(--ac > 0)
 		      if((str = *++av) != NULL){
 			  if(x.name)
 			     fs_give((void **) &x.name);
-			  x.name = cpystr(str);
+			  x.name = (unsigned char *) cpystr(str);
 		      }
 		  }
 		  else{
