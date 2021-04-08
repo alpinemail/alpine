@@ -210,7 +210,13 @@ New features include:
 <LI> Always follow ‘suppress-asterisks-in-password-prompt’ setting in the
      various password prompts. Submitted by &Eacute;tienne Deparis.
 <LI> Use 'alpine -F' instead of 'pine -F' as the browser default pager.
-     Submitted by &Eacute;tienne Deparis.
+     Submitted by 
+<LI> Introduction of OTHER CMDS menu for the browser/pilot to let
+     people discover the two new commands: &quote;1&quote; is a toggle that 
+     switches between 1 column and multicolumn mode. The &quote;.&quote; command 
+     toggles between hiding or showing hidden files, and the &quote;G&quote; 
+     command to travel between directories. Contributed by &Eacute;tienne 
+     Deparis.
 </UL>
 
 <P>

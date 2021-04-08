@@ -77,6 +77,7 @@ static struct bmaster {
     int    longest;				/* longest file name (in screen width) */
     int	   fpl;					/* file names per line */
     int    cpf;					/* chars / file / line */
+    int    menu;					/* current menu to display */
     int    flags;
     char   dname[NLINE];			/* this dir's name (UTF-8) */
     char   *names;				/* malloc'd name array (UTF-8) */
@@ -93,6 +94,7 @@ static	char	*browser_title = NULL;
 struct bmaster *getfcells(char *, int);
 void   PaintCell(int, int, int, struct fcell *, int);
 void   PaintBrowser(struct bmaster *, int, int *, int *);
+struct bmaster *RepaintBrowser(struct bmaster *, int);
 void   BrowserKeys(void);
 void   layoutcells(struct bmaster *);
 void   percdircells(struct bmaster *);
@@ -110,17 +112,27 @@ void   add_cell_to_lmlist(struct fcell *, struct bmaster *);
 void   del_cell_from_lmlist(struct fcell *, struct bmaster *);
 
 
+#define	HELP_MENU	{"?", N_("Get Help"), KS_SCREENHELP}
+#define	OTHER_MENU	{"O", N_("OTHER CMDS"), KS_NONE}
 static	KEYMENU menu_browse[] = {
-    {"?", N_("Get Help"), KS_SCREENHELP},	{NULL, NULL, KS_NONE},
+    HELP_MENU,		{NULL, NULL, KS_NONE},
     {NULL, NULL, KS_NONE},		{"-", N_("Prev Pg"), KS_PREVPAGE},
     {"D", N_("Delete"), KS_NONE},		{"C",N_("Copy"), KS_NONE},
-    {NULL, NULL, KS_NONE},		{NULL, NULL, KS_NONE},
+    OTHER_MENU,		{NULL, NULL, KS_NONE},
     {"W", N_("Where is"), KS_NONE},		{"Spc", N_("Next Pg"), KS_NEXTPAGE},
     {"R", N_("Rename"), KS_NONE},		{NULL, NULL, KS_NONE}
 };
+static	KEYMENU menu_other[] = {
+    HELP_MENU,		{NULL, NULL, KS_NONE},
+    {NULL, NULL, KS_NONE},		{NULL, NULL, KS_NONE},
+    {NULL, NULL, KS_NONE},		{"1", N_("One Col"), KS_NONE},
+    OTHER_MENU,		{NULL, NULL, KS_NONE},
+    {NULL, NULL, KS_NONE},		{NULL, NULL, KS_NONE},
+    {NULL, NULL, KS_NONE},		{".", N_("Dot files"), KS_NONE}
+};
 #define	QUIT_KEY	1
 #define	EXEC_KEY	2
-#define	GOTO_KEY	6
+#define	GOTO_KEY	10
 #define	SELECT_KEY	7
 #define	PICO_KEY	11
 
@@ -228,6 +240,8 @@ N_("~        ~N,~^~F     Move forward (right) one column."),
 N_("~        ~P,~^~B     Move back (left) one column."),
 N_("~        ~^~N       Move down one row."),
 N_("~        ~^~P       Move up one row."),
+N_("~        ~.        Switch show dot files."),
+N_("~        ~1        Switch single column display."),
 " ",
 N_("~        ~D        Delete the selected file."),
 N_("~        ~R        Rename the selected file or directory."),
@@ -1046,6 +1060,28 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 	    BrowserKeys();
 	    break;
 
+	  case '.':					/* display dot files */
+		gmode ^= MDDOTSOK;
+		gmp = RepaintBrowser(gmp, fb_flags);
+		break;
+
+	  case '1':					/* One column mode */
+		gmode ^= MDONECOL;
+		gmp = RepaintBrowser(gmp, fb_flags);
+		break;
+
+	  case 'o':					/* Other menu */
+	  case 'O':
+		if (gmp){
+		  if(gmp->menu == 0){
+			gmp->menu = 1;
+		  } else {
+			gmp->menu = 0;
+		  }
+		  BrowserKeys();
+		}
+		break;
+
 	  case 'a':					/* Add */
 	  case 'A':
 	    if(gmode&MDSCUR){				/* not allowed! */
@@ -1818,7 +1854,7 @@ getfcells(char *dname, int fb_flags)
     }
 
     mp->bottom = mp->head = mp->top = NULL;
-    mp->cpf = mp->fpl = 0;
+    mp->menu = mp->cpf = mp->fpl = 0;
     mp->longest = 5;				/* .. must be labeled! */
     mp->flags = fb_flags;
 
@@ -2224,6 +2260,37 @@ PaintBrowser(struct bmaster *mp, int level, int *row, int *col)
     }
 }
 
+/*
+ * RepaintBrowser - factorized method to just repaint everything
+ */
+struct bmaster *
+RepaintBrowser(struct bmaster *gmp, int fb_flags)
+{
+	struct bmaster *mp;
+	struct fcell *tp;
+	int row, col;
+	char *fn;
+	fn = gmp->current->fname;
+
+	if((mp = getfcells(gmp->dname, fb_flags)) == NULL){
+	  /* getfcells should explain what happened */
+	  return(gmp);
+	}
+	zotmaster(&gmp);
+	gmp = mp;
+
+	tp = NULL;
+	if(*fn){
+	if((tp = FindCell(gmp, fn, 0)) != NULL){
+	  gmp->current = tp;
+	  PlaceCell(gmp, gmp->current, &row, &col);
+	}
+	}
+
+	PaintBrowser(gmp, 0, NULL, NULL);
+	return(gmp);
+}
+
 
 /*
  * BrowserKeys - just paints the keyhelp at the bottom of the display
@@ -2231,12 +2298,16 @@ PaintBrowser(struct bmaster *mp, int level, int *row, int *col)
 void
 BrowserKeys(void)
 {
+    if (gmp && gmp->menu == 1){
+	menu_other[GOTO_KEY].name  = (gmode&MDGOTO) ? "G" : NULL;
+	menu_other[GOTO_KEY].label = (gmode&MDGOTO) ? N_("Goto") : NULL;
+	wkeyhelp(menu_other);
+	return;
+    }
     menu_browse[QUIT_KEY].name  = (gmode&MDBRONLY) ? "Q" : "E";
     /* TRANSLATORS: Brwsr is an abbreviation for Browser, which is
        a command used to look through something */
     menu_browse[QUIT_KEY].label = (gmode&MDBRONLY) ? N_("Quit") : N_("Exit Brwsr");
-    menu_browse[GOTO_KEY].name  = (gmode&MDGOTO) ? "G" : NULL;
-    menu_browse[GOTO_KEY].label = (gmode&MDGOTO) ? N_("Goto") : NULL;
     if(gmode & MDBRONLY){
 	menu_browse[EXEC_KEY].name  = "L";
 	menu_browse[EXEC_KEY].label = N_("Launch");
