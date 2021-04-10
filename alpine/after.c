@@ -3,7 +3,7 @@ static char rcsid[] = "$Id: after.c 138 2006-09-22 22:12:03Z mikes@u.washington.
 #endif
 
 /* ========================================================================
- * Copyright 2013-2020 Eduardo Chappa
+ * Copyright 2013-2021 Eduardo Chappa
  * Copyright 2006-2007 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

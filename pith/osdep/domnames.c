@@ -4,7 +4,7 @@ static char rcsid[] = "$Id: domnames.c 1176 2008-09-29 21:16:42Z hubert@u.washin
 
 /*
  * ========================================================================
- * Copyright 2013-2020 Eduardo Chappa
+ * Copyright 2013-2021 Eduardo Chappa
  * Copyright 2008 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

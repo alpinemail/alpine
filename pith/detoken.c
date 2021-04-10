@@ -4,7 +4,7 @@ static char rcsid[] = "$Id: detoken.c 769 2007-10-24 00:15:40Z hubert@u.washingt
 
 /*
  * ========================================================================
- * Copyright 2013-2020 Eduardo Chappa
+ * Copyright 2013-2021 Eduardo Chappa
  * Copyright 2006 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

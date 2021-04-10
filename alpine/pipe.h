@@ -2,7 +2,7 @@
  * $Id: pipe.h 136 2006-09-22 20:06:05Z hubert@u.washington.edu $
  *
  * ========================================================================
- * Copyright 2013-2020 Eduardo Chappa
+ * Copyright 2013-2021 Eduardo Chappa
  * Copyright 2006 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

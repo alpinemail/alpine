@@ -3,7 +3,7 @@
 #        T H E   A L P I N E    M E S S A G E   S Y S T E M
 #
 #/* ========================================================================
-# * Copyright 2013-2020 Eduardo Chappa
+# * Copyright 2013-2021 Eduardo Chappa
 # * Copyright 2006-2008 University of Washington
 # *
 # * Licensed under the Apache License, Version 2.0 (the "License");
@@ -156,7 +156,7 @@ Version <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)
 <!--chtml endif-->
 
 <BR>
-<BR>Copyright 2013-2020 Eduardo Chappa
+<BR>Copyright 2013-2021 Eduardo Chappa
 <BR>Copyright 2006-2008 University of Washington
 </DIV>
 
@@ -183,7 +183,7 @@ it for you. Please take some time to read it and understand it.
 Since the Privacy Policy could be amended to take into consideration
 new additions to Alpine, please check it periodically.
 
-<P> These changes were made after the release of version 2.24.
+<P> The changes in version <!--#echo var="ALPINE_VERSION"--> are as follows:
 
 <P> 
 New features include:
@@ -1572,7 +1572,7 @@ Since then, the effort of developing Alpine has been continued by
 a community of volunteers who make good software even better!
 
 <P>
-Alpine Copyright 2013-2020 Eduardo Chappa, 
+Alpine Copyright 2013-2021 Eduardo Chappa, 
 <BR> Copyright 2006-2008 University of Washington.
 
 <P>
@@ -2932,7 +2932,7 @@ Version <!--#echo var="ALPINE_VERSION"-->
 <BR>(built <!--#echo var=ALPINE_COMPILE_DATE-->)
 <!--chtml endif-->
 </DIV>
-<CENTER>Copyright 2013-2020 Eduardo Chappa,
+<CENTER>Copyright 2013-2021 Eduardo Chappa,
 <BR>Copyright 2006-2008 University of Washington.
 </CENTER>
 

@@ -5,7 +5,7 @@ static char rcsid[] = "$Id: init.c 101 2006-08-10 22:53:04Z mikes@u.washington.e
 /*
  * ========================================================================
  * Copyright 2006-2007 University of Washington
- * Copyright 2013-2020 Eduardo Chappa
+ * Copyright 2013-2021 Eduardo Chappa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
