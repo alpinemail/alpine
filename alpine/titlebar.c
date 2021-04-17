@@ -363,6 +363,9 @@ output_titlebar(TITLE_S *tc)
     if(tc && tc->titlebar_line)
       PutLine0(0, 0, tc->titlebar_line);
 
+    if (ps_global->ttyo)
+	MoveCursor(0, ps_global->ttyo->screen_cols); /* move to the last column */
+
     if(lastc){
 	(void)pico_set_colorp(lastc, PSC_NONE);
 	free_color_pair(&lastc);
@@ -964,6 +967,9 @@ update_titlebar_message(void)
 
 	PutLine0(0, as.cur_mess_col, buf);
 
+	if (ps_global->ttyo)
+	    MoveCursor(0, ps_global->ttyo->screen_cols); /* move to the last column */
+
 	if(lastc){
 	    (void)pico_set_colorp(lastc, PSC_NONE);
 	    free_color_pair(&lastc);
@@ -1038,6 +1044,9 @@ update_titlebar_status(void)
 
     PutLine0(0, as.del_column, BAR_STATUS(as.msg_state));
 
+    if (ps_global->ttyo)
+	MoveCursor(0, ps_global->ttyo->screen_cols); /* move to the last column */
+
     if(lastc){
 	(void)pico_set_colorp(lastc, PSC_NONE);
 	free_color_pair(&lastc);
@@ -1076,6 +1085,9 @@ update_titlebar_percent(long int new_line_number)
 
     PutLine0(0, as.percent_column,
 	     percentage(as.current_line, as.total_lines, 0));
+
+    if (ps_global->ttyo)
+	MoveCursor(0, ps_global->ttyo->screen_cols); /* move to the last column */
 
     if(lastc){
 	(void)pico_set_colorp(lastc, PSC_NONE);
@@ -1121,6 +1133,9 @@ update_titlebar_lpercent(long int new_line_number)
 
     PutLine0(0, as.percent_column,
 	     percentage(as.current_line, as.total_lines, 0));
+
+    if (ps_global->ttyo)
+	MoveCursor(0, ps_global->ttyo->screen_cols); /* move to the last column */
 
     if(lastc){
 	(void)pico_set_colorp(lastc, PSC_NONE);
@@ -1206,6 +1221,10 @@ check_cue_display(char *putstr)
       lastc = pico_set_colorp(titlecolor, PSC_REV|PSC_RET);
 
     PutLine0(0, 0, putstr);		/* show delay cue */
+
+    if (ps_global->ttyo)
+	MoveCursor(0, ps_global->ttyo->screen_cols); /* move to the last column */
+
     if(lastc){
 	(void)pico_set_colorp(lastc, PSC_NONE);
 	free_color_pair(&lastc);
