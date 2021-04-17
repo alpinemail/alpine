@@ -971,6 +971,8 @@ status_message_write(char *message, int from_alarm_handler)
 	      EndInverse();
 	}
 	else{
+	    int width = (int) utf8_width(newstatusbuf);
+
 	    if(pico_usingcolor())
 	      lastc = pico_get_cur_color();
 
@@ -981,6 +983,13 @@ status_message_write(char *message, int from_alarm_handler)
 	      pico_set_nbg_color();	/* so ClearLine uses bg color */
 
 	    ClearLine(row);
+
+	    if (width > ps_global->ttyo->screen_cols)
+	      col = 0;
+	    else
+	      col = (ps_global->ttyo->screen_cols - width) / 2;
+
+	    MoveCursor(row, col);	/* so Inverse will be set correctly */
 
 	    if(pico_usingcolor() && VAR_STATUS_FORE_COLOR &&
 	       VAR_STATUS_BACK_COLOR &&
@@ -1000,7 +1009,7 @@ status_message_write(char *message, int from_alarm_handler)
 		StartInverse();
 	    }
 
-	    col = Centerline(row, newstatusbuf);
+	    PutLine0(row, col, newstatusbuf);
 
 	    if(lastc){
 		(void)pico_set_colorp(lastc, PSC_NONE);
