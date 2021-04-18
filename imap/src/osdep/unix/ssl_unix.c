@@ -416,6 +416,9 @@ static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags)
   else SSL_CTX_set_verify (stream->context,SSL_VERIFY_PEER,ssl_open_verify);
 				/* set cipher list */
   ciphers = (char *) mail_parameters (NIL,GET_SSLCIPHERS,NIL);
+  if(ciphers != NIL
+     && !SSL_CTX_set_cipher_list (stream->context,ciphers))
+     return "No listed ciphers recognized";
 				/* if a non-standard path desired */
   CAfile = (char *) mail_parameters (NIL,GET_SSLCAFILE,NIL);
   CApath = (char *) mail_parameters (NIL,GET_SSLCAPATH,NIL);
