@@ -122,8 +122,10 @@
  * interfere with the actual character values. They are also
  * all positive values with the most significant bit set to 0,
  * so a 32 bit signed integer could hold them all.
+ * For most people SUINT32 is UINT32, but the user can define
+ * differently at compilation time, for example, as unsigned long.
  */
-typedef UINT32 UCS;
+typedef SUINT32 UCS;
 
 /*
  * The type of an IMAP UID, which is a 32-bit unsigned int.

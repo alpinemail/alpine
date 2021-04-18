@@ -1935,6 +1935,12 @@ AC_CHECK_HEADERS([stdint.h], [uint32=uint32_t], [
 ])
 AC_DEFINE_UNQUOTED([UINT32], $uint32, [System defined unsigned 32 bit integer])
 
+if test -z "$SUINT32" ; then
+   SUINT32="$uint32"
+fi
+
+AC_DEFINE_UNQUOTED([SUINT32], $SUINT32, [System defined for shorter than unsigned 32 bit integer])
+
 AC_CACHE_CHECK(argument pointer type of qsort compare function and base,
 ac_cv_func_qsort_argtype,
 [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[

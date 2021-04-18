@@ -20834,6 +20834,16 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+if test -z "$SUINT32" ; then
+   SUINT32="$uint32"
+fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define SUINT32 $SUINT32
+_ACEOF
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking argument pointer type of qsort compare function and base" >&5
 $as_echo_n "checking argument pointer type of qsort compare function and base... " >&6; }
 if ${ac_cv_func_qsort_argtype+:} false; then :

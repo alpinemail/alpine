@@ -608,6 +608,9 @@
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
+/* System defined for shorter than unsigned 32 bit integer */
+#undef SUINT32
+
 /* System pinerc */
 #undef SYSTEM_PINERC
 
