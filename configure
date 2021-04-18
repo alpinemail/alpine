@@ -21249,6 +21249,7 @@ for ac_func in strchr \
 		wcwidth \
 		mbstowcs \
 		wcrtomb \
+		wctomb \
 		putenv \
 		setenv
 do :

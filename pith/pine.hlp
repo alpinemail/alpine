@@ -35312,7 +35312,14 @@ To convert from Unicode to multi-byte the routine
 <CENTER><SAMP>wcrtomb</SAMP></CENTER>
 <P>
 
+is used, if available, otherwise
+
+<P>
+<CENTER><SAMP>wctomb</SAMP></CENTER>
+<P>
+
 is used.
+
 And to find the screen width a particular Unicode character will
 occupy the routine used is
 

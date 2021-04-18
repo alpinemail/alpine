@@ -469,6 +469,9 @@
 /* Define to 1 if you have the `wcrtomb' function. */
 #undef HAVE_WCRTOMB
 
+/* Define to 1 if you have the `wctomb' function. */
+#undef HAVE_WCTOMB
+
 /* Define to 1 if you have the `wcwidth' function. */
 #undef HAVE_WCWIDTH
 

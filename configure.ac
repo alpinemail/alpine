@@ -1998,6 +1998,7 @@ AC_CHECK_FUNCS([strchr \
 		wcwidth \
 		mbstowcs \
 		wcrtomb \
+		wctomb \
 		putenv \
 		setenv])
 
