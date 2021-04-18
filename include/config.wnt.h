@@ -589,6 +589,7 @@
 /* System defined unsigned 32 bit integer */
 /* #define UINT32 uint32_t */
 /* #define UINT32 unsigned long */
+#define SUINT32 UINT32
 
 /* Compile in quota check on startup */
 /* #define USE_QUOTAS */
