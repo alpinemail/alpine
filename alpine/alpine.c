@@ -474,6 +474,7 @@ main(int argc, char **argv)
     set_system_certs_container(pine_state);
     set_user_certs_path(pine_state);
     set_user_certs_container(pine_state);
+    mail_parameters(NULL, SET_SSLCIPHERS, (void *) pine_state->VAR_SSLCIPHERS);
 #endif
 
 #ifdef SMIME

@@ -188,7 +188,7 @@ new additions to Alpine, please check it periodically.
 <P>
 New features include:
 <UL>
-<LI> New configuration variable <a href="h_config_ssl_ciphers"><!--#echo var="VAR_ssl-ciphers"--></a> that allows
+<LI> Unix Alpine: New configuration variable <a href="h_config_ssl_ciphers"><!--#echo var="VAR_ssl-ciphers"--></a> that allows
 users to list the ciphers to use when connecting to a SSL server.
 Based on a collaboration with Professor Martin Trusler.
 <LI> New hidden feature <a href="h_config_delete_before_writing"><!--#echo var="FEAT_enable-delete-before-writing"--></a>

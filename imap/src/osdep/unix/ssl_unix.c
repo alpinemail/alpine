@@ -1,5 +1,5 @@
 /* ========================================================================
- * Copyright 2019 Eduardo Chappa
+ * Copyright 2019-2021 Eduardo Chappa
  * Copyright 2008-2009 Mark Crispin
  * ========================================================================
  */
@@ -417,6 +417,7 @@ static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags)
 				/* set cipher list */
   ciphers = (char *) mail_parameters (NIL,GET_SSLCIPHERS,NIL);
   if(ciphers != NIL
+     && *ciphers != '\0'
      && !SSL_CTX_set_cipher_list (stream->context,ciphers))
      return "No listed ciphers recognized";
 				/* if a non-standard path desired */

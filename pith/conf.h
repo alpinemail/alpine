@@ -142,6 +142,7 @@
 #define GLO_SSLUSERCAPATH	     vars[V_USERSSLCAPATH].global_val.l
 #define VAR_SSLUSERCAFILE	     vars[V_USERSSLCAFILE].current_val.l
 #define GLO_SSLUSERCAFILE	     vars[V_USERSSLCAFILE].global_val.l
+#define VAR_SSLCIPHERS		     vars[V_SSLCIPHERS].current_val.p
 #endif
 #define VAR_INDEX_COLOR_STYLE	     vars[V_INDEX_COLOR_STYLE].current_val.p
 #define GLO_INDEX_COLOR_STYLE	     vars[V_INDEX_COLOR_STYLE].global_val.p
