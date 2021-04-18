@@ -395,7 +395,7 @@ static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags)
   int minv, maxv;
   int masklow, maskhigh;
   char *s,*t,*err,tmp[MAILTMPLEN], buf[256];
-  char *CAfile, *CApath;
+  char *CAfile, *CApath, *ciphers;
   sslcertificatequery_t scq =
     (sslcertificatequery_t) mail_parameters (NIL,GET_SSLCERTIFICATEQUERY,NIL);
   sslclientcert_t scc =
@@ -414,6 +414,8 @@ static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags)
   if (flags & NET_NOVALIDATECERT)
     SSL_CTX_set_verify (stream->context,SSL_VERIFY_NONE,NIL);
   else SSL_CTX_set_verify (stream->context,SSL_VERIFY_PEER,ssl_open_verify);
+				/* set cipher list */
+  ciphers = (char *) mail_parameters (NIL,GET_SSLCIPHERS,NIL);
 				/* if a non-standard path desired */
   CAfile = (char *) mail_parameters (NIL,GET_SSLCAFILE,NIL);
   CApath = (char *) mail_parameters (NIL,GET_SSLCAPATH,NIL);

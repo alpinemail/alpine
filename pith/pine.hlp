@@ -188,6 +188,9 @@ new additions to Alpine, please check it periodically.
 <P>
 New features include:
 <UL>
+<LI> New configuration variable <!--#echo var="VAR_ssl-ciphers"--> that allows
+users to list the ciphers that want to use when connecting to a SSL server.
+Based on a collaboration with Professor Martin Trusler.
 <LI> New hidden feature <a href="h_config_delete_before_writing"><!--#echo var="FEAT_enable-delete-before-writing"--></a>
 to add support for terminals that need lines to be deleted before being written. Based
 on a collaboration with Professor Martin Trusler.
@@ -22807,6 +22810,34 @@ Example of values for this option might be:
 User Certs File = /home/fred/.alpine-certs/certs.pem
                   C:\\libressl\\ssl\\certs\\cert.pem
 <PRE>
+
+<P>
+&lt;End of help on this topic&gt;
+</BODY></HTML>
+====== h_config_ssl_ciphers ======
+<HTML>
+<HEAD>
+<TITLE>OPTION: <!--#echo var="VAR_ssl-ciphers"--></TITLE>
+</HEAD>
+<BODY>
+<H1>OPTION: <!--#echo var="VAR_ssl-ciphers"--></H1>
+
+(UNIX ALPINE ONLY)
+This is a colon separated list of ciphers that your openssl or libressl
+library supports and will use to negotiate a secure connection with a
+remote SSL server.
+
+<P>
+The list of ciphers supported by openssl can be obtained with the command
+line command
+
+<P>
+openssl ciphers
+
+<P>
+Consult the manual page of the openssl ciphers command to see more
+way to specify groups of ciphers, such as RSA, or other groups of
+ciphers.
 
 <P>
 &lt;End of help on this topic&gt;

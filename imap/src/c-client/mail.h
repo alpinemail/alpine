@@ -248,6 +248,8 @@
 #define SET_ENCRYPTION_RANGE_MIN (long) 339
 #define GET_ENCRYPTION_RANGE_MAX (long) 340
 #define SET_ENCRYPTION_RANGE_MAX (long) 341
+#define GET_SSLCIPHERS	(long) 342
+#define SET_SSLCIPHERS	(long) 343
 
 	/* 4xx: network drivers */
 #define GET_MAXLOGINTRIALS (long) 400

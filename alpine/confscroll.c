@@ -5784,6 +5784,7 @@ fix_side_effects(struct pine *ps, struct variable *var, int revert)
 			var == &ps->vars[V_SSLCAFILE] ||
 			var == &ps->vars[V_USERSSLCAPATH] ||
 			var == &ps->vars[V_USERSSLCAFILE] ||
+			var == &ps->vars[V_SSLCIPHERS] ||
 #endif
 		        var == &ps->vars[V_RSHPATH] ||
 		        var == &ps->vars[V_RSHCMD] ||
