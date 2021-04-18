@@ -3386,6 +3386,8 @@ feature_list(int index)
 	 F_DISABLE_SHARED_NAMESPACES, h_config_disable_shared, PREF_HIDDEN, 0},
 	{"disable-signature-edit-cmd", NULL,
 	 F_DISABLE_SIGEDIT_CMD, h_config_disable_signature_edit, PREF_HIDDEN, 0},
+	{"enable-delete-before-writing", NULL,
+	 F_ENABLE_DEL_WHEN_WRITING, h_config_delete_before_writing, PREF_HIDDEN, 0},
 	{"new-thread-on-blank-subject", "New Thread on Blank Subject",
 	 F_NEW_THREAD_ON_BLANK_SUBJECT, h_config_new_thread_blank_subject, PREF_HIDDEN, 1},
 	{"quell-personal-name-prompt", NULL,

@@ -1006,6 +1006,8 @@ attachment_screen_updater(struct pine *ps, ATDISP_S *current, ATT_SCREEN_S *scre
 	if(!(!screen->current || ctmp == screen->current || ctmp == current))
 	  continue;
 
+	if(F_ON(F_ENABLE_DEL_WHEN_WRITING, ps_global))
+	   ClearLine(dline + HEADER_ROWS(ps));
 	if(ctmp && ctmp->dstring){
 	    char *p = tmp_20k_buf;
 	    int   i, col, x = 0, totlen;
@@ -1061,7 +1063,7 @@ attachment_screen_updater(struct pine *ps, ATDISP_S *current, ATT_SCREEN_S *scre
 	       && !(F_ON(F_FORCE_LOW_SPEED,ps) || ps->low_speed))
 	      EndInverse();
 	}
-	else
+	else if(F_OFF(F_ENABLE_DEL_WHEN_WRITING, ps_global))
 	  ClearLine(dline + HEADER_ROWS(ps));
     }
 

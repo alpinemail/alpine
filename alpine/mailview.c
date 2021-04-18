@@ -4431,6 +4431,8 @@ scroll_scroll_text(long int new_top_line, HANDLE_S *handle, int redraw)
 		    if(st->parms->text.src == FileStar)
 		      l -= new_top_line;
 
+		    if(F_ON(F_ENABLE_DEL_WHEN_WRITING, ps_global))
+		       ClearLine(top + lp->where.row);
 		    PutLine0n8b(top + lp->where.row, 0, st->text_lines[l],
 				st->line_lengths[l], handle);
 		}
@@ -4448,6 +4450,8 @@ scroll_scroll_text(long int new_top_line, HANDLE_S *handle, int redraw)
 		       if(st->parms->text.src == FileStar)
 			 l -= new_top_line;
 
+		       if(F_ON(F_ENABLE_DEL_WHEN_WRITING, ps_global))
+			  ClearLine(top + lp->where.row);
 		       PutLine0n8b(top + lp->where.row, 0, st->text_lines[l],
 				   st->line_lengths[l], handle);
 		   }
@@ -4507,6 +4511,8 @@ scroll_scroll_text(long int new_top_line, HANDLE_S *handle, int redraw)
 	       if(st->parms->text.src == FileStar)
 		 l -= new_top_line;
 
+	       if(F_ON(F_ENABLE_DEL_WHEN_WRITING, ps_global))
+		  ClearLine(top + lp->where.row);
 	       PutLine0n8b(top + lp->where.row, 0, st->text_lines[l],
 			   st->line_lengths[l], handle);
 	   }
@@ -4521,6 +4527,8 @@ scroll_scroll_text(long int new_top_line, HANDLE_S *handle, int redraw)
 		      : st->top_text_line + num_display_lines;
 
 		if(l < st->num_lines){
+		  if(F_ON(F_ENABLE_DEL_WHEN_WRITING, ps_global))
+		     ClearLine(st->screen.start_line + num_display_lines - 1);
 		  PutLine0n8b(st->screen.start_line + num_display_lines - 1,
 			      0, st->text_lines[l], st->line_lengths[l],
 			      handle ? handle : st->parms->text.handles);
@@ -4549,6 +4557,8 @@ scroll_scroll_text(long int new_top_line, HANDLE_S *handle, int redraw)
 		l = (st->parms->text.src == FileStar)
 		      ? st->top_text_line - new_top_line
 		      : st->top_text_line;
+		if(F_ON(F_ENABLE_DEL_WHEN_WRITING, ps_global))
+		   ClearLine(st->screen.start_line);
 		PutLine0n8b(st->screen.start_line, 0, st->text_lines[l],
 			    st->line_lengths[l],
 			    handle ? handle : st->parms->text.handles);
@@ -4574,6 +4584,8 @@ scroll_scroll_text(long int new_top_line, HANDLE_S *handle, int redraw)
 	    for(lp = handle->loc; lp; lp = lp->next)
 	      if(lp->where.row >= st->top_text_line
 		 && lp->where.row < st->top_text_line + st->screen.length){
+		  if(F_ON(F_ENABLE_DEL_WHEN_WRITING, ps_global))
+		     ClearLine(st->screen.start_line + (lp->where.row - st->top_text_line));
 		  PutLine0n8b(st->screen.start_line
 					 + (lp->where.row - st->top_text_line),
 			      0, st->text_lines[lp->where.row],

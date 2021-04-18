@@ -1846,6 +1846,8 @@ paint_index_line(ICE_S *argice, int line, long int msgno, IndexColType sfld,
       do_arrow = (afld != iNothing);
 
       MoveCursor(HEADER_ROWS(ps_global) + line, 0);
+      if(F_ON(F_ENABLE_DEL_WHEN_WRITING, ps_global))
+	 CleartoEOLN();
 
       /* find the base color for the whole line */
       if(cur && !ac && !do_arrow){

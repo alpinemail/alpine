@@ -374,11 +374,15 @@ display_book(int start_disp, int cur_line, int old_line, int redraw, Pos *start_
         if(cur_line != old_line){
 
             /*--- Repaint old position to erase "cursor" ---*/
+	    if(F_ON(F_ENABLE_DEL_WHEN_WRITING, ps_global))
+	       ClearLine(old_line + HEADER_ROWS(ps_global));
             paint_line(old_line + HEADER_ROWS(ps_global), as.top_ent + old_line,
                        0, &sp);
         }
 
         /*--- paint the position with the cursor ---*/
+	if(F_ON(F_ENABLE_DEL_WHEN_WRITING, ps_global))
+	   ClearLine(cur_line + HEADER_ROWS(ps_global));
         paint_line(cur_line + HEADER_ROWS(ps_global), as.top_ent + cur_line,
                    1, &sp);
 	if(start_pos)

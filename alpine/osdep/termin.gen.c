@@ -432,6 +432,8 @@ optionally_enter(char *utf8string, int y_base, int x_base, int utf8string_size,
 	draw_keymenu(km, bitmap, cols, 1-FOOTER_ROWS(ps_global), 0, FirstMenu);
     }
     
+    if(F_ON(F_ENABLE_DEL_WHEN_WRITING, ps_global))
+       ClearLine(real_y_base);
     if(pico_usingcolor() && VAR_PROMPT_FORE_COLOR &&
        VAR_PROMPT_BACK_COLOR &&
        pico_is_good_color(VAR_PROMPT_FORE_COLOR) &&

@@ -183,6 +183,16 @@ it for you. Please take some time to read it and understand it.
 Since the Privacy Policy could be amended to take into consideration
 new additions to Alpine, please check it periodically.
 
+<P> These changes were added after the release of version <!--#echo var="ALPINE_VERSION"-->.
+
+<P>
+New features include:
+<UL>
+<LI> New hidden feature <a href="h_config_delete_before_writing"><!--#echo var="FEAT_enable-delete-before-writing"--></a>
+to add support for terminals that need lines to be deleted before being written. Based
+on a collaboration with Professor Martin Trusler.
+</UL>
+
 <P> The changes in version <!--#echo var="ALPINE_VERSION"--> are as follows:
 
 <P> 
@@ -4688,6 +4698,7 @@ There are also additional details on
 <li><a href="h_config_disable_collate">FEATURE: <!--#echo var="FEAT_disable-setlocale-collate"--></a>
 <li><a href="h_config_disable_shared">FEATURE: <!--#echo var="FEAT_disable-shared-namespaces"--></a>
 <li><a href="h_config_disable_signature_edit">FEATURE: <!--#echo var="FEAT_disable-signature-edit-cmd"--></a>
+<li><a href="h_config_delete_before_writing">FEATURE: <!--#echo var="FEAT_enable-delete-before-writing"--></a>
 <li><a href="h_config_take_fullname">FEATURE: <!--#echo var="FEAT_disable-take-fullname-in-addresses"--></a>
 <li><a href="h_config_take_lastfirst">FEATURE: <!--#echo var="FEAT_disable-take-last-comma-first"--></a>
 <li><a href="h_config_disable_reset_disp">FEATURE: <!--#echo var="FEAT_disable-terminal-reset-for-display-filters"--></a>
@@ -34516,6 +34527,29 @@ If set, this disables the editing of signature files from within
 the Setup/Config screen.
 <P>
 <UL>   
+<LI><A HREF="h_finding_help">Finding more information and requesting help</A>
+</UL><P>
+&lt;End of help on this topic&gt;
+</BODY>
+</HTML>
+====== h_config_delete_before_writing =====
+<HTML>
+<HEAD>
+<TITLE>FEATURE: <!--#echo var="FEAT_enable-delete-before-writing"--></TITLE>
+</HEAD>
+<BODY>
+<H1>FEATURE: <!--#echo var="FEAT_enable-delete-before-writing"--></H1>
+
+This feature controls a behavior of Alpine intended to workaround problems in
+terminals where the marker for the end of inverse video cannot be overwritten,
+but must be deleted, as a way to start inverse video again.
+
+<P>
+When this feature is enabled, Alpine will delete a line before writing it,
+therefore deleting the end of reverse video. Modern terminals do not require
+to enable this feature, but some old terminals might require it.
+<P>
+<UL>
 <LI><A HREF="h_finding_help">Finding more information and requesting help</A>
 </UL><P>
 &lt;End of help on this topic&gt;
