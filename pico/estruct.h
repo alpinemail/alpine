@@ -310,6 +310,7 @@ typedef struct  {
         int     (*t_eeop)(void);        /* Erase to end of page.        */
         int     (*t_beep)(void);        /* Beep.                        */
 	int	(*t_rev)(int);		/* set reverse video state	*/
+	int	(*t_eri)(void);		/* erase reverse inverse	*/
 }       TERM;
 
 /*	structure for the table of initial key bindings		*/

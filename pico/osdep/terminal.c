@@ -71,6 +71,7 @@ static int      tinfoeeol(void);
 static int      tinfoeeop(void);
 static int      tinfobeep(void);
 static int      tinforev(int);
+static int      tinfoeri(void);
 static int      tinfoopen(void);
 static int      tinfoterminalinfo(int);
 static int      tinfoclose(void);
@@ -111,7 +112,7 @@ char	*_clearscreen, *_moveto, *_up, *_down, *_right, *_left,
 	*_termcap_init,		/* string to start termcap */
         *_termcap_end,		/* string to end termcap */
 	*_op, *_oc, *_setaf, *_setab, *_setf, *_setb, *_scp;
-int	_colors, _pairs, _bce;
+int	_colors, _pairs, _bce, _xhp;
 char     term_name[40];
 
 TERM term = {
@@ -129,7 +130,8 @@ TERM term = {
         tinfoeeol,
         tinfoeeop,
         tinfobeep,
-        tinforev
+        tinforev,
+	tinfoeri
 };
 
 
@@ -387,6 +389,7 @@ tinfoterminalinfo(int termcap_wins)
     _op			= tigetstr("op");
     _oc			= tigetstr("oc");
     _bce		= tigetflag("bce");
+    _xhp		= tigetflag("xhp");
 
     _tlines = tigetnum("lines");
     if(_tlines == -1){
@@ -802,6 +805,16 @@ tinforev(int state)		/* change reverse video status */
 
 
 static int
+tinfoeri(void)
+{
+    if(_xhp && _clearinverse)
+      putpad(_clearinverse);
+
+    return(1);
+}
+
+
+static int
 tinfobeep(void)
 {
     ttputc(BELL);
@@ -830,6 +843,7 @@ static int      tcapeeol(void);
 static int      tcapeeop(void);
 static int      tcapbeep(void);
 static int      tcaprev(int);
+static int      tcaperi(void);
 static int      tcapopen(void);
 static int      tcapterminalinfo(int);
 static int      tcapclose(void);
@@ -868,7 +882,7 @@ char	*_clearscreen, *_moveto, *_up, *_down, *_right, *_left,
 	*_termcap_init,		/* string to start termcap */
         *_termcap_end,		/* string to end termcap */
 	*_op, *_oc, *_setaf, *_setab, *_setf, *_setb, *_scp;
-int	_colors, _pairs, _bce;
+int	_colors, _pairs, _bce, _xhp;
 char     term_name[40];
 
 TERM term = {
@@ -886,7 +900,8 @@ TERM term = {
         tcapeeol,
         tcapeeop,
         tcapbeep,
-        tcaprev
+        tcaprev,
+	tcaperi
 };
 
 
@@ -1154,6 +1169,7 @@ tcapterminalinfo(int termcap_wins)
     _op			= tgetstr("op", &p);
     _oc			= tgetstr("oc", &p);
     _bce		= tgetflag("ut");
+    _xhp		= tgetflag("xs");
 
     if (p >= &tcapbuf[TCAPSLEN]){
 	puts("Terminal description too big!\n");
@@ -1562,6 +1578,16 @@ tcapeeop(void)
 
     /* return ignored */
     return(0);
+}
+
+
+static int
+tcaperi(void)
+{
+    if(_xhp && _clearinverse)
+      putpad(_clearinverse);
+
+    return(1);
 }
 
 

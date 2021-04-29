@@ -291,7 +291,8 @@ TERM    term    = {
         mswin_eeol,
         mswin_eeop,
         mswin_beep,
-	mswin_rev
+	mswin_rev,
+	NULL		/* no standout glitch in Windows */
 };
 
 /*

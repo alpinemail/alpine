@@ -3405,6 +3405,8 @@ display_delimiter(int state)
     movecursor(ComposerTopLine - 1, 0);
     if(state)
       (*term.t_rev)(1);
+    else if (*term.t_eri)
+      (*term.t_eri)();
 
     while(*bufp != '\0')
       pputc(*bufp++, state ? 1 : 0);
@@ -3491,6 +3493,8 @@ InvertPrompt(int entry, int state)
     movecursor(i, 0);
     if(state)
       (*term.t_rev)(1);
+    else if (*term.t_eri)
+      (*term.t_eri)();
 
     while(*bufp && *(bufp + 1))
       pputc(*bufp++, 1);			/* putc up to last char */

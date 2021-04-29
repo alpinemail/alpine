@@ -2195,6 +2195,8 @@ PaintCell(int row, int col,
 
     if(inverted)
       (*term.t_rev)(1);
+    else if (*term.t_eri)
+      (*term.t_eri)();
 
     ucs = utf8_to_ucs4_cpystr(buf2);
     if(ucs){
