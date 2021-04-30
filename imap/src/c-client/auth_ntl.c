@@ -1,5 +1,5 @@
 /* ========================================================================
- * Copyright 2018-2020 Eduardo Chappa
+ * Copyright 2018-2021 Eduardo Chappa
  * Copyright 2015      Imagination Technologies
  * Copyright 1988-2008 University of Washington
  *
@@ -78,7 +78,7 @@ long auth_ntlm_client (authchallenge_t challenger, authrespond_t responder,char 
 				/* will override the domain requested with */
 				/* one returned by the challenge message */
       sep = strchr (user, '\\');
-      if (*sep) {
+      if (sep) {
 	dlen = sep - user;
 	ulen = strlen (sep + 1);
 	memcpy (ubuf, sep + 1, ulen);

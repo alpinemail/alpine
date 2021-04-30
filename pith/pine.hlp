@@ -196,6 +196,14 @@ to add support for terminals that need lines to be deleted before being written.
 on a collaboration with Professor Martin Trusler.
 </UL>
 
+<P>
+Bugs addressed include:
+
+<UL>
+<LI> Crash in the ntlm authenticator when the user name does not include
+a domain. Reported and fixed by Anders Skargren.
+</UL>
+
 <P> The changes in version <!--#echo var="ALPINE_VERSION"--> are as follows:
 
 <P> 
