@@ -22,16 +22,7 @@
 #include "../pith/conf.h"
 #include "../pith/list.h"
 #include "../pith/mailcmd.h"
-
-extern OAUTH2_S alpine_oauth2_list[];
-
-XOAUTH2_INFO_S xoauth_default[] = {
-  { GMAIL_NAME, GMAIL_ID, GMAIL_SECRET, GMAIL_TENANT, NULL, NULL},
-  { OUTLOOK_NAME, OUTLOOK_ID, OUTLOOK_SECRET, OUTLOOK_TENANT, NULL, NULL},
-  { YAHOO_NAME, YAHOO_ID, YAHOO_SECRET, YAHOO_TENANT, NULL, NULL},
-  { YANDEX_NAME, YANDEX_ID, YANDEX_SECRET, YANDEX_TENANT, NULL, NULL},
-  { NULL, NULL, NULL, NULL, NULL, NULL}
-};
+#include "xoauth2info.c"
 
 typedef enum {Xname = 0, Xid, Xsecret, Xtenant, Xuser, XFlow, Xend} XTYPES;
 

@@ -16,7 +16,6 @@
 #define XOAUTH2_CONFIG
 
 #include "confscroll.h"
-#include "xoauth2.h"
 #include "../pith/state.h"
 
 /* exported prototypes */
