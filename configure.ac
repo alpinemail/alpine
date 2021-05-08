@@ -243,7 +243,8 @@ AC_ARG_ENABLE(optimization, AS_HELP_STRING([--disable-optimization],[Exclude opt
 if test x$enable_optimization != "xno" ; then
   AC_MSG_RESULT([yes])
 else
-  CFLAGS="`echo $AM_CFLAGS | ${SED} 's/-O2//'`"
+  C_FLAGS="`echo $AM_CFLAGS | ${SED} 's/-O2//'`"
+  CFLAGS="$CFLAGS $C_FLAGS"
   alpine_c_client_gccoptlevel="-O0"
   AC_MSG_RESULT([no])
 fi

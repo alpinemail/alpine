@@ -15185,7 +15185,8 @@ if test x$enable_optimization != "xno" ; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
-  CFLAGS="`echo $AM_CFLAGS | ${SED} 's/-O2//'`"
+  C_FLAGS="`echo $AM_CFLAGS | ${SED} 's/-O2//'`"
+  CFLAGS="$CFLAGS $C_FLAGS"
   alpine_c_client_gccoptlevel="-O0"
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
