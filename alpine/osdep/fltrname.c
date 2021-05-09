@@ -92,7 +92,7 @@ filter_filename(char *file, int *fatal, int strict)
             ill_file[MIN(ptr-file,sizeof(ill_file)-1)] = '\0';
 	    snprintf(error, sizeof(error),
 		    "Character \"%s\" after \"%.*s\" not allowed in file name",
-		    ill_char, ERRORLEN-50, ill_file);
+		    ill_char, ERRORLEN-57, ill_file);
         } else {
             snprintf(error, sizeof(error),
                     "First character, \"%s\", not allowed in file name",

@@ -232,7 +232,7 @@ mail_view_screen(struct pine *ps)
     int             we_cancel = 0, flags, cmd = 0;
     int             force_prefer = 0;
     MESSAGECACHE   *mc;
-    ENVELOPE       *env;
+    ENVELOPE       *env = NULL;
     BODY           *body;
     STORE_S        *store;
     HANDLE_S	   *handles = NULL;
@@ -5023,14 +5023,16 @@ visible_linelen(int line)
 	  switch((i < st->line_lengths[line]) ? st->text_lines[line][i] : 0){
 	    case TAG_HANDLE:
 	      i++;
+	      n = 0;	/* quell gcc */
 	      /* skip the length byte plus <length> more bytes */
 	      if(i < st->line_lengths[line]){
 		  n = st->text_lines[line][i];
 		  i++;
 	      }
 
-	      if(i < st->line_lengths[line] && n > 0)
+	      if(i < st->line_lengths[line] && n > 0){
 		i += n;
+	      }
 
 		break;
 

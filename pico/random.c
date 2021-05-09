@@ -47,8 +47,8 @@ showcpos(int f, int n)
     register int    cbo;
     register long   nbc;
     register int    lines;
-    register int    thisline;
-    char     buffer[80];
+    register int    thisline = 0;
+    char     buffer[100];
 
     clp = lforw(curbp->b_linep);            /* Grovel the data.     */
     cbo = 0;

@@ -2185,11 +2185,12 @@ convert_abook_to_remote(struct pine *ps, PerAddrBook *pab, char *rem_folder_pref
     if(*rem_abook){
 	file = cpystr(rem_abook);
 	if(pab->abnick){
-	    nick = (char *)fs_get((MAX(strlen(pab->abnick),strlen("Address Book"))+8) * sizeof(char));
-	    snprintf(nick, sizeof(nick), "Remote %s",
+	    int len = MAX(strlen(pab->abnick),strlen("Address Book"))+8;
+	    nick = (char *)fs_get(len * sizeof(char));
+	    snprintf(nick, len, "Remote %s",
 	            (pab->abnick && !strcmp(pab->abnick, DF_ADDRESSBOOK))
 			? "Address Book" : pab->abnick);
-	    nick[sizeof(nick)-1] = '\0';
+	    nick[len-1] = '\0';
 	}
 	else
 	  nick = cpystr("Remote Address Book");

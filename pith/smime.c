@@ -203,7 +203,7 @@ setup_pwdcert(void **pwdcert)
   struct stat sbuf;
   char pathdir[MAXPATH+1], pathkey[MAXPATH+1], fpath[MAXPATH+1], pathcert[MAXPATH+1];
   char fpath2[MAXPATH+1], prompt[MAILTMPLEN];
-  char *keyfile, *certfile, *text;
+  char *keyfile, *certfile, *text = NULL;
   EVP_PKEY *pkey = NULL;
   X509 *pcert = NULL;
   PERSONAL_CERT *pc, *pc2 = NULL;
@@ -445,7 +445,7 @@ setup_pwdcert(void **pwdcert)
 int
 smime_expunge_cert(WhichCerts ctype)
 {
-  int count, removed; 
+  int count = 0, removed;
   CertList *cl, *dummy, *data;
   char *path, buf[MAXPATH+1];
   char *contents;
@@ -640,7 +640,7 @@ import_certificate(WhichCerts ctype, PERSONAL_CERT *p_cert, char *fname)
    if(ctype == Password){
      char PrivateKeyPath[MAXPATH+1], PublicCertPath[MAXPATH+1], s[MAXPATH+1];
      char full_name_key[MAXPATH+1], full_name_cert[MAXPATH+1];
-     char *use_this_file;
+     char *use_this_file = NULL;
      char prompt[500];
      EVP_PKEY *key = p_cert ? p_cert->key : NULL;
 
@@ -1151,15 +1151,16 @@ app_RAND_write_file(const char *file)
 CertList *
 certlist_from_personal_certs(PERSONAL_CERT *pc)
 {
-   CertList *cl;
+   CertList *cl = NULL;
    X509 *x;
 
    if(pc == NULL)
      return NULL;
    
-   if((x = get_cert_for(pc->name, Public, 1)) != NULL)
+   if((x = get_cert_for(pc->name, Public, 1)) != NULL){
      cl = smime_X509_to_cert_info(x, pc->name);
-   cl->next = certlist_from_personal_certs(pc->next);
+     cl->next = certlist_from_personal_certs(pc->next);
+   }
 
    return cl;
 }
@@ -3067,6 +3068,7 @@ do_detached_signature_verify(BODY *b, long msgno, char *section)
     dprint((9, "do_detached_signature_verify(msgno=%ld type=%d subtype=%s section=%s)", msgno, b->type, b->subtype ? b->subtype : "NULL", (section && *section) ? section : (section != NULL) ? "Top" : "NULL"));
 
     smime_init();
+    mimetext = bodytext = NULL;
 
     /* if it was signed and then encrypted, use the decrypted text
      * to check the validity of the signature

@@ -1047,7 +1047,7 @@ pine_simple_send(ENVELOPE *outgoing,	/* envelope for outgoing message */
     char     **tobufp, *p, tmp[MAILTMPLEN];
     void      *messagebuf;
     int        done = 0, retval = 0, x;
-    int	       lastrc, rc = 0, ku, i, resize_len, result, fcc_result;
+    int	       lastrc, rc = 0, ku, i, resize_len, result, fcc_result = 0;
     int        og2s_done = 0;
     HelpType   help;
     static HISTORY_S *history = NULL;
@@ -1821,12 +1821,12 @@ pine_send(ENVELOPE *outgoing, struct mail_bodystruct **body,
     char	       *start_here_name = NULL;
     char               *suggested_nntp_server = NULL;
     char	       *title = NULL;
-    struct headerentry *he, *headents, *he_to, *he_fcc, *he_news = NULL, *he_lcc = NULL,
+    struct headerentry *he, *headents, *he_to = NULL, *he_fcc = NULL, *he_news = NULL, *he_lcc = NULL,
 		       *he_from = NULL;
     PINEFIELD          *pfields, *pf, *pf_nobody = NULL, *pf_to = NULL,
-                       *pf_smtp_server, *pf_nntp_server,
-		       *pf_fcc = NULL, *pf_err, *pf_uid, *pf_mbox, *pf_curpos,
-		       *pf_ourrep, *pf_ourhdrs, **sending_order;
+                       *pf_smtp_server = NULL, *pf_nntp_server = NULL,
+		       *pf_fcc = NULL, *pf_err = NULL, *pf_uid = NULL, *pf_mbox = NULL, *pf_curpos = NULL,
+		       *pf_ourrep = NULL, *pf_ourhdrs = NULL, **sending_order;
     METAENV             header;
     ADDRESS            *lcc_addr = NULL;
     ADDRESS            *nobody_addr = NULL;
@@ -3202,6 +3202,7 @@ pine_send(ENVELOPE *outgoing, struct mail_bodystruct **body,
 	     * In the Postpone case, just create it if the user wants to
 	     * and create a temporary storage object to write into.  */
   fake_hup:
+	    fcc_result = 0;
 	    lmc.all_written = lmc.text_only = lmc.text_written = 0;
 	    if(editor_result & (COMP_GOTHUP | COMP_CANCEL)){
 		int    newfile = 1;
@@ -5285,7 +5286,7 @@ filter_message_text(char *fcmd, ENVELOPE *outgoing, struct mail_bodystruct *body
 				? &body->nested.part->body.contents.text.data
 				: &body->contents.text.data),
 	     *tmp_so = NULL, *tmpf_so,
-	     *save_local_so, *readthis_so, *our_tmpf_so = NULL;
+	     *save_local_so, *readthis_so = NULL, *our_tmpf_so = NULL;
 #define DO_HEADERS 1
 
     if(fcmd

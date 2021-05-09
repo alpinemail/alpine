@@ -1162,7 +1162,7 @@ role_config_add(struct pine *ps, CONF_S **cl, long int rflags)
 {
     int         rv = 0, first_pat = 0;
     PAT_S      *new_pat = NULL, *cur_pat;
-    PAT_LINE_S *new_patline, *cur_patline;
+    PAT_LINE_S *new_patline = NULL, *cur_patline;
     PAT_STATE   pstate;
     char        title[80];
 
@@ -1290,7 +1290,7 @@ role_config_replicate(struct pine *ps, CONF_S **cl, long int rflags)
 {
     int         rv = 0, first_pat = 0;
     PAT_S      *new_pat = NULL, *cur_pat, *defpat = NULL;
-    PAT_LINE_S *new_patline, *cur_patline;
+    PAT_LINE_S *new_patline = NULL, *cur_patline;
     PAT_STATE   pstate;
     char        title[80];
 
@@ -1881,7 +1881,7 @@ role_config_addfile(struct pine *ps, CONF_S **cl, long int rflags)
     char        dir2[MAXPATH+1], pdir[MAXPATH+1];
     char       *lc, *newfile = NULL;
     PAT_LINE_S *file_patline;
-    int         rv = 0, len;
+    int         rv = 0, len = 0;
     int         r = 1, flags;
     HelpType    help = NO_HELP;
     PAT_TYPE    curtype;
@@ -5511,11 +5511,12 @@ role_config_edit_screen(struct pine *ps, PAT_S *def, char *title, long int rflag
 	(*result)->patgrp->folder = editlist_to_pattern(folder_pat);
 
 	if(abook_type_pat && *abook_type_pat){
-	    for(j = 0; (f = inabook_fldr_types(j)); j++)
+	    for(j = 0; (f = inabook_fldr_types(j)); j++){
 	      if(!strucmp(abook_type_pat, f->name)){
 		  (*result)->patgrp->inabook = f->value;
 		  break;
 	      }
+	    }
 
 	      if(bitnset(INABOOK_FROM, inabook_type_list))
 		(*result)->patgrp->inabook |= IAB_FROM;
@@ -6183,7 +6184,7 @@ calculate_inick_stuff(struct pine *ps)
 	if(v && !v->global_val.p){
 	    char    *str, *astr, *lc, pdir[MAXPATH+1];
 	    ADDRESS *addr;
-	    int      len;
+	    int      len = 0;
 
 	    switch(i){
 	      case INICK_FROM_CONF:
@@ -7120,7 +7121,7 @@ int
 role_text_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags)
 {
     OPT_SCREEN_S *saved_screen;
-    int   rv = -1, oeflags, len, sig, r, i, cancel = 0;
+    int   rv = -1, oeflags, len = 0, sig, r, i, cancel = 0;
     char *file, *err, title[20], *newfile, *lc, *addr, *fldr = NULL, *tmpfldr;
     char  dir2[MAXPATH+1], pdir[MAXPATH+1], *p;
     char  full_filename[MAXPATH+1], filename[MAXPATH+1];

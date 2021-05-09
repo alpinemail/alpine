@@ -3571,7 +3571,7 @@ char *
 folder_lister_fullname(FSTATE_S *fs, char *name)
 {
     if(fs->context->dir->status & CNTXT_SUBDIR){
-	char tmp[2*MAILTMPLEN], tmp2[2*MAILTMPLEN], *p;
+	char tmp[2*MAILTMPLEN+1], tmp2[2*MAILTMPLEN+1], *p;
 
 	if(fs->context->dir->ref){
 	    snprintf(tmp, sizeof(tmp), "%.*s%.*s",

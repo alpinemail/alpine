@@ -1309,7 +1309,7 @@ convert_date_to_local(char *date)
 {
     struct tm  *tm;
     time_t      ltime;
-    static char datebuf[26];
+    static char datebuf[30];
 
     ltime = date_to_local_time_t(date);
     if(ltime == (time_t) -1)
@@ -1425,7 +1425,7 @@ byte_string(long int bytes)
     char       *a, aa[5];
     char       *abbrevs = "GMK";
     long        i, ones, tenths;
-    static char string[10];
+    static char string[50];
 
     ones   = 0L;
     tenths = 0L;

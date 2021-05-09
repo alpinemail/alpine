@@ -127,9 +127,12 @@ long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder, cha
 	  && (oauth2.access_token
 	  || (!RefreshToken && oauth2.param[OA2_RefreshToken].value)
 	  || (RefreshToken && oauth2.param[OA2_RefreshToken].value
-	      && strcmp(RefreshToken, oauth2.param[OA2_RefreshToken].value)
-	  || oauth2.cancel_refresh_token)))
+	      && strcmp(RefreshToken, oauth2.param[OA2_RefreshToken].value))
+	  || oauth2.cancel_refresh_token))
          mm_login_method (mb, user, (void *) &oauth2, *trial, OA2NAME);
+
+       if(RefreshToken)
+	  fs_give((void **) &RefreshToken);
     }
 
     /* empty challenge or user requested abort or client does not have info */

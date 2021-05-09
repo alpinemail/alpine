@@ -945,7 +945,7 @@ reply_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
     int       impl, template_len = 0, leave_cursor_at_top = 0, reply_raw_body = 0;
 
     if(sect_prefix)					/* SECTBUFLEN = sizeof(sect_buf) */
-      snprintf(section = sect_buf, sizeof(sect_buf), "%.*s.1", SECTBUFLEN-1, sect_prefix);
+      snprintf(section = sect_buf, sizeof(sect_buf), "%.*s.1", SECTBUFLEN-3, sect_prefix);
     else
       section = "1";
 
@@ -3064,7 +3064,7 @@ partno(struct mail_bodystruct *body, struct mail_bodystruct *end_body)
 	    num++;			/* PARTTMPLEN = sizeof(tmp) */
 	    if(&part->body == end_body || (p = partno(&part->body, end_body))){
 		snprintf(tmp, sizeof(tmp), "%d%s%.*s", num, (p) ? "." : "",
-			PARTTMPLEN-10, (p) ? p : "");
+			PARTTMPLEN-12, (p) ? p : "");
 		tmp[sizeof(tmp)-1] = '\0';
 		if(p)
 		  fs_give((void **)&p);

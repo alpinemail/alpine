@@ -101,7 +101,7 @@ reply(struct pine *pine_state, ACTION_S *role_arg)
 {
     ADDRESS    *saved_from, *saved_to, *saved_cc, *saved_resent;
     ADDRESS    *us_in_to_and_cc, *ap;
-    ENVELOPE   *env, *outgoing;
+    ENVELOPE   *env = NULL, *outgoing;
     BODY       *body, *orig_body = NULL;
     REPLY_S     reply;
     void       *msgtext = NULL;
@@ -1497,8 +1497,8 @@ forward(struct pine *ps, ACTION_S *role_arg)
 {
     char	  *sig;
     int		   ret, forward_raw_body = 0, rv = 0, i;
-    long	   msgno, j, totalmsgs, rflags;
-    ENVELOPE	  *env, *outgoing;
+    long	   msgno = 0L, j, totalmsgs, rflags;
+    ENVELOPE	  *env = NULL, *outgoing;
     BODY	  *orig_body, *body = NULL;
     REPLY_S        reply;
     void	  *msgtext = NULL;

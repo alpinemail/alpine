@@ -186,7 +186,7 @@ init_debug(void)
 void
 save_debug_on_crash(FILE *dfile, int (*keystrokes) (int *, char *, size_t))
 {
-    char nbuf[5], crashfile[MAXPATH+1], filename[MAXPATH+1];
+    char nbuf[11], crashfile[MAXPATH+1], filename[MAXPATH+1];
     int i;
     struct stat dbuf, tbuf;
     time_t now = time((time_t *)0);

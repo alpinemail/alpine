@@ -650,7 +650,7 @@ do_broach_folder(char *newfolder, CONTEXT_S *new_context, MAILSTREAM **streamp,
 	    ps_global->context_last = ps_global->context_current;
 	    snprintf(ps_global->context_current->last_folder,
 		     sizeof(ps_global->context_current->last_folder),
-		     "%s", ps_global->cur_folder);
+		     "%.*s", (int) sizeof(ps_global->context_current->last_folder) - 1,ps_global->cur_folder);
 	    ps_global->last_unambig_folder[0] = '\0';
 	}
 	else{
@@ -958,7 +958,7 @@ do_broach_folder(char *newfolder, CONTEXT_S *new_context, MAILSTREAM **streamp,
 	ps_global->context_last = ps_global->context_current;
 	snprintf(ps_global->context_current->last_folder,
 		 sizeof(ps_global->context_current->last_folder),
-		 "%s", ps_global->cur_folder);
+		 "%.*s", (int) sizeof(ps_global->context_current->last_folder) - 1, ps_global->cur_folder);
 	ps_global->last_unambig_folder[0] = '\0';
     }
     else{
@@ -2340,7 +2340,7 @@ agg_text_select(MAILSTREAM *stream, MSGNO_S *msgmap, char type, char *namehdr,
 	}
     }
 
-  if(!mepgm)
+  if(!mepgm){
     switch(type){
       case 'g' :				/* X-GM-EXT-1 */
 	pgm->x_gm_ext1 = mail_newstringlist();
@@ -2449,7 +2449,7 @@ agg_text_select(MAILSTREAM *stream, MSGNO_S *msgmap, char type, char *namehdr,
 	dprint((1,"\n - BOTCH: select_text unrecognized type\n"));
 	return(1);
     }
-
+  }
     /*
      * If we happen to have any messages excluded, make sure we
      * don't waste time searching their text...
@@ -2502,11 +2502,10 @@ agg_text_select(MAILSTREAM *stream, MSGNO_S *msgmap, char type, char *namehdr,
 	 * bits.
 	 */
 	for(msgno = 1L; msgno <= mn_get_total(msgmap); msgno++)
-	    if(stream && msgno <= stream->nmsgs
-	       && (mc=mail_elt(stream, msgno)) && mc->searched)
-	      mc->searched = NIL;
-	    else
-	      mc->searched = T;
+	    if(stream && msgno <= stream->nmsgs){
+	       if((mc = mail_elt(stream, msgno)) != NULL)
+		  mc->searched = mc->searched ? NIL : T;
+	    }
     }
 
     if(we_cancel)

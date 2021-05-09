@@ -375,7 +375,7 @@ int
 window_signature_block(WINDOW *wp)
 {
   LINE *lp, *llp;
-  int in_sig, is_sig_start;
+  int in_sig, is_sig_start = 0;
   int change = 0;
 
   llp = wp->w_linep;
@@ -1393,7 +1393,7 @@ modeline(WINDOW *wp)
 
 	bp = wp->w_bufp;
 	if(bp->b_fname[0])				/* File name? */
-	  snprintf(t2, sizeof(t2), "File: %s", bp->b_fname);
+	  snprintf(t2, sizeof(t2), "File: %.*s", (int) sizeof(t2) - 7, bp->b_fname);
         else{
 	    strncpy(t2, PICO_NEWBUF_MSG, sizeof(t2));
 	    t2[sizeof(t2)-1] = '\0';
@@ -1430,7 +1430,7 @@ modeline(WINDOW *wp)
 	      w2_to_3 = term.t_ncol - (ALLBUTSPACE + w1_to_2);
 	    else{
 	      if(bp->b_fname[0]){
-	        snprintf(t2, sizeof(t2), "%s", bp->b_fname);
+	        snprintf(t2, sizeof(t2), "%.*s", (int) sizeof(t2) - 1, bp->b_fname);
 	        w2 = utf8_width(t2);
 	      }
 

@@ -333,7 +333,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
     int row, col, crow, ccol;
     int flags;
     int add_file;
-    char *p, *envp, child[NLINE], tmp[NLINE];
+    char *p, *envp, child[2*NLINE+2], tmp[2*NLINE+1];
     struct bmaster *mp;
     struct fcell *tp;
     EML eml;
@@ -721,8 +721,8 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 	  case 'e':					/* exit or edit */
 	  case 'E':
 	    if(gmode&MDBRONLY){				/* run "pico" */
-		snprintf(child, sizeof(child), "%s%c%s", gmp->dname, C_FILESEP,
-			gmp->current->fname);
+		snprintf(child, sizeof(child), "%.*s%c%.*s", NLINE, gmp->dname, C_FILESEP,
+			NLINE, gmp->current->fname);
 		/* make sure selected isn't a directory or executable */
 		if(!LikelyASCII(child)){
 		    emlwrite(_("Can't edit non-text file.  Try Launch."), NULL);
@@ -812,8 +812,8 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 
 	    tmp[0] = '\0';
 	    i = 0;
-	    snprintf(child, sizeof(child), "%s%c%s", gmp->dname, C_FILESEP,
-		    gmp->current->fname);
+	    snprintf(child, sizeof(child), "%.*s%c%.*s", NLINE, gmp->dname, C_FILESEP,
+		    NLINE, gmp->current->fname);
 	    while(!i){
 		static EXTRAKEYS opts[] = {
 		    {"^X", N_("Add Name"), CTRL|'X', KS_NONE},
@@ -1306,8 +1306,8 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 			break;
 		    }
 
-		    snprintf(tmp, sizeof(tmp), "%s%c%s", gmp->dname, C_FILESEP, 
-			    gmp->current->fname);
+		    snprintf(tmp, sizeof(tmp), "%.*s%c%.*s", NLINE, gmp->dname, C_FILESEP,
+			    NLINE, gmp->current->fname);
 
 		    if(copy(tmp, child) < 0){
 			/* copy()  will report any error messages */
@@ -1424,8 +1424,8 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 			    }
 			}
 
-			snprintf(tmp, sizeof(tmp), "%s%c%s", gmp->dname, C_FILESEP, 
-				gmp->current->fname);
+			snprintf(tmp, sizeof(tmp), "%.*s%c%.*s", NLINE, gmp->dname, C_FILESEP,
+				NLINE, gmp->current->fname);
 
 			if(our_rename(tmp, child) < 0){
 			    eml.s = errstr(errno);
@@ -1581,8 +1581,8 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		break;
 	    }
 	    else if(gmode&MDBRONLY){
-		snprintf(child, sizeof(child), "%s%c%s", gmp->dname, C_FILESEP, 
-			gmp->current->fname);
+		snprintf(child, sizeof(child), "%.*s%c%.*s", NLINE, gmp->dname, C_FILESEP,
+			NLINE, gmp->current->fname);
 
 		if(LikelyASCII(child)){
 		    snprintf(tmp, sizeof(tmp), "%s \'%s\'",

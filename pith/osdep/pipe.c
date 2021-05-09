@@ -481,10 +481,11 @@ open_system_pipe(char *command, char **outfile, char **errfile, int mode,
 char *
 pipe_error_msg(char *cmd, char *op, char *res)
 {
-    static char ebuf[512];
+    static char ebuf[512 + 16 + 1];
 
-    snprintf(ebuf, 256, "Pipe can't %.256s \"%.32sb\": %.223s",
+    snprintf(ebuf, sizeof(ebuf), "Pipe can't %.256s \"%.32sb\": %.223s",
 	     op ? op : "?", cmd ? cmd : "?", res ? res : "?");
+    ebuf[sizeof(ebuf) - 1] = '\0';
 
     return(ebuf);
 }

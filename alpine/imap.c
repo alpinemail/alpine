@@ -165,7 +165,7 @@ OAUTH2_S *
 oauth2_select_flow(char *host)
 {
    OAUTH2_S *oa2list, *oa2;
-   int i, rv;
+   int i = 0, rv;
    char *method;
 
    if(ps_global->ttyo){
@@ -474,7 +474,7 @@ char *
 oauth2_get_access_code(unsigned char *url, char *method, OAUTH2_S *oauth2, int *tryanother)
 {
    char tmp[MAILTMPLEN];
-   char *code;
+   char *code = NULL;
 
    if(ps_global->ttyo){
 	SCROLL_S  sargs;
@@ -3775,6 +3775,7 @@ write_passfile(pinerc, l)
     fclose(fp);
 #ifdef SMIME
     if(text != NULL){
+       i = 0;	/* to quell gcc */
        if(ps_global->pwdcert == NULL){
 	  q_status_message(SM_ORDER, 3, 3, "Attempting to encrypt password file");
 	  i = setup_pwdcert(&ps_global->pwdcert);

@@ -1098,7 +1098,7 @@ main(int argc, char **argv)
 					args.data.mail.attachlist)
 			     && pine_state->next_screen))
 			  free_attachment_list(&args.data.mail.attachlist);
-			  goodnight_gracey(pine_state, 0);
+			goodnight_gracey(pine_state, 0);
 		    }
 		    else {
 			q_status_message(SM_ORDER | SM_DING, 3, 4,

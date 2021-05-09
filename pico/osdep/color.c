@@ -527,7 +527,7 @@ init_color_table(void)
 {
     struct color_table *ct = NULL, *t;
     int                 i, count;
-    char                colorname[12];
+    char                colorname[22];
 
     count = pico_count_in_color_table();
 

@@ -401,14 +401,14 @@ char *auth_gssapi_server (authresponse_t responder,int argc,char *argv[])
 
     else {			/* can't acquire credentials! */
       if (gss_display_name (&dsmn,crname,&buf,&mech) == GSS_S_COMPLETE)
-	SERVER_LOG ("Failed to acquire credentials for %s",buf.value);
+	SERVER_LOG ("Failed to acquire credentials for %s",(char *) buf.value);
       if (smj != GSS_S_FAILURE) do
 	switch (dsmj = gss_display_status (&dsmn,smj,GSS_C_GSS_CODE,
 					   GSS_C_NO_OID,&mctx,&resp)) {
 	case GSS_S_COMPLETE:
 	  mctx = 0;
 	case GSS_S_CONTINUE_NEEDED:
-	  SERVER_LOG ("Unknown GSSAPI failure: %s",resp.value);
+	  SERVER_LOG ("Unknown GSSAPI failure: %s",(char *)resp.value);
 	  gss_release_buffer (&dsmn,&resp);
 	}
       while (dsmj == GSS_S_CONTINUE_NEEDED);
@@ -416,7 +416,7 @@ char *auth_gssapi_server (authresponse_t responder,int argc,char *argv[])
 					    GSS_C_NO_OID,&mctx,&resp)) {
       case GSS_S_COMPLETE:
       case GSS_S_CONTINUE_NEEDED:
-	SERVER_LOG ("GSSAPI mechanism status: %s",resp.value);
+	SERVER_LOG ("GSSAPI mechanism status: %s",(char *)resp.value);
 	gss_release_buffer (&dsmn,&resp);
       }
       while (dsmj == GSS_S_CONTINUE_NEEDED);

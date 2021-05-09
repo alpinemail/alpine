@@ -1206,7 +1206,7 @@ forscan(int *wrapt,	/* boolean indicating search wrapped */
     UCS *patptr;	/* pointer into pattern */
     int stopoff;	/* offset to stop search */
     LINE *stopline;	/* line to stop search */
-    int ftest;		/* position of first character of test */
+    int ftest = 0;	/* position of first character of test */
     int bsearch;
     int bol;
     int eol;

@@ -39,7 +39,7 @@ int             rd_answer_forge_warning(int, MSGNO_S *, SCROLL_S *);
 int
 rd_prompt_about_forged_remote_data(int reason, REMDATA_S *rd, char *extra)
 {
-    char      tmp[2000];
+    char      *p, tmp[2000];
     char     *unknown = "<unknown>";
     int       rv = -1;
     char *foldertype, *foldername, *special;
@@ -47,6 +47,8 @@ rd_prompt_about_forged_remote_data(int reason, REMDATA_S *rd, char *extra)
     foldertype = (rd && rd->t.i.special_hdr && !strucmp(rd->t.i.special_hdr, REMOTE_ABOOK_SUBTYPE)) ? "address book" : (rd && rd->t.i.special_hdr && !strucmp(rd->t.i.special_hdr, REMOTE_PINERC_SUBTYPE)) ? "configuration" : "data";
     foldername = (rd && rd->rn) ? rd->rn : unknown;
     special = (rd && rd->t.i.special_hdr) ? rd->t.i.special_hdr : unknown;
+    tmp[0] = '\0';
+    p = tmp;
 
     dprint((1, "rd_check_out_forged_remote_data:\n"));
     dprint((1, " reason=%d\n", reason));
@@ -177,8 +179,6 @@ rd_prompt_about_forged_remote_data(int reason, REMDATA_S *rd, char *extra)
 	free_handles(&handles);
     }
     else{
-	char *p = tmp;
-
 	snprintf(p, sizeof(tmp), _("\nThe data in the remote %s folder\n\n   %s\n\nlooks suspicious. The reason for the suspicion is\n\n   "),
 		foldertype, foldername);
 	tmp[sizeof(tmp)-1] = '\0';
