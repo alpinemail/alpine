@@ -949,7 +949,7 @@ http_open (unsigned char *url)
   stream->urltail = cpystr(s ? (char *) s : "/");
   stream->netstream = net_open (&mb, NIL, mb.port ? mb.port : HTTPTCPPORT,
 		 (NETDRIVER *) mail_parameters (NIL,GET_SSLDRIVER,NIL),
-		 "*https", mb.port ? mb.port : HTTPSSLPORT);
+		 "https", mb.port ? mb.port : HTTPSSLPORT);
   stream->debug = http_debug;
   if(!stream->netstream){
       http_close(stream);
