@@ -918,12 +918,12 @@ dir_config_add(struct pine *ps, CONF_S **cl)
 void
 dir_config_shuffle(struct pine *ps, CONF_S **cl)
 {
-    int      cnt, rv, current_num, new_num, i, j, deefault;
+    int      cnt, rv, current_num, new_num = 0, i, j, deefault;
     char   **new_list, **lval;
     char     tmp[200];
     HelpType help;
     ESCKEY_S opts[3];
-    CONF_S  *a, *b;
+    CONF_S  *a = NULL, *b = NULL;
     int no_ex;
 
     no_ex = (ps_global->ew_for_except_vars == Main);
@@ -2143,7 +2143,7 @@ dir_config_del(struct pine *ps, CONF_S **cl)
 	    CONF_S *cp;
 	    char    **servers;
 	    int       move_top = 0, this_one, revert_to_default,
-		      default_there_to_revert_to;
+		      default_there_to_revert_to = 0;
 
 	    /*
 	     * Remove one from current list.

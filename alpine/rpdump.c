@@ -766,7 +766,8 @@ opt_enter(string, field_len, prompt, flags)
 	    char *p;
 
 	    fputs(prompt, stdout);
-	    fgets(string, field_len, stdin);
+	    if(!fgets(string, field_len, stdin))
+	       return_v = 1;	/* cancel? */
 	    string[field_len-1] = '\0';
 	    if((p = strpbrk(string, "\r\n")) != NULL)
 	      *p = '\0';
@@ -804,7 +805,8 @@ wantto(question, dflt, on_ctrl_C)
 
     while(!ret){
       fprintf(stdout, "%s? [%c]:", question, dflt);
-      fgets(rep, sizeof(rep), stdin);
+      if(!fgets(rep, sizeof(rep), stdin))
+	*rep = '\0';
       if((p = strpbrk(rep, "\r\n")) != NULL)
 	*p = '\0';
       switch(*rep){

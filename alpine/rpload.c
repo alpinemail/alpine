@@ -1004,7 +1004,8 @@ opt_enter(string, field_len, prompt, flags)
 	    char *p;
 
 	    fputs(prompt, stdout);
-	    fgets(string, field_len, stdin);
+	    if(!fgets(string, field_len, stdin))
+		return_v = 1;	/* cancel? */
 	    string[field_len-1] = '\0';
 	    if((p = strpbrk(string, "\r\n")) != NULL)
 	      *p = '\0';

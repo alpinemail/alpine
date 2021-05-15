@@ -479,7 +479,7 @@ output_cert_info(X509 *cert, gf_io_t pc)
     gf_puts(NEWLINE, pc);
     
     if((chain = get_chain_for_cert(cert, &error, &len)) != NULL){
-       X509 *x;
+       X509 *x = NULL;
        X509_NAME_ENTRY *e;
        int i, offset = 2;
        char space[256];

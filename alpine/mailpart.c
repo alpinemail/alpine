@@ -2964,7 +2964,7 @@ display_vcard_att(long int msgno, ATTACH_S *a, int flags)
     URL_HILITE_S uh;
     gf_io_t    gc, pc;
     char     **lines, **ll, *errstr = NULL, tmp[MAILTMPLEN], *p;
-    int	       cmd, indent, begins = 0;
+    int	       cmd = MC_RESIZE, indent, begins = 0;
 
     lines = detach_vcard_att(ps_global->mail_stream,
 			     msgno, a->body, a->number);

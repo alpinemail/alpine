@@ -917,7 +917,7 @@ sort_letter(SortOrder sort)
 void
 update_titlebar_message(void)
 {
-    long        curnum, maxnum, oldnum;
+    long        curnum = 0, maxnum, oldnum = 0;
     PINETHRD_S *thrd = NULL;
     COLOR_PAIR *lastc = NULL, *titlecolor;
     char        buf[50];

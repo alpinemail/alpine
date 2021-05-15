@@ -3272,7 +3272,7 @@ output_keymenu(struct key_menu *km, unsigned char *bm, int row, int column)
 	      len = strlen(keystr);
 	      while(keystr[len-1] == SPACE)
 		len--;
-		len--;
+	      len--;
 
 	      register_key(j, ufk ? PF1 + fkey - 1
 				  : (k->name[0] == '^')

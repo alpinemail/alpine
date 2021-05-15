@@ -455,7 +455,7 @@ paint_line(int line, long int global_row, int highlight, Pos *start_pos)
 
     if(p && *p){
 	if(highlight){
-	    char save_char;
+	    char save_char = '\0';
 
 	    MoveCursor(line, 0);
 
@@ -2044,7 +2044,7 @@ addr_book(AddrBookArg style, char *title, char **error_message)
 		     selecting_one_nick,
 		     selecting_mult_nicks,
 		     checkedn,       /* how many are checked                 */
-		     def_key,        /* default key                          */
+		     def_key = 0,        /* default key                          */
                      warped;         /* we warped through hyperspace to a
 				        new location in the display list     */
     long	     fl,
@@ -3348,7 +3348,7 @@ view:
 
             /*----- Add new ---------*/
 	  case MC_ADD:
-	   {long old_l_p_p, old_top_ent, old_cur_row;
+	   {long old_l_p_p = 0, old_top_ent = 0, old_cur_row = 0;
 
 	    if(adrbk_check_all_validity_now()){
 		if(resync_screen(pab, style, checkedn)){
@@ -5497,7 +5497,7 @@ ab_select_text(AdrBk *abook, int narrow)
     static char *ab_sel_text =
      "Select based on Nickname, All text, Fullname, Addrs, Comment, or Fcc ? ";
     HelpType     help = NO_HELP;
-    int          type, r;
+    int          type, r = '\0';
     char         sstring[80+1], prompt[80];
     adrbk_cntr_t num, ab_count;
     char        *fmt = "String in \"%s\" to match : ";
@@ -6183,8 +6183,8 @@ resync_screen(PerAddrBook *pab, AddrBookArg style, int checkedn)
     else if(style == AddrBookScreen){
 	char          *savenick = NULL;
 	AdrBk_Entry   *abe;
-	adrbk_cntr_t   old_entry_num, new_entry_num;
-	long           old_global_row;
+	adrbk_cntr_t   old_entry_num = 0, new_entry_num;
+	long           old_global_row = 0;
 
 	current_resynced++;
 

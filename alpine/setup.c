@@ -61,10 +61,10 @@ int      to_charsets_text_tool(struct pine *, int, CONF_S **, unsigned);
 void
 option_screen(struct pine *ps, int edit_exceptions)
 {
-    char	    tmp[MAXPATH+1], *pval, **lval;
+    char	    tmp[MAXPATH+1], *pval = NULL, **lval = NULL;
     int		    i, j, ln = 0, readonly_warning = 0, pos;
     struct	    variable  *vtmp;
-    CONF_S	   *ctmpa = NULL, *ctmpb, *first_line = NULL;
+    CONF_S	   *ctmpa = NULL, *ctmpb = NULL, *first_line = NULL;
     FEATURE_S	   *feature;
     PINERC_S       *prc = NULL;
     SAVED_CONFIG_S *vsave;

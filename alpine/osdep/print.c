@@ -101,7 +101,7 @@ open_printer(char *desc)
     char *p, *init, *nick;
     char aname[100], wname[100];
     char *printer;
-    int	 done = 0, i, lastprinter, cur_printer = 0;
+    int	 done = 0, i, lastprinter = 0, cur_printer = 0;
     HelpType help;
     char   **list;
     static ESCKEY_S ekey[] = {

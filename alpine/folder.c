@@ -2169,7 +2169,7 @@ color_test_for_folder(char *color_fore, char *color_back)
 int
 use_color_for_folder(FOLDER_S *fp)
 {
-   int test1, test2;
+   int test1 = 0, test2 = 0;
    if(fp->isdir)
 	test1 = color_test_for_folder(ps_global->VAR_DIRECTORY_FORE_COLOR,
 				ps_global->VAR_DIRECTORY_BACK_COLOR);
@@ -4801,8 +4801,8 @@ skip_over_folder_input:
       *p = '\0';
 
     if(inbox || context->use & CNTXT_INCMNG){
-	char  **apval;
-	char ***alval;
+	char  **apval = NULL;
+	char ***alval = NULL;
 
 	if(inbox){
 	    apval = APVAL(&ps_global->vars[varnum], which);
@@ -5076,7 +5076,7 @@ group_subscription(char *folder, size_t len, CONTEXT_S *cntxt)
 	     * find which will cause this to just return.
 	     */
 	    if((i = folder_total(FOLDERS(&subscribe_cntxt))) != 0){
-		char *f;
+		char *f = NULL;
 
 		/*
 		 * fake that we've found everything there is to find...
@@ -5848,7 +5848,7 @@ delete_folder(CONTEXT_S *context, int index, char *next_folder, size_t len, MAIL
 	if((fp = folder_entry(index, FOLDERS(context)))
 	   && strlen(FLDR_NAME(fp)) < len - 1)
 	  strncpy(next_folder, FLDR_NAME(fp), len-1);
-	  next_folder[len-1] = '\0';
+	next_folder[len-1] = '\0';
     }
 
     if(!(context->use & CNTXT_INCMNG)){

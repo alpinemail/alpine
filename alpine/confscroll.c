@@ -1555,10 +1555,10 @@ int
 text_toolit(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags, int look_for_backslash)
 {
     char	     prompt[81], *sval, *tmp, *swap_val, **newval = NULL;
-    char            *pval, **apval, **lval, ***alval;
+    char            *pval = NULL, **apval = NULL, **lval = NULL, ***alval = NULL;
     char            *olddefval = NULL;
     int		     rv = 0, skip_to_next = 0, after = 0, i = 4, j, k;
-    int		     lowrange, hirange, incr, oeflags, oebufsize;
+    int		     lowrange = 0, hirange = 0, incr = 0, oeflags, oebufsize;
     int		     numval, repeat_key = 0;
     int              curindex, previndex, nextindex, deefault;
     HelpType         help;
@@ -2767,7 +2767,7 @@ radiobutton_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags)
     int	       rv = 0;
     NAMEVAL_S *rule = NULL;
 #ifndef	_WINDOWS
-    int        old_uc, old_cs;
+    int        old_uc = 0, old_cs = 0;
     CONF_S    *ctmp;
 #endif
 
@@ -3059,7 +3059,7 @@ yesno_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags)
 void
 update_option_screen(struct pine *ps, OPT_SCREEN_S *screen, Pos *cursor_pos)
 {
-    int		   dline, w, save = '\0';
+    int		   dline = 0, w, save = '\0';
     CONF_S	  *top_line, *ctmp;
     char          *value;
     unsigned       got_width;
@@ -3182,7 +3182,7 @@ update_option_screen(struct pine *ps, OPT_SCREEN_S *screen, Pos *cursor_pos)
 	    value = (ctmp->flags & CF_INHERIT) ? INHERIT : ctmp->value;
 
 	    if(value){
-		char *p;
+		char *p = NULL;
 		int   i, j;
 
 		memset(tmp_20k_buf, '\0',
@@ -3845,8 +3845,8 @@ pretty_value(struct pine *ps, CONF_S *cl)
 char *
 text_pretty_value(struct pine *ps, CONF_S *cl)
 {
-    char  tmp[6*MAX_SCREEN_COLS+20], *pvalnorm, **lvalnorm, *pvalexc, **lvalexc;
-    char *p, *pval, **lval, lastchar = '\0';
+    char  tmp[6*MAX_SCREEN_COLS+20], *pvalnorm, **lvalnorm, *pvalexc, **lvalexc = NULL;
+    char *p, *pval = NULL, **lval = NULL, lastchar = '\0';
     int   editing_except, fixed, uvalset, uvalposlen;
     unsigned got_width;
     int   comments, except_set, avail_width;

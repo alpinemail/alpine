@@ -580,7 +580,7 @@ context_config_shuffle(struct pine *ps, CONF_S **cl)
     int	      n = 0, cmd, i1, i2, count = 0, insert_num, starting_varmem;
     int       news_problem = 0, deefault = 0;
     ESCKEY_S  ekey[3];
-    CONTEXT_S *cur_ctxt, *other_ctxt;
+    CONTEXT_S *cur_ctxt, *other_ctxt = NULL;
     char     *tmp, **lval, **lval1, **lval2;
     struct variable *cur_var, *other_var;
 
