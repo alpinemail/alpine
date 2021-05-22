@@ -617,8 +617,8 @@ msgno_in_select(MSGNO_S *msgs, long int n)
 int
 msgno_exceptions(MAILSTREAM *stream, long int rawno, char *part, int *bits, int set)
 {
-    PINELT_S **peltp;
-    PARTEX_S **partp;
+    PINELT_S **peltp = NULL;
+    PARTEX_S **partp = NULL;
     MESSAGECACHE *mc;
 
     if(!stream || rawno < 1L || rawno > stream->nmsgs)

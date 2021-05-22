@@ -103,7 +103,7 @@ do_hup_signal(int sig)
 RETSIGTYPE
 winch_handler(int sig)
 {
-    int i;
+    int i = 0;
     signal(SIGWINCH, winch_handler);
     if(wheadp != NULL)
       ttresize();

@@ -1876,7 +1876,7 @@ call_mailer(METAENV *header, struct mail_bodystruct *body, char **alt_smtp_serve
 
     TIME_STAMP("smtp open", 1);
     if(sending_stream){
-	unsigned short save_encoding, added_encoding;
+	unsigned short save_encoding = 0, added_encoding = 0;
 
 	dprint((1, "Opened SMTP server \"%s\"\n",
 	       net_host(sending_stream->netstream)
@@ -3634,7 +3634,7 @@ posting_characterset(void *data, char *preferred_charset, MsgPart mp)
 
 	if(mp == HdrText){
 	    char *text = NULL;
-	    UCS *ucs = NULL, *ucsp;
+	    UCS *ucs = NULL, *ucsp = NULL;
 
 	    text = (char *) data;
 

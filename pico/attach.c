@@ -435,7 +435,7 @@ SyncAttach(void)
          comment[1024];
     struct hdr_line *lp;			/* current line in header    */
     struct headerentry *entry;
-    PATMT *tp, **knwn = NULL, **bld;
+    PATMT *tp, **knwn = NULL, **bld = NULL;
     EML eml;
 
     if(Pmaster == NULL)
@@ -650,7 +650,7 @@ ParseAttach(struct hdr_line **lp,		/* current header line      */
 	    size_t cmntlen,
 	    int *no)				/* attachment number        */
 {
-    int  j, status, bod, eod = -1,
+    int  j = 0, status, bod, eod = -1,
          rv = 0,				/* return value             */
 	 orig_offset,
          lbln  = 0,				/* label'd attachment	    */

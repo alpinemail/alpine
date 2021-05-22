@@ -1823,7 +1823,7 @@ getfcells(char *dname, int fb_flags)
          **filtnames,				/* array filtered names */
 	 errbuf[NLINE];
     struct fcell *ncp,				/* new cell pointer */
-                 *tcp;				/* trailing cell ptr */
+                 *tcp = NULL;			/* trailing cell ptr */
     struct bmaster *mp;
     EML  eml;
 

@@ -511,7 +511,7 @@ sub_open_any_patterns(long int rflags)
 {
     PAT_LINE_S *patline = NULL, *pl = NULL;
     char      **t = NULL;
-    struct variable *var;
+    struct variable *var = NULL;
 
     SET_PATTYPE(rflags);
 
@@ -1478,7 +1478,7 @@ parse_patgrp_slash(char *str, PATGRP_S *patgrp)
 	SET_STATUS(str,"/BOY=",patgrp->stat_boy);
     }
     else{
-	char save;
+	char save = '\0';;
 
 	patgrp->bogus = 1;
 
@@ -1781,7 +1781,7 @@ parse_action_slash(char *str, ACTION_S *action)
 	}
     }
     else{
-	char save;
+	char save = '\0';
 
 	action->bogus = 1;
 
@@ -1819,7 +1819,7 @@ parse_intvl(char *str)
 {
     char *q;
     long  left, right;
-    INTVL_S *ret = NULL, **next;
+    INTVL_S *ret = NULL, **next = NULL;
 
     if(!str)
       return(ret);
@@ -3329,7 +3329,7 @@ sub_write_patterns(long int rflags)
 	  free_list_array(&lvalue);
 	else{
 	    char ***alval;
-	    struct variable *var;
+	    struct variable *var = NULL;
 
 	    if(rflags & ROLE_DO_ROLES)
 	      var = &ps_global->vars[V_PAT_ROLES];
@@ -3557,7 +3557,7 @@ data_for_patline(PAT_S *pat)
 		  *keyword_set = NULL, *keyword_clr = NULL;
     int            to_not = 0, news_not = 0, from_not = 0,
 		   sender_not = 0, cc_not = 0, subj_not = 0,
-		   partic_not = 0, recip_not = 0, alltext_not, bodytext_not,
+		   partic_not = 0, recip_not = 0, alltext_not = 0, bodytext_not = 0,
 		   keyword_not = 0, charset_not = 0;
     size_t         l;
     ACTION_S      *action = NULL;
@@ -4833,11 +4833,14 @@ match_pattern(PATGRP_S *patgrp, MAILSTREAM *stream, SEARCHSET *searchset,
     /* we searched without the not, reverse it */
     if(not && is_imap_stream(stream) && !modern_imap_stream(stream)){
 	for(msgno = 1L; msgno < mn_get_total(sp_msgmap(stream)); msgno++)
-	  if(stream && msgno && msgno <= stream->nmsgs
-	     && (mc=mail_elt(stream,msgno)) && mc->searched)
-	    mc->searched = NIL;
-	  else
-	    mc->searched = T;
+	  if(stream && msgno && msgno <= stream->nmsgs){
+	     if((mc=mail_elt(stream,msgno)) != NULL){
+	        if(mc->searched)
+		   mc->searched = NIL;
+	        else
+		   mc->searched = T;
+	     }
+	  }
     }
 
     /* check scores */

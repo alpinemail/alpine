@@ -472,7 +472,7 @@ expand_address(BuildTo to, char *userdomain, char *localdomain, int *loop_detect
 	       int simple_verify, int *mangled)
 {
     size_t       domain_length, length;
-    ADDRESS     *adr, *a, *a_tail, *adr2, *a2, *a_temp, *wp_a;
+    ADDRESS     *adr, *a, *a_tail, *adr2 = NULL, *a2, *a_temp, *wp_a;
     AdrBk_Entry *abe, *abe2;
     char        *list, *l1, **l2;
     char        *tmp_a_string, *q;

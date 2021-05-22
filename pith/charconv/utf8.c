@@ -236,7 +236,7 @@ convert_to_utf8(char *str, char *fromcharset, int flags)
     char          *ret = NULL;
     char          *fcharset;
     SIZEDTEXT      src, result;
-    const CHARSET *cs;
+    const CHARSET *cs = NULL;
     int            try;
 
     src.data = (unsigned char *) str;

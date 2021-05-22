@@ -109,7 +109,7 @@ alt_editor(int f, int n)
 
 	if(Pmaster->alt_ed){
 	    char **lp, *wsp, *path, fname[MAXPATH+1];
-	    int	   c;
+	    int	   c = '\0';
 
 	    for(lp = Pmaster->alt_ed; *lp && **lp; lp++){
 		if((wsp = strpbrk(*lp, " \t")) != NULL){

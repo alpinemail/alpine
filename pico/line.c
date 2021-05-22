@@ -70,7 +70,7 @@ long  pkbufremove(int, struct pkbuf *);
 LINE *
 lalloc(int used)
 {
-    register LINE   *lp;
+    register LINE   *lp = NULL;
     register int    size;
     EML             eml;
     static int      displayed = 0;

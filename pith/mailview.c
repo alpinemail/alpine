@@ -156,7 +156,7 @@ format_message(long int msgno, ENVELOPE *env, struct mail_bodystruct *body,
 {
     char     *decode_err = NULL;
     HEADER_S  h;
-    int       width, rv;
+    int       width, rv = 0;
 
     clear_cur_embedded_color();
 
@@ -2911,7 +2911,7 @@ void
 format_addr_string(MAILSTREAM *stream, long int msgno, char *section, char *field_name,
 		   struct mail_address *addr, int flags, char *oacs, gf_io_t pc)
 {
-    char    *ptmp, *mtmp;
+    char    *ptmp, *mtmp = NULL;
     int	     trailing = 0, group = 0;
     ADDRESS *atmp;
 

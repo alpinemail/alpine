@@ -1157,7 +1157,7 @@ mail_list_filter(MAILSTREAM *stream, char *mailbox, int delim, long int attribs,
      */
     if(!strucmp(mailbox, ps_global->inbox_name)){
 	int ftotal, i;
-	FOLDER_S *f;
+	FOLDER_S *f = NULL;
 	char fullname[1000], tmp1[1000], tmp2[1000], *l1, *l2;
 
 	/* fullname is the name of the mailbox in the list response */
@@ -1549,7 +1549,7 @@ folder_complete_internal(CONTEXT_S *context, char *name, size_t namelen,
 			 int *completions, int flags)
 {
     int	      i, match = -1, ftotal;
-    char      tmp[MAXFOLDER+2], *a, *b, *fn, *pat;
+    char      tmp[MAXFOLDER+2], *a, *b, *fn, *pat = NULL;
     FOLDER_S *f;
 
     if(completions)
@@ -2419,7 +2419,7 @@ get_recent_in_folder(char *mailbox_name, long unsigned int *new,
 		     MAILSTREAM *this_is_the_stream)
 {
     MAILSTREAM   *strm = NIL;
-    unsigned long tot, nw, uns;
+    unsigned long tot = 0L, nw = 0L, uns = 0L;
     int           gotit = 0;
     int           maildrop = 0;
     char         *target = NULL;

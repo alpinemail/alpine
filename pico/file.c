@@ -113,7 +113,7 @@ insfile(int f, int n)
 {
     register int s;
     char	 fname[NLINE], dir[NLINE];
-    int		 retval, bye = 0, msg = 0;
+    int		 retval = 0, bye = 0, msg = 0;
     char	 prompt[64], *infile;
     EXTRAKEYS    menu_ins[10];
     EML          eml;
@@ -1016,7 +1016,7 @@ int
 pico_fncomplete(char *dirarg, char *fn, size_t fnlen)
 {
     char *p, *dlist, tmp[NLINE], dir[NLINE];
-    int   n, i, match = -1, orign;
+    int   n, i, match = -1, orign = 0;
 #ifdef	DOS
 #define	FILECMP(x, y)	(toupper((unsigned char)(x))\
 				== toupper((unsigned char)(y)))

@@ -1677,7 +1677,7 @@ ical_non_ascii_valid(unsigned char c)
   static unsigned char icu[6];
   static int utf8_len = 0;
   static int utf8_type = 0;
-  int rv;
+  int rv = 0;
 
   if(utf8_len == 0)
     utf8_type = (c >= 0xF0 && c <= 0xF4) 

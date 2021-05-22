@@ -98,7 +98,7 @@ bktoshell(int f, int n)
 
     if(gmode&MDSPWN){
 	char *shell;
-	int   dummy;
+	int   dummy = 1;
 
 	vttidy();
 	movecursor(0, 0);

@@ -654,13 +654,14 @@ try_password_again:
 	  if(!tlsmustbail){
 	      snprintf(pmt, sizeof(pmt), "  %s", (info->nick && *info->nick) ? info->nick : serv);
 	      mm_login_work(&mb, user, &pwd, pwdtrial, pmt, info->binddn);
-	      if(pwd && pwd[0])
+	      if(pwd && pwd[0]){
 #ifdef _WINDOWS
 		passwd = pwd;
 #else
 		passwd.bv_len = strlen(pwd);
 		passwd.bv_val = pwd;		
 #endif
+	      }
 	  }
       }
 
@@ -709,7 +710,7 @@ try_password_again:
 	dprint((2, "%s\n", ebuf));
       }
       else if(!ps_global->intr_pending){
-	int          srch_res, args, slen, flen;
+	int          srch_res = LDAP_SUCCESS, args, slen, flen;
 #define TEMPLATELEN 512
 	char         filt_template[TEMPLATELEN + 1];
 	char         filt_format[2*TEMPLATELEN + 1];

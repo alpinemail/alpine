@@ -132,7 +132,7 @@ save_get_fldr_from_env(char *fbuf, int nfbuf, ENVELOPE *e, struct pine *state,
     char     fakedomain[2];
     ADDRESS *tmp_adr = NULL;
     char     buf[MAX(MAXFOLDER,MAX_NICKNAME) + 1];
-    char    *bufp;
+    char    *bufp = NULL;
     char    *folder_name = NULL;
     static char botch[] = "programmer botch, unknown message save rule";
     unsigned save_msg_rule;
@@ -425,7 +425,7 @@ save(struct pine *state, MAILSTREAM *stream, CONTEXT_S *context, char *folder,
     int           delete, filter, k, worry_about_keywords = 0;
     char	 *save_folder, *seq, *flags = NULL, date[64], tmp[MAILTMPLEN];
     long	  i, nmsgs, rawno;
-    size_t        len;
+    size_t        len = 0;
     STORE_S	 *so = NULL;
     MAILSTREAM	 *save_stream = NULL;
     MESSAGECACHE *mc;
@@ -504,7 +504,7 @@ save(struct pine *state, MAILSTREAM *stream, CONTEXT_S *context, char *folder,
 
 	if(dstn_stream && dstn_stream->kwd_create){
 	    imapuid_t dummy_uid = 0L;
-	    long dummy_msgno, delete_count;
+	    long dummy_msgno = 0L, delete_count;
 	    int expbits, set;
 	    char *flags = NULL;
 	    char *user_flag_name, *duser_flag_name;
@@ -564,7 +564,7 @@ save(struct pine *state, MAILSTREAM *stream, CONTEXT_S *context, char *folder,
 		char dummymsg[1000];
 		char *id = NULL;
 		char *idused;
-		appenduid_t *au;
+		appenduid_t *au = NULL;
 
 		newlen = strlen("\\DELETED");
 		len += newlen;

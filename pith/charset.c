@@ -846,7 +846,7 @@ conversion_table(char *from_cs, char *to_cs)
 		p = ct->table = (unsigned char *)
 		  fs_get(256 * sizeof(unsigned char));
 		for(i = 0; i < 256; i++){
-		    unsigned int fc;
+		    unsigned int fc = 0;
 		    p[i] = '?';
 		    switch(from->type){	/* get "from" UCS-2 codepoint */
 		    case CT_1BYTE0:	/* ISO 8859-1 */

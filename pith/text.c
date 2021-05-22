@@ -570,7 +570,7 @@ delete_quotes(long int linenum, char *line, LT_INS_S **ins, void *local)
     DELQ_S *dq;
     char   *lp;
     int     i, lines, not_a_quote = 0;
-    size_t  len;
+    size_t  len = 0;
 
     dq = (DELQ_S *) local;
     if(!dq)
@@ -800,7 +800,7 @@ int
 replace_quotes(long int linenum, char *line, LT_INS_S **ins, void *local)
 {
     char *lp = line, *prefix = NULL, *last_prefix = NULL;
-    int no_more_quotes = 0, len, saw_quote = 0;
+    int no_more_quotes = 0, len = 0, saw_quote = 0;
 
     if(ps_global->VAR_QUOTE_REPLACE_STRING){
 	get_pair(ps_global->VAR_QUOTE_REPLACE_STRING, &prefix, &last_prefix, 0, 0);

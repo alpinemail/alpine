@@ -529,7 +529,7 @@ set_up_takeaddr(int cmd, struct pine *ps, MSGNO_S *msgmap, TA_S **ta_ret,
 		int *selected_num, int flags, int (*att_addr_f)(TA_S *, int))
 {
     long      i;
-    ENVELOPE *env;
+    ENVELOPE *env = NULL;
     int       how_many_selected = 0,
 	      added, rtype = 0,
 	      we_cancel = 0,

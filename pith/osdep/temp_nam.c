@@ -235,7 +235,7 @@ char *
 temp_nam_ext(char *dir, char *prefix, char *ext)
 {
     struct stat buf;
-    size_t      l, ll;
+    size_t      l = 0, ll;
     char       *f, *name;
 
     if(ext == NULL)

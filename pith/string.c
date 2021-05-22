@@ -392,7 +392,7 @@ char *
 short_str(char *src, char *buf, size_t buflen, int wid, WhereDots where)
 {
     char *ans;
-    unsigned alen, first, second;
+    unsigned alen, first = 0, second = 0;
 
     if(wid <= 0){
 	ans = buf;
@@ -1589,7 +1589,7 @@ fold(char *src, int width, int maxwidth, char *first_indent, char *indent, unsig
 	    }
 
 	    if(winner == -1 && (flags & FLD_NEXTSPC)){
-		for(i = starting_point; winner == -1 && i <= strlen(next_piece) != '\0' && i < 512; i++){
+		for(i = starting_point; winner == -1 && (i <= strlen(next_piece)) != '\0' && i < 512; i++){
 		    endptr = utf8_count_forw_width(next_piece, i, &got_width);
 		    if(endptr && got_width == i && isspace((unsigned char) *endptr))
 		      winner = (int) i;

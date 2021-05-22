@@ -151,7 +151,7 @@ initial_to_keyword(char *initial)
     KEYWORD_S *kw;
     char      *ret;
     int        init;
-    int        kwinit;
+    int        kwinit = 0;
 
     ret = initial;
     if(initial[0] && initial[1] == '\0'){

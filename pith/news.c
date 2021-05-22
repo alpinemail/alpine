@@ -116,7 +116,7 @@ news_grouper(char *given_group, char **expanded_group, char **error,
 {
     char	 ng_error[90], *p1, *p2, *name, *end, *ep, **server,
 		 ng_ref[MAILTMPLEN];
-    int          expanded_len = 0, num_in_error = 0, cnt_errs;
+    int          expanded_len = 0, num_in_error = 0, cnt_errs = 0;
 
     MAILSTREAM  *stream = NULL;
     struct ng_list {

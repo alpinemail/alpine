@@ -55,7 +55,7 @@ copyaddr(struct mail_address *a)
 ADDRESS *
 copyaddrlist(struct mail_address *a)
 {
-    ADDRESS *new = NULL, *head = NULL, *current;
+    ADDRESS *new = NULL, *head = NULL, *current = NULL;
 
     for(; a; a = a->next){
 	new = copyaddr(a);

@@ -144,7 +144,7 @@ detoken_src(char *src, int for_what, ENVELOPE *env, ACTION_S *role,
 	    REDRAFT_POS_S **redraft_pos, int *impl)
 {
     int   loopcnt = 25;		/* just in case, avoid infinite loop */
-    char *ret, *str1, *str2;
+    char *ret = NULL, *str1, *str2;
     int   done = 0;
 
     if(!src)

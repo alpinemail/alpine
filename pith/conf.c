@@ -1001,7 +1001,7 @@ init_init_vars(struct pine *ps)
 void
 init_pinerc(struct pine *ps, char **debug_out)
 {
-    char      buf[MAXPATH+1], *p, *db;
+    char      buf[MAXPATH+1], *p, *db = NULL;
 #if defined(DOS) || defined(OS2)
     char      buf2[MAXPATH+1], l_pinerc[MAXPATH+1];
     int nopinerc = 0, confregset = -1;
@@ -5134,7 +5134,7 @@ Those that are <unset> will be left unset; their values will be NULL.
 void
 read_pinerc(PINERC_S *prc, struct variable *vars, ParsePinerc which_vars)
 {
-    char               *filename, *file, *value, **lvalue, *line, *error;
+    char               *filename = NULL, *file, *value = NULL, **lvalue = NULL, *line, *error;
     char               *p, *p1, *free_file = NULL;
     struct variable    *v;
     PINERC_LINE        *pline = NULL;
@@ -5644,14 +5644,14 @@ int
 write_pinerc(struct pine *ps, EditWhich which, int flags)
 {
     char               *p, *dir, *tmp = NULL, *pinrc;
-    char               *pval, **lval;
+    char               *pval = NULL, **lval = NULL;
     char	       *linep = NULL, *lineq = NULL;
     int                 bc = 1;
     int			buflen;
     PINERC_LINE        *pline;
     struct variable    *var;
     time_t		mtime;
-    char               *filename;
+    char               *filename = NULL;
     REMDATA_S          *rd = NULL;
     PINERC_S           *prc = NULL;
     STORE_S            *so = NULL;
@@ -6532,7 +6532,7 @@ set_variable(int var, char *value, int expand, int commit, EditWhich which)
 {
     struct variable *v;
     char           **apval;
-    PINERC_S        *prc;
+    PINERC_S        *prc = NULL;
 
     v = &ps_global->vars[var];
 
@@ -6590,7 +6590,7 @@ set_variable_list(int var, char **lvalue, int write_it, EditWhich which)
     char          ***alval;
     int              i;
     struct variable *v = &ps_global->vars[var];
-    PINERC_S        *prc;
+    PINERC_S        *prc = NULL;
 
     if(!v->is_user || !v->is_list)
       panic1("BOTCH: Trying to set non-user or non-list variable %s", v->name);

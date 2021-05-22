@@ -217,10 +217,10 @@ dlc_siblings(DL_CACHE_S *dlc1, DL_CACHE_S *dlc2)
 DL_CACHE_S *
 dlc_mgr(long int row, DlMgrOps op, DL_CACHE_S *dlc_start)
 {
-    int                new_index, known_index, next_index;
+    int                new_index, known_index, next_index = 0;
     DL_CACHE_S        *dlc = (DL_CACHE_S *)NULL;
-    long               next_row;
-    long               prev_row;
+    long               next_row = 0L;
+    long               prev_row = 0L;
 
 
     if(op == Lookup){
@@ -1711,7 +1711,7 @@ fill_in_dl_field(DL_CACHE_S *new)
 	hostbuf[0] = '\0';
 	folder = NULL;
 	if(pab->type & REMOTE_VIA_IMAP && pab->filename){
-	    char *start, *end;
+	    char *start, *end = NULL;
 
 	    start = strindex(pab->filename, '{');
 	    if(start)

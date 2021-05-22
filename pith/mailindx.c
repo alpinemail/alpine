@@ -2009,7 +2009,7 @@ format_index_index_line(INDEXDATA_S *idata)
     int		  i, collapsed = 0, start, fromfield;
     long	  l, score;
     BODY	 *body = NULL;
-    MESSAGECACHE *mc;
+    MESSAGECACHE *mc = NULL;
     ADDRESS      *addr, *toaddr, *ccaddr, *last_to;
     PINETHRD_S   *thrd = NULL;
     INDEX_COL_S	 *cdesc = NULL;
@@ -3741,7 +3741,7 @@ fetch_firsttext(INDEXDATA_S *idata, int delete_quotes)
     long partial_fetch_len = 0L;
     SEARCHSET *ss, **sset;
     MESSAGECACHE *mc;
-    PINELT_S     *pelt;
+    PINELT_S     *pelt = NULL;
 
     /* we cache the result we get from this function, so that we do not have to
      * refetch the text in case there is a change. We could cache in the envelope

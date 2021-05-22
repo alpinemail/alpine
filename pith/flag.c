@@ -338,10 +338,8 @@ flag_search(MAILSTREAM *stream, int flags, MsgNo set_start, MSGNO_S *set_msgmap,
 		(n = flag_search_sequence(stream, set_msgmap, i, MH_ANYTHD)) >= 0L;
 		i++)
 	      if(n > 0L && n <= stream->nmsgs
-		 && (mc = mail_elt(stream, n)) && !mc->valid)
-		mc->sequence = 1;
-	      else
-		mc->sequence = 0;
+		  && (mc = mail_elt(stream, n)) != NULL)
+		   mc->sequence = !mc->valid ? 1 : 0;
 	}
 
 	for(i = 1L; i <= stream->nmsgs; i++)
@@ -583,7 +581,7 @@ set_lflag(MAILSTREAM *stream, MSGNO_S *msgs, long int n, int f, int v)
     if((rawno=mn_m2raw(msgs, n)) > 0L && stream && rawno <= stream->nmsgs
        && (mc = mail_elt(stream, rawno))){
 	int was_invisible, is_invisible;
-	int chk_thrd_cnt = 0, thrd_was_visible, was_hidden, is_hidden;
+	int chk_thrd_cnt = 0, thrd_was_visible = 0, was_hidden = 0, is_hidden;
 
 	if(*(peltp = (PINELT_S **) &mc->sparep) == NULL){
 	    *peltp = (PINELT_S *) fs_get(sizeof(PINELT_S));

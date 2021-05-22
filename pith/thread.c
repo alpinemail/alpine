@@ -720,7 +720,7 @@ PINETHRD_S *
 msgno_thread_info(MAILSTREAM *stream, long unsigned int rawno,
 		  PINETHRD_S *attached_to_thrd, unsigned int flags)
 {
-    PINELT_S   **peltp;
+    PINELT_S   **peltp = NULL;
     MESSAGECACHE *mc;
 
     if(!stream || rawno < 1L || rawno > stream->nmsgs)
