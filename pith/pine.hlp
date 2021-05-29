@@ -183,17 +183,57 @@ it for you. Please take some time to read it and understand it.
 Since the Privacy Policy could be amended to take into consideration
 new additions to Alpine, please check it periodically.
 
-<P> These changes were added after the release of version <!--#echo var="ALPINE_VERSION"-->.
+ <P> The changes in version <!--#echo var="ALPINE_VERSION"--> are as
+follows:
 
 <P>
 New features include:
 <UL>
 <LI> Unix Alpine: New configuration variable <a href="h_config_ssl_ciphers"><!--#echo var="VAR_ssl-ciphers"--></a> that allows
-users to list the ciphers to use when connecting to a SSL server.
-Based on a collaboration with Professor Martin Trusler.
+     users to list the ciphers to use when connecting to a SSL server.
+     Based on a collaboration with Professor Martin Trusler.
+
 <LI> New hidden feature <a href="h_config_delete_before_writing"><!--#echo var="FEAT_enable-delete-before-writing"--></a>
-to add support for terminals that need lines to be deleted before being written. Based
-on a collaboration with Professor Martin Trusler.
+     to add support for terminals that need lines to be deleted
+     before being written. Based on a collaboration with Professor
+     Martin Trusler.
+
+<LI> Experimental: The instruction to remove the double quotes from the processing of
+     customized headers existed in pine, but it was removed in alpine. Restoring
+     old Alpine behavior. See
+     <A href="https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=981781">this</A>
+     report for more background information.
+
+<LI> Add the capability to record http debug. This is necessary to debug XOAUTH2
+     authentication, and records sensitive login information. Do not share your
+     debug file if you use this form of debug.
+
+<LI> Remove the ability to choose between the device and authorize methods
+     to login to outlook, since the original client-id can only be used
+     for the device method. One needs a special client-id and client-secret
+     to use the authorize method in Outlook.
+
+<LI> PC-Alpine only: Some service providers produce access tokens that are
+     too long to save in the Windows Credentials, so the access tokens will
+     be split and saved as several pieces. This means that old versions of
+     Alpine will NOT be able to use saved passwords once this new version of
+     Alpine is used.
+
+<LI> PC-Alpine: Debug files used to be created with extension .txt1, .txt2, etc.
+     Rename those files so that they have extension .txt.
+
+<LI> Always follow ‘suppress-asterisks-in-password-prompt’ setting in the
+     various password prompts. Submitted by &Eacute;tienne Deparis.
+
+<LI> Use 'alpine -F' instead of 'pine -F' as the browser default pager.
+     Submitted by &Eacute;tienne Deparis.
+
+<LI> Introduction of OTHER CMDS menu for the browser/pilot to let
+     people discover the two new commands: &quot;1&quot; is a toggle that
+     switches between 1 column and multicolumn mode. The &quot;.&quot; command
+     toggles between hiding or showing hidden files, and the &quot;G&quot;
+     command to travel between directories. Contributed by &Eacute;tienne
+     Deparis.
 </UL>
 
 <P>
@@ -201,10 +241,19 @@ Bugs addressed include:
 
 <UL>
 <LI> Crash in the ntlm authenticator when the user name does not include
-a domain. Reported and fixed by Anders Skargren.
+     a domain. Reported and fixed by Anders Skargren.
+
+<LI> When forwarding a message, replacing an attachment might make Alpine
+     re-attach the original attachment. Reported by Michael Traxler.
+
+<LI> When an attachment is deleted, the saved message with the deleted
+     attachment contains extra null characters after the end of the
+     attachment boundary.
+
 </UL>
 
-<P> The changes in version <!--#echo var="ALPINE_VERSION"--> are as follows:
+<P> Version 2.24 adds new features and addresses bugs found in previous
+releases.
 
 <P> 
 New features include:
@@ -34586,7 +34635,7 @@ but must be deleted, as a way to start inverse video again.
 <P>
 When this feature is enabled, Alpine will delete a line before writing it,
 therefore deleting the end of reverse video. Modern terminals do not require
-enabling of this feature, but some old terminals might require it.
+enabling this feature, but some old terminals might require it.
 <P>
 <UL>
 <LI><A HREF="h_finding_help">Finding more information and requesting help</A>
