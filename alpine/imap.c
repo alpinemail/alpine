@@ -105,8 +105,11 @@ int   answer_cert_failure(int, MSGNO_S *, SCROLL_S *);
 int   oauth2_auth_answer(int, MSGNO_S *, SCROLL_S *);
 OAUTH2_S *oauth2_select_flow(char *);
 int    xoauth2_flow_tool(struct pine *, int, CONF_S **, unsigned int);
+void   cache_method_message(STORE_S  *);
+void   cache_method_message_no_screen(void);
 
 #ifdef	LOCAL_PASSWD_CACHE
+int   cache_method_was_setup(char *);
 int   read_passfile(char *, MMLOGIN_S **);
 void  write_passfile(char *, MMLOGIN_S *);
 int   preserve_prompt(char *);
@@ -136,6 +139,69 @@ static	char *details_cert, *details_host, *details_reason;
 
 extern XOAUTH2_INFO_S xoauth_default[];
 extern OAUTH2_S alpine_oauth2_list[];
+
+void
+cache_method_message(STORE_S  *in_store)
+{
+#ifdef	LOCAL_PASSWD_CACHE
+	if(cache_method_was_setup(ps_global->pinerc)){
+           so_puts(in_store, _("</P><P> Once you have authorized Alpine, you will be asked if you want to preserve the Refresh Token and Access Code. If you do "));
+           so_puts(in_store, _("not wish to repeat this process again, answer \'Y\'es. If you did this process quickly, your connection to the server will still be "));
+           so_puts(in_store, _("alive at the end of this process, and your connection will proceed from there."));
+        }
+	else{
+	   q_status_message(SM_ORDER | SM_DING, 3, 3, _("Create a password file in order to save the login information"));
+           so_puts(in_store, _("</P><P> Although your version if Alpine was compiled with password file support, this has not been set up yet. "));
+           so_puts(in_store, _("as a result, the next time you open this folder, you will go through this process once again.\n\n"));
+	}
+#else
+        so_puts(in_store, _("</P><P> Your version of Alpine was not built with password file support, as a result you will not be able to save your "));
+        so_puts(in_store, _("access token, which means that you will have to repeat this process the next time you login to this server. "));
+        so_puts(in_store, _("You can fix this by either recompiling alpine with password file support or by downloading a version of Alpine to your "));
+        so_puts(in_store, _("computer that was compiled with password file support."));
+#endif /* LOCAL_PASSWD_CACHE */
+}
+
+void
+cache_method_message_no_screen (void)
+{
+#ifdef	LOCAL_PASSWD_CACHE
+	if(cache_method_was_setup(ps_global->pinerc)){
+	   snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf), "%s",
+		 _(" Once you have authorized Alpine, you will be asked if you want to preserve the Refresh Token and Access Code. "));
+	   tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+
+	   snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
+		"%s", _("If you do not wish to repeat this process again, answer \'Y\'es. If you did this process quickly, your connection "));
+	   tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+
+	   snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
+		"%s", _("to the server will still be alive at the end of this process, and your connection will proceed from there.\n\n"));
+	   tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+	}
+	else{
+	   snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf), "%s",
+		_(" Although your version if Alpine was compiled with password file support, this has not been set up yet. "));
+	   tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+	   snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf), "%s",
+		_("as a result, the next time you open this folder, you will go through this process once again.\n\n"));
+	   tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+	}
+#else
+	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf), "%s",
+		_("Your version of Alpine was not built with password file support, as a result you will not be able to save your "));
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf), "%s",
+		_("access token, which means that you will have to repeat this process the next time you login to this server. "));
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf), "%s",
+		_("You can fix this by either recompiling alpine with password file support or by downloading a version of Alpine to your "));
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf), "%s",
+		 _("computer that was compiled with password file support.\n\n"));
+	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+#endif /* LOCAL_PASSWD_CACHE */
+}
 
 int
 xoauth2_flow_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags)
@@ -338,9 +404,9 @@ oauth2_set_device_info(OAUTH2_S *oa2, char *method)
 
         so_puts(in_store, _("</P><P> After you open the previous link, please enter the code above, and then you will be asked to authenticate and later "));
         so_puts(in_store, _("to grant access to Alpine to your data. "));
-        so_puts(in_store, _("</P><P> Once you have authorized Alpine, you will be asked if you want to preserve the Refresh Token and Access Code. If you do "));
-        so_puts(in_store, _("not wish to repeat this process again, answer \'Y\'es. If you did this process quickly, your connection to the server will still be "));
-        so_puts(in_store, _("alive at the end of this process, and your connection will proceed from there."));
+
+	cache_method_message(in_store);
+
 	so_puts(in_store, _(" </P><P>If you do not wish to proceed, cancel at any time by pressing 'E' to exit"));
 	so_puts(in_store, _("</P></HTML>"));
 
@@ -428,17 +494,7 @@ try_wantto:
 		"%s", _("to grant access to Alpine to your data.\n\n"));
 	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
 
-	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
-		"%s", _(" Once you have authorized Alpine, you will be asked if you want to preserve the Refresh Token and Access Code. "));
-	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
-
-	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
-		"%s", _("If you do not wish to repeat this process again, answer \'Y\'es. If you did this process quickly, your connection "));
-	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
-
-	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
-		"%s", _("to the server will still be alive at the end of this process, and your connection will proceed from there.\n\n"));
-	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+	cache_method_message_no_screen();
 
 	display_init_err(tmp_20k_buf, 0);
 	memset((void *)tmp, 0, sizeof(tmp));
@@ -523,7 +579,9 @@ oauth2_get_access_code(unsigned char *url, char *method, OAUTH2_S *oauth2, int *
         so_puts(in_store, _(" At the end of this process, you will be given an access code or redirected to a web page."));
 	so_puts(in_store, _(" If you see a code, copy it and then press 'C', and enter the code at the prompt."));
 	so_puts(in_store, _(" If you do not see a code, copy the url of the page you were redirected to and again press 'C' and copy and paste it into the prompt. "));
-	so_puts(in_store, _(" Once you have completed this process,  Alpine will proceed with authentication."));
+
+        cache_method_message(in_store);
+
 	so_puts(in_store, _(" If you do not wish to proceed, cancel by pressing 'E' to exit"));
 	so_puts(in_store, _("</P></BODY></HTML>"));
 
@@ -627,6 +685,8 @@ try_wantto:
 	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
 		"%s", _(" If you do not see a code, copy the url of the page you were redirected to and again press 'C' and copy and paste it into the prompt. "));
 	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+
+	cache_method_message_no_screen();
 
 	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
 		"%s", _(" Once you have completed this process,  Alpine will proceed with authentication.\n"));
@@ -3003,6 +3063,18 @@ xlate_out(char c)
 
 #ifdef	LOCAL_PASSWD_CACHE
 
+int cache_method_was_setup (char *pinerc)
+{
+   int rv = 1;
+#ifdef	PASSFILE
+    char tmp[MAILTMPLEN];
+    FILE *fp = NULL;
+    if(!passfile_name(pinerc, tmp, sizeof(tmp)) || !(fp = our_fopen(tmp, "rb")))
+	rv = 0;
+    if(fp != NULL) fclose(fp);
+#endif /* PASSFILE */
+    return rv;
+}
 
 int 
 line_get(char *tmp, size_t len, char **textp)
