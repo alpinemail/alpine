@@ -8268,7 +8268,7 @@ select_by_text(MAILSTREAM *stream, MSGNO_S *msgmap, long int msgno, SEARCHSET **
 {
     int          r = '\0', ku, type, we_cancel = 0, flags, rv, ekeyi = 0;
     int          not = 0, me = 0;
-    char         sstring[80], tmp[128];
+    char         sstring[512], tmp[128];
     char        *p, *sval = NULL;
     char         buftmp[MAILTMPLEN], namehdr[80];
     ESCKEY_S     ekey[8];
@@ -8446,7 +8446,7 @@ select_by_text(MAILSTREAM *stream, MSGNO_S *msgmap, long int msgno, SEARCHSET **
 
 	    flags = OE_APPEND_CURRENT | OE_KEEP_TRAILING_SPACE;
 	    r = optionally_enter(sstring, -FOOTER_ROWS(ps_global), 0,
-				 79, tmp, ekey, help, &flags);
+				 sizeof(sstring), tmp, ekey, help, &flags);
 
 	    if(me && r == 0 && ((!not && strcmp(sstring, _(match_me))) || (not && strcmp(sstring, _(dont_match_me)))))
 	      me = 0;

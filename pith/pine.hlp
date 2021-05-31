@@ -240,6 +240,12 @@ New features include:
 Bugs addressed include:
 
 <UL>
+<LI> Memory corruption when alpine searches for a string that is
+     an incomplete utf8 string in a local folder. This could happen by
+     chopping a string to make it fit a buffer without regard to its content.
+     We fix the string so that chopping it does not damage it. Reported
+     by Andrew.
+
 <LI> Crash in the ntlm authenticator when the user name does not include
      a domain. Reported and fixed by Anders Skargren.
 

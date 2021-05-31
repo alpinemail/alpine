@@ -66,6 +66,7 @@ UCS           *ucs4_particular_width(UCS*, int);
 UCS           *utf8_to_ucs4_cpystr(char *);
 char          *ucs4_to_utf8_cpystr(UCS *);
 char          *ucs4_to_utf8_cpystr_n(UCS *, int);
+char	      *ucs4_to_utf8_n_cpystr(UCS *, int);
 #ifdef _WINDOWS
 LPTSTR         utf8_to_lptstr(LPSTR);
 LPSTR          lptstr_to_utf8(LPTSTR);

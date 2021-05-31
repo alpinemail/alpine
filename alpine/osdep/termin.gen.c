@@ -1026,14 +1026,13 @@ optionally_enter(char *utf8string, int y_base, int x_base, int utf8string_size,
     /*
      * Change string back into UTF-8.
      */
-    candidate = ucs4_to_utf8_cpystr(string);
+    candidate = ucs4_to_utf8_n_cpystr(string, utf8string_size);
 
     if(string) 
       fs_give((void **) &string);
 
     if(candidate){
-	strncpy(utf8string, candidate, utf8string_size);
-	utf8string[utf8string_size-1] = '\0';
+	strcpy(utf8string, candidate);
 	fs_give((void **) &candidate);
     }
 

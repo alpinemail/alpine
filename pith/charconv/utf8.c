@@ -683,6 +683,49 @@ ucs4_to_utf8_cpystr_n(UCS *ucs4src, int ucs4src_len)
     return ((char *) ret);
 }
 
+/*
+ * Similar to above but copy what is possible to a
+ * string of a size at most the given retlen.
+ */
+char *
+ucs4_to_utf8_n_cpystr(UCS *ucs4src, int retlen)
+{
+    unsigned char *ret = NULL;
+    unsigned char *writeptr;
+    int            i, oldlen, len;
+
+    if(!ucs4src)
+      return NULL;
+
+    /*
+     * Over-allocate and then resize at the end.
+     */
+
+    /* count characters in source */
+    for(i = 0; ucs4src[i]; i++)
+      ;
+
+    ret = (unsigned char *) fs_get((6*i + 1) * sizeof(unsigned char));
+    memset(ret, 0, (6*i + 1) * sizeof(unsigned char));
+
+    writeptr = ret;
+    oldlen = len = 0;
+    for(i = 0; ucs4src[i] && (len < retlen); i++){
+      oldlen = len;
+      writeptr = utf8_put(writeptr, (unsigned long) ucs4src[i]);
+      len = strlen(ret);
+    }
+    if(len > retlen){
+      ret[oldlen] = '\0';
+      len = oldlen;
+    }
+
+    /* get rid of excess size */
+    fs_resize((void **) &ret, (len + 1) * sizeof(unsigned char));
+
+    return ((char *) ret);
+}
+
 
 #ifdef _WINDOWS
 /*
