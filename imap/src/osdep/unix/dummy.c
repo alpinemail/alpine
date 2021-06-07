@@ -724,8 +724,11 @@ long dummy_append (MAILSTREAM *stream,char *mailbox,append_t af,void *data)
 				/* append to INBOX? */
   if (!compare_cstring (mailbox,"INBOX")) {
 				/* yes, if no empty proto try creating */
-    if (!ts && !(*(ts = default_proto (NIL))->dtb->create) (ts,"INBOX"))
-      ts = NIL;
+    if (!ts){
+	ts = default_proto (NIL);
+	if(!(*ts->dtb->create)(ts,"INBOX"))
+	   ts = NIL;
+    }
   }
   else if (dummy_file (tmp,mailbox) && ((fd = open (tmp,O_RDONLY,NIL)) < 0)) {
     if ((e = errno) == ENOENT) /* failed, was it no such file? */

@@ -588,12 +588,12 @@ void unix_close (MAILSTREAM *stream,long options)
  */
 
 
-STRINGLIST XIMAPbase = {"X-IMAPbase", 10, NIL};
-STRINGLIST XIMAP     = {"X-IMAP", 6, &XIMAPbase};
-STRINGLIST XUID      = {"X-UID", 5, &XIMAP};
-STRINGLIST XKeywords = {"X-Keywords", 10, &XUID};
-STRINGLIST XStatus   = {"X-Status", 8, &XKeywords};
-STRINGLIST Status    = {"Status", 6, &XStatus};
+STRINGLIST XIMAPbase = {{"X-IMAPbase", 10}, NIL};
+STRINGLIST XIMAP     = {{"X-IMAP", 6}, &XIMAPbase};
+STRINGLIST XUID      = {{"X-UID", 5}, &XIMAP};
+STRINGLIST XKeywords = {{"X-Keywords", 10}, &XUID};
+STRINGLIST XStatus   = {{"X-Status", 8}, &XKeywords};
+STRINGLIST Status    = {{"Status", 6}, &XStatus};
 
 static STRINGLIST *unix_hlines = &Status;
 

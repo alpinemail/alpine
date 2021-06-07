@@ -186,7 +186,7 @@ static void do_date (char *date,char *prefix,char *fmt,int suffix)
    *   -1  local time is 1 day behind UTC, offset -24 hours
    * -36x  local time is January 1, UTC is December 31, offset +24 hours
    */
-  if (julian = t->tm_yday -julian)
+  if ((julian = t->tm_yday -julian) != 0)
     zone += ((julian < 0) == (abs (julian) == 1)) ? -24*60 : 24*60;
   if (prefix) {			/* want day of week? */
     sprintf (date,prefix,days[t->tm_wday]);

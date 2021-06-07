@@ -53,7 +53,7 @@ struct passwd *checkpw (struct passwd *pw,char *pass,int argc,char *argv[])
    *   -1  local time is 1 day behind UTC, offset -24 hours
    * -36x  local time is January 1, UTC is December 31, offset +24 hours
    */
-  if (julian = t->tm_yday -julian)
+  if ((julian = t->tm_yday -julian) != 0)
     zone += ((julian < 0) == (abs (julian) == 1)) ? -24*60 : 24*60;
 				/* days since 1/1/1970 local time */
   now = ((now /60) + zone) / (60*24);

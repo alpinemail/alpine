@@ -339,7 +339,7 @@ static const CHARSET utf8_csvalid[] = {
      NIL,SC_UNICODE,"UTF-8"},
   {"UTF-16",CT_UTF16,CF_PRIMARY | CF_DISPLAY | CF_NOEMAIL,
      NIL,SC_UNICODE,"UTF-8"},
-  NIL
+  {NIL, NIL, NIL, NIL, NIL, NIL}
 };
 
 /* Non-Unicode Script table */
@@ -366,7 +366,7 @@ static const SCRIPT utf8_scvalid[] = {
   {"Latin-10","Balkan",SC_LATIN_10},
   {"Thai",NIL,SC_THAI},
   {"Vietnamese",NIL,SC_VIETNAMESE},
-  NIL
+  {NIL, NIL, NIL}
 };
 
 /* Look up script name or return entire table
