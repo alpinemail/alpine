@@ -1234,9 +1234,9 @@ mm_log(char *string, long int errflg)
     now = time((time_t *)0);
     tm_now = localtime(&now);
 
-    dprint((((errflg == TCPDEBUG) && ps_global->debug_tcp) ? 1 :
+    dprint((((errflg == TCPDEBUG) && ps_global->debug_tcp) ? debug :
            (errflg == TCPDEBUG) ? 10 : 
-	   ((errflg == HTTPDEBUG) && ps_global->debug_http) ? 1 :
+	   ((errflg == HTTPDEBUG) && ps_global->debug_http) ? debug :
 	   (errflg == HTTPDEBUG) ? 10 :  2,
 	    "IMAP %2.2d:%2.2d:%2.2d %d/%d mm_log %s: %s\n",
 	    tm_now->tm_hour, tm_now->tm_min, tm_now->tm_sec,

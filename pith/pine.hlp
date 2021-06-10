@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 517 2020-11-27 10:32:54
+Alpine Commit 564 2021-06-10 16:26:14
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -255,6 +255,10 @@ Bugs addressed include:
 <LI> When an attachment is deleted, the saved message with the deleted
      attachment contains extra null characters after the end of the
      attachment boundary.
+
+<LI> Tcp and http debug information is not printed unless the default
+     debug level is set to 1. Print this if requested, regardless of what
+     the default debug level is.
 
 </UL>
 
