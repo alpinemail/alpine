@@ -136,7 +136,10 @@ helper_internal(HelpType text, char *frag, char *title, int flags)
 
     if(shown_text && *shown_text && !struncmp(*shown_text, "x-alpine-http:", 14)){
 	int status;
-	help_text = http_get(*shown_text + 14, &status);
+	HTTPSTREAM *stream = http_open(*shown_text + 14);
+	if(stream) help_text = http_get(stream);
+	status = stream->status ? stream->status->code : -1;
+	if(stream) http_close(stream);
 	if(status != HTTP_OK){
 	    shown_text = NO_HELP;
 	    if(help_text) fs_give((void **) &help_text);

@@ -107,10 +107,9 @@ typedef struct http_param_s {
 
 /* exported prototypes */
 HTTPSTREAM *http_open (unsigned char *);
-unsigned char *http_post_param(unsigned char *, HTTP_PARAM_S *, int *);
-unsigned char *http_post_param2(unsigned char *, HTTP_PARAM_S *, int *);
-unsigned char *http_get_param(unsigned char *, HTTP_PARAM_S *, int *);
-unsigned char *http_get(unsigned char *, int *);
+unsigned char *http_post_param(HTTPSTREAM *, HTTP_PARAM_S *);
+unsigned char *http_post_param2(HTTPSTREAM *, HTTP_PARAM_S *);
+unsigned char *http_get(HTTPSTREAM *);
 void http_close (HTTPSTREAM *stream);
 
 HTTP_PARAM_S *http_param_get(int);

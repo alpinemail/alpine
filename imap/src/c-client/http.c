@@ -959,17 +959,14 @@ http_open (unsigned char *url)
 }
 
 unsigned char *
-http_post_param(unsigned char *url, HTTP_PARAM_S *param, int *code)
+http_post_param(HTTPSTREAM *stream, HTTP_PARAM_S *param)
 {
-  HTTPSTREAM *stream;
   HTTP_PARAM_S enc_param;
   HTTP_REQUEST_S *http_request;
   unsigned char *response = NULL;
   int i;
 
-  *code = -1;
-  if(url == NULL || param == NULL || (stream = http_open(url)) == NULL)
-     return response;
+  if(stream == NULL || param == NULL ) return response;
 
   http_request = http_request_get();
   http_request->request = http_request_line("POST", stream->urltail, HTTP_1_1_VERSION);
@@ -991,8 +988,6 @@ http_post_param(unsigned char *url, HTTP_PARAM_S *param, int *code)
   if(http_send(stream, http_request)){
      unsigned char *s = http_response_from_reply(stream);
      response = cpystr(s ? (char *) s : "");
-     *code = stream->status ? stream->status->code : -1;
-     http_close(stream);
   }
 
   http_request_free(&http_request);
@@ -1001,17 +996,14 @@ http_post_param(unsigned char *url, HTTP_PARAM_S *param, int *code)
 }
 
 unsigned char *
-http_post_param2(unsigned char *url, HTTP_PARAM_S *param, int *code)
+http_post_param2(HTTPSTREAM *stream, HTTP_PARAM_S *param)
 {
-  HTTPSTREAM *stream;
   HTTP_PARAM_S enc_param;
   HTTP_REQUEST_S *http_request = NULL;
   unsigned char *response = NULL;
   int i;
 
-  *code = -1;
-  if(url == NULL || param == NULL || (stream = http_open(url)) == NULL)
-     return response;
+  if(stream == NULL || param == NULL) return response;
 
   http_request = http_request_get();
   http_request->request = http_request_line("POST", stream->urltail, HTTP_1_1_VERSION);
@@ -1034,8 +1026,6 @@ http_post_param2(unsigned char *url, HTTP_PARAM_S *param, int *code)
   if(http_send(stream, http_request)){
      unsigned char *s = http_response_from_reply(stream);
      response = cpystr(s ? (char *) s : "");
-     *code = stream->status ? stream->status->code : -1;
-     http_close(stream);
   }
 
   http_request_free(&http_request);
@@ -1044,29 +1034,12 @@ http_post_param2(unsigned char *url, HTTP_PARAM_S *param, int *code)
 }
 
 unsigned char *
-http_get_param(unsigned char *base_url, HTTP_PARAM_S *param, int *code)
-{
-  unsigned char *url, *response = NIL;
-
-  *code = -1;
-  url = http_get_param_url(base_url, param);
-  if(url){
-    response = http_get(url, code);
-    fs_give((void **) &url);
-  }
-  return response;
-}
-
-unsigned char *
-http_get(unsigned char *url, int *code)
+http_get(HTTPSTREAM *stream)
 {  
   HTTP_REQUEST_S *http_request;
   unsigned char *response = NIL;
-  HTTPSTREAM *stream;
 
-  *code = -1;
-  if(!url || !(stream = http_open(url)))
-    return response;
+  if(!stream) return response;
 
   http_request = http_request_get();
   http_request->request = http_request_line("GET", stream->urltail, HTTP_1_1_VERSION);
@@ -1075,8 +1048,6 @@ http_get(unsigned char *url, int *code)
   if(http_send(stream, http_request)){
      unsigned char *s = http_response_from_reply(stream);
      response = cpystr(s ? (char *) s : "");
-     *code = stream->status ? stream->status->code : -1;
-     http_close(stream);
   }
 
   http_request_free(&http_request);

@@ -104,6 +104,7 @@ JSON_S *oauth2_json_reply(OAUTH2_SERVER_METHOD_S RefreshMethod, OAUTH2_S *oauth2
 {
     JSON_S *json = NULL;
     HTTP_PARAM_S params[OAUTH2_PARAM_NUMBER];
+    HTTPSTREAM *stream;
     unsigned char *s;
     char *server = NULL;
 
@@ -111,11 +112,14 @@ JSON_S *oauth2_json_reply(OAUTH2_SERVER_METHOD_S RefreshMethod, OAUTH2_S *oauth2
     *status = 0;
     server = xoauth2_server(RefreshMethod.urlserver, oauth2->param[OA2_Tenant].value);
     if(strcmp(RefreshMethod.name, "POST") == 0
-	&& ((s = http_post_param(server, params, status)) != NULL)){
+	&& ((stream = http_open(server)) != NULL)
+	&& ((s = http_post_param(stream, params)) != NULL)){
 	unsigned char *u = s;
 	json = json_parse(&u);
 	fs_give((void **) &s);
     }
+    *status = stream->status ? stream->status->code : -1;
+    if(stream) http_close(stream);
     if(server)
 	fs_give((void **) &server);
 
