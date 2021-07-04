@@ -3163,25 +3163,20 @@ folder_lister_km_sel_manager(SCROLL_S *sparms, int handle_hidden)
        && (fp = folder_entry(sparms->text.handles->h.f.index,
 			     FOLDERS(sparms->text.handles->h.f.context)))){
 	setbitn(FC_SEL_KEY, sparms->keys.bitmap);
-	if(fp->isdir){
-	    sparms->keys.menu->keys[FC_SEL_KEY].name = ">";
-	    menu_add_binding(sparms->keys.menu, '>', MC_CHOICE);
-	    menu_add_binding(sparms->keys.menu, '.', MC_CHOICE);
-	    if(F_ON(F_ARROW_NAV,ps_global))
-	      menu_add_binding(sparms->keys.menu, KEY_RIGHT, MC_CHOICE);
-
-	    if(fp->isfolder){
-		sparms->keys.menu->keys[FC_SEL_KEY].label = N_("View Dir");
-		setbitn(FC_ALTSEL_KEY, sparms->keys.bitmap);
-		menu_add_binding(sparms->keys.menu, 's', MC_OPENFLDR);
-		menu_add_binding(sparms->keys.menu, ctrl('M'), MC_OPENFLDR);
-		menu_add_binding(sparms->keys.menu, ctrl('J'), MC_OPENFLDR);
-	    }
-	    else{
-		sparms->keys.menu->keys[FC_SEL_KEY].label = "[" N_("View Dir") "]";
-		menu_add_binding(sparms->keys.menu, ctrl('M'), MC_CHOICE);
-		menu_add_binding(sparms->keys.menu, ctrl('J'), MC_CHOICE);
-	    }
+	sparms->keys.menu->keys[FC_SEL_KEY].name = ">";
+	menu_add_binding(sparms->keys.menu, '>', MC_CHOICE);
+	menu_add_binding(sparms->keys.menu, '.', MC_CHOICE);
+	if(F_ON(F_ARROW_NAV,ps_global))
+	   menu_add_binding(sparms->keys.menu, KEY_RIGHT, MC_CHOICE);
+	if(fp->isdir && !sparms->text.handles->is_dual_do_open){
+	    sparms->keys.menu->keys[KM_SEL_KEY].label = "[" N_("View Dir") "]";
+	    menu_add_binding(sparms->keys.menu, 'v', MC_CHOICE);
+	    menu_add_binding(sparms->keys.menu, ctrl('M'), MC_CHOICE);
+	    menu_add_binding(sparms->keys.menu, ctrl('J'), MC_CHOICE);
+	    setbitn(KM_SEL_KEY, sparms->keys.bitmap);
+	    clrbitn(KM_ALTVIEW_KEY, sparms->keys.bitmap);
+	    clrbitn(KM_EXPORT_KEY, sparms->keys.bitmap);
+	    clrbitn(KM_IMPORT_KEY, sparms->keys.bitmap);
 	}
 	else{
 	    sparms->keys.menu->keys[FC_SEL_KEY].name  = "S";

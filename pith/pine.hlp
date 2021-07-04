@@ -260,6 +260,10 @@ Bugs addressed include:
      debug level is set to 1. Print this if requested, regardless of what
      the default debug level is.
 
+<LI> When trying to select a folder for saving a message, one can only enter
+     a subfolder by pressing the &quot;>&quot; command, rather than the normal
+     navigation by pressing &quot;Return&quot;. Reported by Ulf-Dietrich Braunmann.
+
 </UL>
 
 <P> Version 2.24 adds new features and addresses bugs found in previous
