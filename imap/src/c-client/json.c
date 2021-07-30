@@ -216,7 +216,7 @@ json_value_parse(unsigned char **s)
   w = *s;
   json_skipws(w);
   jx = fs_get(sizeof(JSON_X));
-  memset((void **) jx, 0, sizeof(JSON_X));
+  memset((void *) jx, 0, sizeof(JSON_X));
   jx->jtype = JEnd;
   switch(*w){
      case '\"': jx->jtype = JString; break;
@@ -261,7 +261,7 @@ json_value_parse(unsigned char **s)
 		   }
 		   break;
 
-     case JObject: jx->value = (void *) json_parse(&w);
+     case JObject: jx->value = (void *) json_parse_work(&w);
 		   break;
 
      case JLong  : l = fs_get(sizeof(unsigned long));
@@ -322,12 +322,13 @@ JSON_S *
 json_array_parse_work(unsigned char **s)
 {
   unsigned char *w = *s;
-  JSON_S *j;
+  JSON_S *j = NIL;
 
   json_skipws(w);
   j = fs_get(sizeof(JSON_S));
   memset((void *) j, 0, sizeof(JSON_S));
-  j->value = json_value_parse(&w);
+  if(*w != ']')
+    j->value = json_value_parse(&w);
   json_skipws(w);
   switch(*w){
         case ',' : json_skipchar(w);
@@ -421,7 +422,13 @@ json_free(JSON_S **jp)
 }
 
 JSON_S *
-json_parse(unsigned char **s)
+json_parse(unsigned char *s)
+{
+  return json_parse_work(&s);
+}
+
+JSON_S *
+json_parse_work(unsigned char **s)
 {
   JSON_S *j = NULL;
   JSON_X *jx;
@@ -446,4 +453,33 @@ json_parse(unsigned char **s)
   }
   *s = w;
   return j;  
+}
+
+void
+json_assign(void **v, JSON_S *j, char *s, JObjType t)
+{
+  JSON_X *jx = json_body_value(j, s);
+  long l;
+  unsigned long ul;
+  int i;
+
+  if(jx && jx->jtype == t && jx->value){
+    switch(t){		/* override here */
+	case JString  : *v = (void *) cpystr((char *) jx->value); break;
+	default : break;
+    }
+  }
+}
+
+JSON_S *
+json_by_name_and_type(JSON_S *json, char *name, JObjType jtype)
+{
+  JSON_S *j;
+
+  for(j = json; j ; j = j->next)
+     if(j->name && !compare_cstring(j->name, name))
+	break;
+
+  return j && j->value && j->value->jtype == jtype
+	  ? (JSON_S *) (j->value->value) : NIL;
 }

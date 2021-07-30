@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Eduardo Chappa
+ * Copyright 2018-2021 Eduardo Chappa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,21 @@ typedef struct json_s {
    struct json_s *next;
 } JSON_S;
 
-JSON_S *json_parse(unsigned char **);
+#define json_value_type(J, I, T) 					\
+	(((jx = json_body_value((J), (I))) != NIL)			\
+	  && jx->jtype == (T) && jx->value)				\
+	? ((T) == JLong							\
+	    ? *(long *) jx->value					\
+	    : ((T) == JBoolean						\
+	        ? (compare_cstring("false", (char *) jx->value) ? 1 : 0)\
+		: NIL							\
+	      )								\
+          )								\
+	: NIL
+
+void json_assign(void **, JSON_S *, char *, JObjType);
+JSON_S *json_by_name_and_type(JSON_S *, char *, JObjType);
+JSON_S *json_parse(unsigned char *);
 JSON_X *json_body_value(JSON_S *, unsigned char *);
 void json_free(JSON_S **);
 

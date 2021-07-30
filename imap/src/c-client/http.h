@@ -11,6 +11,9 @@
  *
  */
 
+#define HTTPTCPPORT (long) 80   /* assigned TCP contact port */
+#define HTTPSSLPORT (long) 443  /* assigned SSL TCP contact port */
+
 typedef struct http_val_param_s {
   char *value;
   PARAMETER *plist;
@@ -105,11 +108,24 @@ typedef struct http_param_s {
    char *value;
 } HTTP_PARAM_S;
 
+typedef struct http_request_s {
+  unsigned char *request;
+  unsigned char *header;
+  unsigned char *body;
+} HTTP_REQUEST_S;
+
 /* exported prototypes */
+HTTP_REQUEST_S *http_request_get(void);
+void http_request_free(HTTP_REQUEST_S **);
+unsigned char *http_request_line(unsigned char *, unsigned char *, unsigned char *);
+void http_add_header(HTTP_REQUEST_S **, unsigned char *, unsigned char *);
+unsigned char *http_response_from_reply(HTTPSTREAM *);
+
+int http_valid_net_parse (unsigned char *, NETMBX *);
 HTTPSTREAM *http_open (unsigned char *);
+long http_send (HTTPSTREAM *, HTTP_REQUEST_S *);
 unsigned char *http_post_param(HTTPSTREAM *, HTTP_PARAM_S *);
-unsigned char *http_post_param2(HTTPSTREAM *, HTTP_PARAM_S *);
-unsigned char *http_get(HTTPSTREAM *);
+unsigned char *http_get(HTTPSTREAM *, HTTP_PARAM_S **);
 void http_close (HTTPSTREAM *stream);
 
 HTTP_PARAM_S *http_param_get(int);

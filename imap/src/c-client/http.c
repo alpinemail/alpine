@@ -21,15 +21,6 @@ unsigned long http_debug;
 static char http_notok[] = "\1\2\3\4\5\6\7\10\11\12\13\14\15\16\17\20\21\22\23\24\25\26\27\30\31\32\33\34\35\36\37\40\42\50\51\54\57\72\73\74\75\76\77\100\133\134\135\173\175\177\200\201\202\203\204\205\206\207\210\211\212\213\214\215\216\217\220\221\222\223\224\225\226\227\230\231\232\233\234\235\236\237\240\241\242\243\244\245\246\247\250\251\252\253\254\255\256\257\260\261\262\263\264\265\266\267\270\271\272\273\274\275\276\277\300\301\302\303\304\305\306\307\310\311\312\313\314\315\316\317\320\321\322\323\324\325\326\327\330\331\332\333\334\335\336\337\340\341\342\343\344\345\346\347\350\351\352\353\354\355\356\357\360\361\362\363\364\365\366\367\370\371\372\373\374\375\376\377";
 static char http_noparam_val[] = "\1\2\3\4\5\6\7\10\12\13\14\15\16\17\20\21\22\23\24\25\26\27\30\31\32\33\34\35\36\37\42\134\177";
 
-#define HTTPTCPPORT (long) 80	/* assigned TCP contact port */
-#define HTTPSSLPORT (long) 443	/* assigned SSL TCP contact port */
-
-typedef struct http_request_s {
-  unsigned char *request;
-  unsigned char *header;
-  unsigned char *body;
-} HTTP_REQUEST_S;
-
 #define HTP_NOVAL	0x001	/* the header accepts parameters without value */
 
 #define HTP_UNLIMITED	(-1)	/* parse and infinite list */
@@ -96,20 +87,12 @@ typedef struct http_header_data_s {
 /* helper functions */
 HTTP_STATUS_S *http_status_line_get(unsigned char *);
 void http_status_line_free(HTTP_STATUS_S **);
-HTTP_REQUEST_S *http_request_get(void);
-void http_request_free(HTTP_REQUEST_S **);
-unsigned char *http_request_line(unsigned char *, unsigned char *, unsigned char *);
-void http_add_header(HTTP_REQUEST_S **, unsigned char *, unsigned char *);
 void http_add_body(HTTP_REQUEST_S **, unsigned char *);
 void buffer_add(unsigned char **, unsigned char *);
 unsigned char *hex_escape_url_part(unsigned char *, unsigned char *);
 unsigned char *encode_url_body_part(unsigned char *, unsigned char *);
-unsigned char *http_response_from_reply(HTTPSTREAM *);
 
 /* HTTP function prototypes */
-int http_valid_net_parse (unsigned char *, NETMBX *);
-
-long http_send (HTTPSTREAM *, HTTP_REQUEST_S *);
 long http_reply (HTTPSTREAM *);
 long http_fake (HTTPSTREAM *, unsigned char *);
 
@@ -147,28 +130,15 @@ http_parameters (long function,void *value)
 unsigned char *
 http_response_from_reply(HTTPSTREAM *stream)
 {
-  unsigned char *rv = NULL, *s, *t;
+  unsigned char *rv = NULL, *s;
 
   if(stream == NULL || stream->reply == NULL || stream->header == NULL) 
      return rv;
 
-  if(stream->header->content_length){
-     s = strstr(stream->reply, "\r\n\r\n");
-     if(s != NULL) rv = s + 4;
-  }
-  else if (stream->header->transfer_encoding){
-     HTTP_PARAM_LIST_S *p = stream->header->transfer_encoding->p;
-     for(; p ; p = p->next){
-	if(!compare_cstring(p->vp->value, "chunked"))
-	   break;
-     }
-     if(p && p->vp->value){	/* chunked transfer */
-        if((s = strstr(stream->reply, "\r\n\r\n")) != NULL
-	    && (t = strstr(s + 4, "\r\n")) != NULL)
-	rv = t + 2;
-     }
-  }
-  return rv;
+  s = strstr(stream->reply, "\r\n\r\n");
+  if(s != NULL) rv = s + 4;
+
+  return s ? rv : NIL;
 }
 
 void
@@ -996,54 +966,19 @@ http_post_param(HTTPSTREAM *stream, HTTP_PARAM_S *param)
 }
 
 unsigned char *
-http_post_param2(HTTPSTREAM *stream, HTTP_PARAM_S *param)
+http_get(HTTPSTREAM *stream, HTTP_PARAM_S **h)
 {
-  HTTP_PARAM_S enc_param;
-  HTTP_REQUEST_S *http_request = NULL;
-  unsigned char *response = NULL;
-  int i;
-
-  if(stream == NULL || param == NULL) return response;
-
-  http_request = http_request_get();
-  http_request->request = http_request_line("POST", stream->urltail, HTTP_1_1_VERSION);
-  http_add_header(&http_request, "Host", stream->urlhost);
-  http_add_header(&http_request, "User-Agent", "Alpine");
-  http_add_header(&http_request, "Content-Type", HTTP_MIME_URLENCODED);
-
-  for(i = 0; param[i].name != NULL; i++){
-    enc_param.name  = encode_url_body_part(param[i].name, NULL);
-    enc_param.value = encode_url_body_part(param[i].value, NULL);
-    if(i > 0) 
-       http_add_body(&http_request, "&");
-    http_add_body(&http_request, enc_param.name);
-    http_add_body(&http_request, "=");
-    http_add_body(&http_request, enc_param.value);
-    fs_give((void **) &enc_param.name);
-    fs_give((void **) &enc_param.value);
-  }
-  
-  if(http_send(stream, http_request)){
-     unsigned char *s = http_response_from_reply(stream);
-     response = cpystr(s ? (char *) s : "");
-  }
-
-  http_request_free(&http_request);
-
-  return response;
-}
-
-unsigned char *
-http_get(HTTPSTREAM *stream)
-{  
   HTTP_REQUEST_S *http_request;
   unsigned char *response = NIL;
+  int i;
 
   if(!stream) return response;
 
   http_request = http_request_get();
   http_request->request = http_request_line("GET", stream->urltail, HTTP_1_1_VERSION);
   http_add_header(&http_request, "Host", stream->urlhost);
+  for(i = 0; h && h[i]->name && h[i]->value; i++)
+     http_add_header(&http_request, h[i]->name, h[i]->value);
   
   if(http_send(stream, http_request)){
      unsigned char *s = http_response_from_reply(stream);
@@ -1146,7 +1081,7 @@ http_reply (HTTPSTREAM *stream)
   if (stream->response) fs_give ((void **) &stream->response);
   stream->response = (unsigned char *) net_getline(stream->netstream);
 
-  if(stream->debug) mm_log(stream->response, HTTPDEBUG);
+  if(stream->debug) mm_log(stream->response ? stream->response : (unsigned char *) "<NIL RESPONSE>", HTTPDEBUG);
 
   if(stream->response){
      buffer_add(&stream->reply, stream->response);
@@ -1192,22 +1127,21 @@ http_reply (HTTPSTREAM *stream)
 	   break;
      }
      if(p && p->vp->value){	/* chunked transfer */
-	int done = 0;
-	size = 0L;
-	while(!done){
-	  if (stream->response) fs_give ((void **) &stream->response);
-	  stream->response = (unsigned char *) net_getline (stream->netstream);
-	  if(stream->response){
-	     buffer_add(&stream->reply, stream->response);
-	     buffer_add(&stream->reply, "\015\012");
-	     size = strtol((unsigned char *) stream->response, NIL, 16);
+	unsigned char *s = NIL;
+	do {
+	  if (s) fs_give ((void **) &s);
+	  size = 0L;
+	  if((s = (unsigned char *) net_getline (stream->netstream)) != NIL){
+//	     buffer_add(&stream->reply, s);
+//	     buffer_add(&stream->reply, "\015\012");
+	     if(stream->debug) mm_log(s, HTTPDEBUG);
+	     size = strtol(s, NIL, 16);
 	     fs_give ((void **) &stream->response);
 	     stream->response = (unsigned char *) net_getsize (stream->netstream, size);
 	     buffer_add(&stream->reply, stream->response);
 	     if(stream->debug) mm_log(stream->response, HTTPDEBUG);
 	  }
-	  if(size == 0L) done++;
-	}
+	} while (stream && stream->netstream && s && (size > 0 || !*s ));
      }
   }
 
