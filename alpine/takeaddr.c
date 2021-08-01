@@ -1720,7 +1720,7 @@ update_takeaddr_screen(struct pine *ps, TA_S *current, TA_SCREEN_S *screen, Pos 
           *ctmp;
     int    longest, i, j;
     char   buf1[6*MAX_SCREEN_COLS + 30];
-    char   buf2[6*MAX_SCREEN_COLS + 30];
+    char   buf2[6*MAX_SCREEN_COLS + 30 + 10];
     char  *p, *q;
     int screen_width = ps->ttyo->screen_cols;
     Pos    cpos;

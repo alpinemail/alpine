@@ -5794,7 +5794,7 @@ html_li(HANDLER_S *hd, int ch, int cmd)
 	    if(PASS_HTML(hd->html_data)){
 	    }
 	    else{
-		char buf[16], tmp[16], *p;
+		char buf[20], tmp[16], *p;
 		int  wrapstate;
 
 		/* Start a new line */

@@ -2169,7 +2169,7 @@ display_attachment(long int msgno, ATTACH_S *a, int flags)
     gf_io_t  pc;
     char    *err;
     int      we_cancel = 0, rv;
-    char     prefix[70];
+    char     prefix[70 + 1000];	/* 1000 = sizeof(sender_filename) */
     char     ext[32];
     char     mtype[128];
 

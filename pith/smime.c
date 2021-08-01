@@ -782,15 +782,16 @@ import_certificate(WhichCerts ctype, PERSONAL_CERT *p_cert, char *fname)
 		     text = decrypt_file((char *)tmp, NULL, pwdcert);
 		     if(text != NULL){
 			if(pc == NULL){
-			   pc = fs_get(sizeof(PERSONAL_CERT));
-			   memset((void *)pc, 0, sizeof(PERSONAL_CERT));
 			   filename[strlen(filename)-strlen(EXTCERT(Private))] = '\0';
-			   pc->name = cpystr(filename);
-			   snprintf(buf, sizeof(buf), "%s%s", filename, EXTCERT(Public));
-			   buf[sizeof(buf)-1] = '\0';
-			   pc->cname = cpystr(buf);
-			   pc->key  = key; 
-			   pc->cert = cert;
+			   if(strlen(filename) + strlen(EXTCERT(Public)) < MAXPATH){
+			      pc = fs_get(sizeof(PERSONAL_CERT));
+			      memset((void *)pc, 0, sizeof(PERSONAL_CERT));
+			      pc->name = cpystr(filename);
+			      pc->cname = fs_get(strlen(filename) + strlen(EXTCERT(Public)) + 1);
+			      sprintf(pc->cname, "%s%s", filename, EXTCERT(Public));
+			      pc->key  = key; 
+			      pc->cert = cert;
+			   }
 			}
 			
 			if(encrypt_file((char *)tmp, text, pc)){ /* we did it! */
@@ -855,7 +856,7 @@ import_certificate(WhichCerts ctype, PERSONAL_CERT *p_cert, char *fname)
 
 	if(!ps_global->smime->privatecertlist){
 	  ps_global->smime->privatecertlist = fs_get(sizeof(CertList));
-	  memset((void *)DATACERT(ctype), 0, sizeof(CertList));
+	  memset((void *) ps_global->smime->privatecertlist, 0, sizeof(CertList));
 	}
 
 	for(s = t = filename; (t = strstr(s, ".key")) != NULL; s = t + 1);
@@ -1930,9 +1931,11 @@ copy_dir_to_container(WhichCerts which, char *contents)
 	      fpath[sizeof(fpath) - 1] = '\0';
 	    }
 	    else if(ret_dir){  
-                if(strlen(dstpath) + strlen(configcontainer) - strlen(ret_dir) + 1 < sizeof(dstpath))
-                   snprintf(fpath, sizeof(fpath), "%s%c%s",
-                        dstpath, tempfile[strlen(ret_dir)], configcontainer);
+                if(strlen(dstpath) + strlen(configcontainer) + 2 < sizeof(dstpath))
+                   snprintf(fpath, sizeof(fpath), "%.*s%c%.*s",
+			(int) strlen(dstpath), dstpath,
+			tempfile[strlen(ret_dir)],
+			(int) (sizeof(fpath) - strlen(dstpath) - 1), configcontainer);
                 else
                    ret = -1;  
             }

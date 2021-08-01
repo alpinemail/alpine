@@ -4885,7 +4885,7 @@ set_feature_list_current_val(struct variable *var)
      */
 
     j = 0;
-    strncpy(no_allow, "no-", 3);
+    strcpy(no_allow, "no-");
     strncpy(no_allow+3, feature_list_name(F_ALLOW_CHANGING_FROM), sizeof(no_allow)-3-1);
     no_allow[sizeof(no_allow)-1] = '\0';
 

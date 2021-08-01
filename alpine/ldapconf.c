@@ -1805,7 +1805,7 @@ dir_edit_screen(struct pine *ps, LDAP_SERV_S *def, char *title, char **raw_serve
      */
 
     if(rv == 1 && raw_server){
-	char dir_tmp[2200], *p;
+	char dir_tmp[2200+MAXPATH], *p;
 	int portval = -1, timeval = -1, sizeval = -1;
 
 	apval = APVAL(&server_var, ew);

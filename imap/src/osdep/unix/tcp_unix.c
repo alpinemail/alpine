@@ -994,7 +994,7 @@ char *tcp_name (struct sockaddr *sadr,long flag)
     blocknotify_t bn = (blocknotify_t)mail_parameters(NIL,GET_BLOCKNOTIFY,NIL);
     void *data;
     if (tcpdebug) {
-      sprintf (tmp,"Reverse DNS resolution %s",adr);
+      sprintf (tmp,"Reverse DNS resolution %.82s",adr);
       mm_log (tmp,TCPDEBUG);
     }
     (*bn) (BLOCK_DNSLOOKUP,NIL);/* quell alarms */

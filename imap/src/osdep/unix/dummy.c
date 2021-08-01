@@ -274,7 +274,7 @@ void dummy_list_work (MAILSTREAM *stream,char *dir,char *pat,char *contents,
   DIR *dp;
   struct direct *d;
   struct stat sbuf;
-  char tmp[MAILTMPLEN],path[MAILTMPLEN];
+  char tmp[MAILTMPLEN],path[MAILTMPLEN + 1];
   size_t len = 0;
 				/* punt if bogus name */
   if (!mailboxdir (tmp,dir,NIL)) return;

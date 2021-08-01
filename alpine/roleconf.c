@@ -3402,8 +3402,7 @@ role_config_edit_screen(struct pine *ps, PAT_S *def, char *title, long int rflag
     rolecolor_vars[1].is_used    = 1;
     rolecolor_vars[1].is_user    = 1;
     rolecolor_vars[0].name = cpystr("ic-foreground-color");
-    rolecolor_vars[1].name = cpystr(rolecolor_vars[0].name);
-    strncpy(rolecolor_vars[1].name + 3, "back", 4);
+    rolecolor_vars[1].name = cpystr("ic-background-color");
     apval = APVAL(&rolecolor_vars[1], ew);
     *apval = (def && def->action && def->action->incol &&
 	      def->action->incol->bg[0])

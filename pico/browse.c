@@ -721,6 +721,7 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 	  case 'e':					/* exit or edit */
 	  case 'E':
 	    if(gmode&MDBRONLY){				/* run "pico" */
+		char *t;
 		snprintf(child, sizeof(child), "%.*s%c%.*s", NLINE, gmp->dname, C_FILESEP,
 			NLINE, gmp->current->fname);
 		/* make sure selected isn't a directory or executable */
@@ -729,17 +730,22 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 		    break;
 		}
 
-		if((envp = (char *) getenv("EDITOR")) != NULL)
-		  snprintf(tmp, sizeof(tmp), "%s \'%s\'", envp, child);
-		else
-		  snprintf(tmp, sizeof(tmp), "pico%s%s%s \'%s\'",
+		if((envp = (char *) getenv("EDITOR")) != NULL){
+		  t = fs_get(strlen(envp) + strlen(child) + 3 + 1);
+		  sprintf(t, "%s \'%s\'", envp, child);
+		}
+		else{
+		  t = fs_get(strlen(child) + 16 + 1);
+		  sprintf(t, "pico%s%s%s \'%s\'",
 			  (gmode & MDFKEY) ? " -f" : "",
 			  (gmode & MDSHOCUR) ? " -g" : "",
 			  (gmode & MDMOUSE) ? " -m" : "",
 			  child);
+		}
 
-		BrowserRunChild(tmp, gmp->dname);	/* spawn pico */
+		BrowserRunChild(t, gmp->dname);	/* spawn pico */
 		PaintBrowser(gmp, 0, &crow, &ccol);	/* redraw browser */
+		if(t) fs_give((void **) &t);
 	    }
 	    else{
 		zotmaster(&gmp);
@@ -1585,11 +1591,14 @@ FileBrowse(char *dir, size_t dirlen, char *fn, size_t fnlen,
 			NLINE, gmp->current->fname);
 
 		if(LikelyASCII(child)){
-		    snprintf(tmp, sizeof(tmp), "%s \'%s\'",
-			    (envp = (char *) getenv("PAGER"))
-			      ? envp : BROWSER_PAGER, child);
-		    BrowserRunChild(tmp, gmp->dname);
+		    char *t;
+		    envp = (char *) getenv("PAGER");
+		    t = fs_get((envp ? strlen(envp) : strlen(BROWSER_PAGER))
+				+ strlen(child) + 3 + 1);
+		    sprintf(t, "%s \'%s\'", envp ? envp : BROWSER_PAGER, child);
+		    BrowserRunChild(t, gmp->dname);
 		    PaintBrowser(gmp, 0, &crow, &ccol);
+		    if(t) fs_give((void **) &t);
 		}
 
 		break;

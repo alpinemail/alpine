@@ -3866,7 +3866,7 @@ cmd_export(struct pine *state, MSGNO_S *msgmap, int qline, int aopt)
 	    }
 
 	    ok = 0;
-	    snprintf(dir, sizeof(dir), "%s.d", full_filename);
+	    snprintf(dir, sizeof(dir), "%.*s.d", MAXPATH-2, full_filename);
 	    dir[sizeof(dir)-1] = '\0';
 
 	    do {
@@ -3887,7 +3887,7 @@ cmd_export(struct pine *state, MSGNO_S *msgmap, int qline, int aopt)
 			goto fini;
 		    }
 
-		    snprintf(dir, sizeof(dir), "%s.d_%s", full_filename,
+		    snprintf(dir, sizeof(dir), "%.*s.d_%s", MAXPATH- (int) strlen(long2string((long) tries))-3, full_filename,
 			    long2string((long) tries));
 		    dir[sizeof(dir)-1] = '\0';
 		    break;
@@ -3960,24 +3960,33 @@ cmd_export(struct pine *state, MSGNO_S *msgmap, int qline, int aopt)
 		 * and if so, we write a counter name in the file name, just before the
 		 * extension of the file, and separate it with an underscore.
 		 */
-		snprintf(filename, sizeof(filename), "%s%s%s", dir, S_FILESEP, lfile);
+		snprintf(filename, sizeof(filename), "%.*s%.*s%.*s", (int) strlen(dir), dir, 
+			(int) strlen(S_FILESEP), S_FILESEP, 
+			MAXPATH - (int) strlen(dir) - (int) strlen(S_FILESEP), lfile);
 		filename[sizeof(filename)-1] = '\0';
 		while((ok = can_access(filename, ACCESS_EXISTS)) == 0 && errs == 0){
-		   char *ext;
-		   snprintf(filename, sizeof(filename), "%d", counter);
-		   if(strlen(dir) + strlen(S_FILESEP) + strlen(lfile) + strlen(filename) + 2
-							    > sizeof(filename)){
+		   char *ext, count[MAXPATH+1];
+		   unsigned long total;
+		   snprintf(count, sizeof(count), "%d", counter);
+		   if((ext = strrchr(lfile, '.')) != NULL)
+		      *ext = '\0';
+		   total = strlen(dir) + strlen(S_FILESEP) + strlen(lfile) + strlen(count) + 3
+				+ (ext ? strlen(ext+1) : 0);
+		   if(total > sizeof(filename)){
 		      dprint((2,
 			   "FAILED Att Export: name too long: %s\n",
 			   dir, S_FILESEP, lfile));
 		      errs++;
 		      continue;
 		   }
-		   if((ext = strrchr(lfile, '.')) != NULL)
-		      *ext = '\0';
-		   snprintf(filename, sizeof(filename), "%s%s%s%s%d%s%s", 
-			dir, S_FILESEP, lfile, 
-			ext ? "_" : "", counter++, ext ? "." : "", ext ? ext+1 : "");
+		   snprintf(filename, sizeof(filename), "%.*s%.*s%.*s%.*s%.*d%.*s%.*s", 
+			(int) strlen(dir), dir, (int) strlen(S_FILESEP), S_FILESEP, 
+			(int) strlen(lfile), lfile,
+			ext ? 1 : 0, ext ? "_" : "",
+			(int) strlen(count), counter++,
+			ext ? 1 : 0, ext ? "." : "", 
+			ext ? (int) (sizeof(filename) - total) : 0,
+			ext ? ext+1 : "");
 		   filename[sizeof(filename)-1] = '\0';
 		}
 

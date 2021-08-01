@@ -1288,24 +1288,31 @@ manage_certs_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned flags)
 		     && can_access(pathdir, ACCESS_EXISTS) != 0
 	             && our_mkpath(pathdir, 0700) == 0)){
 	        pc = ALPINE_self_signed_certificate(NULL, 0, pathdir, MASTERNAME);
-		snprintf(filename, sizeof(filename), "%s/%s.key", 
-					pathdir, MASTERNAME);
-		filename[sizeof(filename)-1] = '\0';
-		rv = import_certificate(ctype, pc, filename);
-		if(rv == 1){
-		  ps->keyemptypwd = 0;
-		  if(our_stat(pathdir, &sbuf) == 0){
-		    if(unlink(filename) < 0)
-		      q_status_message1(SM_ORDER, 0, 2, 
-			_("Could not remove private key %s.key"), MASTERNAME);
-		    filename[strlen(filename)-4] = '\0';
-		    strcat(filename, ".crt");
-		    if(unlink(filename) < 0)
-		      q_status_message1(SM_ORDER, 0, 2, 
-			_("Could not remove public certificate %s.crt"), MASTERNAME);
-		    if(rmdir(pathdir) < 0)
-		      q_status_message1(SM_ORDER, 0, 2, 
-		      _("Could not remove temporary directory %s"), pathdir);
+		if(strlen(pathdir) + strlen(MASTERNAME) + 5 + 1 > sizeof(filename)){
+		      q_status_message(SM_ORDER, 0, 2, 
+			_("pathdir for key too long"));
+		}
+		else{
+		  snprintf(filename, sizeof(filename), "%.*s/%.*s.key",
+				(int) strlen(pathdir), pathdir,
+				(int) (sizeof(filename) - strlen(MASTERNAME) - 5 - 1), MASTERNAME);
+		  filename[sizeof(filename)-1] = '\0';
+		  rv = import_certificate(ctype, pc, filename);
+		  if(rv == 1){
+		    ps->keyemptypwd = 0;
+		    if(our_stat(pathdir, &sbuf) == 0){
+		      if(unlink(filename) < 0)
+		        q_status_message1(SM_ORDER, 0, 2, 
+			  _("Could not remove private key %s.key"), MASTERNAME);
+		      filename[strlen(filename)-4] = '\0';
+		      strcat(filename, ".crt");
+		      if(unlink(filename) < 0)
+		        q_status_message1(SM_ORDER, 0, 2, 
+			  _("Could not remove public certificate %s.crt"), MASTERNAME);
+		      if(rmdir(pathdir) < 0)
+		        q_status_message1(SM_ORDER, 0, 2, 
+		        _("Could not remove temporary directory %s"), pathdir);
+		    }
 		  }
 		}
 	      }

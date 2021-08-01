@@ -1680,7 +1680,7 @@ color_to_asciirgb(char *colorName)
 	 * but at least the embedded colors in filter.c will get properly
 	 * sucked up when they're encountered.
 	 */
-	strncpy(c_to_a_buf[whichbuf], "xxxxxxxxxxx", RGBLEN);  /* RGBLEN is 11 */
+	strcpy(c_to_a_buf[whichbuf], "xxxxxxxxxxx");
 	l = strlen(colorName);
 	strncpy(c_to_a_buf[whichbuf], colorName, (l < RGBLEN) ? l : RGBLEN);
 	c_to_a_buf[whichbuf][RGBLEN] = '\0';

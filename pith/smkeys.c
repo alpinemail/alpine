@@ -1053,8 +1053,11 @@ save_cert_for(char *email, X509 *cert, WhichCerts ctype)
 		}
 		else{
 		   if(strlen(path) + strlen(tempfile) - strlen(ret_dir) + 1 < sizeof(path))
-		     snprintf(fpath, sizeof(fpath), "%s%c%s", 
-			path, tempfile[strlen(ret_dir)], tempfile + strlen(ret_dir) + 1);
+		     snprintf(fpath, sizeof(fpath), "%.*s%c%.*s",
+			(int) strlen(path), path,
+			tempfile[strlen(ret_dir)],
+			(int) (sizeof(fpath) - strlen(fpath) - 1),
+			tempfile + strlen(ret_dir) + 1);
 		   else
 		     err++;
 		}

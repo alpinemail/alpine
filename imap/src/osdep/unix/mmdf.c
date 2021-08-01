@@ -1912,7 +1912,7 @@ int mmdf_parse (MAILSTREAM *stream,DOTLOCK *lock,int op)
 		  !compare_cstring (tmp,"X-IMAP") ||
 		  !compare_cstring (tmp,"X-IMAPBASE")) {
 		char err[MAILTMPLEN];
-		sprintf (err,"Discarding bogus %s header in message %lu",
+		sprintf (err,"Discarding bogus %.20s header in message %lu",
 			 (char *) tmp,elt->msgno);
 		MM_LOG (err,WARN);
 		retain = NIL;	/* don't retain continuation */

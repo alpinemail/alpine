@@ -3788,11 +3788,12 @@ write_passfile(pinerc, l)
     }
 
 #else /* PASSFILE */
-    char  tmp[10*MAILTMPLEN], blob[10*MAILTMPLEN];
+    char  *tmp = NULL, passfile[MAXPATH + 1], blob[MAILTMPLEN];
     int   i, n;
+    size_t tmplen = 0, newlen;
     FILE *fp;
 #ifdef SMIME
-    char *text = NULL, tmp2[10*MAILTMPLEN];
+    char *text = NULL, tmp2[MAXPATH + 1];
     int len = 0;
 #endif
 
@@ -3802,13 +3803,13 @@ write_passfile(pinerc, l)
     dprint((9, "write_passfile\n"));
 
     /* if there's no passfile to read, bag it!! */
-    if(!passfile_name(pinerc, tmp, sizeof(tmp)) || !(fp = our_fopen(tmp, "wb"))){
+    if(!passfile_name(pinerc, passfile, sizeof(tmp)) || !(fp = our_fopen(passfile, "wb"))){
 	using_passfile = 0;
         return;
     }
 
 #ifdef SMIME
-   strncpy(tmp2, tmp, sizeof(tmp2));
+   strncpy(tmp2, passfile, sizeof(tmp2));
    tmp2[sizeof(tmp2)-1] = '\0';
 #endif /* SMIME */
 
@@ -3823,8 +3824,18 @@ write_passfile(pinerc, l)
 	else
 	   sprintf(blob, "%d", l->altflag);
 
+	newlen = strlen(l->passwd) + strlen(l->user) + strlen(l->hosts->name)
+		+ strlen(blob) + strlen((l->hosts->next && l->hosts->next->name) ? "\t" : "")
+		+ strlen((l->hosts->next && l->hosts->next->name) ? l->hosts->next->name : "")
+		+ 4 + 1;
+
+	if(tmplen < newlen){
+	   fs_resize((void **)&tmp, newlen);
+	   tmplen = newlen;
+	}
+	
 	/*** do any necessary ENcryption here ***/
-	snprintf(tmp, sizeof(tmp), "%s\t%s\t%s\t%s%s%s\n", l->passwd, l->user,
+	sprintf(tmp, "%s\t%s\t%s\t%s%s%s\n", l->passwd, l->user,
 		l->hosts->name, blob,
 		(l->hosts->next && l->hosts->next->name) ? "\t" : "",
 		(l->hosts->next && l->hosts->next->name) ? l->hosts->next->name
@@ -3844,6 +3855,7 @@ write_passfile(pinerc, l)
 #endif /* SMIME */
     }
 
+    if(tmp) fs_give((void **) &tmp);
     fclose(fp);
 #ifdef SMIME
     if(text != NULL){
