@@ -3803,7 +3803,7 @@ write_passfile(pinerc, l)
     dprint((9, "write_passfile\n"));
 
     /* if there's no passfile to read, bag it!! */
-    if(!passfile_name(pinerc, passfile, sizeof(tmp)) || !(fp = our_fopen(passfile, "wb"))){
+    if(!passfile_name(pinerc, passfile, sizeof(passfile)) || !(fp = our_fopen(passfile, "wb"))){
 	using_passfile = 0;
         return;
     }
