@@ -14,14 +14,10 @@
 typedef enum {JValue, JString, JLong, JDecimal, JExponential, JNumberError, 
 	      JObject, JArray, JBoolean, JNull, JEnd} JObjType;
 
-typedef struct json_x {
-   JObjType jtype;
-   void *value;
-} JSON_X;
-
 typedef struct json_s {
+   JObjType jtype;
    unsigned char *name;
-   JSON_X *value;
+   void *value;
    struct json_s *next;
 } JSON_S;
 
@@ -40,7 +36,7 @@ typedef struct json_s {
 void json_assign(void **, JSON_S *, char *, JObjType);
 JSON_S *json_by_name_and_type(JSON_S *, char *, JObjType);
 JSON_S *json_parse(unsigned char *);
-JSON_X *json_body_value(JSON_S *, unsigned char *);
+JSON_S *json_body_value(JSON_S *, unsigned char *);
 void json_free(JSON_S **);
 
 #endif /* JSON_H_INCLUDED */

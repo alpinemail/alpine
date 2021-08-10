@@ -161,7 +161,7 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
      json = oauth2_json_reply(oauth2->server_mthd[OA2_GetDeviceCode], oauth2, &status);
 
      if(json != NULL){
-	JSON_X *jx;
+	JSON_S *jx;
 
         json_assign ((void **) &oauth2->devicecode.device_code, json, "device_code", JString);
         json_assign ((void **) &oauth2->devicecode.user_code, json, "user_code", JString);
@@ -201,7 +201,7 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
      json = oauth2_json_reply(oauth2->server_mthd[OA2_GetAccessTokenFromRefreshToken], oauth2, &status);
 
      if(json != NULL){
-	JSON_X *jx;
+	JSON_S *jx;
 
 	switch(status){
 	   case HTTP_UNAUTHORIZED:
@@ -263,7 +263,7 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
 	json = oauth2_json_reply(oauth2->server_mthd[OA2_GetAccessTokenFromAccessCode], oauth2, &status);
 
 	if(json != NULL){
-	   JSON_X *jx;
+	   JSON_S *jx;
 
 	  switch(status){
 	     case HTTP_OK : json_assign ((void **) &oauth2->param[OA2_RefreshToken].value, json, "refresh_token", JString);
@@ -320,7 +320,7 @@ void oauth2deviceinfo_get_accesscode(void *inp, void *outp)
   json = oauth2_json_reply(oauth2->server_mthd[OA2_GetAccessTokenFromAccessCode], oauth2, &status);
 
   if(json != NULL){
-     JSON_X *jx;
+     JSON_S *jx;
      char *error = NIL;
 
      switch(status){
