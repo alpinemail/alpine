@@ -87,7 +87,6 @@ typedef struct http_header_data_s {
 /* helper functions */
 HTTP_STATUS_S *http_status_line_get(unsigned char *);
 void http_status_line_free(HTTP_STATUS_S **);
-void http_add_body(HTTP_REQUEST_S **, unsigned char *);
 void buffer_add(unsigned char **, unsigned char *);
 unsigned char *hex_escape_url_part(unsigned char *, unsigned char *);
 unsigned char *encode_url_body_part(unsigned char *, unsigned char *);
@@ -1132,14 +1131,14 @@ http_reply (HTTPSTREAM *stream)
 	  if (s) fs_give ((void **) &s);
 	  size = 0L;
 	  if((s = (unsigned char *) net_getline (stream->netstream)) != NIL){
-//	     buffer_add(&stream->reply, s);
-//	     buffer_add(&stream->reply, "\015\012");
 	     if(stream->debug) mm_log(s, HTTPDEBUG);
 	     size = strtol(s, NIL, 16);
 	     fs_give ((void **) &stream->response);
-	     stream->response = (unsigned char *) net_getsize (stream->netstream, size);
-	     buffer_add(&stream->reply, stream->response);
-	     if(stream->debug) mm_log(stream->response, HTTPDEBUG);
+	     if(size > 0){
+	       stream->response = (unsigned char *) net_getsize (stream->netstream, size);
+	       buffer_add(&stream->reply, stream->response);
+	       if(stream->debug) mm_log(stream->response, HTTPDEBUG);
+	     }
 	  }
 	} while (stream && stream->netstream && s && (size > 0 || !*s ));
      }

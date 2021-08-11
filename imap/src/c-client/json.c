@@ -453,10 +453,15 @@ json_assign(void **v, JSON_S *j, char *s, JObjType t)
 {
   JSON_S *json = json_body_value(j, s);
 
+  *v = NIL;
   if(json && json->jtype == t && json->value){
-    switch(t){		/* override here */
-	case JString  : *v = (void *) cpystr((char *) json->value); break;
-	default : break;
+    switch(t){
+	case JString : *v = (void *) cpystr((char *) json->value);
+			break;
+	case JArray  :
+	case JObject : *v = json->value;
+			break;
+	default : break;	/* use default value for *v */
     }
   }
 }
