@@ -450,6 +450,8 @@ mm_list(MAILSTREAM *stream, int delimiter, char *mailbox, long int attributes)
 	       (attributes & LATT_HASNOCHILDREN) ? ", has no children" : ""));
 #endif
 
+    if(!mm_list_info || !mm_list_info->filter) return;
+
     if(!mm_list_info->stream || stream == mm_list_info->stream)
       (*mm_list_info->filter)(stream, mailbox, delimiter,
 			      attributes, mm_list_info->data,
@@ -471,6 +473,8 @@ mm_lsub(MAILSTREAM *stream, int delimiter, char *mailbox, long int attributes)
 	       (attributes & LATT_HASCHILDREN) ? ", has children" : "",
 	       (attributes & LATT_HASNOCHILDREN) ? ", has no children" : ""));
 #endif
+
+    if(!mm_list_info || !mm_list_info->filter) return;
 
     if(!mm_list_info->stream || stream == mm_list_info->stream)
       (*mm_list_info->filter)(stream, mailbox, delimiter,

@@ -66,7 +66,6 @@ typedef struct imap_parsed_reply {
 
 #define IMAPTMPLEN 16*MAILTMPLEN
 
-
 /* IMAP4 I/O stream local data */
 	
 typedef struct imap_local {
@@ -75,6 +74,7 @@ typedef struct imap_local {
   MAILSTATUS *stat;		/* status to fill in */
   IMAPCAP cap;			/* server capabilities */
   char *appendmailbox;		/* mailbox being appended to */
+  unsigned int authed: 1; 	/* state: authed or not */
   unsigned int uidsearch : 1;	/* UID searching */
   unsigned int byeseen : 1;	/* saw a BYE response */
 				/* got implicit capabilities */
@@ -909,7 +909,13 @@ MAILSTREAM *imap_open (MAILSTREAM *stream)
       return NIL;		/* lost during greeting */
     }
 
+    if(stream->unhealthy){
+	mm_log("Aborting due to bad protocol before authentication", ERROR);
+	return NIL;
+    }
+
     preauthed = !strcmp (reply->key,"PREAUTH");
+    if(preauthed) LOCAL->authed = T;
 				/* STARTTLS is not allowed in PREAUTH state */
     if (LOCAL->netstream && preauthed){
       sslstart_t stls = (sslstart_t) mail_parameters (NIL,GET_SSLSTART,NIL);
@@ -928,6 +934,10 @@ MAILSTREAM *imap_open (MAILSTREAM *stream)
       if (LOCAL->netstream &&	/* does server support STARTTLS? */
 	  stls && LOCAL->cap.starttls && !mb.sslflag && !mb.notlsflag &&
 	  imap_OK (stream,imap_send (stream,"STARTTLS",NIL))) {
+	if(stream->unhealthy){
+	   mm_log("Aborting due to bad protocol before authentication", ERROR);
+	   return NIL;
+	}
 	mb.tlsflag = T;		/* TLS OK, get into TLS at this end */
 	LOCAL->netstream->dtb = ssld;
 	if (!(LOCAL->netstream->stream =
@@ -939,6 +949,10 @@ MAILSTREAM *imap_open (MAILSTREAM *stream)
 	}
 				/* get capabilities now that TLS in effect */
 	if (LOCAL->netstream) imap_capability (stream);
+	if(stream->unhealthy){
+	   mm_log("Aborting due to bad protocol before authentication", ERROR);
+	   return NIL;
+	}
       }
       else if (mb.tlsflag) {	/* user specified /starttls but can't do it */
 	mm_log ("Unable to negotiate TLS with this server",ERROR);
@@ -958,8 +972,8 @@ MAILSTREAM *imap_open (MAILSTREAM *stream)
 	      (LOCAL->cap.auth ? imap_auth (stream,&mb,tmp,usr) :
 	       imap_login (stream,&mb,tmp,usr)))) {
 				/* failed, is there a referral? */
-    if (mb.tlsflag) LOCAL->tlsflag = T;
-	  if (ir && LOCAL->referral &&
+	if (mb.tlsflag) LOCAL->tlsflag = T;
+	if (ir && LOCAL->referral &&
 	      (s = (*ir) (stream,LOCAL->referral,REFAUTHFAILED))) {
 	    imap_close (stream,NIL);
 	    fs_give ((void **) &stream->mailbox);
@@ -977,6 +991,7 @@ MAILSTREAM *imap_open (MAILSTREAM *stream)
 				/* recurse to log in on real site */
 	  return imap_open (stream);
 	}
+	else LOCAL->authed = T;
       }
     }
 				/* get server capabilities again */
@@ -4129,11 +4144,11 @@ void imap_parse_unsolicited (MAILSTREAM *stream,IMAPPARSEDREPLY *reply)
     t = strtok_r (NIL,"\n",&r);	/* and locate the text after it */
 				/* now take the action */
 				/* change in size of mailbox */
-    if (!strcmp (s,"EXISTS") && (msgno >= stream->nmsgs))
+    if (LOCAL->authed && !strcmp (s,"EXISTS") && (msgno >= stream->nmsgs))
       mail_exists (stream,msgno);
-    else if (!strcmp (s,"RECENT") && (msgno <= stream->nmsgs))
+    else if (LOCAL->authed && !strcmp (s,"RECENT") && (msgno <= stream->nmsgs))
       mail_recent (stream,msgno);
-    else if (!strcmp (s,"EXPUNGE") && msgno && (msgno <= stream->nmsgs)) {
+    else if (LOCAL->authed && !strcmp (s,"EXPUNGE") && msgno && (msgno <= stream->nmsgs)) {
       mailcache_t mc = (mailcache_t) mail_parameters (NIL,GET_CACHE,NIL);
       MESSAGECACHE *elt = (MESSAGECACHE *) (*mc) (stream,msgno,CH_ELT);
       if (elt) imap_gc_body (elt->private.msg.body);
@@ -4141,7 +4156,7 @@ void imap_parse_unsolicited (MAILSTREAM *stream,IMAPPARSEDREPLY *reply)
       mail_expunged (stream,msgno);
     }
 
-    else if (t && (!strcmp (s,"FETCH") || !strcmp (s,"STORE")) &&
+    else if (LOCAL->authed && t && (!strcmp (s,"FETCH") || !strcmp (s,"STORE")) &&
 	     msgno && (msgno <= stream->nmsgs)) {
       char *prop;
       GETS_DATA md;
@@ -4310,14 +4325,14 @@ void imap_parse_unsolicited (MAILSTREAM *stream,IMAPPARSEDREPLY *reply)
       if (ie && env) (*ie) (stream,msgno,env);
     }
 				/* obsolete response to COPY */
-    else if (strcmp (s,"COPY")) {
+    else if (strcmp (s,"COPY") || !LOCAL->authed) {
       sprintf (LOCAL->tmp,"Unknown message data: %lu %.80s",msgno,(char *) s);
       mm_notify (stream,LOCAL->tmp,WARN);
       stream->unhealthy = T;
     }
   }
 
-  else if (!strcmp (reply->key,"FLAGS") && reply->text &&
+  else if (LOCAL->authed && !strcmp (reply->key,"FLAGS") && reply->text &&
 	   (*reply->text == '(') &&
 	   (s = strtok_r (reply->text+1," )",&r)))
     do if (*s != '\\') {
@@ -4331,7 +4346,7 @@ void imap_parse_unsolicited (MAILSTREAM *stream,IMAPPARSEDREPLY *reply)
       else if (!stream->user_flags[i]) stream->user_flags[i++] = cpystr (s);
     }
     while ((s = strtok_r (NIL," )",&r)) != NULL);
-  else if (!strcmp (reply->key,"SEARCH")) {
+  else if (LOCAL->authed && !strcmp (reply->key,"SEARCH")) {
 				/* only do something if have text */
     if (reply->text && (t = strtok_r (reply->text," ",&r))) do
       if ((i = strtoul (t,NIL,10)) != 0L) {
@@ -4345,7 +4360,7 @@ void imap_parse_unsolicited (MAILSTREAM *stream,IMAPPARSEDREPLY *reply)
 	}
       } while ((t = strtok_r (NIL," ",&r)) != NULL);
   }
-  else if (!strcmp (reply->key,"SORT")) {
+  else if (LOCAL->authed && !strcmp (reply->key,"SORT")) {
     sortresults_t sr = (sortresults_t)
       mail_parameters (NIL,GET_SORTRESULTS,NIL);
     LOCAL->sortsize = 0;	/* initialize sort data */
@@ -4363,7 +4378,7 @@ void imap_parse_unsolicited (MAILSTREAM *stream,IMAPPARSEDREPLY *reply)
 				/* also return via callback if requested */
     if (sr) (*sr) (stream,LOCAL->sortdata,LOCAL->sortsize);
   }
-  else if (!strcmp (reply->key,"THREAD")) {
+  else if (LOCAL->authed && !strcmp (reply->key,"THREAD")) {
     threadresults_t tr = (threadresults_t)
       mail_parameters (NIL,GET_THREADRESULTS,NIL);
     if (LOCAL->threaddata) mail_free_threadnode (&LOCAL->threaddata);
@@ -4378,7 +4393,7 @@ void imap_parse_unsolicited (MAILSTREAM *stream,IMAPPARSEDREPLY *reply)
     }
   }
 
-  else if (!strcmp (reply->key,"STATUS") && reply->text) {
+  else if (LOCAL->authed && !strcmp (reply->key,"STATUS") && reply->text) {
     MAILSTATUS status;
     unsigned char *txt = reply->text;
     if ((t = imap_parse_astring (stream,&txt,reply,&j)) && txt &&
@@ -4425,7 +4440,8 @@ void imap_parse_unsolicited (MAILSTREAM *stream,IMAPPARSEDREPLY *reply)
     if (t) fs_give ((void **) &t);
   }
 
-  else if ((!strcmp (reply->key,"LIST") || !strcmp (reply->key,"LSUB")) &&
+  else if (LOCAL->authed
+	   && (!strcmp (reply->key,"LIST") || !strcmp (reply->key,"LSUB")) &&
 	   reply->text && (*reply->text == '(') &&
 	   (s = strchr (reply->text,')')) && (s[1] == ' ')) {
     char delimiter = '\0';
@@ -4469,7 +4485,7 @@ void imap_parse_unsolicited (MAILSTREAM *stream,IMAPPARSEDREPLY *reply)
       fs_give ((void **) &t);	/* flush mailbox name */
     }
   }
-  else if (!strcmp (reply->key,"NAMESPACE")) {
+  else if (LOCAL->authed && !strcmp (reply->key,"NAMESPACE")) {
     if (LOCAL->namespace) {
       mail_free_namespace (&LOCAL->namespace[0]);
       mail_free_namespace (&LOCAL->namespace[1]);
@@ -4492,7 +4508,7 @@ void imap_parse_unsolicited (MAILSTREAM *stream,IMAPPARSEDREPLY *reply)
     }
   }
 
-  else if (!strcmp (reply->key,"ACL") && (s = reply->text) &&
+  else if (LOCAL->authed && !strcmp (reply->key,"ACL") && (s = reply->text) &&
 	   (t = imap_parse_astring (stream,&s,reply,NIL))) {
     getacl_t ar = (getacl_t) mail_parameters (NIL,GET_ACL,NIL);
     if (s && (*s++ == ' ')) {
@@ -4517,7 +4533,7 @@ void imap_parse_unsolicited (MAILSTREAM *stream,IMAPPARSEDREPLY *reply)
     fs_give ((void **) &t);	/* free mailbox name */
   }
 
-  else if (!strcmp (reply->key,"LISTRIGHTS") && (s = reply->text) &&
+  else if (LOCAL->authed && !strcmp (reply->key,"LISTRIGHTS") && (s = reply->text) &&
 	   (t = imap_parse_astring (stream,&s,reply,NIL))) {
     listrights_t lr = (listrights_t) mail_parameters (NIL,GET_LISTRIGHTS,NIL);
     char *id,*r;
@@ -4560,7 +4576,8 @@ void imap_parse_unsolicited (MAILSTREAM *stream,IMAPPARSEDREPLY *reply)
     fs_give ((void **) &t);	/* free mailbox name */
   }
 
-  else if (!strcmp (reply->key,"MYRIGHTS") && (s = reply->text) &&
+  else if (LOCAL->authed
+	   && !strcmp (reply->key,"MYRIGHTS") && (s = reply->text) &&
 	   (t = imap_parse_astring (stream,&s,reply,NIL))) {
     myrights_t mr = (myrights_t) mail_parameters (NIL,GET_MYRIGHTS,NIL);
     char *r;
@@ -4582,7 +4599,7 @@ void imap_parse_unsolicited (MAILSTREAM *stream,IMAPPARSEDREPLY *reply)
   }
 
 				/* this response has a bizarre syntax! */
-  else if (!strcmp (reply->key,"QUOTA") && (s = reply->text) &&
+  else if (LOCAL->authed && !strcmp (reply->key,"QUOTA") && (s = reply->text) &&
 	   (t = imap_parse_astring (stream,&s,reply,NIL))) {
 				/* in case error */
     sprintf (LOCAL->tmp,"Bad quota resource list for %.80s",(char *) t);
@@ -4623,10 +4640,10 @@ void imap_parse_unsolicited (MAILSTREAM *stream,IMAPPARSEDREPLY *reply)
     }
     fs_give ((void **) &t);	/* free root name */
   }
-  else if (!strcmp (reply->key,"ID") && (s = reply->text)){
+  else if (LOCAL->authed && !strcmp (reply->key,"ID") && (s = reply->text)){
 	if(compare_cstring (s,"NIL")) LOCAL->id = imap_parse_idlist(s);
   }
-  else if (!strcmp (reply->key,"QUOTAROOT") && (s = reply->text) &&
+  else if (LOCAL->authed && !strcmp (reply->key,"QUOTAROOT") && (s = reply->text) &&
 	   (t = imap_parse_astring (stream,&s,reply,NIL))) {
     sprintf (LOCAL->tmp,"Bad quota root list for %.80s",(char *) t);
     if (s && (*s++ == ' ')) {
@@ -4664,7 +4681,7 @@ void imap_parse_unsolicited (MAILSTREAM *stream,IMAPPARSEDREPLY *reply)
   }
   else if (!strcmp (reply->key,"CAPABILITY") && reply->text)
     imap_parse_capabilities (stream,reply->text);
-  else if (!strcmp (reply->key,"MAILBOX") && reply->text) {
+  else if (LOCAL->authed && !strcmp (reply->key,"MAILBOX") && reply->text) {
     if (LOCAL->prefix &&
 	((strlen (LOCAL->prefix) + strlen (reply->text)) < IMAPTMPLEN))
       sprintf (t = LOCAL->tmp,"%s%s",LOCAL->prefix,(char *) reply->text);

@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 572 2021-08-10 21:38:40
+Alpine Commit 573 2021-08-15 20:51:36
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -240,6 +240,11 @@ New features include:
 Bugs addressed include:
 
 <UL>
+<LI> The c-client library parses information from an IMAP server during
+     non-authenticated state which could lead to denial of service.
+     Reported by Damian Poddebniak from M&uuml;nster University of Applied
+     Sciences.
+
 <LI> Memory corruption when alpine searches for a string that is
      an incomplete utf8 string in a local folder. This could happen by
      chopping a string to make it fit a buffer without regard to its content.
