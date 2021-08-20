@@ -988,7 +988,7 @@ char *tcp_canonical (char *name)
 
 char *tcp_name (struct sockaddr *sadr,long flag)
 {
-  char *ret,*t,adr[MAILTMPLEN],tmp[MAILTMPLEN],buf[NI_MAXHOST];
+  char *ret,*t,adr[MAILTMPLEN],tmp[MAILTMPLEN+1],buf[NI_MAXHOST];
   sprintf (ret = adr,"[%.80s]",ip_sockaddrtostring (sadr,buf));
   if (allowreversedns) {
     blocknotify_t bn = (blocknotify_t)mail_parameters(NIL,GET_BLOCKNOTIFY,NIL);
@@ -1002,7 +1002,8 @@ char *tcp_name (struct sockaddr *sadr,long flag)
 				/* translate address to name */
     if ((t = tcp_name_valid (ip_sockaddrtoname (sadr,buf))) != NULL) {
 				/* produce verbose form if needed */
-      if (flag)	sprintf (ret = tmp,"%s %s",t,adr);
+      if (flag)	sprintf (ret = tmp,"%.*s %.*s", (int) strlen(t), t,
+				MAILTMPLEN - (int)strlen(t) - 1,adr);
       else ret = t;
     }
     (*bn) (BLOCK_NONSENSITIVE,data);

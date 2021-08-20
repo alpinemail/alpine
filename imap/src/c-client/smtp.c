@@ -281,7 +281,7 @@ SENDSTREAM *smtp_open_full (NETDRIVER *dv,char **hostlist,char *service,
 
 long smtp_auth (SENDSTREAM *stream,NETMBX *mb,char *tmp)
 {
-  unsigned long trial,auths, authsaved;
+  unsigned long trial,auths, authsaved = NIL;
   char *lsterr = NIL;
   char usr[MAILTMPLEN], *base;
   AUTHENTICATOR *at, *atsaved;

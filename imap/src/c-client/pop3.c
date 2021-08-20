@@ -555,7 +555,7 @@ long pop3_capa (MAILSTREAM *stream,long flags)
 
 long pop3_auth (MAILSTREAM *stream,NETMBX *mb,char *pwd,char *usr)
 {
-  unsigned long i,trial,auths = 0, authsaved;
+  unsigned long i,trial,auths = 0, authsaved = NIL;
   char *t, *app_pwd = NIL, *base;
   AUTHENTICATOR *at, *atsaved;
   long ret = NIL;

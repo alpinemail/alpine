@@ -104,7 +104,7 @@ JSON_S *oauth2_json_reply(OAUTH2_SERVER_METHOD_S RefreshMethod, OAUTH2_S *oauth2
 {
     JSON_S *json = NULL;
     HTTP_PARAM_S params[OAUTH2_PARAM_NUMBER];
-    HTTPSTREAM *stream;
+    HTTPSTREAM *stream = NIL;
     unsigned char *s;
     char *server = NULL;
 

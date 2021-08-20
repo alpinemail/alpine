@@ -2422,7 +2422,7 @@ RECURSIVEMORE {
 
 unsigned long ucs4_decompose (unsigned long c,void **more)
 {
-  unsigned long i,ix,ret;
+  unsigned long i,ix,ret = c;
   struct decomposemore *m;
   if (c & U8G_ERROR) {		/* want to chase more? */
 				/* do sanity check */

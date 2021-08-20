@@ -519,7 +519,7 @@ long dummy_delete (MAILSTREAM *stream,char *mailbox)
   struct stat sbuf;
   char *s,tmp[MAILTMPLEN];
   if (!(s = dummy_file (tmp,mailbox))) {
-    sprintf (tmp,"Can't delete - invalid name: %.80s",s);
+    sprintf (tmp,"Can't delete - invalid name: %.80s",mailbox);
     MM_LOG (tmp,ERROR);
   }
 				/* no trailing / (workaround BSD kernel bug) */

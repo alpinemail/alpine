@@ -209,7 +209,7 @@ json_strchr(unsigned char *s, unsigned char c)
 void *
 json_value_parse(unsigned char **s, JObjType *jtype)
 {
-  void *rv;
+  void *rv = NIL;
   unsigned char *u, *w;
   unsigned long *l;
 

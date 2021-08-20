@@ -1186,7 +1186,7 @@ long imap_anon (MAILSTREAM *stream,char *tmp)
 
 long imap_auth (MAILSTREAM *stream,NETMBX *mb,char *tmp,char *usr)
 {
-  unsigned long trial,ua,uasaved;
+  unsigned long trial,ua,uasaved = NIL;
   int ok;
   char tag[16];
   char *lsterr = NIL, *base;
