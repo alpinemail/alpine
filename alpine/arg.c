@@ -697,7 +697,7 @@ Loop: while(--ac > 0)
 		      if((str = *++av) != NULL){
 			  if(x.flow)
 			     fs_give((void **) &x.flow);
-			  x.users = cpystr(str);
+			  x.flow = cpystr(str);
 		      }
 		  }
 		  else{
