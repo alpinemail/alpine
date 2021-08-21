@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 574 2021-08-19 21:13:45
+Alpine Commit 575 2021-08-21 10:50:32
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -234,6 +234,9 @@ New features include:
      toggles between hiding or showing hidden files, and the &quot;G&quot;
      command to travel between directories. Contributed by &Eacute;tienne
      Deparis.
+
+<LI> Add option -xoauth2-flow to the command line, so that users can specify the
+     parameters to set up an xoauth2 connection through the command line.
 </UL>
 
 <P>
