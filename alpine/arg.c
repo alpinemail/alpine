@@ -622,7 +622,7 @@ Loop: while(--ac > 0)
 		  do_version = 1;
 		  goto Loop;
 	      }
-	      else if(strcmp(*av, "xoauth2-server") == 0){
+	      else if(strcmp(*av, "xoauth2-server") == 0 || strcmp(*av, "x-s") == 0){
 		  if(--ac){
 		      if((str = *++av) != NULL){
 			  if(x.name)
@@ -636,7 +636,7 @@ Loop: while(--ac > 0)
 		  }
 		  goto Loop;
 	      }
-	      else if(strcmp(*av, "xoauth2-client-id") == 0){
+	      else if(strcmp(*av, "xoauth2-client-id") == 0 || strcmp(*av, "x-c-i") == 0){
 		  if(--ac){
 		      if((str = *++av) != NULL){
 			  if(x.client_id)
@@ -650,7 +650,7 @@ Loop: while(--ac > 0)
 		  }
 		  goto Loop;
 	      }
-	      else if(strcmp(*av, "xoauth2-client-secret") == 0){
+	      else if(strcmp(*av, "xoauth2-client-secret") == 0 || strcmp(*av, "x-c-s") == 0){
 		  if(--ac){
 		      if((str = *++av) != NULL){
 			  if(x.client_secret)
@@ -664,7 +664,7 @@ Loop: while(--ac > 0)
 		  }
 		  goto Loop;
 	      }
-	      else if(strcmp(*av, "xoauth2-tenant") == 0){
+	      else if(strcmp(*av, "xoauth2-tenant") == 0 || strcmp(*av, "x-t") == 0){
 		  if(--ac){
 		      if((str = *++av) != NULL){
 			  if(x.tenant)
@@ -678,7 +678,7 @@ Loop: while(--ac > 0)
 		  }
 		  goto Loop;
 	      }
-	      else if(strcmp(*av, "xoauth2-user") == 0){
+	      else if(strcmp(*av, "xoauth2-user") == 0 || strcmp(*av, "x-u") == 0){
 		  if(--ac){
 		      if((str = *++av) != NULL){
 			  if(x.users)
@@ -692,7 +692,7 @@ Loop: while(--ac > 0)
 		  }
 		  goto Loop;
 	      }
-	      else if(strcmp(*av, "xoauth2-flow") == 0){
+	      else if(strcmp(*av, "xoauth2-flow") == 0 || strcmp(*av, "x-f") == 0){
 		  if(--ac){
 		      if((str = *++av) != NULL){
 			  if(x.flow)
