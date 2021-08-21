@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 576 2021-08-21 12:38:04
+Alpine Commit 577 2021-08-21 14:00:38
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -272,6 +272,8 @@ Bugs addressed include:
      a subfolder by pressing the &quot;>&quot; command, rather than the normal
      navigation by pressing &quot;Return&quot;. Reported by Ulf-Dietrich Braunmann.
 
+<LI> Crash when attempting to remove a configuration for a XOAUTH2 server
+     that has no usernames configured.
 </UL>
 
 <P> Version 2.24 adds new features and addresses bugs found in previous

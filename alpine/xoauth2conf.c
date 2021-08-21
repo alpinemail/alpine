@@ -972,7 +972,10 @@ alpine_xoauth2_configuration(struct pine *ps, int edit_exceptions)
 			if(!varlist[i]->is_list){
 			   i++; m++;
 			} else {
-			    if(varlist[i]->current_val.l[j++]) m++;
+			    if(varlist[i]
+				&& varlist[i]->current_val.l
+				&& varlist[i]->current_val.l[j++])
+				m++;
 			    else{
 				j = 0; m += 2; i++;
 			    }
