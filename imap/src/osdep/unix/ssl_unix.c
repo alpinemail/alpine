@@ -564,6 +564,7 @@ static char *ssl_validate_cert (X509 *cert,char *host)
 				/* host name matches pattern? */
 	   ret = ssl_compare_hostnames (host,s) ? NIL :
 		 "Server name does not match certificate";
+	   ext = NIL;
 				/* if mismatch, see if in extensions */
 	   if (ret && (ext = X509_get_ext_d2i (cert,NID_subject_alt_name,NIL,NIL)) &&
 		(n = sk_GENERAL_NAME_num (ext)))
