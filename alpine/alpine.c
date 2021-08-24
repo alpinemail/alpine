@@ -64,7 +64,6 @@ static char rcsid[] = "$Id: alpine.c 1266 2009-07-14 18:39:12Z hubert@u.washingt
 #include "after.h"
 #include "smime.h"
 #include "newmail.h"
-#include "xoauth2conf.h"
 #include "xoauth2info.h"
 #ifndef _WINDOWS
 #include "../pico/osdep/raw.h"	/* for STD*_FD */
