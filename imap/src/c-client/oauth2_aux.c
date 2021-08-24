@@ -425,8 +425,7 @@ void renew_accesstoken(MAILSTREAM *stream)
     user[0] = '\0';
     mm_login_method (&mb, user, (void *) &oauth2, trial, stream->auth.name);
 
-    if(oauth2.param[OA2_State].value)
-      fs_give((void **) &oauth2.param[OA2_State].value);
+    oauth2.param[OA2_State].value = NIL; /* this is freed before we get here */
 
     if(stream->auth.expiration == 0){
        stream->auth.expiration = oauth2.expiration;
@@ -447,4 +446,7 @@ void renew_accesstoken(MAILSTREAM *stream)
     if(oauth2.param[OA2_Id].value) fs_give((void **) &oauth2.param[OA2_Id].value);
     if(oauth2.param[OA2_Secret].value) fs_give((void **) &oauth2.param[OA2_Secret].value);
     if(oauth2.param[OA2_Tenant].value) fs_give((void **) &oauth2.param[OA2_Tenant].value);
+    if(oauth2.param[OA2_State].value) fs_give((void **) &oauth2.param[OA2_State].value);
+    if(oauth2.param[OA2_RefreshToken].value) fs_give((void **) &oauth2.param[OA2_RefreshToken].value);
+    if(oauth2.access_token) fs_give((void **) &oauth2.access_token);
 }

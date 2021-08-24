@@ -65,6 +65,7 @@ static char rcsid[] = "$Id: alpine.c 1266 2009-07-14 18:39:12Z hubert@u.washingt
 #include "smime.h"
 #include "newmail.h"
 #include "xoauth2conf.h"
+#include "xoauth2info.h"
 #ifndef _WINDOWS
 #include "../pico/osdep/raw.h"	/* for STD*_FD */
 #endif
@@ -692,6 +693,9 @@ main(int argc, char **argv)
 
 	   min_v = pith_ssl_encryption_version(min_s);
 	   max_v = pith_ssl_encryption_version(max_s);
+
+	   if(min_s != NULL) fs_give((void **) &min_s);
+	   if(max_s != NULL) fs_give((void **) &max_s);
 
 	   if(min_v < 0 || max_v < 0){
 	      snprintf(tmp_20k_buf, SIZEOF_20KBUF,
@@ -3405,6 +3409,7 @@ goodnight_gracey(struct pine *pine_state, int exit_val)
     free_pith_module_globals();
     free_pico_module_globals();
     free_c_client_module_globals();
+    xoauth_free_info();
 
 #ifdef DEBUG
     if(debugfile){
@@ -3653,10 +3658,7 @@ prune_folders_ok(void)
 
 void  
 free_alpine_module_globals(void)
-{   
-#ifdef  LOCAL_PASSWD_CACHE
-    free_passfile_cache();
-#endif
+{
     free_message_queue();
     free_titlebar_globals();
 }

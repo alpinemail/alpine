@@ -116,9 +116,7 @@ int   preserve_prompt(char *);
 int   preserve_prompt_auth(char *, char *authtype);
 void  update_passfile_hostlist(char *, char *, STRLIST_S *, int);
 void  update_passfile_hostlist_auth(char *, char *, STRLIST_S *, int, char *);
-void  free_passfile_cache_work(MMLOGIN_S **);
 
-static	MMLOGIN_S	*passfile_cache = NULL;
 static  int             using_passfile = -1;
 int  save_password = 1;
 #endif	/* LOCAL_PASSWD_CACHE */
@@ -875,6 +873,7 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
 		}
 	    }
 	}
+	if (x) free_xoauth2_info(&x);
 	/* else use the one we found earlier, the user has to configure this better */
     }
 
@@ -901,6 +900,9 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
 	ps_global->id = set_alpine_id(oa2list->app_id ? oa2list->app_id : PACKAGE_NAME, PACKAGE_VERSION);
 	mail_parameters(NULL, SET_IDPARAMS, (void *) ps_global->id);
     }
+
+    if(registered)
+       oa2list->param[OA2_State].value = login->param[OA2_State].value;
 
     /*
      * We check if we have a refresh token saved somewhere, if so
@@ -1063,6 +1065,7 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
        oa2list->cancel_refresh_token = login->cancel_refresh_token;
        *login = *oa2list;	/* load login pointer */
     }
+    if(token) fs_give((void **) &token);
 
     if(!ChangeAccessToken && !ChangeRefreshToken && !login->cancel_refresh_token)
        return;
@@ -1071,7 +1074,6 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
      *  RefreshToken \001 LastAccessToken \001 ExpirationTime
      * (spaces added for clarity, \001 is PWDAUTHSEP)
      */
-    if(token) fs_give((void **) &token);
     sprintf(tmp, "%lu", SaveExpirationTime);
     tmp[sizeof(tmp) - 1] = '\0';
     len = strlen(SaveRefreshToken ? SaveRefreshToken : "")
@@ -3943,31 +3945,10 @@ get_passfile_passwd_auth(pinerc, passwd, user, hostlist, altflag, authtype)
     char      *authtype;
 {
     dprint((10, "get_passfile_passwd_auth\n"));
-    return((passfile_cache || read_passfile(pinerc, &passfile_cache))
-	     ? imap_get_passwd_auth(passfile_cache, passwd,
+    return((mm_login_list || read_passfile(pinerc, &mm_login_list))
+	     ? imap_get_passwd_auth(mm_login_list, passwd,
 			       user, hostlist, altflag, authtype)
 	     : 0);
-}
-
-void
-free_passfile_cache_work(MMLOGIN_S **pwdcache)
-{
-  if(pwdcache == NULL || *pwdcache == NULL)
-    return;
-
-  if((*pwdcache)->user) fs_give((void **)&(*pwdcache)->user);
-//  if((*pwdcache)->passwd) fs_give((void **)&(*pwdcache)->passwd);
-  if((*pwdcache)->hosts) free_strlist(&(*pwdcache)->hosts);
-  free_passfile_cache_work(&(*pwdcache)->next);
-  fs_give((void **)pwdcache);
-}
-
-
-void
-free_passfile_cache(void)
-{
-  if(passfile_cache)
-    free_passfile_cache_work(&passfile_cache);
 }
 
 int
@@ -3985,8 +3966,8 @@ get_passfile_user(pinerc, hostlist)
     char      *pinerc;
     STRLIST_S *hostlist;
 {
-    return((passfile_cache || read_passfile(pinerc, &passfile_cache))
-	     ? imap_get_user(passfile_cache, hostlist)
+    return((mm_login_list || read_passfile(pinerc, &mm_login_list))
+	     ? imap_get_user(mm_login_list, hostlist)
 	     : NULL);
 }
 
@@ -4216,9 +4197,9 @@ set_passfile_passwd_auth(pinerc, passwd, user, hostlist, altflag, already_prompt
     if(((already_prompted == 0 && preserve_prompt_auth(pinerc, authtype))
 	   || already_prompted == 1)
        && !ps_global->nowrite_password_cache
-       && (passfile_cache || read_passfile(pinerc, &passfile_cache))){
-	imap_set_passwd_auth(&passfile_cache, passwd, user, hostlist, altflag, 0, 0, authtype);
-	write_passfile(pinerc, passfile_cache);
+       && (mm_login_list || read_passfile(pinerc, &mm_login_list))){
+	imap_set_passwd_auth(&mm_login_list, passwd, user, hostlist, altflag, 0, 0, authtype);
+	write_passfile(pinerc, mm_login_list);
     }
 }
 
@@ -4255,7 +4236,7 @@ update_passfile_hostlist_auth(pinerc, user, hostlist, altflag, authtype)
     size_t  len    = authtype ? strlen(authtype) : 0;
     size_t  offset = authtype ? 1 : 0;
     
-    for(l = passfile_cache; l; l = l->next)
+    for(l = mm_login_list; l; l = l->next)
       if(imap_same_host_auth(l->hosts, hostlist, authtype)
 	 && *user
 	 && !strcmp(user, l->user + len + offset)
@@ -4267,7 +4248,7 @@ update_passfile_hostlist_auth(pinerc, user, hostlist, altflag, authtype)
        && hostlist->next->name
        && !ps_global->nowrite_password_cache){
 	l->hosts->next = new_strlist_auth(hostlist->next->name, authtype, PWDAUTHSEP);
-	write_passfile(pinerc, passfile_cache);
+	write_passfile(pinerc, mm_login_list);
     }
 #endif /* !WINCRED */
 }

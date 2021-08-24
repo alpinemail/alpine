@@ -1440,6 +1440,7 @@ MAILSTREAM *mail_close_full (MAILSTREAM *stream,long options)
     if (stream->dtb) (*stream->dtb->close) (stream,options);
     stream->dtb = NIL;		/* resign driver */
     if (stream->mailbox) fs_give ((void **) &stream->mailbox);
+    if (stream->auth.name) fs_give ((void **) &stream->auth.name);
     if (stream->original_mailbox)
       fs_give ((void **) &stream->original_mailbox);
     if (stream->snarf.name) fs_give ((void **) &stream->snarf.name);

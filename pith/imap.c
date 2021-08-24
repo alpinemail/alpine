@@ -1125,6 +1125,10 @@ imap_flush_passwd_cache(int dumpcache)
 	    if(l->user)
 	      fs_give((void **) &l->user);
 
+	    if(!(l->passwd >= (char *) private_store
+		 && l->passwd <= p))
+	      fs_give((void **) &l->passwd);
+
 	    free_strlist(&l->hosts);
 
 	    fs_give((void **) &l);
@@ -1134,6 +1138,9 @@ imap_flush_passwd_cache(int dumpcache)
 	    cert_failure_list = cert_failure_list->next;
 	    if(l->user)
 	      fs_give((void **) &l->user);
+	    if(!(l->passwd >= (char *) private_store
+		 && l->passwd <= p))
+	      fs_give((void **) &l->passwd);
 
 	    free_strlist(&l->hosts);
 

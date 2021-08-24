@@ -468,16 +468,18 @@ static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags)
   if (SSL_write (stream->con,"",0) < 0)
     return ssl_last_error ? ssl_last_error : "SSL negotiation failed";
 				/* need to validate host names? */
+  cert = SSL_get_peer_certificate (stream->con);
   if (!(flags & NET_NOVALIDATECERT) &&
-      (err = ssl_validate_cert (cert = SSL_get_peer_certificate (stream->con),
-				host))) {
+      (err = ssl_validate_cert (cert, host))) {
 				/* application callback */
     X509_NAME_oneline (X509_get_subject_name(cert), buf, sizeof(buf));
     if (scq) return (*scq) (err,host,cert ? buf : "???") ? NIL : "";
 				/* error message to return via mm_log() */
     sprintf (tmp,"*%.128s: %.255s",err,cert ? buf : "???");
+    X509_free(cert);
     return ssl_last_error = cpystr (tmp);
   }
+  X509_free(cert);
   return NIL;
 }
 
@@ -520,7 +522,7 @@ static char *ssl_validate_cert (X509 *cert,char *host)
 {
   int i,j,n, m = 0;
   char *s=NULL,*t,*ret = NIL;
-  void *ext;
+  void *ext = NIL;
   GENERAL_NAME *name;
   X509_NAME *cname;
   X509_NAME_ENTRY *e;
@@ -546,6 +548,7 @@ static char *ssl_validate_cert (X509 *cert,char *host)
 	 if ((name = sk_GENERAL_NAME_value (ext,i)) &&
 	    (name->type = GEN_DNS) && (s = name->d.ia5->data) &&
 	    ssl_compare_hostnames (host,s)) ret = NIL;
+     if(ext) GENERAL_NAMES_free(ext);
   }
 #endif /* OPENSSL_1_1_0 */
 				/* Method 2, use cname */
@@ -569,6 +572,7 @@ static char *ssl_validate_cert (X509 *cert,char *host)
 		  if ((name = sk_GENERAL_NAME_value (ext,i)) &&
 		     (name->type = GEN_DNS) && (s = name->d.ia5->data) &&
 		     ssl_compare_hostnames (host,s)) ret = NIL;
+	  if(ext) GENERAL_NAMES_free(ext);
         }
      }
   }

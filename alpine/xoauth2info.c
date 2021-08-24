@@ -223,3 +223,16 @@ OAUTH2_S alpine_oauth2_list[] = {
    0					/* flags */
   }
 };
+
+
+void
+xoauth_free_info(void)
+{
+  int i;
+  for(i = 0; alpine_oauth2_list[i].name != NULL ; i++){
+     if(alpine_oauth2_list[i].param[OA2_RefreshToken].value)
+	fs_give((void **) &alpine_oauth2_list[i].param[OA2_RefreshToken].value);
+     if(alpine_oauth2_list[i].access_token)
+	fs_give((void **) &alpine_oauth2_list[i].access_token);
+  }
+}

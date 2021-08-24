@@ -263,7 +263,7 @@ xoauth_info_choice(XOAUTH2_INFO_S **xinfo, char *user)
 XOAUTH2_INFO_S *
 oauth2_get_client_info(unsigned char *name, char *user)
 {
-  int i, j, matches;
+  int i, j, matches, len;
   char **lval;
   XOAUTH2_INFO_S *x, **xinfo;
 
@@ -306,8 +306,9 @@ oauth2_get_client_info(unsigned char *name, char *user)
   /* if after removing the duplicate entries, we only have one, use it */
   if(matches == 1){
      x = copy_xoauth2_info(xinfo[0]);
-     free_xoauth2_info(&xinfo[0]);
-     fs_give((void **) xinfo);
+     for(i = 0; xinfo[i] != NULL; i++)
+        free_xoauth2_info(&xinfo[i]);
+     fs_give((void **) &xinfo);
      return x;
   }
 
@@ -328,7 +329,7 @@ oauth2_get_client_info(unsigned char *name, char *user)
   if(matches == 1){
      for(i = 0; xinfo[i] != NULL; i++)
          free_xoauth2_info(&xinfo[i]);
-     fs_give((void **) xinfo);
+     fs_give((void **) &xinfo);
      return x;
   }
 
@@ -338,7 +339,7 @@ oauth2_get_client_info(unsigned char *name, char *user)
    x = xoauth_info_choice(xinfo, user);
    for(i = 0; xinfo[i] != NULL; i++)
       free_xoauth2_info(&xinfo[i]);
-   fs_give((void **) xinfo);
+   fs_give((void **) &xinfo);
 
    /* Once the user chose a client-id, save it so we do not ask again */
    if(x != NULL){

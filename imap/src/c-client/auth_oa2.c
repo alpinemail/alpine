@@ -174,5 +174,8 @@ long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder, cha
   if(oauth2.param[OA2_Id].value) fs_give((void **) &oauth2.param[OA2_Id].value);
   if(oauth2.param[OA2_Secret].value) fs_give((void **) &oauth2.param[OA2_Secret].value);
   if(oauth2.param[OA2_Tenant].value) fs_give((void **) &oauth2.param[OA2_Tenant].value);
+  if(oauth2.param[OA2_State].value) fs_give((void **) &oauth2.param[OA2_State].value);
+  if(oauth2.param[OA2_RefreshToken].value) fs_give((void **) &oauth2.param[OA2_RefreshToken].value);
+  if(oauth2.access_token) fs_give((void **) &oauth2.access_token);
   return ret;
 }
