@@ -27,11 +27,21 @@ AUTHENTICATOR auth_bea = {
 };
 
 #define BEARER_ACCOUNT	"n,a="
+#define BEARER_ACCOUNT_LEN (4)
+
 #ifndef OAUTH2_BEARER
 #define OAUTH2_BEARER	"auth=Bearer "
 #endif
+
+#ifndef OAUTH2_BEARER_LEN
+#define OAUTH2_BEARER_LEN (12)
+#endif
+
 #define BEARER_HOST	"host="
+#define BEARER_HOST_LEN (5)
+
 #define BEARER_PORT	"port="
+#define BEARER_PORT_LEN	(5)
 
 /* Client authenticator
  * Accepts: challenger function
@@ -120,10 +130,10 @@ long auth_oauthbearer_client (authchallenge_t challenger,authrespond_t responder
       char *response;
 
       sprintf(ports, "%lu", port);
-      rlen = strlen(BEARER_ACCOUNT) + strlen(user) + 1 + 1
-		+ strlen(BEARER_HOST) + strlen(mb->orighost) + 1
-		+ strlen(BEARER_PORT) + strlen(ports) + 1
-		+ strlen(OAUTH2_BEARER) + strlen(oauth2.access_token) + 2;
+      rlen = BEARER_ACCOUNT_LEN + strlen(user) + 1 + 1
+		+ BEARER_HOST_LEN + strlen(mb->orighost) + 1
+		+ BEARER_PORT_LEN + strlen(ports) + 1
+		+ OAUTH2_BEARER_LEN + strlen(oauth2.access_token) + 2;
       response = (char *) fs_get (rlen+1);
       sprintf(response, "%s%s,\001%s%s\001%s%s\001%s%s\001\001", BEARER_ACCOUNT, user,
 		BEARER_HOST, mb->orighost, BEARER_PORT, ports, OAUTH2_BEARER, oauth2.access_token);
@@ -138,13 +148,8 @@ long auth_oauthbearer_client (authchallenge_t challenger,authrespond_t responder
 	   * Refresh Token has expired somehow, we invalidate it if we
 	   * reach *trial to 3. This forces the process to restart later on.
 	   */
-	  if(*trial == 3){
-	     if(oauth2.param[OA2_State].value)
-		fs_give((void **) &oauth2.param[OA2_State].value);
-	     fs_give((void **) &oauth2.param[OA2_RefreshToken].value);
-	     fs_give((void **) &oauth2.access_token);
+	  if(*trial == 3)
 	     oauth2.expiration = 0L;
-	  }
 	}
       }
       fs_give ((void **) &response);
