@@ -143,6 +143,7 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
      if(ogci && (x = (*ogci)(oauth2->name, user)) != NULL){
 	 oauth2->param[OA2_Id].value = cpystr(x->client_id);
 	 oauth2->param[OA2_Secret].value = x->client_secret ? cpystr(x->client_secret) : NULL;
+	 if(oauth2->param[OA2_Tenant].value) fs_give((void **) &oauth2->param[OA2_Tenant].value);
 	 oauth2->param[OA2_Tenant].value = x->tenant ? cpystr(x->tenant) : NULL;
 	 free_xoauth2_info(&x);
      }
@@ -207,7 +208,9 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
 	   case HTTP_UNAUTHORIZED:
 			mm_log("Client not authorized (wrong client-id?)", ERROR);
 			break;
-	   case HTTP_OK: json_assign ((void **) &oauth2->access_token, json, "access_token", JString);
+	   case HTTP_OK: if(oauth2->access_token)
+			    fs_give((void **) &oauth2->access_token);
+			 json_assign ((void **) &oauth2->access_token, json, "access_token", JString);
 			 if((jx = json_body_value(json, "expires_in")) != NULL)
 			 switch(jx->jtype){
 			      case JString: oauth2->expiration = time(0) + atol((char *) jx->value);
@@ -266,7 +269,11 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
 	   JSON_S *jx;
 
 	  switch(status){
-	     case HTTP_OK : json_assign ((void **) &oauth2->param[OA2_RefreshToken].value, json, "refresh_token", JString);
+	     case HTTP_OK : if(oauth2->param[OA2_RefreshToken].value)
+			       fs_give((void **) &oauth2->param[OA2_RefreshToken].value);
+			    json_assign ((void **) &oauth2->param[OA2_RefreshToken].value, json, "refresh_token", JString);
+			    if(oauth2->access_token)
+			       fs_give((void **) &oauth2->access_token);
 			    json_assign ((void **) &oauth2->access_token, json, "access_token", JString);
 
 			    if((jx = json_body_value(json, "expires_in")) != NULL)
@@ -339,8 +346,12 @@ void oauth2deviceinfo_get_accesscode(void *inp, void *outp)
 
 			break;
 
-	case HTTP_OK :  json_assign ((void **) &oauth2->param[OA2_RefreshToken].value, json, "refresh_token", JString);
-			json_assign ((void **) &oauth2->access_token, json, "access_token", JString);
+	case HTTP_OK :   if(oauth2->param[OA2_RefreshToken].value)
+			   fs_give((void **) &oauth2->param[OA2_RefreshToken].value);
+			 json_assign ((void **) &oauth2->param[OA2_RefreshToken].value, json, "refresh_token", JString);
+			 if(oauth2->access_token)
+			       fs_give((void **) &oauth2->access_token);
+			 json_assign ((void **) &oauth2->access_token, json, "access_token", JString);
 
 			if((jx = json_body_value(json, "expires_in")) != NULL)
 			  switch(jx->jtype){
@@ -425,15 +436,14 @@ void renew_accesstoken(MAILSTREAM *stream)
     user[0] = '\0';
     mm_login_method (&mb, user, (void *) &oauth2, trial, stream->auth.name);
 
-    oauth2.param[OA2_State].value = NIL; /* this is freed before we get here */
+    if(oauth2.access_token)	/* we need a new one */
+      fs_give((void **) &oauth2.access_token);
 
     if(stream->auth.expiration == 0){
        stream->auth.expiration = oauth2.expiration;
+       if(oauth2.param[OA2_RefreshToken].value) fs_give((void **) &oauth2.param[OA2_RefreshToken].value);
        return;
     }
-
-    if(oauth2.access_token)
-      fs_give((void **) &oauth2.access_token);
 
     oauth2.param[OA2_State].value = oauth2_generate_state();
 

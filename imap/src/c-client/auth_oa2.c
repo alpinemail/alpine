@@ -25,7 +25,9 @@ AUTHENTICATOR auth_oa2 = {
 };
 
 #define OAUTH2_USER	"user="
+#define OAUTH2_USER_LEN  (5)	/* strlen(OAUTH2_USER) */
 #define OAUTH2_BEARER	"auth=Bearer "
+#define OAUTH2_BEARER_LEN  (12)	/* strlen(OAUTH2_BEARER) */
 
 /* Client authenticator
  * Accepts: challenger function
@@ -142,8 +144,8 @@ long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder, cha
       ret = base ? NIL : LONGT;		/* will get a BAD response back */
     }
     else {
-      unsigned long rlen = strlen(OAUTH2_USER) + strlen(user)
-			+ strlen(OAUTH2_BEARER) + strlen(oauth2.access_token) + 1 + 2;
+      unsigned long rlen = OAUTH2_USER_LEN + OAUTH2_BEARER_LEN + 2
+			   + strlen(user) + strlen(oauth2.access_token) + 1;
       char *response = (char *) fs_get (rlen + 1);
       sprintf(response, "%s%s\001%s%s\001\001", OAUTH2_USER, user, OAUTH2_BEARER, oauth2.access_token);
       if ((*responder) (stream,base,response,rlen)) {
@@ -157,13 +159,8 @@ long auth_oauth2_client (authchallenge_t challenger,authrespond_t responder, cha
 	   * Refresh Token has expired somehow, we invalidate it if we
 	   * reach *trial to 3. This forces the process to restart later on.
 	   */
-	  if(*trial == 3){
-	     if(oauth2.param[OA2_State].value)
-		fs_give((void **) &oauth2.param[OA2_State].value);
-	     fs_give((void **) &oauth2.param[OA2_RefreshToken].value);
-	     fs_give((void **) &oauth2.access_token);
+	  if(*trial == 3)
 	     oauth2.expiration = 0L;
-	  }
 	}
       }
       fs_give ((void **) &response);

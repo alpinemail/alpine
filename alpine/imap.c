@@ -1046,6 +1046,7 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
 	&& (NewAccessToken == NULL || strcmp(OldAccessToken, NewAccessToken))){
 	if(NewAccessToken) fs_give((void **) &NewAccessToken);
 	NewAccessToken = cpystr(OldAccessToken);
+	NewAccessToken = OldAccessToken;
 	ChangeAccessToken++;
 	NewExpirationTime = OldExpirationTime;
 	SaveRefreshToken = NewRefreshToken;
@@ -1099,7 +1100,7 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
 			(preserve_password == -1 ? 0
 			 : (preserve_password == 0 ? 2 :1)), OA2NAME);
 #endif	/* LOCAL_PASSWD_CACHE */
-
+    if (token) fs_give((void **) &token);
     ps_global->no_newmail_check_from_optionally_enter = 0;
 }
 

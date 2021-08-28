@@ -64,7 +64,6 @@ static char rcsid[] = "$Id: alpine.c 1266 2009-07-14 18:39:12Z hubert@u.washingt
 #include "after.h"
 #include "smime.h"
 #include "newmail.h"
-#include "xoauth2info.h"
 #ifndef _WINDOWS
 #include "../pico/osdep/raw.h"	/* for STD*_FD */
 #endif
@@ -3408,7 +3407,6 @@ goodnight_gracey(struct pine *pine_state, int exit_val)
     free_pith_module_globals();
     free_pico_module_globals();
     free_c_client_module_globals();
-    xoauth_free_info();
 
 #ifdef DEBUG
     if(debugfile){
