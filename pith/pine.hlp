@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 583 2021-08-28 01:06:23
+Alpine Commit 584 2021-08-30 22:06:43
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -274,6 +274,9 @@ Bugs addressed include:
 
 <LI> Crash when attempting to remove a configuration for a XOAUTH2 server
      that has no usernames configured.
+
+<LI> Crash caused by saving (and resaving) XOAUTH2 refresh and access tokens
+     in PC-Alpine. Reported by Karl Lindauer.
 </UL>
 
 <P> Version 2.24 adds new features and addresses bugs found in previous

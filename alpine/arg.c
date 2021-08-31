@@ -1073,6 +1073,7 @@ Loop: while(--ac > 0)
 	if(tmp1){
 	  sprintf(tmp1,"%s=%s", ps_global->vars[V_XOAUTH2_INFO].name, tmp2);
           pinerc_cmdline_opt(tmp1);
+	  set_current_val(&ps_global->vars[V_XOAUTH2_INFO], TRUE, TRUE);
 	  fs_give((void **) &tmp1);
 	}
 	fs_give((void **) &tmp2);

@@ -55,8 +55,8 @@
 #include <wincred.h>
 #define TNAME     "UWash_Alpine_"
 #define TNAMESTAR "UWash_Alpine_*"
-#define PWDBUFFERSIZE (250)
-#define MAXPWDBUFFERSIZE (2*PWDBUFFERSIZE)	/* This number must be less than 512 */
+#define PWDBUFFERSIZE (240)
+#define MAXPWDBUFFERSIZE (2*PWDBUFFERSIZE)	/* This number must be less than 512 with some room to TNAME and other extra characters */
 
 /*
  * WinCred Function prototypes
@@ -3245,7 +3245,7 @@ read_passfile(pinerc, l)
 			strcat(pwd[k]->blob, pwd[k]->blobarray[j]);
 			fs_give((void **) &pwd[k]->blobarray[j]);
 		    }
-		    fs_give((void **) pwd[k]->blobarray);
+		    fs_give((void **) &pwd[k]->blobarray);
 		}
 		else k = count;	/* we are done with this step! */
 	    }
@@ -3295,7 +3295,7 @@ read_passfile(pinerc, l)
 	    }
 	    g_CredFree((PVOID)pcred);
 	}
-	fs_give((void **) pwd);
+	fs_give((void **) &pwd);
      }
     return(1);
 
@@ -3659,10 +3659,11 @@ write_passfile(pinerc, l)
    char *authend, *authtype;
 #ifdef	WINCRED
 # if	(WINCRED > 0)
-    int i, j, k;
-    char  target[10*MAILTMPLEN];
-	char  blob[10 * MAILTMPLEN], blob2[10*MAILTMPLEN], *blobp;
-	char  part[MAILTMPLEN];
+    unsigned long bloblen = 0, len;
+    int i, totalparts, k;
+    char  target[MAXPWDBUFFERSIZE];
+    char  *blob = NIL, blob2[50], *blobp;
+    char  part[MAILTMPLEN];
     CREDENTIAL cred;
     LPTSTR ltarget = 0;
 
@@ -3671,29 +3672,42 @@ write_passfile(pinerc, l)
 
     dprint((9, "write_passfile\n"));
 
+    erase_windows_credentials();	/* erase all passwords from credentials		  */
+					/* start writing them back to credentials manager */
     for(; l; l = l->next){
 	/* determine how many parts to create first */
-	snprintf(blob, sizeof(blob), "%s%s%s",
+	len = (l->passwd ? strlen(l->passwd)  : 0)
+		+  ((l->hosts&& l->hosts->next&& l->hosts->next->name) ? 1 : 0)
+		+  ((l->hosts&& l->hosts->next&& l->hosts->next->name)  ? strlen(l->hosts->next->name) : 0) + 1;
+
+	if(len > bloblen){
+	   bloblen = len;
+	   fs_resize((void **) &blob, bloblen);
+	}
+
+	sprintf(blob, "%s%s%s",
 			l->passwd ? l->passwd : "",
 			(l->hosts&& l->hosts->next&& l->hosts->next->name)
 			? "\t" : "",
 			(l->hosts&& l->hosts->next&& l->hosts->next->name)
 			? l->hosts->next->name : "");
-	i = strlen(blob);
+	i = len - 1; /* strlen(blob) */
 	blobp = blob;
-	for (j = 1; i > MAXPWDBUFFERSIZE; j++, i -= PWDBUFFERSIZE);
+	for (totalparts = 1; i > MAXPWDBUFFERSIZE; totalparts++, i -= PWDBUFFERSIZE);
 	authtype = l->passwd;
 	authend = strchr(l->passwd, PWDAUTHSEP);
+
 	if (authend != NULL){
 	    *authend = '\0';
 	    sprintf(blob2, "%s%c%d", authtype, PWDAUTHSEP, l->altflag);
-			*authend = PWDAUTHSEP;
+	    *authend = PWDAUTHSEP;
         }
 	else
 	    sprintf(blob2, "%d", l->altflag);
-	for (k = 1, i = strlen(blob), blobp = blob; k <= j; k++) {
+
+	for (k = 1, i = len - 1, blobp = blob; k <= totalparts; k++) {
 	    snprintf(target, sizeof(target), "%s.%d-%d_%s\t%s\t%s",
-				TNAME, k, j,
+				TNAME, k, totalparts,
 				(l->hosts && l->hosts->name) ? l->hosts->name : "",
 				l->user ? l->user : "",
 				blob2);
@@ -3719,6 +3733,8 @@ write_passfile(pinerc, l)
 	    }
 	}
     }
+    if(blob) fs_give((void **) &blob);
+
  #endif	/* WINCRED > 0 */
 
 #elif	APPLEKEYCHAIN
