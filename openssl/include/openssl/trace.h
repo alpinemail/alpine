@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2019-2021 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -9,6 +9,7 @@
 
 #ifndef OPENSSL_TRACE_H
 # define OPENSSL_TRACE_H
+# pragma once
 
 # include <stdarg.h>
 
@@ -42,8 +43,10 @@ extern "C" {
 # define OSSL_TRACE_CATEGORY_TLS                 3
 # define OSSL_TRACE_CATEGORY_TLS_CIPHER          4
 # define OSSL_TRACE_CATEGORY_CONF                5
-# define OSSL_TRACE_CATEGORY_ENGINE_TABLE        6
-# define OSSL_TRACE_CATEGORY_ENGINE_REF_COUNT    7
+# ifndef OPENSSL_NO_ENGINE
+#  define OSSL_TRACE_CATEGORY_ENGINE_TABLE       6
+#  define OSSL_TRACE_CATEGORY_ENGINE_REF_COUNT   7
+# endif
 # define OSSL_TRACE_CATEGORY_PKCS5V2             8
 # define OSSL_TRACE_CATEGORY_PKCS12_KEYGEN       9
 # define OSSL_TRACE_CATEGORY_PKCS12_DECRYPT     10
@@ -51,7 +54,11 @@ extern "C" {
 # define OSSL_TRACE_CATEGORY_BN_CTX             12
 # define OSSL_TRACE_CATEGORY_CMP                13
 # define OSSL_TRACE_CATEGORY_STORE              14
-# define OSSL_TRACE_CATEGORY_NUM                15
+# define OSSL_TRACE_CATEGORY_DECODER            15
+# define OSSL_TRACE_CATEGORY_ENCODER            16
+# define OSSL_TRACE_CATEGORY_REF_COUNT          17
+/* Count of available categories. */
+# define OSSL_TRACE_CATEGORY_NUM                18
 
 /* Returns the trace category number for the given |name| */
 int OSSL_trace_get_category_num(const char *name);
@@ -191,7 +198,7 @@ void OSSL_trace_end(int category, BIO *channel);
  * call OSSL_TRACE_CANCEL(category).
  */
 
-# ifndef OPENSSL_NO_TRACE
+# if !defined OPENSSL_NO_TRACE && !defined FIPS_MODULE
 
 #  define OSSL_TRACE_BEGIN(category) \
     do { \
@@ -230,7 +237,7 @@ void OSSL_trace_end(int category, BIO *channel);
  *         ...
  *     }
  */
-# ifndef OPENSSL_NO_TRACE
+# if !defined OPENSSL_NO_TRACE && !defined FIPS_MODULE
 
 #  define OSSL_TRACE_ENABLED(category) \
     OSSL_trace_enabled(OSSL_TRACE_CATEGORY_##category)
@@ -263,10 +270,18 @@ void OSSL_trace_end(int category, BIO *channel);
  *                42, "What do you get when you multiply six by nine?");
  */
 
-# define OSSL_TRACEV(category, args) \
+# if !defined OPENSSL_NO_TRACE && !defined FIPS_MODULE
+
+#  define OSSL_TRACEV(category, args) \
     OSSL_TRACE_BEGIN(category) \
         BIO_printf args; \
     OSSL_TRACE_END(category)
+
+# else
+
+#  define OSSL_TRACEV(category, args) ((void)0)
+
+# endif
 
 # define OSSL_TRACE(category, text) \
     OSSL_TRACEV(category, (trc_out, "%s", text))
@@ -287,7 +302,7 @@ void OSSL_trace_end(int category, BIO *channel);
     OSSL_TRACEV(category, (trc_out, format, arg1, arg2, arg3, arg4, arg5, arg6, arg7))
 # define OSSL_TRACE8(category, format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) \
     OSSL_TRACEV(category, (trc_out, format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8))
-# define OSSL_TRACE9(category, format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) \
+# define OSSL_TRACE9(category, format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) \
     OSSL_TRACEV(category, (trc_out, format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9))
 
 # ifdef  __cplusplus
