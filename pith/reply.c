@@ -2329,12 +2329,11 @@ forward_subject(ENVELOPE *env, int flags)
 	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
 
 	removing_trailing_white_space(tmp_20k_buf);
-	if((l = strlen(tmp_20k_buf)) < 1000 &&
-	   (l < 5 || strcmp(tmp_20k_buf+l-5,"(fwd)"))){
+	l = strlen(tmp_20k_buf);
+	if(l < 5 || strcmp(tmp_20k_buf+l-5,"(fwd)")){
 	    char *s = cpystr(tmp_20k_buf);
 	    snprintf(tmp_20k_buf, SIZEOF_20KBUF, "%.1000s (fwd)", s);
 	    tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
-	    strcpy(tmp_20k_buf, s);
 	    fs_give((void **) &s);
 	}
 
