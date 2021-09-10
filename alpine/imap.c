@@ -904,6 +904,16 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
     if(registered)
        oa2list->param[OA2_State].value = login->param[OA2_State].value;
 
+    if(login->cancel_refresh_token){
+	login->cancel_refresh_token = 0;
+	imap_delete_passwd_auth(&mm_login_list, user,
+		registered ? hostlist2 : hostlist,
+		(mb->sslflag||mb->tlsflag), OA2NAME);
+#ifdef LOCAL_PASSWD_CACHE
+	write_passfile(ps_global->pinerc, mm_login_list);
+#endif /* LOCAL_PASSWD_CACHE */
+    }
+
     /*
      * We check if we have a refresh token saved somewhere, if so
      * we use it to get a new access token, otherwise we need to
@@ -947,7 +957,7 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
     NewExpirationTime = 0L;
     ChangeAccessToken = ChangeRefreshToken = ChangeExpirationTime = 0;
 
-    if(token && *token && !login->cancel_refresh_token){
+    if(token && *token){
        char *s, *t;
 
        s = token;
@@ -1002,7 +1012,7 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
 
     /* Default to saving what we already had saved */
 
-    SaveRefreshToken = login->cancel_refresh_token ? NULL : NewRefreshToken;
+    SaveRefreshToken = NewRefreshToken;
     SaveAccessToken  = NewAccessToken;
     SaveExpirationTime = NewExpirationTime;
 
@@ -1068,7 +1078,7 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
     }
     if(token) fs_give((void **) &token);
 
-    if(!ChangeAccessToken && !ChangeRefreshToken && !login->cancel_refresh_token)
+    if(!ChangeAccessToken && !ChangeRefreshToken)
        return;
 
     /* get ready to save this information. The format will be
@@ -1119,6 +1129,65 @@ set_alpine_id(char *pname, char *pversion)
    id->next->value = cpystr(pversion);
    id->next->next  = NULL;
    return id;
+}
+
+void
+pine_delete_pwd(NETMBX *mb, char *user)
+{
+    char	hostlist0[MAILTMPLEN], hostlist1[MAILTMPLEN];
+    char	port[20], non_def_port[20];
+    STRLIST_S hostlist[2];
+    MMLOGIN_S  *l;
+    struct servent *sv;
+				/* do not invalidate password on cancel */
+    if(ps_global->user_says_cancel != 0)
+	return;
+
+    dprint((9, "pine_delete_pwd\n"));
+
+	/* setup hostlist */
+    non_def_port[0] = '\0';
+    if(mb->port && mb->service &&
+       (sv = getservbyname(mb->service, "tcp")) &&
+       (mb->port != ntohs(sv->s_port))){
+        snprintf(non_def_port, sizeof(non_def_port), ":%lu", mb->port);
+        non_def_port[sizeof(non_def_port)-1] = '\0';
+        dprint((9, "mm_login: using non-default port=%s\n",
+                   non_def_port ? non_def_port : "?"));
+    }
+
+    if(*non_def_port){
+      strncpy(hostlist0, mb->host, sizeof(hostlist0)-1);
+      hostlist0[sizeof(hostlist0)-1] = '\0';
+      strncat(hostlist0, non_def_port, sizeof(hostlist0)-strlen(hostlist0)-1);
+      hostlist0[sizeof(hostlist0)-1] = '\0';
+      hostlist[0].name = hostlist0;
+      if(mb->orighost && mb->orighost[0] && strucmp(mb->host, mb->orighost)){
+	strncpy(hostlist1, mb->orighost, sizeof(hostlist1)-1);
+	hostlist1[sizeof(hostlist1)-1] = '\0';
+	strncat(hostlist1, non_def_port, sizeof(hostlist1)-strlen(hostlist1)-1);
+	hostlist1[sizeof(hostlist1)-1] = '\0';
+	hostlist[0].next = &hostlist[1];
+	hostlist[1].name = hostlist1;
+	hostlist[1].next = NULL;
+      }
+       else
+	hostlist[0].next = NULL;
+    }
+    else{
+	hostlist[0].name = mb->host;
+	if(mb->orighost && mb->orighost[0] && strucmp(mb->host, mb->orighost)){
+	   hostlist[0].next = &hostlist[1];
+	   hostlist[1].name = mb->orighost;
+	   hostlist[1].next = NULL;
+	}
+	else
+	   hostlist[0].next = NULL;
+    }
+    imap_delete_passwd(&mm_login_list, user, hostlist, mb->sslflag||mb->tlsflag);
+#ifdef LOCAL_PASSWD_CACHE
+    write_passfile(ps_global->pinerc, mm_login_list);
+#endif /* LOCAL_PASSWD_CACHE */
 }
 
 /*----------------------------------------------------------------------

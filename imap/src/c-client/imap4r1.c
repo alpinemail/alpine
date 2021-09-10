@@ -1206,6 +1206,7 @@ long imap_auth (MAILSTREAM *stream,NETMBX *mb,char *tmp,char *usr)
       sprintf (tmp,"Retrying using %s authentication after %.80s",
 	       at->name,lsterr);
       mm_log (tmp,NIL);
+      delete_password(mb, usr);
       fs_give ((void **) &lsterr);
     }
     trial = 0;			/* initial trial count */
@@ -1215,6 +1216,7 @@ long imap_auth (MAILSTREAM *stream,NETMBX *mb,char *tmp,char *usr)
 	sprintf (tmp,"Retrying %s authentication after %.80s",at->name,lsterr);
 	mm_log (tmp,WARN);
 	fs_give ((void **) &lsterr);
+	delete_password(mb, usr);
       }
       LOCAL->saslcancel = NIL;
       sprintf (tag,"%08lx",0xffffffff & (stream->gensym++));
@@ -1233,6 +1235,7 @@ long imap_auth (MAILSTREAM *stream,NETMBX *mb,char *tmp,char *usr)
 
 	if(base && !trial){	/* do it now, instead of later */
 	  mm_log ("IMAP Authentication cancelled",ERROR);
+	  delete_password(mb, usr);
 	  return NIL;
 	}
 				/* make sure have a response */
@@ -1250,6 +1253,7 @@ long imap_auth (MAILSTREAM *stream,NETMBX *mb,char *tmp,char *usr)
 	}
 	if (!trial) {		/* if main program requested cancellation */
 	  mm_log ("IMAP Authentication cancelled",ERROR);
+	  delete_password(mb, usr);
 	  return NIL;
 	}
 				/* no error if protocol-initiated cancel */
@@ -1264,6 +1268,7 @@ long imap_auth (MAILSTREAM *stream,NETMBX *mb,char *tmp,char *usr)
       sprintf (tmp,"Can not authenticate to IMAP server: %.80s",lsterr);
       mm_log (tmp,ERROR);
     }
+    delete_password(mb, usr);
     fs_give ((void **) &lsterr);
   }
   if(mb && *mb->auth){
@@ -1316,6 +1321,7 @@ long imap_login (MAILSTREAM *stream,NETMBX *mb,char *pwd,char *usr)
 	if (imap_OK (stream,reply = imap_send (stream,"LOGIN",args)))
 	  ret = LONGT;		/* success */
 	else {
+	  delete_password(mb, usr);
 	  mm_log (reply->text,WARN);
 	  if (!LOCAL->referral && (trial == imap_maxlogintrials))
 	    mm_log ("Too many login failures",ERROR);

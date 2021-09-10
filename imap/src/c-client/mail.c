@@ -58,6 +58,8 @@ static mailcache_t mailcache = mm_cache;
 static rfc822out_t mail822out = NIL;
 				/* RFC-822 output generator (new style) */
 static rfc822outfull_t mail822outfull = NIL;
+				/* Erase password (client side) */
+static deletepwd_t erase_password = NIL;
 				/* SMTP verbose callback */
 static smtpverbose_t mailsmtpverbose = mm_dlog;
 				/* proxy copy routine */
@@ -580,6 +582,11 @@ void *mail_parameters (MAILSTREAM *stream,long function,void *value)
     mailsendcommand = (sendcommand_t) value;
   case GET_SENDCOMMAND:
     ret = (void *) mailsendcommand;
+    break;
+  case SET_ERASEPASSWORD:
+    erase_password = (deletepwd_t) value;
+  case GET_ERASEPASSWORD:
+    ret = (void *) erase_password;
     break;
 
   case SET_SERVICENAME:
@@ -6242,7 +6249,12 @@ unsigned int mail_lookup_auth_name (char *mechanism,long flags)
       return i;
   return 0;
 }
-
+/* Client side callback warning to delete wrong password */
+void delete_password(NETMBX *mb, char *user)
+{
+  deletepwd_t ep = mail_parameters(NULL, GET_ERASEPASSWORD, NULL);
+  if (ep) (ep)(mb, user);
+}
 /* Standard TCP/IP network driver */
 
 static NETDRIVER tcpdriver = {

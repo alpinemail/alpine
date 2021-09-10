@@ -628,12 +628,14 @@ long pop3_auth (MAILSTREAM *stream,NETMBX *mb,char *pwd,char *usr)
 		 at->name,t);
 	mm_log (pwd,NIL);
 	fs_give ((void **) &t);
+	delete_password(mb, usr);
       }
       trial = 0;		/* initial trial count */
       do {
 	if (t) {
 	  sprintf (pwd,"Retrying %s authentication after %.80s",at->name,t);
 	  mm_log (pwd,WARN);
+	  delete_password(mb, usr);
 	  fs_give ((void **) &t);
 	}
 	if(at->flags & AU_SINGLE){
@@ -664,6 +666,7 @@ long pop3_auth (MAILSTREAM *stream,NETMBX *mb,char *pwd,char *usr)
 	sprintf (pwd,"Can not authenticate to POP3 server: %.80s",t);
 	mm_log (pwd,ERROR);
       }
+      delete_password(mb, usr);
       fs_give ((void **) &t);
     }
     if(mb && *mb->auth){
@@ -696,6 +699,7 @@ long pop3_auth (MAILSTREAM *stream,NETMBX *mb,char *pwd,char *usr)
 	  LOCAL->sensitive=NIL;	/* unhide */
 	}
 	if (!ret) {		/* failure */
+	  delete_password(mb, usr);
 	  mm_log (LOCAL->reply,WARN);
 	  if (trial == pop3_maxlogintrials)
 	    mm_log ("Too many login failures",ERROR);

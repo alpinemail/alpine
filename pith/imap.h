@@ -131,6 +131,8 @@ int	imap_get_passwd_auth (MMLOGIN_S *, char **, char *, STRLIST_S *, int, char *
 void    imap_set_passwd(MMLOGIN_S **, char *, char *, STRLIST_S *, int, int, int);
 void    imap_set_passwd_auth(MMLOGIN_S **, char *, char *, STRLIST_S *, int, int, int, char *);
 void    imap_flush_passwd_cache(int);
+void	imap_delete_passwd_auth (MMLOGIN_S **, char *, STRLIST_S *, int, char *);
+void	imap_delete_passwd (MMLOGIN_S **, char *, STRLIST_S *, int);
 
 
 /* currently mandatory to implement stubs */

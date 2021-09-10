@@ -308,6 +308,8 @@
 #define SET_IDLETIMEOUT (long) 453
 #define GET_FETCHLOOKAHEADLIMIT (long) 454
 #define SET_FETCHLOOKAHEADLIMIT (long) 455
+#define GET_ERASEPASSWORD	(long) 456
+#define SET_ERASEPASSWORD	(long) 457
 /* HTTP SUPPORT DEFINES THEIR OWN SET_ AND GET_ CONSTANTS (490..493). See http.h */
 
 	/* 5xx: local file drivers */
@@ -1416,6 +1418,7 @@ typedef ADDRESS *(*parsephrase_t) (char *phrase,char *end,char *host);
 typedef void *(*blocknotify_t) (int reason,void *data);
 typedef long (*kinit_t) (char *host,char *reason);
 typedef void (*sendcommand_t) (MAILSTREAM *stream,char *cmd,long flags);
+typedef void (*deletepwd_t) (NETMBX *mb,char *user);
 typedef char *(*newsrcquery_t) (MAILSTREAM *stream,char *mulname,char *name);
 typedef void (*getacl_t) (MAILSTREAM *stream,char *mailbox,ACLLIST *acl);
 typedef void (*listrights_t) (MAILSTREAM *stream,char *mailbox,char *id,
@@ -1697,6 +1700,8 @@ void mm_nocritical (MAILSTREAM *stream);
 long mm_diskerror (MAILSTREAM *stream,long errcode,long serious);
 void mm_fatal (char *string);
 void *mm_cache (MAILSTREAM *stream,unsigned long msgno,long op);
+
+void delete_password (NETMBX *mb, char *user);
 
 extern STRINGDRIVER mail_string;
 void mail_versioncheck (char *version);

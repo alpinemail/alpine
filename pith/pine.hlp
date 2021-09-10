@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 587 2021-09-07 08:43:39
+Alpine Commit 588 2021-09-09 21:01:05
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -237,6 +237,9 @@ New features include:
 
 <LI> Add option -xoauth2-flow to the command line, so that users can specify the
      parameters to set up an xoauth2 connection through the command line.
+
+<LI> Alpine deletes, from its internal memory and external cache, passwords
+     that do not work, even if they were saved by the user.
 </UL>
 
 <P>

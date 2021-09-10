@@ -333,6 +333,7 @@ main(int argc, char **argv)
     mail_parameters(NULL, SET_FREESTREAMSPAREP, (void *) sp_free_callback);
     mail_parameters(NULL, SET_FREEELTSPAREP,    (void *) free_pine_elt);
     mail_parameters(NULL, SET_FREEBODYSPAREP,   (void *) free_body_sparep);
+    mail_parameters(NULL, SET_ERASEPASSWORD, (void *) pine_delete_pwd);
     mail_parameters(NULL, SET_OA2CLIENTGETACCESSCODE, (void *) oauth2_get_access_code);
     mail_parameters(NULL, SET_OA2CLIENTINFO, (void *) oauth2_get_client_info);
     mail_parameters(NULL, SET_OA2DEVICEINFO, (void *) oauth2_set_device_info);
