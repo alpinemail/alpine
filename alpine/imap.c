@@ -3178,6 +3178,7 @@ typedef struct pwd_s {
 	char *sflags;
 	char *passwd;
 	char *orighost;
+	int uid;
 } ALPINE_PWD_S;
 
 #define SAME_VALUE(X, Y) ((((X) == NULL && (Y) == NULL) \
@@ -3214,7 +3215,8 @@ read_passfile(pinerc, l)
     DWORD count, k;
     PCREDENTIAL *pcred;
     char *tmp, *blob, *target = NULL;
-    ALPINE_PWD_S **pwd;
+    ALPINE_PWD_S **pwd = NULL;
+    int uid, rewrite_passfile = 0;
     char *ui[5];
     int i, j;
     unsigned long m, n, p, loc;
@@ -3256,10 +3258,24 @@ read_passfile(pinerc, l)
 		    if (*tmp == '.') {
 			tmp++;
 			m = strtoul(tmp, &tmp, 10);
+			if(*tmp == '.'){
+			   tmp++;
+			   uid = m;
+			   m = strtoul(tmp, &tmp, 10);
+			}
+			else{
+			   uid = 0;	/* impossible value, uid >= 1, old format! */
+			   rewrite_passfile++;
+			}
 			if (*tmp == '-') {
 			    tmp++;
 			    n = strtol(tmp, &tmp, 10);
 			    if (*tmp == '_') tmp++;
+			}
+			else{
+			   char *s;
+			   for(s = tmp; *s && *s != '_'; s++);
+			   if(s && *s) tmp = s;
 			}
 		    }
 		    else {
@@ -3281,9 +3297,10 @@ read_passfile(pinerc, l)
 		     * can be done better.
 		     */
 		    for (loc = 0; pwd[loc]
-			 && !(SAME_VALUE(ui[0], pwd[loc]->host)
-			      && SAME_VALUE(ui[1], pwd[loc]->user)
-			      && SAME_VALUE(ui[2], pwd[loc]->sflags)); loc++);
+			      && !(uid == pwd[loc]->uid
+				   && SAME_VALUE(ui[0], pwd[loc]->host)
+				   && SAME_VALUE(ui[1], pwd[loc]->user)
+				   && SAME_VALUE(ui[2], pwd[loc]->sflags)); loc++);
 
 		    if (pwd[loc] == NULL) {
 			pwd[loc] = fs_get(sizeof(ALPINE_PWD_S));
@@ -3292,6 +3309,7 @@ read_passfile(pinerc, l)
 			memset((void *) pwd[loc]->blobarray, 0, (n + 1) * sizeof(char*));
 		    }
 
+		    pwd[loc]->uid = uid;
 		    if (pwd[loc]->host == NULL)
 			pwd[loc]->host = ui[0] ? cpystr(ui[0]) : NULL;
 		    if (pwd[loc]->user == NULL)
@@ -3365,6 +3383,7 @@ read_passfile(pinerc, l)
 	    g_CredFree((PVOID)pcred);
 	}
 	fs_give((void **) &pwd);
+	if(rewrite_passfile) write_passfile(pinerc, *l);
      }
     return(1);
 
@@ -3729,7 +3748,7 @@ write_passfile(pinerc, l)
 #ifdef	WINCRED
 # if	(WINCRED > 0)
     unsigned long bloblen = 0, len;
-    int i, totalparts, k;
+    int i, totalparts, k, uid;
     char  target[MAXPWDBUFFERSIZE];
     char  *blob = NIL, blob2[50], *blobp;
     char  part[MAILTMPLEN];
@@ -3743,11 +3762,11 @@ write_passfile(pinerc, l)
 
     erase_windows_credentials();	/* erase all passwords from credentials		  */
 					/* start writing them back to credentials manager */
-    for(; l; l = l->next){
+    for(uid = 1; l; l = l->next, uid++){	/* enforce that uid >= 1 */
 	/* determine how many parts to create first */
 	len = (l->passwd ? strlen(l->passwd)  : 0)
-		+  ((l->hosts&& l->hosts->next&& l->hosts->next->name) ? 1 : 0)
-		+  ((l->hosts&& l->hosts->next&& l->hosts->next->name)  ? strlen(l->hosts->next->name) : 0) + 1;
+		+  ((l->hosts && l->hosts->next && l->hosts->next->name) ? 1 : 0)
+		+  ((l->hosts && l->hosts->next && l->hosts->next->name) ? strlen(l->hosts->next->name) : 0) + 1;
 
 	if(len > bloblen){
 	   bloblen = len;
@@ -3756,9 +3775,9 @@ write_passfile(pinerc, l)
 
 	sprintf(blob, "%s%s%s",
 			l->passwd ? l->passwd : "",
-			(l->hosts&& l->hosts->next&& l->hosts->next->name)
+			(l->hosts && l->hosts->next && l->hosts->next->name)
 			? "\t" : "",
-			(l->hosts&& l->hosts->next&& l->hosts->next->name)
+			(l->hosts && l->hosts->next && l->hosts->next->name)
 			? l->hosts->next->name : "");
 	i = len - 1; /* strlen(blob) */
 	blobp = blob;
@@ -3775,8 +3794,8 @@ write_passfile(pinerc, l)
 	    sprintf(blob2, "%d", l->altflag);
 
 	for (k = 1, i = len - 1, blobp = blob; k <= totalparts; k++) {
-	    snprintf(target, sizeof(target), "%s.%d-%d_%s\t%s\t%s",
-				TNAME, k, totalparts,
+	    snprintf(target, sizeof(target), "%s.%d.%d-%d_%s\t%s\t%s",
+				TNAME, uid, k, totalparts,
 				(l->hosts && l->hosts->name) ? l->hosts->name : "",
 				l->user ? l->user : "",
 				blob2);
