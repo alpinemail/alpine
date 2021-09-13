@@ -1268,7 +1268,8 @@ long imap_auth (MAILSTREAM *stream,NETMBX *mb,char *tmp,char *usr)
       sprintf (tmp,"Can not authenticate to IMAP server: %.80s",lsterr);
       mm_log (tmp,ERROR);
     }
-    delete_password(mb, usr);
+    if(LOCAL->netstream && !LOCAL->byeseen)
+       delete_password(mb, usr);
     fs_give ((void **) &lsterr);
   }
   if(mb && *mb->auth){

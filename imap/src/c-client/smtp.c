@@ -345,7 +345,8 @@ long smtp_auth (SENDSTREAM *stream,NETMBX *mb,char *tmp)
       sprintf (tmp,"Can not authenticate to SMTP server: %.80s",lsterr);
       mm_log (tmp,ERROR);
     }
-    delete_password(mb, usr);
+    if(!ret && stream->netstream)
+       delete_password(mb, usr);
     fs_give ((void **) &lsterr);
   }
   if(mb && *mb->auth){

@@ -666,7 +666,8 @@ long pop3_auth (MAILSTREAM *stream,NETMBX *mb,char *pwd,char *usr)
 	sprintf (pwd,"Can not authenticate to POP3 server: %.80s",t);
 	mm_log (pwd,ERROR);
       }
-      delete_password(mb, usr);
+      if(LOCAL->netstream && !ret)
+         delete_password(mb, usr);
       fs_give ((void **) &t);
     }
     if(mb && *mb->auth){

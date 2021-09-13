@@ -2098,7 +2098,8 @@ long nntp_send_auth_work (SENDSTREAM *stream,NETMBX *mb,char *pwd,long flags)
       sprintf (tmp,"Can not authenticate to NNTP server: %.80s",lsterr);
       mm_log (tmp,ERROR);
     }
-    delete_password(mb, mb ? mb->user : NULL);
+    if(!ret && stream->netstream)
+       delete_password(mb, mb ? mb->user : NULL);
     fs_give ((void **) &lsterr);
   }
   else if (mb->secflag)		/* no SASL, can't do /secure */
