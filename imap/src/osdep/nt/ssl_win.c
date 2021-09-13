@@ -280,7 +280,7 @@ static SSLSTREAM *ssl_start (TCPSTREAM *tstream,char *host,unsigned long flags)
   unsigned long size = 0;
   int minv = *(int *) mail_parameters(NULL, GET_ENCRYPTION_RANGE_MIN, NULL);
   int maxv = *(int *) mail_parameters(NULL, GET_ENCRYPTION_RANGE_MAX, NULL);
-  int i, client_request, range;
+  int i, client_request;
   sslcertificatequery_t scq =
     (sslcertificatequery_t) mail_parameters (NIL,GET_SSLCERTIFICATEQUERY,NIL);
   sslfailure_t sf = (sslfailure_t) mail_parameters (NIL,GET_SSLFAILURE,NIL);
@@ -304,16 +304,10 @@ static SSLSTREAM *ssl_start (TCPSTREAM *tstream,char *host,unsigned long flags)
   if(client_request < minv || client_request > maxv)
     return NIL;         /* out of range? bail out */
 
-  if (flags & NET_TRYTLS1) range = SP_PROT_TLS1;
-  else if (flags & NET_TRYTLS1_1) range = SP_PROT_TLS1_1;
-  else if (flags & NET_TRYTLS1_2) range = SP_PROT_TLS1_2;
-  else {
-     for(i = 0, range; ssl_versions[i].name != NULL; i++)
-      range |= (ssl_versions[i].version >= minv 
-		&& ssl_versions[i].version <= maxv)
-	      ? ssl_versions[i].version : 0;
-  }
-  tlscred.grbitEnabledProtocols = range;
+  if (flags & NET_TRYTLS1) tlscred.grbitEnabledProtocols = SP_PROT_TLS1;
+  else if (flags & NET_TRYTLS1_1) tlscred.grbitEnabledProtocols = SP_PROT_TLS1_1;
+  else if (flags & NET_TRYTLS1_2) tlscred.grbitEnabledProtocols = SP_PROT_TLS1_2;
+  else tlscred.grbitEnabledProtocols = 0; /* use default TLS, see https://docs.microsoft.com/en-us/security/engineering/solving-tls1-problem */
 
 				/* acquire credentials */
   if (sft->AcquireCredentialsHandle

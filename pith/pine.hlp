@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 590 2021-09-12 22:15:30
+Alpine Commit 591 2021-09-13 00:36:24
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -246,6 +246,9 @@ New features include:
      saved in the credential manager are converted to the new format and 
      they will not be recognized by old versions of Alpine, but only by 
      this and newer versions of Alpine.
+
+<LI> Enabled encryption protocols in PC-Alpine are based on those enabled
+     in the system, unless one is specified directly.
 </UL>
 
 <P>
