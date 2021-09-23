@@ -768,8 +768,10 @@ static struct variable variables[] = {
 	NULL,			cf_text_disable_drivers},
 {"disable-these-authenticators",	0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0,
 	NULL,			cf_text_disable_auths},
+#ifdef DF_ENCRYPTION_RANGE
 {"encryption-protocol-range",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
 	NULL,			cf_text_encryption_range},
+#endif /* DF_ENCRYPTION_RANGE */
 {"remote-abook-metafile",		0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0,
 	NULL,			cf_text_remote_abook_metafile},
 {"remote-abook-history",		0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0,
@@ -1631,7 +1633,9 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
 
     GLO_PRINTER			= cpystr(DF_DEFAULT_PRINTER);
     GLO_ELM_STYLE_SAVE		= cpystr(DF_ELM_STYLE_SAVE);
+#ifdef DF_ENCRYPTION_RANGE
     GLO_ENCRYPTION_RANGE	= cpystr(DF_ENCRYPTION_RANGE);
+#endif /* DF_ENCRYPTION_RANGE */
     GLO_SAVE_BY_SENDER		= cpystr(DF_SAVE_BY_SENDER);
     GLO_HEADER_IN_REPLY		= cpystr(DF_HEADER_IN_REPLY);
     GLO_INBOX_PATH		= cpystr("inbox");
@@ -2411,7 +2415,9 @@ init_vars(struct pine *ps, void (*cmds_f) (struct pine *, char **))
     set_current_val(&vars[V_FORCED_ABOOK_ENTRY], TRUE, TRUE);
     set_current_val(&vars[V_DISABLE_DRIVERS], TRUE, TRUE);
     set_current_val(&vars[V_DISABLE_AUTHS], TRUE, TRUE);
+#ifdef DF_ENCRYPTION_RANGE
     set_current_val(&vars[V_ENCRYPTION_RANGE], TRUE, TRUE);
+#endif /* DF_ENCRYPTION_RANGE */
 
     set_current_val(&vars[V_VIEW_HEADERS], TRUE, TRUE);
     /* strip spaces and colons */
@@ -7985,8 +7991,10 @@ config_help(int var, int feature)
 	return(h_config_disable_drivers);
       case V_DISABLE_AUTHS :
 	return(h_config_disable_auths);
+#ifdef DF_ENCRYPTION_RANGE
       case V_ENCRYPTION_RANGE :
 	return(h_config_encryption_range);
+#endif /* DF_ENCRYPTION_RANGE */
       case V_REMOTE_ABOOK_METADATA :
 	return(h_config_abook_metafile);
       case V_REPLY_STRING :
