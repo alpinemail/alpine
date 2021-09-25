@@ -36,6 +36,7 @@ static char rcsid[] = "$Id: help.c 1032 2008-04-11 00:30:04Z hubert@u.washington
 #include "../pith/detoken.h"
 #include "../pith/list.h"
 #include "../pith/margin.h"
+#include "../pith/busy.h"
 
 
 typedef struct _help_scroll {
@@ -135,10 +136,12 @@ helper_internal(HelpType text, char *frag, char *title, int flags)
     is_external = 0;
 
     if(shown_text && *shown_text && !struncmp(*shown_text, "x-alpine-http:", 14)){
-	int status;
+	int status, we_cancel = 0;
+
+	we_cancel = busy_cue(_("Retrieving help text"), NULL, 1);
 	HTTPSTREAM *stream = http_open(*shown_text + 14);
 	if(stream) help_text = http_get(stream, NULL);
-	status = stream->status ? stream->status->code : -1;
+	status = stream && stream->status ? stream->status->code : -1;
 	if(stream) http_close(stream);
 	if(status != HTTP_OK){
 	    shown_text = NO_HELP;
@@ -165,7 +168,8 @@ helper_internal(HelpType text, char *frag, char *title, int flags)
 		*rv = NULL;
 	    }
 	}
-
+	if(we_cancel)
+	   cancel_busy_cue(-1);
     }
 
     if(F_ON(F_BLANK_KEYMENU,ps_global)){

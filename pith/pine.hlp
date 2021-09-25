@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 593 2021-09-23 10:40:08
+Alpine Commit 594 2021-09-24 20:22:07
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -183,8 +183,20 @@ it for you. Please take some time to read it and understand it.
 Since the Privacy Policy could be amended to take into consideration
 new additions to Alpine, please check it periodically.
 
- <P> The changes in version <!--#echo var="ALPINE_VERSION"--> are as
-follows:
+<P> Changes since the release of version <!--#echo var="ALPINE_VERSION"--> include:
+
+<P>
+Bug fixes
+
+<UL>
+<LI> Alpine crashes when it cannot retrieve privacy policy due to
+     failure to connect to external server.
+</UL>
+
+
+
+<P>Version 2.25 adds new features and addresses bugs found in previous
+releases.
 
 <P>
 New features include:
