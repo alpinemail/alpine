@@ -905,7 +905,6 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
        oa2list->param[OA2_State].value = login->param[OA2_State].value;
 
     if(login->cancel_refresh_token){
-	login->cancel_refresh_token = 0;
 	imap_delete_passwd_auth(&mm_login_list, user,
 		registered ? hostlist2 : hostlist,
 		(mb->sslflag||mb->tlsflag), OA2NAME);
@@ -956,6 +955,10 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
     NewRefreshToken   = NewAccessToken  = NULL;
     NewExpirationTime = 0L;
     ChangeAccessToken = ChangeRefreshToken = ChangeExpirationTime = 0;
+
+    /* We have done all steps that cancellation requires us by this time */
+    if(login->cancel_refresh_token)
+	login->cancel_refresh_token = 0;
 
     if(token && *token){
        char *s, *t;
