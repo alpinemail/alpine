@@ -35,7 +35,7 @@ typedef struct screen_position_list {
  */
 typedef	struct handle_s {
     int		     key;		/* tag number embedded in text */
-    enum	     {URL, iCal, Attach, Folder, Function, IMG} type;
+    enum	     {URL, iCal, Attach, Folder, Function, IMG, imgData} type;
     unsigned	     force_display:1;	/* Don't ask before launching */
     unsigned	     using_is_used:1;	/* bit below is being used     */
     unsigned	     is_used:1;		/* if not, remove it from list */
@@ -49,8 +49,9 @@ typedef	struct handle_s {
 		 *name;			/* URL's NAME attribute */
 	} url;				/* stuff to describe URL handle */
 	struct {
-	    char *src,			/* src of image (CID: only?) */
-		 *alt;			/* image alternate text */
+	    char *src,			/* src of image [cid:, data:] */
+		 *alt,			/* image alternate text */
+		 *tool;			/* program to display data: */
 	} img;				/* stuff to describe img */
 	ATTACH_S    *attach;		/* Attachment struct for this handle */
 	struct {

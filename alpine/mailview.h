@@ -117,6 +117,7 @@ typedef	struct scrolltool_s {
 /* exported prototypes */
 char	   *get_url_external_handler(char *, int);
 int	    do_url_launch(char *, char *);
+int	    do_imgdata_open(char *, char *);
 void	    mail_view_screen(struct pine *);
 url_tool_t  url_local_handler(char *);
 int	    url_local_mailto(char *);

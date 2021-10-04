@@ -167,6 +167,8 @@ int	    scroll_handle_column(int, int);
 int	    scroll_handle_index(int, int);
 void	    scroll_handle_set_loc(POSLIST_S **, int, int);
 int	    dot_on_handle(long, int);
+int	    imgdata_open(HANDLE_S *);
+char	   *img_handler(HANDLE_S *);
 int	    url_launch(HANDLE_S *);
 int	    url_launch_too_long(int);
 char	   *url_external_handler(HANDLE_S *, int);
@@ -833,6 +835,53 @@ scroll_handle_prompt(HANDLE_S *handle, int force)
     else
       launch_opts[6].ch = -1;
 
+    if(handle->type == imgData){
+	if(!handle->h.img.tool
+	   && !(handle->h.img.tool = img_handler(handle))){
+	   /* TRANSLATORS: a question */
+	   if(want_to(_("No Image-Viewer application defined.  Define now"),
+			   'y', 0, NO_HELP, WT_SEQ_SENSITIVE) == 'y'){
+	     /* Prompt for the displayer? */
+	     tmp[0] = '\0';
+	     while(1){
+		flags = OE_APPEND_CURRENT |
+			OE_SEQ_SENSITIVE |
+			OE_KEEP_TRAILING_SPACE;
+
+		rc = optionally_enter(tmp, -FOOTER_ROWS(ps_global), 0,
+					      sizeof(tmp),
+					      _("Image Viewer: "),
+					      NULL, NO_HELP, &flags);
+		if(rc == 0){
+		    if((flags & OE_USER_MODIFIED) && *tmp){
+			if(can_access(tmp, EXECUTE_ACCESS) == 0){
+			   set_variable(V_IMAGE_VIEWER, tmp, TRUE, TRUE, Main);
+			   handle->h.img.tool = cpystr(tmp);
+			   mailcap_free();	/* redo the mailcap list */
+			   break;
+			}
+			else{
+			  q_status_message1(SM_ORDER | SM_DING, 2, 2,
+					    _("Image Viewer Not Found: %s"),
+						     error_description(errno));
+			  continue;
+			}
+		    }
+		    else
+		      return(0);
+		}
+		else if(rc == 1 || rc == -1){
+		    return(0);
+		}
+		else if(rc == 4){
+		    if(ps_global->redrawer)
+		      (*ps_global->redrawer)();
+		}
+             }
+	   }
+	}
+    }
+
     if(handle->type == Attach
 	&& handle->h.attach
 	&& handle->h.attach->body
@@ -889,7 +938,7 @@ scroll_handle_prompt(HANDLE_S *handle, int force)
 	}
 	else
 	  snprintf(prompt, sizeof(prompt), "View selected %s %s%s%s%.*s%s ? ",
-		  (handle->type == URL) ? "URL" : "Attachment",
+		  (handle->type == URL) ? "URL" : ((handle->type == imgData) ? "Image" : "Attachment"),
 		  external > 0 ? "using external viewer " : "",
 		  external > 0 ? (images > 0 ? "including all images" : "including inline images only") : "",
 		  (handle->type == URL) ? "\"" : "",
@@ -1059,6 +1108,18 @@ scroll_handle_launch(HANDLE_S *handle, int force)
 	  display_vevent_summary(mn_m2raw(ps_global->msgmap, mn_get_cur(ps_global->msgmap)),
 			     handle->h.ical.attach, 
 			     DA_FROM_VIEW | DA_DIDPROMPT, handle->h.ical.depth);
+	break;
+
+      case imgData:
+	if(handle->h.img.src){
+	    if(scroll_handle_prompt(handle, force)){
+		if(imgdata_open(handle)
+		   || ps_global->next_screen != SCREEN_FUN_NULL)
+		  return(1);	/* done with this screen */
+	    }
+	    else
+	      return(-1);
+	}
 	break;
 
       case Function :
@@ -1552,6 +1613,92 @@ do_url_launch(char *toolp, char *url)
     return(rv);
 }
 
+int
+imgdata_open(HANDLE_S *handle)
+{
+  return do_imgdata_open(handle->h.img.tool, handle->h.img.src);
+}
+
+int
+do_imgdata_open(char *toolp, char *data)
+{
+    gf_io_t  pc, writec, readc;
+    STORE_S  *so, *img;
+    char     *tmpfile = NULL, *err = NULL, *imgdata, *encoding;
+
+    if(!toolp) return 1;
+
+    encoding = strchr(data, ';');
+    if(encoding) encoding++;
+    imgdata = strchr(data, ',');
+    if(imgdata) imgdata++;
+    tmpfile = temp_nam(NULL, "img-data-");	/* create temporary file */
+
+    img = so_get(CharStar, NULL, EDIT_ACCESS);	/* allocate a pointer to save data */
+    so_seek(img, 0L, 0);			/* rewind img to start */
+    gf_set_so_writec(&writec, img);		/* set method to write to img in writec */
+    gf_set_so_readc(&readc, img);		/* set method to read from img in readc */
+
+    if(imgdata
+	&& encoding
+	&& imgdata
+	&& img
+	&& gf_puts(imgdata, writec)		/* write imgdata to img using writec */
+	&& (so = so_get(FileStar, tmpfile, WRITE_ACCESS|OWNER_ONLY)) != NULL){	/* open temporary file */
+
+        so_seek(img, 0L, 0);			/* rewind img to start */
+	so_seek(so, 0L, 0);			/* rewind so to start */
+	gf_set_so_writec(&pc, so);		/* set method to write to so in pc */
+        gf_filter_init();			/* start a filter */
+        if(!struncmp(encoding, "BASE64", 6))	/* link base64 filter */
+	   gf_link_filter(gf_b64_binary, NULL);
+
+	err = gf_pipe(readc, pc);		/* pass data from imgdata to so, reading from readc and writing with pc */
+
+	gf_clear_so_writec(so);			/* disassociate so and pc */
+
+	if(so_give(&so))			/* write tmp to disk and free so */
+           err = "Error writing image to file";
+
+	gf_clear_so_writec(img);		/* disassociate img and writec */
+	gf_clear_so_readc(img);			/* disassociate img and readc */
+	so_give(&img);				/* free img */
+    }
+    else err = "Error creating space for temporary image";
+
+    /* toolp tells us that there is a program to execute, which is
+     * either the image viewer or the mailcap. No matter which, the
+     * information is now in the mailcap structure, so let's use it
+     */
+    if(!err){
+       char *subtype = NULL;
+       if(!struncmp(data, "IMAGE/", 6)){
+	 data += 6;
+	 for(subtype = data; data && *data != ';'; data++);
+	 if(data){
+	   *data = '\0';
+	   if(mailcap_can_display(TYPEIMAGE, subtype, NULL, 0)){
+	      MCAP_CMD_S *mc_cmd;
+
+	      mc_cmd = mailcap_build_command(TYPEIMAGE, subtype,
+					   NULL, tmpfile, NULL, 0);
+	      exec_mailcap_cmd(mc_cmd, tmpfile, 0);
+	   }
+	   *data = ';';
+	   data = subtype - 6;
+	 }
+       }
+    }
+    else
+      q_status_message(SM_ORDER, 2, 2,
+			_("\"Image-Viewer\" not defined: Can't open image"));
+
+    if(tmpfile)		/* file was deleted by exec_mailcap_cmd */
+       fs_give((void **) &tmpfile);
+
+    return 0;
+}
+
 
 int
 url_launch_too_long(int return_value)
@@ -1676,6 +1823,37 @@ get_url_external_handler(char *url, int specific)
     return(cmd);
 }
 
+char *
+img_handler(HANDLE_S *handle)
+{
+  char *src = handle && handle->h.img.src ? handle->h.img.src : NULL;
+  char *cmd, *subtype;
+
+  if(!src) return NULL;
+
+  if(ps_global->VAR_IMAGE_VIEWER)
+     cmd = cpystr(ps_global->VAR_IMAGE_VIEWER);
+  else if(!struncmp(src, "IMAGE/", 6)){
+	src += 6;
+	for(subtype = src; src && *src != ';'; src++);
+	if(src){
+	   *src = '\0';
+	   if(mailcap_can_display(TYPEIMAGE, subtype, NULL, 0)){
+	      MCAP_CMD_S *mc_cmd;
+
+	      mc_cmd = mailcap_build_command(TYPEIMAGE, subtype,
+					   NULL, "_IMG_", NULL, 0);
+	      if(mc_cmd){
+		 cmd = mc_cmd->command;
+		 fs_give((void **)&mc_cmd);
+	      }
+	   }
+	   *src = ';';
+	}
+  }
+
+  return cmd;
+}
 
 url_tool_t
 url_local_handler(char *s)

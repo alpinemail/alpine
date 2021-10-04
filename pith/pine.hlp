@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 595 2021-09-29 19:05:06
+Alpine Commit 597 2021-10-03 21:12:53
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -185,15 +185,20 @@ new additions to Alpine, please check it periodically.
 
 <P> Changes since the release of version <!--#echo var="ALPINE_VERSION"--> include:
 
+<P> New features include:
+<UL>
+<LI> In the past Alpine did not recognize images embedded in an HTML file, so now it does and 
+a link to open them is given. Additionally, Alpine did not pass these images to an external 
+browser for display using the external command, and now it will. 
+</UL>
+
 <P>
-Bug fixes
+Bug fixes:
 
 <UL>
 <LI> Alpine crashes when it cannot retrieve privacy policy due to
      failure to connect to external server.
 </UL>
-
-
 
 <P>Version 2.25 adds new features and addresses bugs found in previous
 releases.

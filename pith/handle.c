@@ -129,6 +129,17 @@ free_handle(HANDLE_S **h)
 	      fs_give((void **) &(*h)->h.url.name);
 	}
 
+	if((*h)->type == imgData){			/* destroy malloc'd data */
+	    if((*h)->h.img.src)
+	      fs_give((void **) &(*h)->h.img.src);
+
+	   if((*h)->h.img.alt)
+	     fs_give((void **) &(*h)->h.img.alt);
+
+	    if((*h)->h.url.tool)
+	      fs_give((void **) &(*h)->h.url.tool);
+	}
+
 	free_handle_locations(&(*h)->loc);
 
 	fs_give((void **) h);

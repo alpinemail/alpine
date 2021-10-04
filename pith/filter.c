@@ -2844,7 +2844,8 @@ typedef	struct _center_s {
  * Collector data and state information
  */
 typedef	struct collector_s {
-    char        buf[HTML_BUF_LEN];	/* buffer to collect data */
+    char        *buf;			/* buffer to collect data */
+    unsigned long bufsize;		/* size of buffer to collect data */
     int		len;			/* length of that buffer  */
     unsigned	unquoted_data:1;	/* parameter is not quoted... */
     unsigned    end_tag:1;		/* collecting a closing tag */
@@ -2952,6 +2953,7 @@ typedef	struct _html_opts {
 #define	NEW_CLCTR(X)	{						\
 			   ED(X) = (CLCTR_S *)fs_get(sizeof(CLCTR_S));  \
 			   memset(ED(X), 0, sizeof(CLCTR_S));	\
+			   ED(X)->buf = memset((void *) fs_get(ED(X)->bufsize = HTML_BUF_LEN), 0, HTML_BUF_LEN); \
 			   HD(X)->token = html_element_collector;	\
 			 }
 
@@ -3224,7 +3226,7 @@ int	html_code(HANDLER_S *, int, int);
 int	html_ins(HANDLER_S *, int, int);
 int	html_del(HANDLER_S *, int, int);
 int	html_abbr(HANDLER_S *, int, int);
-char   *cid_tempfile_name(char *, long, int *);
+char   *img_tempfile_name(char *, long, int *);
 
 /*
  * Protos for RSS 2.0 Tag handlers
@@ -4472,30 +4474,50 @@ html_img(HANDLER_S *hd, int ch, int cmd)
 	     * if we ever decide web bugs aren't a problem
 	     * anymore then we might expand the scope
 	     */
-	    if(src
-	       && DO_HANDLES(hd->html_data)
-	       && RELATED_OK(hd->html_data)
-	       && struncmp(src, "cid:", 4) == 0){
-		char      buf[32];
-		int	      i, n;
-		HANDLE_S *h = new_handle(HANDLESP(hd->html_data));
+	    if(src && DO_HANDLES(hd->html_data)){
+	       if(RELATED_OK(hd->html_data)
+	          && struncmp(src, "cid:", 4) == 0){
+		  char      buf[32];
+		  int	      i, n;
+		  HANDLE_S *h = new_handle(HANDLESP(hd->html_data));
 
-		h->type	 = IMG;
-		h->h.img.src = cpystr(src + 4);
-		h->h.img.alt = cpystr((alt) ? alt : "Attached Image");
+		  h->type	 = IMG;
+		  h->h.img.src = cpystr(src + 4);
+		  h->h.img.alt = cpystr((alt) ? alt : "Attached Image");
 
-		HTML_TEXT(hd->html_data, TAG_EMBED);
-		HTML_TEXT(hd->html_data, TAG_HANDLE);
+		  HTML_TEXT(hd->html_data, TAG_EMBED);
+		  HTML_TEXT(hd->html_data, TAG_HANDLE);
 
-		sprintf(buf, "%d", h->key);
-		n = strlen(buf);
-		HTML_TEXT(hd->html_data, n);
-		for(i = 0; i < n; i++){
+		  sprintf(buf, "%d", h->key);
+		  n = strlen(buf);
+		  HTML_TEXT(hd->html_data, n);
+		  for(i = 0; i < n; i++){
 		    unsigned int uic = buf[i];
 		    HTML_TEXT(hd->html_data, uic);
-		}
+		  }
 
-		return(0);
+		  return(0);
+	       }
+	       else if(struncmp(src, "data:", 5) == 0){
+		  char      buf[32];
+		  int	      i, n;
+		  HANDLE_S *h = new_handle(HANDLESP(hd->html_data));
+
+		  h->type	 = imgData;
+		  h->h.img.src = cpystr(src + 5);
+		  h->h.img.alt = cpystr((alt) ? alt : "Embedded Image");
+
+		  HTML_TEXT(hd->html_data, TAG_EMBED);
+		  HTML_TEXT(hd->html_data, TAG_HANDLE);
+
+		  sprintf(buf, "%d", h->key);
+		  n = strlen(buf);
+		  HTML_TEXT(hd->html_data, n);
+		  for(i = 0; i < n; i++){
+		    unsigned int uic = buf[i];
+		    HTML_TEXT(hd->html_data, uic);
+		  }
+	       }
 	    }
 	    else if(alt && strlen(alt) < 256){ /* arbitrary "reasonable" limit */
 		HTML_DUMP_LIT(hd->html_data, alt, strlen(alt));
@@ -7471,8 +7493,15 @@ html_element_collector(FILTER_S *fd, int ch)
        || ED(fd)->unquoted_data
        || isalnum(ch)
        || strchr("#-.!", ch)){
+	if(ED(fd)->len >= ((ED(fd)->element || !ED(fd)->hit_equal)
+			       ? ED(fd)->bufsize:MAX_ELEMENT)){
+	   unsigned long i, bufsize = ED(fd)->bufsize;
+	   ED(fd)->bufsize = ED(fd)->len + HTML_BUF_LEN;
+	   fs_resize((void **) &ED(fd)->buf, ED(fd)->bufsize);
+	   memset(&ED(fd)->buf[bufsize], '\0', ED(fd)->bufsize - bufsize);
+	}
 	if(ED(fd)->len < ((ED(fd)->element || !ED(fd)->hit_equal)
-			       ? HTML_BUF_LEN:MAX_ELEMENT)){
+			       ? ED(fd)->bufsize:MAX_ELEMENT)){
 	    ED(fd)->buf[(ED(fd)->len)++] = ch;
 	}
 	else
@@ -7494,8 +7523,15 @@ html_element_collector(FILTER_S *fd, int ch)
 	  if(!ep->alternate)
 	    ED(fd)->badform = 1;
 	  else{
+	    if(ED(fd)->len >= ((ED(fd)->element || !ED(fd)->hit_equal)
+			       ? ED(fd)->bufsize:MAX_ELEMENT)){
+	      unsigned long bufsize = ED(fd)->bufsize;
+	      ED(fd)->bufsize = ED(fd)->len + HTML_BUF_LEN;
+	      fs_resize((void **) &ED(fd)->buf, ED(fd)->bufsize);
+	      memset(&ED(fd)->buf[bufsize], '\0', ED(fd)->bufsize - bufsize);
+	    }
 	    if(ED(fd)->len < ((ED(fd)->element || !ED(fd)->hit_equal)
-			       ? HTML_BUF_LEN:MAX_ELEMENT)){
+			       ? ED(fd)->bufsize:MAX_ELEMENT)){
 	      ED(fd)->buf[(ED(fd)->len)++] = ch;	/* add this exception */
 	    }
 	    else
@@ -7563,7 +7599,8 @@ html_element_flush(CLCTR_S *el_data)
 
     el_data->was_quoted = 0;	/* reset collector buf and state */
     el_data->len = 0;
-    memset(el_data->buf, 0, HTML_BUF_LEN);
+    fs_give((void **) &el_data->buf);
+    el_data->bufsize = 0;
     return(rv);			/* report whatever happened above */
 }
 
@@ -9050,8 +9087,12 @@ gf_html2plain_rss_free_items(RSS_ITEM_S **itemp)
     }
 }
 
+#define CID_NONE	0x00
+#define CID_DATA	0x01
+#define IMG_DATA	0x10
+
 char *
-cid_tempfile_name(char *line, long n, int *is_cidp)
+img_tempfile_name(char *line, long n, int *flagp)
 {
     int f2 = 0;
     int i, found;
@@ -9062,13 +9103,15 @@ cid_tempfile_name(char *line, long n, int *is_cidp)
     c = line[n];
     line[n] = '\0';
     s = NULL;
-    *is_cidp = 0;
+    *flagp = CID_NONE;
     if(n > 0){
 	if (line[0] == '\"')
 	  f2 = 1;
-	if (n - f2 > 3){
+	if (n - f2 > 4 && !struncmp(line+f2, "data:", 5))
+	   *flagp = IMG_DATA;
+	else if (n - f2 > 3){
 	   if (!struncmp(line+f2, "cid:", 4)){
-	       *is_cidp = 1;
+	       *flagp = CID_DATA;
 	       f2 += 4;
 	       s = fs_get((n - f2 + 4)*sizeof(char));
 	       sprintf(s,  "<%s", line+f2);
@@ -9167,18 +9210,18 @@ gf_html_cid2file(FILTER_S *f, int cmd)
 	    }
 	    else if (state == 2){	/* collect all data */
 	        if(ASCII_ISSPACE(c) || c == '>'){
-		   int is_cid;
+		   int flag;
 		   if(f->n > 0){
-		      char *s = cid_tempfile_name(f->line, f->n, &is_cid);
-		      if(is_cid){
+		      char *s = img_tempfile_name(f->line, f->n, &flag);
+		      if(flag & CID_DATA){
 		        RESET_FILTER(f);
 		        if(s != NULL)
 			  for(; *s != '\0'; s++)
 			    COLLECT(f, *s);
-		     }
-		   }
-		   GF_PUTC(f->next, '\"');
-		   if(is_cid || f->t){
+		      }
+		    }
+		    GF_PUTC(f->next, '\"');
+		    if((flag & (CID_DATA | IMG_DATA)) || f->t){
 		      for(p = f->line; f->n; f->n--, p++){
 			 if(*p == '\"') continue;
 		         GF_PUTC(f->next, *p);
@@ -9203,7 +9246,7 @@ gf_html_cid2file(FILTER_S *f, int cmd)
     }
     else if(cmd == GF_EOD){
 	if(f->f1 == 2){
-	   char *s = cid_tempfile_name(f->line, f->n, &f->f2);
+	   char *s = img_tempfile_name(f->line, f->n, &f->f2);
 	   GF_PUTC(f->next, '\"');
 	   if (f->f2 || f->t){
 	      for(p = s; *p; p++){
