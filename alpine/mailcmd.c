@@ -1,7 +1,3 @@
-#if !defined(lint) && !defined(DOS)
-static char rcsid[] = "$Id: mailcmd.c 1266 2009-07-14 18:39:12Z hubert@u.washington.edu $";
-#endif
-
 /*
  * ========================================================================
  * Copyright 2013-2021 Eduardo Chappa
@@ -8279,7 +8275,7 @@ select_by_text(MAILSTREAM *stream, MSGNO_S *msgmap, long int msgno, SEARCHSET **
     int          not = 0, me = 0;
     char         sstring[512], tmp[128];
     char        *p, *sval = NULL;
-    char         buftmp[MAILTMPLEN], namehdr[80];
+    char         namehdr[80];
     ESCKEY_S     ekey[8];
     ENVELOPE    *env = NULL;
     HelpType     help;

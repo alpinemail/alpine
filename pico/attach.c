@@ -1,7 +1,3 @@
-#if	!defined(lint) && !defined(DOS)
-static char rcsid[] = "$Id: attach.c 1082 2008-06-12 18:39:50Z hubert@u.washington.edu $";
-#endif
-
 /*
  * ========================================================================
  * Copyright 2006-2008 University of Washington

@@ -1,7 +1,3 @@
-#if !defined(lint) && !defined(DOS)
-static char rcsid[] = "$Id: reply.c 1074 2008-06-04 00:08:43Z hubert@u.washington.edu $";
-#endif
-
 /*
  * ========================================================================
  * Copyright 2013-2021 Eduardo Chappa
@@ -3701,7 +3697,6 @@ forward_multi_alt_mixed(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruc
     BODY *body = NULL, *text_body = NULL;
     PART *part = NULL;
     char  prefix_buf[FWDTMPLEN];
-    char *new_charset = NULL;
     int   partnum;
     char  *section, sect_buf[256];
     int   forward_raw_body = 0;

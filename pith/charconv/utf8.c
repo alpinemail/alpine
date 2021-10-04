@@ -1,7 +1,3 @@
-#if !defined(lint) && !defined(DOS)
-static char rcsid[] = "$Id: utf8.c 1184 2008-12-16 23:52:15Z hubert@u.washington.edu $";
-#endif
-
 /*
  * ========================================================================
  * Copyright 2013-2021 Eduardo Chappa
@@ -713,7 +709,7 @@ ucs4_to_utf8_n_cpystr(UCS *ucs4src, int retlen)
     for(i = 0; ucs4src[i] && (len < retlen); i++){
       oldlen = len;
       writeptr = utf8_put(writeptr, (unsigned long) ucs4src[i]);
-      len = strlen(ret);
+      len = strlen((char *)ret);
     }
     if(len > retlen){
       ret[oldlen] = '\0';

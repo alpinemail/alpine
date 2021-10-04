@@ -1,7 +1,3 @@
-#if !defined(lint) && !defined(DOS)
-static char rcsid[] = "$Id: help.c 1032 2008-04-11 00:30:04Z hubert@u.washington.edu $";
-#endif
-
 /*
  * ========================================================================
  * Copyright 2013-2021 Eduardo Chappa
@@ -139,8 +135,8 @@ helper_internal(HelpType text, char *frag, char *title, int flags)
 	int status, we_cancel = 0;
 
 	we_cancel = busy_cue(_("Retrieving help text"), NULL, 1);
-	HTTPSTREAM *stream = http_open(*shown_text + 14);
-	if(stream) help_text = http_get(stream, NULL);
+	HTTPSTREAM *stream = http_open((unsigned char *) (*shown_text + 14));
+	if(stream) help_text = (char *) http_get(stream, NULL);
 	status = stream && stream->status ? stream->status->code : -1;
 	if(stream) http_close(stream);
 	if(status != HTTP_OK){
@@ -377,7 +373,7 @@ helper_internal(HelpType text, char *frag, char *title, int flags)
     while(cmd == MC_RESIZE);
 
     if(external_text != NULL){
-      for(rv = external_text; *rv != NULL; *rv++)
+      for(rv = external_text; *rv != NULL; rv++)
 	fs_give((void **) &*rv);
       fs_give((void **) external_text);
     }

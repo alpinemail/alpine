@@ -1,7 +1,3 @@
-#if !defined(lint) && !defined(DOS)
-static char rcsid[] = "$Id: conf.c 1266 2009-07-14 18:39:12Z hubert@u.washington.edu $";
-#endif
-
 /*
  * ========================================================================
  * Copyright 2013-2021 Eduardo Chappa
@@ -5663,7 +5659,6 @@ write_pinerc(struct pine *ps, EditWhich which, int flags)
     STORE_S            *so = NULL;
 #ifndef _WINDOWS
     struct stat		sbuf;
-    char	       *slink = NULL;
 #endif
 
 #define MAXPLINESIZE 10000
@@ -8337,7 +8332,7 @@ get_supported_options(void)
     AUTHENTICATOR *a;
     char          *title = _("Supported features in this Alpine");
     char           sbuf[MAX_SCREEN_COLS+1],  tmp[128];
-    int            cnt, alcnt, len, cols, disabled, any_disabled = 0, i;
+    int            cnt, alcnt, len, cols, disabled, any_disabled = 0;
 
     /*
      * Line count:

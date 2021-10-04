@@ -1,7 +1,3 @@
-#if !defined(lint) && !defined(DOS)
-static char rcsid[] = "$Id: ldap.c 1266 2009-07-14 18:39:12Z hubert@u.washington.edu $";
-#endif
-
 /* ========================================================================
  * Copyright 2006-2008 University of Washington
  *

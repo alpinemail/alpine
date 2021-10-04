@@ -1,7 +1,3 @@
-#if !defined(lint) && !defined(DOS)
-static char rcsid[] = "$Id: mailpart.c 1074 2008-06-04 00:08:43Z hubert@u.washington.edu $";
-#endif
-
 /*
  * ========================================================================
  * Copyright 2013-2021 Eduardo Chappa
@@ -3082,14 +3078,14 @@ display_vevent_summary(long int msgno, ATTACH_S *a, int flags, int depth)
     HANDLE_S  *handles = NULL;
     URL_HILITE_S uh;
     gf_io_t    gc, pc;
-    char   *errstr = NULL, tmp[MAILTMPLEN], *p;
+    char   *errstr = NULL;
     int	   cmd, i, k;
 
-    b = mail_body(ps_global->mail_stream, msgno, a->number);
+    b = mail_body(ps_global->mail_stream, msgno, (unsigned char *) a->number);
     if(b->sparep == NULL){
        b64text = mail_fetch_body(ps_global->mail_stream, msgno, a->number, &callen, 0);
        b64text[callen] = '\0';       /* chop off cookie */
-       caltext = rfc822_base64(b64text, strlen(b64text), &callen);
+       caltext = rfc822_base64((unsigned char *)b64text, strlen(b64text), &callen);
        vcal = ical_parse_text(caltext);
        b->sparep = create_body_sparep(iCalType, (void *) vcal);
     }

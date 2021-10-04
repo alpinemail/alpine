@@ -1,6 +1,3 @@
-#if	!defined(lint) && !defined(DOS)
-static char rcsid[] = "$Id: window.c 761 2007-10-23 22:35:18Z hubert@u.washington.edu $";
-#endif
 /*
  * ========================================================================
  * Copyright 2006 University of Washington

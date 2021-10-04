@@ -1,7 +1,3 @@
-#if !defined(lint) && !defined(DOS)
-static char rcsid[] = "$Id: smime.c 1074 2008-06-04 00:08:43Z hubert@u.washington.edu $";
-#endif
-
 /*
  * ========================================================================
  * Copyright 2013-2021 Eduardo Chappa
@@ -1519,12 +1515,9 @@ void
 smime_manage_password_file_certs_init(struct pine *ps, CONF_S **ctmp, CONF_S **first_line, int fline, int *state)
 {
     char     tmp[200];
-    char    *ext;
     CertList *cl;
     int	  i;
     void  *pwdcert = NULL;	/* this is our current password file */
-    X509_LOOKUP *lookup = NULL;
-    X509_STORE  *store  = NULL;
     char filename[MAXPATH+1];
     BIO *in = NULL;
     EVP_PKEY *key = NULL;

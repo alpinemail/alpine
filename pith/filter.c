@@ -1,7 +1,3 @@
-#if !defined(lint) && !defined(DOS)
-static char rcsid[] = "$Id: filter.c 1266 2009-07-14 18:39:12Z hubert@u.washington.edu $";
-#endif
-
 /*
  * ========================================================================
  * Copyright 2013-2021 Eduardo Chappa
@@ -9059,7 +9055,7 @@ cid_tempfile_name(char *line, long n, int *is_cidp)
 {
     int f2 = 0;
     int i, found;
-    char *s, *t = NULL, *u, c;
+    char *s, *t = NULL, c;
     char imgfile[1024];
     char *extp = NULL;
 
@@ -9171,7 +9167,6 @@ gf_html_cid2file(FILTER_S *f, int cmd)
 	    }
 	    else if (state == 2){	/* collect all data */
 	        if(ASCII_ISSPACE(c) || c == '>'){
-		   long n;
 		   int is_cid;
 		   if(f->n > 0){
 		      char *s = cid_tempfile_name(f->line, f->n, &is_cid);

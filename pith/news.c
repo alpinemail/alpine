@@ -1,11 +1,7 @@
-#if !defined(lint) && !defined(DOS)
-static char rcsid[] = "$Id: news.c 769 2007-10-24 00:15:40Z hubert@u.washington.edu $";
-#endif
-
 /*
  * ========================================================================
- * Copyright 2006-2007 University of Washington
  * Copyright 2013-2021 Eduardo Chappa
+ * Copyright 2006-2007 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

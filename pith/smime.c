@@ -1,7 +1,3 @@
-#if !defined(lint) && !defined(DOS)
-static char rcsid[] = "$Id: smime.c 1176 2008-09-29 21:16:42Z hubert@u.washington.edu $";
-#endif
-
 /*
  * ========================================================================
  * Copyright 2013-2021 Eduardo Chappa
@@ -664,7 +660,7 @@ import_certificate(WhichCerts ctype, PERSONAL_CERT *p_cert, char *fname)
      if(key != NULL 
 	|| (key = load_pkey_with_prompt(full_filename, NULL, prompt, NULL)) != NULL){
 	BIO *ins = NULL;
-	X509 *cert = p_cert ? p_cert->cert : NULL, *cert2;
+	X509 *cert = p_cert ? p_cert->cert : NULL;
 
 	strncpy(full_name_key, full_filename, sizeof(full_filename));
         full_name_key[sizeof(full_name_key)-1] = '\0';

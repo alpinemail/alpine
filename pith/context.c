@@ -1,11 +1,7 @@
-#if !defined(lint) && !defined(DOS)
-static char rcsid[] = "$Id: context.c 1144 2008-08-14 16:53:34Z hubert@u.washington.edu $";
-#endif
-
 /*
  * ========================================================================
- * Copyright 2006-2007 University of Washington
  * Copyright 2013-2021 Eduardo Chappa
+ * Copyright 2006-2007 University of Washington
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
