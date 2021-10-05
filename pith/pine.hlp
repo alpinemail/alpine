@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 598 2021-10-04 22:00:11
+Alpine Commit 599 2021-10-05 08:13:13
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -38630,7 +38630,7 @@ in size will be selected. Examples: 2176, 1.53K (1530), or 3M (3000000).
 Use 'p' to toggle between preserving or not preserving the original To:
 and Cc: fields of the message. Enter ^C to cancel message.
 ========== h_privacy_policy ==========
-x-alpine-http:http://alpine.x10host.com/privacy.html
+x-alpine-http:http://alpine.x10host.com/legal/privacy.html
 ========== h_apache_license ==========
 x-alpine-http:http://alpine.x10host.com/legal/apache_license.html
 
