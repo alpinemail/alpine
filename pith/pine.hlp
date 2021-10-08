@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 600 2021-10-07 18:46:45
+Alpine Commit 601 2021-10-07 20:04:48
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -192,6 +192,12 @@ new additions to Alpine, please check it periodically.
      given. Additionally, Alpine did not pass these images to an
      external browser for display using the external command, and
      now it will.
+
+<LI> Some servers do not allow the Drafts folder to be removed, even when
+     it is empty. Alpine, however, assumes that if the folder exists, it
+     must contain a draft message. This joint collaboration with Thomas
+     Uhle modifies alpine to not to attempt to continue a draft message if
+     the draft folder is emptty.
 </UL>
 
 <P>

@@ -518,7 +518,7 @@ compose_mail(char *given_to, char *fcc_arg, ACTION_S *role_arg,
 
 	if((exists=postponed_stream(&stream,
 				    ps_global->VAR_POSTPONED_FOLDER,
-				    "Postponed", 0)) & FEX_ISFILE){
+				    "Postponed", 1)) & FEX_ISFILE){
 	    if(F_ON(F_ALT_COMPOSE_MENU, ps_global) || 
 	       (ret = redraft_prompt("Postponed",PSTPND_PMT,'n')) == 'y'){
 		if(!redraft(&stream, &outgoing, &body, &fcc, &lcc, &reply,
@@ -544,8 +544,11 @@ compose_mail(char *given_to, char *fcc_arg, ACTION_S *role_arg,
 		}
 	    }
 	}
-	else if(F_ON(F_ALT_COMPOSE_MENU, ps_global))
+	else if(F_ON(F_ALT_COMPOSE_MENU, ps_global)){
+	  q_status_message(SM_ORDER, 3, 3,
+			   _("No postponed messages found!"));
 	  done++;
+	}
 
 	if(done)
 	  return;
