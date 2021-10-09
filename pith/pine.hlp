@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 601 2021-10-07 20:04:48
+Alpine Commit 602 2021-10-08 21:42:40
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -197,7 +197,7 @@ new additions to Alpine, please check it periodically.
      it is empty. Alpine, however, assumes that if the folder exists, it
      must contain a draft message. This joint collaboration with Thomas
      Uhle modifies alpine to not to attempt to continue a draft message if
-     the draft folder is emptty.
+     the draft folder is empty.
 </UL>
 
 <P>
