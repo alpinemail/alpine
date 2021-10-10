@@ -1235,7 +1235,6 @@ long imap_auth (MAILSTREAM *stream,NETMBX *mb,char *tmp,char *usr)
 
 	if(base && !trial){	/* do it now, instead of later */
 	  mm_log ("IMAP Authentication cancelled",ERROR);
-	  delete_password(mb, usr);
 	  return NIL;
 	}
 				/* make sure have a response */

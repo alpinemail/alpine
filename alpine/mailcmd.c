@@ -363,11 +363,14 @@ int
 alpine_get_password(char *prompt, char *pass, size_t len)
 {
   int flags = F_ON(F_QUELL_ASTERISKS, ps_global) ? OE_PASSWD_NOAST : OE_PASSWD;
+  int rv;
   flags |= OE_DISALLOW_HELP;
   pass[0] = '\0';
-  return optionally_enter(pass, 
+  rv = optionally_enter(pass, 
 			-(ps_global->ttyo ? FOOTER_ROWS(ps_global) : 3),
                          0, len, prompt, NULL, NO_HELP, &flags);
+  if(rv == 1) ps_global->user_says_cancel = 1;
+  return rv;
 }
 
 int

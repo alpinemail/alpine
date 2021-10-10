@@ -612,7 +612,8 @@ oauth2_get_access_code(unsigned char *url, char *method, OAUTH2_S *oauth2, int *
 	sargs.help.title    = _("HELP FOR SETTING UP XOAUTH2");
 
 	do {
-	   scrolltool(&sargs);
+	   if(scrolltool(&sargs) == MC_NO)
+	     ps_global->user_says_cancel = 1;
 	   ps_global->mangled_screen = 1;
 	   ps_global->painted_body_on_startup = 0;
 	   ps_global->painted_footer_on_startup = 0;

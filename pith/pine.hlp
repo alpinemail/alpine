@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 602 2021-10-08 21:42:40
+Alpine Commit 603 2021-10-10 11:00:24
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -206,6 +206,11 @@ Bugs addressed include:
 <UL>
 <LI> Alpine crashes when it cannot retrieve the privacy policy due to
      failure connecting to the external server.
+
+<LI> Alpine might delete all passwords from the password file if the
+     password file is not unlocked by cancellation, or the authentication
+     for an XOAUTH2 server is cancelled, or the password of an account
+     is changed.
 </UL>
 
 <P>Version 2.25 adds new features and addresses bugs found in previous

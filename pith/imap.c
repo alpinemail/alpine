@@ -1157,7 +1157,7 @@ void
 imap_delete_passwd_auth(MMLOGIN_S **m_list, char *user,
 	STRLIST_S *hostlist, int altflag, char *authtype)
 {
-   MMLOGIN_S *l, *p;
+   MMLOGIN_S *l, *p, *q;
    int len, offset;
 
    if(m_list == NULL || *m_list == NULL) return;
@@ -1186,8 +1186,9 @@ imap_delete_passwd_auth(MMLOGIN_S **m_list, char *user,
 
    /* relink *mlist */
    if(p == *m_list)
-      *m_list = (*m_list)->next;
+      q = (*m_list)->next;
    else{
+      q = *m_list;
       for(l = *m_list; l && l->next != p; l = l->next);
       l->next = p->next;
    }
@@ -1201,6 +1202,7 @@ imap_delete_passwd_auth(MMLOGIN_S **m_list, char *user,
 
    free_strlist(&p->hosts);
    fs_give((void **) &p);
+   *m_list = q;
    dprint((9, "imap_delete_password: done with deletion."));
 }
 
