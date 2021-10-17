@@ -149,7 +149,7 @@ cache_method_message(STORE_S  *in_store)
         }
 	else{
 	   q_status_message(SM_ORDER | SM_DING, 3, 3, _("Create a password file in order to save the login information"));
-           so_puts(in_store, _("</P><P> Although your version if Alpine was compiled with password file support, this has not been set up yet. "));
+           so_puts(in_store, _("</P><P> Although your version of Alpine was compiled with password file support, this has not been set up yet. "));
            so_puts(in_store, _("as a result, the next time you open this folder, you will go through this process once again.\n\n"));
 	}
 #else
@@ -179,7 +179,7 @@ cache_method_message_no_screen (void)
 	}
 	else{
 	   snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf), "%s",
-		_(" Although your version if Alpine was compiled with password file support, this has not been set up yet. "));
+		_(" Although your version of Alpine was compiled with password file support, this has not been set up yet. "));
 	   tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
 	   snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf), "%s",
 		_("as a result, the next time you open this folder, you will go through this process once again.\n\n"));
@@ -442,7 +442,8 @@ oauth2_set_device_info(OAUTH2_S *oa2, char *method)
 	sargs.aux_rv_value  = (void *) &aux_rv_value;
 
 	do {
-	   scrolltool(&sargs);
+	   if(scrolltool(&sargs) == MC_NO)
+	     ps_global->user_says_cancel = 1;
 	   ps_global->mangled_screen = 1;
 	   ps_global->painted_body_on_startup = 0;
 	   ps_global->painted_footer_on_startup = 0;
