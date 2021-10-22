@@ -74,7 +74,7 @@ typedef struct ssl_stream {
 #include "sslio.h"
 
 /* Function prototypes */
-int ssl_disable_mask(int ssl_version, int direction);
+long ssl_disable_mask(int ssl_version, int direction);
 const SSL_METHOD *ssl_connect_mthd(int flag, int *minv, int *maxv);
 static SSLSTREAM *ssl_start(TCPSTREAM *tstream,char *host,unsigned long flags);
 static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags);
@@ -213,7 +213,7 @@ SSLSTREAM *ssl_aopen (NETMBX *mb,char *service,char *usrbuf)
 
 typedef struct ssl_disable_s {
   int   version;
-  int   disable_code;
+  long   disable_code;
 } SSL_DISABLE_S;
         
 SSL_DISABLE_S ssl_disable[] = {
@@ -237,7 +237,7 @@ SSL_DISABLE_S ssl_disable[] = {
  * If direction is -1, returns mask to disable versions less than given version.
  * If direction is +1, returns mask to disable versions bigger than given version.
  */
-int ssl_disable_mask(int ssl_version, int direction)
+long ssl_disable_mask(int ssl_version, int direction)
 {
   int rv = 0;
   int i;
@@ -393,7 +393,7 @@ static char *ssl_start_work (SSLSTREAM *stream,char *host,unsigned long flags)
   X509 *cert;
   unsigned long sl,tl;
   int minv, maxv;
-  int masklow, maskhigh;
+  long masklow, maskhigh;
   char *s,*t,*err,tmp[MAILTMPLEN], buf[256];
   char *CAfile, *CApath, *ciphers;
   sslcertificatequery_t scq =
