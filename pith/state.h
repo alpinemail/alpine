@@ -145,6 +145,8 @@ struct pine {
     unsigned     fix_fixed_warning:1;	/* offer to fix it              */
 
     unsigned     user_says_cancel:1;	/* user typed ^C to abort open */
+    unsigned     in_xoauth2_auth:1;	/* user is attempting xoauth2 authentication */
+    unsigned     preserve_password:1;	/* user is saving the password */
 
     unsigned     unseen_in_view:1;
     unsigned     start_in_context:1;	/* start fldr_scrn in current cntxt */

@@ -363,6 +363,8 @@ oauth2_set_device_info(OAUTH2_S *oa2, char *method)
    OAUTH2_DEVICECODE_S *deviceinfo = &oa2->devicecode;
    OAUTH2_DEVICEPROC_S aux_value;
 
+   dprint((2, "-- oauth2_set_device_info\n"));
+   ps_global->in_xoauth2_auth = 1;
    if(ps_global->ttyo){
 	SCROLL_S  sargs;
 	STORE_S  *in_store, *out_store;
@@ -531,6 +533,8 @@ oauth2_get_access_code(unsigned char *url, char *method, OAUTH2_S *oauth2, int *
    char tmp[MAILTMPLEN];
    char *code = NULL;
 
+   dprint((2, "-- oauth2_get_access_code\n"));
+   ps_global->in_xoauth2_auth = 1;
    if(ps_global->ttyo){
 	SCROLL_S  sargs;
 	STORE_S  *in_store, *out_store;
@@ -787,7 +791,6 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
     int       ChangeAccessToken, ChangeRefreshToken, ChangeExpirationTime;
     OAUTH2_S  *oa2list, *oa2;
     XOAUTH2_INFO_S *x;
-
     unsigned long OldExpirationTime, NewExpirationTime, SaveExpirationTime;
 #if defined(_WINDOWS) || defined(LOCAL_PASSWD_CACHE)
     int       preserve_password = -1;
@@ -1338,6 +1341,10 @@ mm_log(char *string, long int errflg)
        * Don't display if creating new folder OR
        * warning about a dead stream ...
        */
+      return;
+
+    /* if we took too long to authenticate, ignore this error */
+    if(ps_global->in_xoauth2_auth && strstr(string, "[CLOSED]"))
       return;
 
     strncpy(message, string, sizeof(message));
@@ -4091,6 +4098,7 @@ preserve_prompt(char *pinerc)
 int
 preserve_prompt_auth(char *pinerc, char *authtype)
 {
+     ps_global->preserve_password = 0;
 #ifdef	WINCRED
 # if	(WINCRED > 0)
 #define PROMPT_PWD _("Preserve password for next login")
@@ -4107,8 +4115,10 @@ preserve_prompt_auth(char *pinerc, char *authtype)
 		? (strcmp(authtype, OA2NAME) ? PROMPT_PWD : PROMPT_OA2)
 		: PROMPT_PWD,
 		  'y', 'x', NO_HELP, WT_NORM)
-	   == 'y'))
+	   == 'y')){
+      ps_global->preserve_password = 1;
       return(1);
+    }
     else
       return(0);
 # else
@@ -4125,6 +4135,7 @@ preserve_prompt_auth(char *pinerc, char *authtype)
 		? (strcmp(authtype, OA2NAME) ? PROMPT_PWD : PROMPT_OA2)
 		: PROMPT_PWD, 'y', 'x', NO_HELP, WT_NORM)
 	   == 'y'){
+	    ps_global->preserve_password = 1;
 	    if(rc == -1){
 		macos_set_store_pass_prompt(1);
 		q_status_message(SM_ORDER, 4, 4,
@@ -4151,10 +4162,13 @@ preserve_prompt_auth(char *pinerc, char *authtype)
         return 0;
 
     if(F_OFF(F_DISABLE_PASSWORD_FILE_SAVING,ps_global))
-	return(want_to(authtype 
+	if(want_to(authtype
 		? (strcmp(authtype, OA2NAME) ? PROMPT_PWD : PROMPT_OA2)
 		: PROMPT_PWD, 'y', 'x', NO_HELP, WT_NORM)
-	   == 'y');
+	   == 'y'){
+	    ps_global->preserve_password = 1;
+	    return 1;
+    }
     return(0);
 #endif /* PASSFILE */
 }

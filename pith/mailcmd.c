@@ -786,11 +786,25 @@ do_broach_folder(char *newfolder, CONTEXT_S *new_context, MAILSTREAM **streamp,
 		     openmode | (open_inbox ? SP_INBOX : 0),
 		     &rflags);
 
+    if(m == NULL
+	&& ps_global->in_xoauth2_auth
+	&& ps_global->preserve_password){
+        ps_global->in_xoauth2_auth = ps_global->user_says_cancel = ps_global->preserve_password = 0;
+        m = context_open((new_context && !open_inbox) ? new_context : NULL,
+		     stream,
+		     open_inbox ? ps_global->VAR_INBOX_PATH : expanded_file,
+		     openmode | (open_inbox ? SP_INBOX : 0),
+		     &rflags);
+    }
+
     /*
      * We aren't in a situation where we want a single cancel to
      * apply to multiple opens.
      */
     ps_global->user_says_cancel = 0;
+
+    /* we are not in authentication mode anymore */
+    ps_global->preserve_password = ps_global->in_xoauth2_auth = 0;
 
     if(streamp)
       *streamp = m;
