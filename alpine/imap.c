@@ -435,7 +435,7 @@ oauth2_set_device_info(OAUTH2_S *oa2, char *method)
 	/* don't want to re-enter c-client */
 	sargs.quell_newmail = 1;
 	setbitmap(sargs.keys.bitmap);
-	sargs.help.text     = h_oauth2_start;
+	sargs.help.text     = h_oauth2_start_device;
 	sargs.help.title    = _("HELP FOR SETTING UP XOAUTH2");
 	sargs.aux_function  = oauth2deviceinfo_get_accesscode;
 	sargs.aux_value     = (void *) &aux_value;

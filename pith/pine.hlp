@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 607 2021-10-23 21:25:07
+Alpine Commit 608 2021-10-24 13:59:38
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -2282,17 +2282,55 @@ You are trying to connect to a server that uses the XOAUTH2 method of
 authentication.
 
 <P>
-In order to set this up, you need to authenticate in the target server
-and authorize Alpine to access your email account.
+In order to complete this process use a browser in the same computer
+that you are using Alpine to open the given URL.
 
 <P>
-After you have authorized Alpine, the server will generate an
-&quot;access code.&quot; In order to use this code, press 'C'
-and copy and paste this code back into Alpine.
+You will be sent to authenticate and later to authorize Alpine access to
+your email. Once you have completed the authorization process you will get
+a code. Input this code into Alpine by pressing 'C'. If you do not see a
+code, but see an error message in your browser, copy and paste the URL of
+the error page and paste into alpine after pressing the 'C' key.
 
 <P>
 After you have input the code, Alpine will conclude logging you into your
 account.
+
+<P>
+If your version of Alpine was compiled to save passwords, then Alpine will save
+the refresh and access tokens securely, otherwise you will have to repeat this
+process every time you login to this server.
+
+<P>
+&lt;End of setting up XOAUTH2 Authentication help&gt;
+</BODY>
+</HTML>
+====== h_oauth2_start_device ======
+<HTML>
+<HEAD>
+<TITLE>Setting up XOAUTH2 Authentication Using the Device Flow</TITLE>
+</HEAD>
+<BODY>
+<H1>Setting up XOAUTH2 Authentication Using the Device Flow</H1>
+
+You are trying to connect to a server that uses the XOAUTH2 method of
+authentication.
+
+<P>
+In order to complete this process use a browser in the same computer
+that you are using Alpine to open the given URL and enter the code that you
+were given by Alpine in that screen.
+
+<P>
+You will be sent to authenticate and later to authorize Alpine access to
+your email. Once you have completed the authorization process Alpine will
+get the refresh and access tokens from the service servers and the authentication
+process will be completed by Alpine.
+
+<P>
+If your version of Alpine was compiled to save passwords, then Alpine will save
+the refresh and access tokens securely, otherwise you will have to repeat this
+process every time you login to this server.
 
 <P>
 &lt;End of setting up XOAUTH2 Authentication help&gt;
