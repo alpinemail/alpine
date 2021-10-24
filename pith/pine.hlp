@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 606 2021-10-23 17:48:46
+Alpine Commit 607 2021-10-23 21:25:07
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -28767,19 +28767,19 @@ argument (see the &quot;lynx&quot; example below).
 <P>
 So, here are some example entries:
 <PRE>
-url-viewers = _TEST(&quot;test -n '$&#123;DISPLAY}'&quot;)_  /usr/local/bin/netscape
-              &quot;/usr/local/bin/lynx _URL_&quot;
-              C:&#92;BIN&#92;NETSCAPE.BAT
+url-viewers = _TEST(&quot;test -n '$&#123;DISPLAY}'&quot;)_  /usr/bin/firefox
+              &quot;/usr/bin/lynx _URL_&quot;
+              C:&#92;BIN&#92;FIREFOX.BAT
 </PRE>
 <P>
 This example shows that for the first viewer in the list to be used
 the environment variable &quot;DISPLAY&quot; must be defined.  If it
-is, then the path and file &quot;/usr/local/bin/netscape&quot; must exist.  
+is, then the path and file &quot;/usr/bin/firefox&quot; must exist.
 If neither condition is met,
-then the path and file &quot;/usr/local/bin/lynx&quot; must exist.  
-If it does, then the &quot;_URL_&quot; token is replaced by the selected URL. 
+then the path and file &quot;/usr/bin/lynx&quot; must exist.
+If it does, then the &quot;_URL_&quot; token is replaced by the selected URL.
 If the path to &quot;lynx&quot; is invalid,
-then the final path and file C:&#92;BIN&#92;NETSCAPE.BAT must exist.  
+then the final path and file C:&#92;BIN&#92;FIREFOX.BAT must exist.
 Note that the last
 entry is a DOS/Windows path.  This is one way to support Alpine running
 on more than one architecture with the same configuration file.<P>
@@ -28875,31 +28875,15 @@ How exactly you define your <!--#echo var="VAR_url-viewers"--> entries to do thi
 the command shell, the URL-viewer application(s), and possibly the specific 
 version of the latter, you are using.  
 <P>
-Relevant command 
-line options for the Netscape browser for showing URLs (selected from Alpine) 
-when Netscape is already running are discussed in the document
-&quot;Remote Control of UNIX Netscape&quot; 
-found at the URL (as of 12 Aug. 1998):
+Relevant command line options for firefox can be found at
 <P>
 
-<CENTER><A HREF="http://home.netscape.com/newsref/std/x-remote.html">http://home.netscape.com/newsref/std/x-remote.html</A></CENTER>
+<CENTER><A HREF="https://wiki.mozilla.org/Firefox/CommandLineOptions">https://wiki.mozilla.org/Firefox/CommandLineOptions</A></CENTER>
 
 <P>(If the URL-viewer application is 
 <B>not</B> running on the same host as Alpine, but being launched from an 
 applications server, you may not be able to use the command line options for 
 using an existing invocation of the application in Alpine's <!--#echo var="VAR_url-viewers"--> entry.)
-<P>
-<!--chtml if this-method="shown-to-work"-->
-An example using the Korn shell and the Netscape browser (first entry wrapped 
-because of its length, but should all appear on one line):
-<P>
-url-viewers = _TEST("test -L /myhomedir/.netscape/lock")_ &quot;/usr/local/bin/netscape -remote 'openURL(_URL_,  new-window)' &amp;&quot;<BR>
-
-_TEST(&quot;test -n '$&#123;DISPLAY}'&quot;)_ &quot;/usr/local/bin/netscape &amp;&quot;<BR>
-              &quot;/usr/local/bin/lynx '_URL_'&quot;
-<P>
-<!--chtml endif-->
-<P>
 <UL>   
 <LI><A HREF="h_finding_help">Finding more information and requesting help</A>
 </UL><P>
