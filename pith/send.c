@@ -5605,10 +5605,10 @@ post_handoff(METAENV *header, struct mail_bodystruct *body, char *errbuf,
     char *s;
     char  tmp[200];
 
-    if(s = strstr(header->env->date," (")) /* fix the date format for news */
+    if((s = strstr(header->env->date," (")) != NULL) /* fix the date format for news */
       *s = '\0';
 
-    if(err = mta_parse_post(header, body, SENDNEWS, errbuf, errbuflen, bigresult_f, pipecb_f)){
+    if((err = mta_parse_post(header, body, SENDNEWS, errbuf, errbuflen, bigresult_f, pipecb_f))){
 	strncpy(tmp, err, sizeof(tmp)-1);
 	tmp[sizeof(tmp)-1] = '\0';
 	snprintf(err = errbuf, errbuflen, _("News not posted: \"%s\": %s"),

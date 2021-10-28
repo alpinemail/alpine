@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 608 2021-10-24 13:59:38
+Alpine Commit 609 2021-10-27 21:07:40
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -198,6 +198,15 @@ new additions to Alpine, please check it periodically.
      must contain a draft message. This joint collaboration with Thomas
      Uhle modifies alpine to not to attempt to continue a draft message if
      the draft folder is empty.
+
+<LI> Contributions by Thomas Uhle:
+<UL>
+  <LI> Add support to the LDAP attribute "userCertificate";
+  <LI> Move voiceMailTelephoneNumber from the TCL side to ldap_translate;
+  <LI> XOAUTH2 state generator changes format specifier from %x to %02x;
+  <LI> Web Alpine will not attempt to continue a postponed message if the
+       postponed-msgs folder is empty.
+</UL>
 </UL>
 
 <P>
@@ -15988,7 +15997,7 @@ If an address doesn't look like a fully-qualified address, it will be looked
 up in your address books, and if it doesn't match a nickname there, then it
 will be looked up on the LDAP servers that have this feature set.
 The lookups will also be done when using the address completion feature
-(TAB command) in the composer if any of the serves have this feature set.
+(TAB command) in the composer if any of the servers have this feature set.
 Also see the LDAP feature
 <A HREF="h_config_ldap_opts_rhs">&quot;Lookup-Addrbook-Contents&quot;</A>
 and the Setup/Config feature

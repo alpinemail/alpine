@@ -12040,7 +12040,7 @@ PEPostponeCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONS
 		if(!strcmp(s1, "any")){
 		    MAILSTREAM *stream;
 
-		    if(postponed_stream(&stream, wps_global->VAR_POSTPONED_FOLDER, "Postponed", 0) && stream){
+		    if(postponed_stream(&stream, wps_global->VAR_POSTPONED_FOLDER, "Postponed", 1) && stream){
 			Tcl_SetResult(interp, "1", TCL_STATIC);
 
 			if(stream != wps_global->mail_stream)
@@ -12109,6 +12109,8 @@ PEPostponeCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONS
 			if(stream != wps_global->mail_stream)
 			  pine_mail_close(stream);
 		    }
+		    else
+		      Tcl_SetResult(interp, "", TCL_STATIC);
 
 		    return(TCL_OK);
 		}
@@ -15217,7 +15219,7 @@ PELdapCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST ob
 	    if(!strcmp(s1, "ldapext")){
 	        /*
 		 *  Returns a list of the form:
-		 *  {"dn" {{attrib {val, ...}}, ...}}
+		 *  {"dn" {{attrib {val, ...} {opt, ...}}, ...}}
 		 */
 	        char *whichrec = Tcl_GetStringFromObj(objv[3], NULL);
 		char *tmpstr, *tmp, *tmp2, *a;
@@ -15302,12 +15304,28 @@ PELdapCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST ob
 			    ldap_value_free_len(vals);
 			    if(Tcl_ListObjAppendElement(interp, secObj, resObj) != TCL_OK)
 			      return(TCL_ERROR);
+			    resObj = Tcl_NewListObj(0, NULL);
 			}
-			if(!strcmp(a,"objectclass")){
-			    if(Tcl_ListObjAppendElement(interp, secObj,
+			if(!strucmp(a, "objectclass")){
+			    if(Tcl_ListObjAppendElement(interp, resObj,
 				       Tcl_NewStringObj("objectclass", -1)) != TCL_OK)
 			      return(TCL_ERROR);
 			}
+			for(tmp = strchr(a, ';'); tmp != NULL; tmp = tmp2){
+			    int retval;
+
+			    tmp2 = strchr(++tmp, ';');
+			    if(tmp2)
+			      *tmp2 = '\0';
+			    retval = Tcl_ListObjAppendElement(interp, resObj,
+							      Tcl_NewStringObj(tmp, -1));
+			    if(tmp2)
+			      *tmp2 = ';';
+			    if(retval != TCL_OK)
+			      return(TCL_ERROR);
+			}
+			if(Tcl_ListObjAppendElement(interp, secObj, resObj) != TCL_OK)
+			  return(TCL_ERROR);
 			if(Tcl_ListObjAppendElement(interp, itemObj, secObj) != TCL_OK)
 			  return(TCL_ERROR);
 		    }

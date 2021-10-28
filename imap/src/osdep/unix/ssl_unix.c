@@ -535,7 +535,7 @@ static char *ssl_validate_cert (X509 *cert,char *host)
      ret = "No name in certificate";
   else if ((s = strstr (cert->name,"/CN=")) != NIL) {
      m++; /* count that we tried this method */
-     if (t = strchr (s += 4,'/')) *t = '\0';
+     if ((t = strchr (s += 4,'/')) != NIL) *t = '\0';
 				/* host name matches pattern? */
      ret = ssl_compare_hostnames (host,s) ? NIL :
       "Server name does not match certificate";

@@ -216,9 +216,6 @@ WPEval $ldap_vars {
 		      name {
 			continue;
 		      }
-		      voicemailtelephonenumber {
-			set fieldname "Voice Mail"
-		      }
 		      "email address" {
 			set do_email 1
 			set fieldname [lindex $item 0]
@@ -232,12 +229,15 @@ WPEval $ldap_vars {
 		      }
 		    }
 
-		    set itematt ""
+		    set vals [list ""]
 		    if {[llength $item] > 2} {
 		      set itematt [lindex $item 2]
-		    }
-		    if {$itematt == "objectclass"} {
 		      set vals [lindex $item 1]
+		    } else {
+		      set itematt [lindex $item 1]
+		    }
+
+		    if {[lsearch -exact $itematt "objectclass"] >= 0} {
 		      continue
 		    }
 
@@ -248,8 +248,6 @@ WPEval $ldap_vars {
 		      set bgcolor #eeeeee
 		      set bgwhite 1
 		    }
-
-		    set vals [lindex $item 1]
 
 		    cgi_table_row bgcolor=$bgcolor {
 		      cgi_table_data width=25% nowrap valign=top rowspan=[llength $vals] {
@@ -276,6 +274,8 @@ WPEval $ldap_vars {
 			  unset do_fax
 			} elseif {[info exists do_email]} {
 			  cgi_puts [cgi_url [cgi_font size=-1 face=courier [lindex $vals 0]] compose.tcl?ldap=1&dir=${dir}&qn=${qn}&si=${si}&ni=${ni}&ei=0&cid=[WPCmd PEInfo key]&oncancel=addrbook]
+			} elseif {[lsearch -exact -nocase $itematt "binary"] >= 0} {
+			  cgi_puts "[ Binary Data ]"
 			} else {
 			  cgi_puts [lindex $vals 0]
 			}
@@ -291,6 +291,8 @@ WPEval $ldap_vars {
 			  cgi_table_data height=20px {
 			    if {[info exists do_email]} {
 			      cgi_puts [cgi_url [cgi_font size=-1 face=courier $extra] compose.tcl?ldap=1&dir=${dir}&qn=${qn}&si=${si}&ni=${ni}&ei=[incr ei]&cid=[WPCmd PEInfo key]&oncancel=addrbook]
+			    } elseif {[lsearch -exact -nocase $itematt "binary"] >= 0} {
+			      cgi_puts "[ Binary Data ]"
 			    } else {
 			      cgi_puts $extra
 			    }

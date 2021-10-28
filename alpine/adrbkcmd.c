@@ -7310,7 +7310,23 @@ prep_ldap_for_viewing(struct pine *ps, LDAP_CHOOSE_S *winning_e, SourceType srct
 			}
 		    }
 		    else{
-			snprintf(obuf, sizeof(obuf), "%s", vals[i]->bv_val);
+			int   is_binary = 0;
+			char *tmp2;
+
+			for(tmp = strchr(a, ';'); tmp != NULL; tmp = tmp2){
+			    tmp2 = strchr(++tmp, ';');
+			    if(tmp2)
+				*tmp2 = '\0';
+			    is_binary = !strucmp(tmp, "binary");
+			    if(tmp2)
+				*tmp2 = ';';
+			    if(is_binary)
+				break;
+			}
+
+			snprintf(obuf, sizeof(obuf), "%s", (is_binary &&
+				 vals[i]->bv_val && vals[i]->bv_val[0] != '\0') ?
+				     _("[ Binary Data ]") : vals[i]->bv_val);
 			obuf[sizeof(obuf)-1] = '\0';
 
 			if((tmp = fold(obuf, width, width,

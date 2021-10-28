@@ -89,7 +89,7 @@ create_random_dir(char *dir, size_t len)
     {	int i;
 	char *s = &dir[strlen(dir) - 6];
 	for(i = 0; i < 10; i++){
-	   sprintf(s, "%x%x%x", (unsigned int)(random() % 256), (unsigned int)(random() % 256),
+	   sprintf(s, "%02x%02x%02x", (unsigned int)(random() % 256), (unsigned int)(random() % 256),
 			     (unsigned int)(random() % 256));
 	   if(our_mkdir(dir, 0700) == 0) return dir;
 	}

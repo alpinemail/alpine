@@ -1903,26 +1903,32 @@ static struct tl_table ldap_trans_table[]={
     {"officePhone",			N_("Office Telephone")},
     {"facsimileTelephoneNumber",	N_("FAX Telephone")},
     {"mobile",				N_("Mobile Telephone")},
+    {"voiceMailTelephoneNumber",	N_("Voice Mail")},
     {"pager",				N_("Pager")},
     {"roomNumber",			N_("Room Number")},
     {"uid",				N_("User ID")},
+    {"userCertificate",			N_("User Certificate")},
     {NULL,				NULL}
 };
 
 char *
 ldap_translate(char *a, LDAP_SERV_S *info_used)
 {
+    char *s, *ret_a = a;
     int i;
+
+    if((s = strchr(a, ';')) != NULL)
+	*s = '\0';
 
     if(info_used){
 	if(info_used->mailattr && strucmp(info_used->mailattr, a) == 0)
-	  return(_(ldap_trans_table[LDAP_MAIL_ATTR].translated));
+	    ret_a = _(ldap_trans_table[LDAP_MAIL_ATTR].translated);
 	else if(info_used->snattr && strucmp(info_used->snattr, a) == 0)
-	  return(_(ldap_trans_table[LDAP_SN_ATTR].translated));
+	    ret_a = _(ldap_trans_table[LDAP_SN_ATTR].translated);
 	else if(info_used->gnattr && strucmp(info_used->gnattr, a) == 0)
-	  return(_(ldap_trans_table[LDAP_GN_ATTR].translated));
+	    ret_a = _(ldap_trans_table[LDAP_GN_ATTR].translated);
 	else if(info_used->cnattr && strucmp(info_used->cnattr, a) == 0)
-	  return(_(ldap_trans_table[LDAP_CN_ATTR].translated));
+	    ret_a = _(ldap_trans_table[LDAP_CN_ATTR].translated);
     }
 
     for(i = 0; ldap_trans_table[i].ldap_ese; i++){
@@ -1937,10 +1943,13 @@ ldap_translate(char *a, LDAP_SERV_S *info_used)
 	  }
 
 	if(strucmp(ldap_trans_table[i].ldap_ese, a) == 0)
-	  return(_(ldap_trans_table[i].translated));
+	    ret_a = _(ldap_trans_table[i].translated);
     }
-    
-    return(a);
+
+    if(s)
+	*s = ';';
+
+    return ret_a;
 }
 
 char **
