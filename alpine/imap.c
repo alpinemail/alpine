@@ -864,6 +864,7 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
 
     if(registered){
 	x = oauth2_get_client_info(oa2list->name, user);
+	if(!x) return;		/* user cancelled, let's get out of here */
 	if(x && x->flow){
 	    for(oa2list = alpine_oauth2_list;
 		  oa2list && oa2list->host != NULL && oa2list->host[0] != NULL;

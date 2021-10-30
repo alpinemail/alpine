@@ -62,6 +62,7 @@ char **xoauth2_conf_dedup_and_merge(char ***);
 int  same_xoauth2_info(XOAUTH2_INFO_S, XOAUTH2_INFO_S);
 XOAUTH2_INFO_S *xoauth_info_choice(XOAUTH2_INFO_S **, char *);
 int xoauth2_info_tool(struct pine *, int, CONF_S **, unsigned int);
+char *xoauth2_extra_text(XOAUTH2_INFO_S **, int);
 
 int
 same_xoauth2_info(XOAUTH2_INFO_S x, XOAUTH2_INFO_S y)
@@ -162,24 +163,66 @@ xoauth2_info_tool(struct pine *ps, int cmd, CONF_S **cl, unsigned int flags)
    return rv;
 }
 
+char *
+xoauth2_extra_text(XOAUTH2_INFO_S **xinfo, int i)
+{
+  int methodcount;
+  int j;
+  XOAUTH2_INFO_S *x;
+  char *rv = NULL;
+
+  if(xinfo == NULL)
+     return NULL;
+
+  for(j = 0; xinfo[j] != NULL; j++);
+  if(i < 0 || i >= j) return NULL;
+
+  x = xinfo[i];
+  if(x->flow){
+    for(methodcount = 1, j = 0; xinfo[j] != NULL; j++)
+      if(j != i && xinfo[j]->flow && !strucmp(xinfo[j]->flow, x->flow))
+	methodcount++;
+    if(methodcount == 1) return cpystr(x->flow);
+  }
+
+  /* we either do not have flow, or have more than one flow, use user */
+  if(x->users){
+      char **lval = array_to_list(xinfo[i]->users);
+      if(lval && lval[0]){	/* use the first one */
+	rv = cpystr(lval[0]);
+	free_list_array(&lval);
+      }
+  }
+
+  if(rv == NULL) rv = cpystr(_("client-id unused"));
+  return rv;
+}
+
 XOAUTH2_INFO_S *
 xoauth_info_choice(XOAUTH2_INFO_S **xinfo, char *user)
 {
    int i, n, rv;
+   char *extra;
+
    if(!ps_global->ttyo){
 	char *s;
 	char prompt[1024];
 	char reply[1024];
 	int sel;
 	for(i = n = 0; xinfo[i] != NULL; i++)
-	   n += strlen(xinfo[i]->client_id) + 5;	/* number, parenthesis, space */
+	   n += strlen(xinfo[i]->client_id) + strlen(xinfo[i]->flow)
+		+ strlen(xinfo[i]->users ? xinfo[i]->users : "") + 8;	/* number, parenthesis, space */
 	n += strlen((char *) xinfo[0]->name) + strlen(user);
-	n += 1024;	/* large enough to display to lines of 80 characters in UTF-8 */
+	n += 1024;	/* large enough to display lines of 80 characters in UTF-8 */
 	s = fs_get(n*sizeof(char));
 	sprintf(s, _("Alpine cannot determine which client-id to use for the username <%s> for your %s account. "), user, xinfo[0]->name);
 	sprintf(s + strlen(s), _("Please select the client-id to use from the following list.\n\n"));
-	for(i = 0; xinfo[i]; i++)
-	   sprintf(s + strlen(s), " %d) %.70s\n", i+1, xinfo[i]->client_id);
+	for(i = 0; xinfo[i]; i++){
+	   extra = xoauth2_extra_text(xinfo, i);
+	   sprintf(s + strlen(s), " %d) %.70s%s%s\n", i+1, xinfo[i]->client_id,
+				extra ? " - " : "", extra ? extra : "");
+	   if(extra) fs_give((void **) &extra);
+	}
 	sprintf(s + strlen(s), "%s", "\n\n");
 
 	display_init_err(s, 0);
@@ -192,7 +235,7 @@ xoauth_info_choice(XOAUTH2_INFO_S **xinfo, char *user)
 	   sel = atoi(reply) - 1;
 	   rv = (sel >= 0 && sel < i) ? 0 : -1;
 	} while (rv != 0);
-	return copy_xoauth2_info(xinfo[rv]);
+	return copy_xoauth2_info(xinfo[sel]);
    }
    else{
       CONF_S  *ctmp = NULL, *first_line = NULL;
@@ -234,15 +277,22 @@ xoauth_info_choice(XOAUTH2_INFO_S **xinfo, char *user)
       ctmp->flags |= CF_NOSELECT;
       ctmp->value = cpystr(tmp);
 
-      new_confline(&ctmp);
-      ctmp->flags |= CF_NOSELECT | CF_B_LINE;
-
       for(i = 0; xinfo[i] != NULL; i++){
+        new_confline(&ctmp);
+        ctmp->flags |= CF_NOSELECT | CF_B_LINE;
+
+	if((extra = xoauth2_extra_text(xinfo, i)) != NULL){
+           new_confline(&ctmp);
+           ctmp->flags |= CF_NOSELECT;
+           ctmp->value = cpystr(extra);
+	   ctmp->valoffset = 4;
+	}
+
 	new_confline(&ctmp);
         if(!first_line)
           first_line = ctmp;
 
-        ctmp->value        = cpystr(xinfo[i]->client_id);
+	ctmp->value = cpystr(xinfo[i]->client_id);
         ctmp->d.x.selected = &x_sel;
         ctmp->d.x.pat      = copy_xoauth2_info(xinfo[i]);
         ctmp->keymenu      = &xoauth2_id_select_km;
@@ -250,7 +300,8 @@ xoauth_info_choice(XOAUTH2_INFO_S **xinfo, char *user)
         ctmp->help_title   = NULL;
         ctmp->tool         = xoauth2_info_tool;
         ctmp->flags        = CF_STARTITEM;
-        ctmp->valoffset    = 4;
+        ctmp->valoffset    = 4 + (extra ? 3 : 0);
+	if(extra) fs_give((void **) &extra);
       }
      (void)conf_scroll_screen(ps_global, &screen, first_line, _("SELECT CLIENT_ID"),
                              _("xoauth2"), 0, NULL);
