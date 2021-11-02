@@ -65,7 +65,8 @@ char *xoauth2_server(char *, char *);
      (Y)[i].name = (Y)[i].value = NULL;				\
 }
 
-char *xoauth2_server(char *server, char *tenant)
+char *
+xoauth2_server(char *server, char *tenant)
 {
     char *rv = NULL;
     char *s;
@@ -100,7 +101,8 @@ char *xoauth2_server(char *server, char *tenant)
     return rv;
 }
 
-JSON_S *oauth2_json_reply(OAUTH2_SERVER_METHOD_S RefreshMethod, OAUTH2_S *oauth2, int *status)
+JSON_S *
+oauth2_json_reply(OAUTH2_SERVER_METHOD_S RefreshMethod, OAUTH2_S *oauth2, int *status)
 {
     JSON_S *json = NULL;
     HTTP_PARAM_S params[OAUTH2_PARAM_NUMBER];
@@ -312,7 +314,8 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
    }
 }
 
-void oauth2deviceinfo_get_accesscode(void *inp, void *outp)
+void
+oauth2deviceinfo_get_accesscode(void *inp, void *outp)
 {
   OAUTH2_DEVICEPROC_S *oad = (OAUTH2_DEVICEPROC_S *) inp;
   OAUTH2_S *oauth2 = oad->xoauth2;
@@ -380,14 +383,16 @@ void oauth2deviceinfo_get_accesscode(void *inp, void *outp)
   *(int *)outp = rv;
 }
 
-XOAUTH2_INFO_S *new_xoauth2_info(void)
+XOAUTH2_INFO_S *
+new_xoauth2_info(void)
 {
   XOAUTH2_INFO_S *rv = fs_get(sizeof(XOAUTH2_INFO_S));
   memset((void *) rv, 0, sizeof(XOAUTH2_INFO_S));
   return rv;
 }
 
-void free_xoauth2_info(XOAUTH2_INFO_S **xp)
+void
+free_xoauth2_info(XOAUTH2_INFO_S **xp)
 {
   if(xp == NULL || *xp == NULL) return;
 
@@ -400,7 +405,8 @@ void free_xoauth2_info(XOAUTH2_INFO_S **xp)
   fs_give((void **) xp);
 }
 
-XOAUTH2_INFO_S *copy_xoauth2_info(XOAUTH2_INFO_S *x)
+XOAUTH2_INFO_S *
+copy_xoauth2_info(XOAUTH2_INFO_S *x)
 {
   XOAUTH2_INFO_S *y;
 
@@ -414,6 +420,30 @@ XOAUTH2_INFO_S *copy_xoauth2_info(XOAUTH2_INFO_S *x)
   if(x->users) y->users = cpystr(x->users);
   return y;
 }
+
+int
+same_xoauth2_info(XOAUTH2_INFO_S x, XOAUTH2_INFO_S y)
+{
+   int rv = 0;
+   if(x.name && y.name && !strcmp((char *) x.name, (char *) y.name)
+	&& x.client_id && y.client_id && !strcmp(x.client_id, y.client_id)
+	&& ((!x.client_secret && !y.client_secret)
+		|| (x.client_secret && y.client_secret && !strcmp(x.client_secret, y.client_secret)))
+	&& ((!x.tenant && !y.tenant) || (x.tenant && y.tenant && !strcmp(x.tenant, y.tenant))))
+	rv = 1;
+   return rv;
+}
+
+void
+free_xoauth2_info_list(XOAUTH2_INFO_S ***xp)
+{
+  int i;
+
+  if(xp == NULL || *xp == NULL || **xp) return;
+  for(i = 0; (*xp)[i] != NULL; i++) free_xoauth2_info(&(*xp)[i]);
+  fs_give((void **) &xp);
+}
+
 
 /* This function does not create a refresh token and and
  * an access token, but uses an already known refresh token

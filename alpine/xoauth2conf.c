@@ -59,23 +59,11 @@ char *list_to_array(char **);
 char **array_to_list(char *);
 void write_xoauth_configuration(struct variable  *, struct variable **, EditWhich);
 char **xoauth2_conf_dedup_and_merge(char ***);
-int  same_xoauth2_info(XOAUTH2_INFO_S, XOAUTH2_INFO_S);
 XOAUTH2_INFO_S *xoauth_info_choice(XOAUTH2_INFO_S **, char *);
 int xoauth2_info_tool(struct pine *, int, CONF_S **, unsigned int);
 char *xoauth2_extra_text(XOAUTH2_INFO_S **, int);
-
-int
-same_xoauth2_info(XOAUTH2_INFO_S x, XOAUTH2_INFO_S y)
-{
-   int rv = 0;
-   if(x.name && y.name && !strcmp((char *) x.name, (char *) y.name)
-	&& x.client_id && y.client_id && !strcmp(x.client_id, y.client_id)
-	&& ((!x.client_secret && !y.client_secret)
-		|| (x.client_secret && y.client_secret && !strcmp(x.client_secret, y.client_secret)))
-	&& ((!x.tenant && !y.tenant) || (x.tenant && y.tenant && !strcmp(x.tenant, y.tenant))))
-	rv = 1;
-   return rv;
-}
+XOAUTH2_INFO_S **xoauth2_configured_servers(void);
+XOAUTH2_INFO_S **parse_xoauth2_info_list(char **lval, int *totalp);
 
 char *
 list_to_array(char **list)
@@ -310,45 +298,89 @@ xoauth_info_choice(XOAUTH2_INFO_S **xinfo, char *user)
    return NULL;
 }
 
+XOAUTH2_INFO_S **
+parse_xoauth2_info_list(char **lval, int *totalp)
+{
+   int i, total;
+   XOAUTH2_INFO_S **rv = NULL;
+
+   for(total = 0; lval && lval[total]; total++);
+   if(total){
+      rv = fs_get((total + 1)*sizeof(XOAUTH2_INFO_S *));
+      for(i = 0; i < total; i++)
+	rv[i] = xoauth_parse_client_info(lval[i]);
+      rv[i] = NULL;
+   }
+   *totalp = total;
+   return rv;
+}
+
+
+XOAUTH2_INFO_S **
+xoauth2_configured_servers(void)
+{
+  XOAUTH2_INFO_S **cv, **muv, **rv = NULL;
+  int cvt, muvt, rvt, i, j, total = 0;
+
+  cv = parse_xoauth2_info_list(ps_global->vars[V_XOAUTH2_INFO].current_val.l, &cvt);
+  muv = parse_xoauth2_info_list(ps_global->vars[V_XOAUTH2_INFO].main_user_val.l, &muvt);
+
+  rvt = cvt + muvt;
+  if(rvt){
+     rv = fs_get((rvt + 1)*sizeof(XOAUTH2_INFO_S *));
+     memset((void *) rv, 0, (rvt + 1)*sizeof(XOAUTH2_INFO_S *));
+
+     for(i = 0; cv && cv[i]; i++){
+	for(j = 0; rv[j] && !same_xoauth2_info(*cv[i], *rv[j]); j++);
+	if(!rv[j]) rv[total++] = copy_xoauth2_info(cv[i]);
+     }
+
+     for(i = 0; muv && muv[i]; i++){
+	for(j = 0; rv[j] && !same_xoauth2_info(*muv[i], *rv[j]); j++);
+	if(!rv[j]) rv[total++] = copy_xoauth2_info(muv[i]);
+     }
+  }
+  return rv;
+}
+
 /* Get the client-id, etc. for server "name" associated to user "user" */
 XOAUTH2_INFO_S *
 oauth2_get_client_info(unsigned char *name, char *user)
 {
   int i, j, matches, len;
-  char **lval;
-  XOAUTH2_INFO_S *x, **xinfo;
+  XOAUTH2_INFO_S *x, **xinfo, **lval;
 
   if(name == NULL || *name == '\0' || user == NULL || *user == '\0')
     return NULL;
 
   matches = 0;
   /* first count how many servers  */
-  lval = ps_global->vars[V_XOAUTH2_INFO].current_val.l;
+  lval = xoauth2_configured_servers();
   for(i = 0; lval && lval[i]; i++){
-     x = xoauth_parse_client_info(lval[i]);
+     x = lval[i];
      if(x && x->name && name && !strcmp((char *) x->name, (char *) name))
 	matches++;
-     free_xoauth2_info(&x);
   }
 
   /* if nothing, use the default value */
   for(i = 0; xoauth_default[i].name != NULL && strcmp((char *) xoauth_default[i].name, (char *) name); i++);
   if(xoauth_default[i].name) matches++;
 
-  if(matches == 0) return NULL;
-  if(matches == 1) return copy_xoauth2_info(&xoauth_default[i]);
+  if(matches <= 1){
+     free_xoauth2_info_list(&lval);
+     return matches == 1 ? copy_xoauth2_info(&xoauth_default[i]) : NULL;
+  }
 
   /* more than one match, see if it is a duplicate client-id entry */
   xinfo = fs_get((matches + 1)*sizeof(XOAUTH2_INFO_S *));
   memset((void *)xinfo, 0, (matches + 1)*sizeof(XOAUTH2_INFO_S *));
   matches = 0;	/* restart the recount, it might go lower! */
   for(i = 0; lval && lval[i]; i++){
-     x = xoauth_parse_client_info(lval[i]);
+     x = lval[i];
      if(x && x->name && name && !strcmp((char *) x->name, (char *) name)){
 	for(j = 0; xinfo && xinfo[j] && !same_xoauth2_info(*x, *xinfo[j]); j++);
 	if(!xinfo[j]) xinfo[matches++] = copy_xoauth2_info(x);
      }
-     free_xoauth2_info(&x);
   }
   for(i = 0; xoauth_default[i].name != NULL && strcmp((char *) xoauth_default[i].name, (char *) name); i++);
   for(j = 0; xinfo && xinfo[j] && !same_xoauth2_info(xoauth_default[i], *xinfo[j]); j++);
@@ -357,58 +389,57 @@ oauth2_get_client_info(unsigned char *name, char *user)
   /* if after removing the duplicate entries, we only have one, use it */
   if(matches == 1){
      x = copy_xoauth2_info(xinfo[0]);
-     for(i = 0; xinfo[i] != NULL; i++)
-        free_xoauth2_info(&xinfo[i]);
-     fs_give((void **) &xinfo);
+     free_xoauth2_info_list(&lval);
+     free_xoauth2_info_list(&xinfo);
      return x;
   }
 
+  x = NULL;	/* reset x to null so it will not be double freed */
   /* we have more than one match, now check if any of them matches the given user */
   matches = 0;
   for(i = 0; xinfo && xinfo[i]; i++){
-      lval = array_to_list(xinfo[i]->users);
-      for(j = 0; lval && lval[j] && strucmp(lval[j], user); j++);
-      if(lval && lval[j]){
+      char **alval = array_to_list(xinfo[i]->users);
+      for(j = 0; alval && alval[j] && strucmp(alval[j], user); j++);
+      if(alval && alval[j]){
 	 matches++;
 	 free_xoauth2_info(&x);
 	 x = copy_xoauth2_info(xinfo[i]);
       }
-      if(lval) free_list_array(&lval);
+      if(alval) free_list_array(&alval);
   }
 
   /* only one server matches the username */
   if(matches == 1){
-     for(i = 0; xinfo[i] != NULL; i++)
-         free_xoauth2_info(&xinfo[i]);
-     fs_give((void **) &xinfo);
+     free_xoauth2_info_list(&xinfo);
+     free_xoauth2_info_list(&lval);
      return x;
   }
 
   free_xoauth2_info(&x);
+
   /* We either have no matches, or have more than one match!
    * in either case, let the user pick what they want */
    x = xoauth_info_choice(xinfo, user);
-   for(i = 0; xinfo[i] != NULL; i++)
-      free_xoauth2_info(&xinfo[i]);
-   fs_give((void **) &xinfo);
+   free_xoauth2_info_list(&xinfo);
+   free_xoauth2_info_list(&lval);
 
    /* Once the user chose a client-id, save it so we do not ask again */
    if(x != NULL){
       int n = x->users ? strlen(x->users) + 1 : 0;
-      char ***alval;
+      char ***alval, **lvalp;
 
       fs_resize((void **) &x->users, (n + strlen(user) + 1)*sizeof(char));
       x->users[n > 0 ? n - 1 : 0] = '\0';
       if(n > 0) strcat(x->users, ",");
       strcat(x->users, user);
       alval = ALVAL(&ps_global->vars[V_XOAUTH2_INFO], Main);
-      lval = *alval;
+      lvalp = *alval;
 
-      for(n = 0; lval && lval[n]; n++);
-      fs_resize((void **) &lval, (n+2)*sizeof(char *));
-      lval[n] = xoauth_config_line(x);
-      lval[n+1] = NULL;
-      *alval = xoauth2_conf_dedup_and_merge(&lval);
+      for(n = 0; lvalp && lvalp[n]; n++);
+      fs_resize((void **) &lvalp, (n+2)*sizeof(char *));
+      lvalp[n] = xoauth_config_line(x);
+      lvalp[n+1] = NULL;
+      *alval = xoauth2_conf_dedup_and_merge(&lvalp);
       set_current_val(&ps_global->vars[V_XOAUTH2_INFO], FALSE, FALSE);
       write_pinerc(ps_global, Main, WRP_NONE);
    }
