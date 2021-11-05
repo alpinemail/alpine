@@ -6010,7 +6010,7 @@ delete_user_vals(struct variable *v)
 int
 unexpected_pinerc_change(void)
 {
-    Writechar(BELL, 0);
+    if(ps_global->ttyo) Writechar(BELL, 0);
     if(want_to("Unexpected pinerc change!  Overwrite with current config",
 	       'n', 0, NO_HELP, WT_FLUSH_IN) == 'n'){
 	return(-1);		/* abort pinerc write */

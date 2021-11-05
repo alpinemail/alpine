@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 611 2021-11-01 20:42:01
+Alpine Commit 612 2021-11-05 15:13:25
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -219,6 +219,11 @@ new additions to Alpine, please check it periodically.
 Bugs addressed include:
 
 <UL>
+<LI> Crash when invoking Alpine from the command line and an attempt to authorize
+     alpine to use XOAUTH2 is done. Alpine crashes because of a missing optional
+     parameter -xoauth2-flow and because no screen has been configured yet. Reported
+     by Baron Fujimoto.
+
 <LI> Alpine crashes when it cannot retrieve the privacy policy due to
      failure connecting to the external server.
 

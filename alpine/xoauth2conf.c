@@ -198,7 +198,7 @@ xoauth_info_choice(XOAUTH2_INFO_S **xinfo, char *user)
 	char reply[1024];
 	int sel;
 	for(i = n = 0; xinfo[i] != NULL; i++)
-	   n += strlen(xinfo[i]->client_id) + strlen(xinfo[i]->flow)
+	   n += strlen(xinfo[i]->client_id) + strlen(xinfo[i]->flow ? xinfo[i]->flow : "")
 		+ strlen(xinfo[i]->users ? xinfo[i]->users : "") + 8;	/* number, parenthesis, space */
 	n += strlen((char *) xinfo[0]->name) + strlen(user);
 	n += 1024;	/* large enough to display lines of 80 characters in UTF-8 */
