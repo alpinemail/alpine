@@ -1451,7 +1451,7 @@ General Configuration Variables
           The feature copy-to-address-to-from-if-it-is-us is somewhat
           related to this option.
           In addition to a list of actual addresses, you may use regular
-          expressions (as used with egrep with the ignore case flag) to
+          expressions (as used with grep -E with the ignore case flag) to
           describe the addresses you want to match. _Alpine_ will somewhat
           arbitrarily interpret your entry as a regular expression if it
           contains any of the characters *, |, +, ?, {, [, ^, $, or \.

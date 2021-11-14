@@ -129,16 +129,16 @@ diff -cr pine.dist/pine/mailtrfc.sh pine4.20/pine/mailtrfc.sh
   
   echo $host $org $domain | \
 !   awk '{printf("     %.17s %.11s %.11s  Off Campus        Total\n", $1, $2, $3)}'
-  egrep -v 'TOTAL|----|^-->' /tmp/syslogx.$$ | sort +0.60rn 
-  egrep  'TOTAL|----' /tmp/syslogx.$$
+  grep -Ev 'TOTAL|----|^-->' /tmp/syslogx.$$ | sort +0.60rn
+  grep -E  'TOTAL|----' /tmp/syslogx.$$
   grep  '^-->' /tmp/syslogx.$$ | sed -e 's/-->//' > other-traffic
 --- 115,121 ----
   
   
   echo $host $org $domain | \
 !   nawk '{printf("     %.17s %.11s %.11s  Off Campus        Total\n", $1, $2, $3)}'
-  egrep -v 'TOTAL|----|^-->' /tmp/syslogx.$$ | sort +0.60rn 
-  egrep  'TOTAL|----' /tmp/syslogx.$$
+  grep -Ev 'TOTAL|----|^-->' /tmp/syslogx.$$ | sort +0.60rn
+  grep -E  'TOTAL|----' /tmp/syslogx.$$
   grep  '^-->' /tmp/syslogx.$$ | sed -e 's/-->//' > other-traffic
 diff -cr pine.dist/pine/send.c pine4.20/pine/send.c
 *** pine.dist/pine/send.c	Wed Oct  6 16:18:27 1999

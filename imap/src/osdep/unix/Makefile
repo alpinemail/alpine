@@ -1009,7 +1009,7 @@ onceenv:
 	$(LN) sig_$(SIGTYPE).c siglocal.c
 	$(LN) crx_$(CRXTYPE).c crexcl.c
 	$(LN) ip$(IP)_unix.c ip_unix.c
-	sh -c '(test $(OS) = sc5 -o $(OS) = sco -o ! -f /usr/include/sys/statvfs.h) && echo -DNOFSTATVFS >> OSCFLAGS || fgrep statvfs64 /usr/include/sys/statvfs.h > /dev/null || echo -DNOFSTATVFS64 >> OSCFLAGS'
+	sh -c '(test $(OS) = sc5 -o $(OS) = sco -o ! -f /usr/include/sys/statvfs.h) && echo -DNOFSTATVFS >> OSCFLAGS || grep -F statvfs64 /usr/include/sys/statvfs.h > /dev/null || echo -DNOFSTATVFS64 >> OSCFLAGS'
 
 
 # Password checkers

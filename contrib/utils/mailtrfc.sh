@@ -122,8 +122,8 @@ awk 'BEGIN {mailers[0] =  "Other";
 
 echo $host $org $domain | \
   awk '{printf("     %.17s %.11s %.11s  Off Campus        Total\n", $1, $2, $3)}'
-egrep -v 'TOTAL|----|^-->' /tmp/syslogx.$$ | sort +0.60rn 
-egrep  'TOTAL|----' /tmp/syslogx.$$
+grep -Ev 'TOTAL|----|^-->' /tmp/syslogx.$$ | sort +0.60rn
+grep -E  'TOTAL|----' /tmp/syslogx.$$
 grep  '^-->' /tmp/syslogx.$$ | sed -e 's/-->//' > other-traffic
 rm -f /tmp/syslogx.$$
 
