@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 612 2021-11-05 15:13:25
+Alpine Commit 613 2021-11-14 09:43:48
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -25471,7 +25471,7 @@ is somewhat related to this option.
 
 <P>
 In addition to a list of actual addresses,
-you may use regular expressions (as used with egrep with the ignore case flag)
+you may use regular expressions (as used with grep -E with the ignore case flag)
 to describe the addresses you want to match.
 Alpine will somewhat arbitrarily interpret your entry as a regular
 expression if it contains any of the characters
