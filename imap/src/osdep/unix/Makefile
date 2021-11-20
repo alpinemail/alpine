@@ -155,7 +155,7 @@ ARCHIVE=c-client.a
 BINARIES=osdep.o mail.o misc.o newsrc.o smanager.o utf8.o utf8aux.o siglocal.o \
  dummy.o pseudo.o netmsg.o flstring.o fdstring.o \
  rfc822.o nntp.o smtp.o imap4r1.o http.o json.o pop3.o \
- unix.o mbx.o mmdf.o tenex.o mtx.o news.o phile.o mh.o mx.o mix.o
+ unix.o mbx.o mmdf.o tenex.o mtx.o news.o phile.o mh.o mx.o mix.o sha.o
 CFLAGS=-g
 
 CAT=cat
@@ -921,6 +921,7 @@ utf8.o: mail.h misc.h osdep.h utf8.h tmap.c widths.c
 utf8aux.o: mail.h misc.h osdep.h utf8.h
 json.o: mail.h misc.h osdep.h utf8.h json.h
 http.o: mail.h misc.h osdep.h utf8.h http.h json.h
+sha.o: mail.h misc.h osdep.h sha.h sha-private.h hash.h hmac.c sha1.c sha224-256.c sha384-512.c usha.c
 
 # OS-dependent
 

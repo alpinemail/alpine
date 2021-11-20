@@ -47,6 +47,7 @@ extern "C" {
 #include "utf8.h"		/* Unicode and charset routines */
 #include "utf8aux.h"		/* Unicode auxiliary routines */
 #include "misc.h"		/* miscellaneous utility routines */
+#include "hash.h"		/* SHA hash and MD5 support */
 
 #ifdef __cplusplus		/* undo the C++ mischief */
 #undef private
