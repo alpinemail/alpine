@@ -832,7 +832,7 @@ hex_escape_url_part(unsigned char *text, unsigned char *addsafe)
   unsigned char *s = fs_get((3*strlen(text) + 1)*sizeof(char)), *t;
     
   *s = '\0';
-  for(t = text; *t != '\0'; t++)
+  for(t = text; t != NULL && *t != '\0'; t++)
      if(strchr(safechars, *t) != NULL
 	|| (addsafe != NULL && strchr(addsafe, *t) != NULL))
 	sprintf(s + strlen(s), "%c", *t);
@@ -850,7 +850,7 @@ encode_url_body_part(unsigned char *text, unsigned char *addsafe)
   unsigned char *s = fs_get((3*strlen(text) + 1)*sizeof(char)), *t;
         
   *s = '\0';
-  for(t = text; *t != '\0'; t++)
+  for(t = text; t != NULL && *t != '\0'; t++)
      if(*t == ' ')      /* ASCII 32 is never safe, must always be encoded */
         sprintf(s + strlen(s), "%c", '+');
      else if(strchr(safechars, *t) != NULL

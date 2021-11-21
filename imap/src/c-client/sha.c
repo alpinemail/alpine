@@ -32,13 +32,16 @@ struct hash {
 };
 static const char hexdigits[] = "0123456789abcdef";
 
-char *hash_from_sizedtext(char *hash, char *text, size_t len)
+char *hash_from_sizedtext(char *hash, char *text, size_t len, unsigned char **digest)
 {
   char *rv = NIL;
   USHAContext sha;
   HMACContext hmac;
   uint8_t Message_Digest[USHAMaxHashSize];
   int i, hashno;
+  unsigned long len2;
+
+  if(digest) *digest = NIL;
 
   if(!hash || !text) return NIL;
 
@@ -52,6 +55,7 @@ char *hash_from_sizedtext(char *hash, char *text, size_t len)
      if(USHAReset(&sha, hashes[hashno].whichSha) == shaSuccess
 	&& USHAInput(&sha, (const uint8_t *) text, len) == shaSuccess){
 	if(USHAResult(&sha, (uint8_t *) Message_Digest) == shaSuccess){
+	   if(digest) *digest = rfc822_urlbinary((void *) Message_Digest, hashes[hashno].hashsize, &len2);
 	   rv = fs_get(2*hashes[hashno].hashsize + 1);
 	   for (i = 0; i < hashes[hashno].hashsize ; ++i) {
 	      rv[2*i]   = hexdigits[(Message_Digest[i] >> 4) & 0xF];

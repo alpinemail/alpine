@@ -1946,7 +1946,7 @@ int PFLUSH (void);
 
 #define OAUTH2_MAX_EQUIV        (2)
 #define OAUTH2_TOT_EQUIV        (OAUTH2_MAX_EQUIV + 2)
-#define OAUTH2_PARAM_NUMBER	(7)
+#define OAUTH2_PARAM_NUMBER	(8)
 
 #define OA2_UNKNOWN	0x00	/* We do not know what method this client-id uses */
 #define OA2_DEVICE	0x01	/* Client ID obtained by client uses Device Method */
@@ -1963,7 +1963,11 @@ typedef enum {OA2_Id = 0,
 	      OA2_GrantTypefromRefreshToken,
 	      OA2_Response,
 	      OA2_State,
-	      OA2_DeviceCode,
+	      OA2_DeviceCode,	/* code assumes that the list below is last in this list */
+	      OA2_Extra1,	/* server unique parameter for authentication */
+	      OA2_Extra2,	/* server unique parameter for authentication */
+	      OA2_Extra3,	/* server unique parameter for authentication */
+	      OA2_Extra4,	/* server unique parameter for authentication */
 	      OA2_End} OA2_type;
 
 typedef enum {OA2_GetAccessCode = 0,		/* define this to get access code */
@@ -2030,7 +2034,6 @@ typedef char *(*oauth2getaccesscode_t) (unsigned char *, char *, OAUTH2_S *, int
 typedef XOAUTH2_INFO_S *(*oauth2clientinfo_t)(unsigned char *name, char *user);
 typedef void (*oauth2deviceinfo_t)(OAUTH2_S *, char *method);
 void mm_login_oauth2_c_client_method (NETMBX *, char *, char *, OAUTH2_S *, unsigned long, int *);
-char *oauth2_generate_state(void);
 void oauth2deviceinfo_get_accesscode(void *, void *);
 XOAUTH2_INFO_S *new_xoauth2_info(void);
 void    free_xoauth2_info(XOAUTH2_INFO_S **);
@@ -2038,5 +2041,8 @@ void    free_xoauth2_info_list(XOAUTH2_INFO_S ***);
 XOAUTH2_INFO_S *copy_xoauth2_info(XOAUTH2_INFO_S *);
 int same_xoauth2_info(XOAUTH2_INFO_S, XOAUTH2_INFO_S);
 char *oauth2_generate_state(void);
+void oauth2_code_challenge(OAUTH2_S *);
+void oauth2_free_extra_values(OAUTH2_S);
+void oauth2_login_hint(OAUTH2_S *, char *);
 void renew_accesstoken(MAILSTREAM *);
 XOAUTH2_INFO_S **parse_xoauth2_info_list(char **, int *);
