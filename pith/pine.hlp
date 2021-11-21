@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 617 2021-11-21 02:19:27
+Alpine Commit 618 2021-11-21 14:47:21
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -194,8 +194,8 @@ new additions to Alpine, please check it periodically.
      now it will.
 
 <LI> Support for code_verifier and code_challenge when generating a
-     refresh token and access token in Gmail using the S256 method
-     and plain method.
+     refresh token and access token in Gmail and Outlook using the
+     S256 method and plain method.
 
 <LI> Some servers do not allow the Drafts folder to be removed, even when
      it is empty. Alpine, however, assumes that if the folder exists, it
