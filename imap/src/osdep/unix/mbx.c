@@ -1512,10 +1512,12 @@ unsigned long mbx_read_flags (MAILSTREAM *stream,MESSAGECACHE *elt)
     fatal (LOCAL->buf);
   }
   if ((LOCAL->buf[0] != ';') || (LOCAL->buf[13] != '-')) {
+    char tmp[16];
     LOCAL->buf[14] = '\0';	/* tie off buffer for error message */
+    strncpy(tmp, LOCAL->buf, 14);
     sprintf (LOCAL->buf+50,"Invalid flags for message %lu (%lu %lu): %s",
 	     elt->msgno,elt->private.special.offset,
-	     elt->private.special.text.size,(char *) LOCAL->buf);
+	     elt->private.special.text.size,(char *) tmp);
     fatal (LOCAL->buf+50);
   }
   LOCAL->buf[13] = '\0';	/* tie off buffer */
@@ -1596,10 +1598,13 @@ void mbx_update_status (MAILSTREAM *stream,unsigned long msgno,long flags)
       fatal (LOCAL->buf);
     }
     if ((LOCAL->buf[0] != ';') || (LOCAL->buf[13] != '-')) {
+      char tmp[16];
+      LOCAL->buf[14] = '\0';	/* tie off buffer for error message */
+      strncpy(tmp, LOCAL->buf, 14);
       LOCAL->buf[14] = '\0';	/* tie off buffer for error message */
       sprintf (LOCAL->buf+50,"Invalid flags for message %lu (%lu %lu): %s",
 	       elt->msgno,elt->private.special.offset,
-	       elt->private.special.text.size,(char *) LOCAL->buf);
+	       elt->private.special.text.size,(char *) tmp);
       fatal (LOCAL->buf+50);
     }
 				/* print new flag string */

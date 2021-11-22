@@ -100,8 +100,8 @@ long mh_copy (MAILSTREAM *stream,char *sequence,char *mailbox,
 	      long options);
 long mh_append (MAILSTREAM *stream,char *mailbox,append_t af,void *data);
 
-int mh_select (struct direct *name);
-int mh_numsort (const void *d1,const void *d2);
+int mh_select (const struct direct *name);
+int mh_numsort (const struct direct **d1,const struct direct **d2);
 char *mh_file (char *dst,char *name);
 long mh_canonicalize (char *pattern,char *ref,char *pat);
 void mh_setdate (char *file,MESSAGECACHE *elt);
@@ -1192,10 +1192,10 @@ long mh_append (MAILSTREAM *stream,char *mailbox,append_t af,void *data)
  * Returns: T to use file name, NIL to skip it
  */
 
-int mh_select (struct direct *name)
+int mh_select (const struct direct *name)
 {
   char c;
-  char *s = name->d_name;
+  char *s = (char *) name->d_name;
   while ((c = *s++) != '\0') if (!isdigit (c)) return NIL;
   return T;
 }
@@ -1207,7 +1207,7 @@ int mh_select (struct direct *name)
  * Returns: negative if d1 < d2, 0 if d1 == d2, positive if d1 > d2
  */
 
-int mh_numsort (const void *d1,const void *d2)
+int mh_numsort (const struct direct **d1,const struct direct **d2)
 {
   return atoi ((*(struct direct **) d1)->d_name) -
     atoi ((*(struct direct **) d2)->d_name);

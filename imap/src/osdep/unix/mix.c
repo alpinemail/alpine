@@ -123,7 +123,7 @@ long mix_unsubscribe (MAILSTREAM *stream,char *mailbox);
 long mix_create (MAILSTREAM *stream,char *mailbox);
 long mix_delete (MAILSTREAM *stream,char *mailbox);
 long mix_rename (MAILSTREAM *stream,char *old,char *newname);
-int mix_rselect (struct direct *name);
+int mix_rselect (const struct direct *name);
 MAILSTREAM *mix_open (MAILSTREAM *stream);
 void mix_close (MAILSTREAM *stream,long options);
 void mix_abort (MAILSTREAM *stream);
@@ -138,8 +138,8 @@ THREADNODE *mix_thread (MAILSTREAM *stream,char *type,char *charset,
 long mix_ping (MAILSTREAM *stream);
 void mix_check (MAILSTREAM *stream);
 long mix_expunge (MAILSTREAM *stream,char *sequence,long options);
-int mix_select (struct direct *name);
-int mix_msgfsort (const void *d1,const void *d2);
+int mix_select (const struct direct *name);
+int mix_msgfsort (const struct direct **d1,const struct direct **d2);
 long mix_addset (SEARCHSET **set,unsigned long start,unsigned long size);
 long mix_burp (MAILSTREAM *stream,MIXBURP *burp,unsigned long *reclaimed);
 long mix_burp_check (SEARCHSET *set,size_t size,char *file);
@@ -586,9 +586,9 @@ long mix_rename (MAILSTREAM *stream,char *old,char *newname)
  * Returns: T if mix file name, NIL otherwise
  */
 
-int mix_rselect (struct direct *name)
+int mix_rselect (const struct direct *name)
 {
-  return mix_dirfmttest (name->d_name);
+  return mix_dirfmttest ((char *) name->d_name);
 }
 
 /* MIX mail open
@@ -1151,12 +1151,12 @@ long mix_expunge (MAILSTREAM *stream,char *sequence,long options)
  * ".mix" with no suffix was used by experimental versions
  */
 
-int mix_select (struct direct *name)
+int mix_select (const struct direct *name)
 {
   char c,*s;
 				/* make sure name has prefix */
-  if (mix_dirfmttest (name->d_name)) {
-    for (c = *(s = name->d_name + sizeof (MIXNAME) - 1); c && isxdigit (c);
+  if (mix_dirfmttest ((char *) name->d_name)) {
+    for (c = *(s = ((char *) name->d_name) + sizeof (MIXNAME) - 1); c && isxdigit (c);
 	 c = *s++);
     if (!c) return T;		/* all-hex or no suffix */
   }
@@ -1170,7 +1170,7 @@ int mix_select (struct direct *name)
  * Returns: -1 if d1 < d2, 0 if d1 == d2, 1 d1 > d2
  */
 
-int mix_msgfsort (const void *d1,const void *d2)
+int mix_msgfsort (const struct direct **d1,const struct direct **d2)
 {
   char *n1 = (*(struct direct **) d1)->d_name + sizeof (MIXNAME) - 1;
   char *n2 = (*(struct direct **) d2)->d_name + sizeof (MIXNAME) - 1;
@@ -2469,7 +2469,7 @@ FILE *mix_data_open (MAILSTREAM *stream,int *fd,long *size,
 
 FILE *mix_sortcache_open (MAILSTREAM *stream)
 {
-  int fd,refwd;
+  int fd = -1,refwd;
   unsigned long i,uid,sentdate,fromlen,tolen,cclen,subjlen,msgidlen,reflen;
   char *s,*t,*msg,tmp[MAILTMPLEN];
   MESSAGECACHE *elt;
@@ -2671,7 +2671,7 @@ FILE *mix_sortcache_open (MAILSTREAM *stream)
     fclose (srtcf);		/* so close it and return as if error */
     srtcf = NIL;
   }
-  else fchmod (fd,sbuf.st_mode);
+  else if(fd >= 0) fchmod (fd,sbuf.st_mode);
   return srtcf;
 }
 

@@ -98,8 +98,8 @@ long mx_append (MAILSTREAM *stream,char *mailbox,append_t af,void *data);
 long mx_append_msg (MAILSTREAM *stream,char *flags,MESSAGECACHE *elt,
 		    STRING *st,SEARCHSET *set);
 
-int mx_select (struct direct *name);
-int mx_numsort (const void *d1,const void *d2);
+int mx_select (const struct direct *name);
+int mx_numsort (const struct direct **d1,const struct direct **d2);
 char *mx_file (char *dst,char *name);
 long mx_lockindex (MAILSTREAM *stream);
 void mx_unlockindex (MAILSTREAM *stream);
@@ -1111,10 +1111,10 @@ long mx_append_msg (MAILSTREAM *stream,char *flags,MESSAGECACHE *elt,
  * Returns: T to use file name, NIL to skip it
  */
 
-int mx_select (struct direct *name)
+int mx_select (const struct direct *name)
 {
   char c;
-  char *s = name->d_name;
+  char *s = (char *) name->d_name;
   while ((c = *s++) != '\0') if (!isdigit (c)) return NIL;
   return T;
 }
@@ -1126,7 +1126,7 @@ int mx_select (struct direct *name)
  * Returns: negative if d1 < d2, 0 if d1 == d2, positive if d1 > d2
  */
 
-int mx_numsort (const void *d1,const void *d2)
+int mx_numsort (const struct direct **d1,const struct direct **d2)
 {
   return atoi ((*(struct direct **) d1)->d_name) -
     atoi ((*(struct direct **) d2)->d_name);
