@@ -35,7 +35,7 @@
  *      sha Error Code.
  *
  */
-int hmac(SHAversion whichSha, const unsigned char *text, int text_len,
+int c_client_hmac(SHAversion whichSha, const unsigned char *text, int text_len,
     const unsigned char *key, int key_len,
     uint8_t digest[USHAMaxHashSize])
 {

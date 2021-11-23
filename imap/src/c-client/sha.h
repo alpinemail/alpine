@@ -238,7 +238,7 @@ extern int USHAHashSizeBits(enum SHAversion whichSha);
  * for all SHAs.
  * This interface allows a fixed-length text input to be used.
  */
-extern int hmac(SHAversion whichSha, /* which SHA algorithm to use */
+extern int c_client_hmac(SHAversion whichSha, /* which SHA algorithm to use */
     const unsigned char *text,     /* pointer to data stream */
     int text_len,                  /* length of data stream */
     const unsigned char *key,      /* pointer to authentication key */
