@@ -317,8 +317,18 @@ getfnames(char *dn, char *pat, int *n, char *e, size_t elen)
 	/*
 	 * We'd like to use 512 * st_blocks as an initial estimate but
 	 * some systems have a stat struct with no st_blocks in it.
+	 *
+	 * In some systems the size of a directory is the sum of the
+	 * sizes of all files contained in it, so sbuf.st_size might
+	 * be too large and the malloc() might fail with error ENOMEM.
+	 * Since this is just the list of files, and not the contents
+	 * of the files, let us start with a small amount and resize
+	 * when necessary. Reported by Sebasting Knust. Of course the
+	 * correct solution is to read the directory twice, but keeping
+	 * realloc()ing as needed also solves the problem in a less
+	 * elegant way.
 	 */
-	avail = alloced = MAX(sbuf.st_size, incr);
+	avail = alloced = 4096;
 	if((sbuf.st_mode&S_IFMT) != S_IFDIR){
 	    if(e)
 	      snprintf(e, elen, _("Not a directory: \"%s\""), dn);
