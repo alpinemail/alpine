@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 622 2021-11-23 10:53:56
+Alpine Commit 623 2021-11-23 22:28:10
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -217,6 +217,9 @@ new additions to Alpine, please check it periodically.
      is available for that server. In this case additional information is
      given: The method to use (device or authorize), a user id that uses the
      suggested client-id or a report that the client-id has not been used.
+
+<LI> To protect the privacy of a user, the message-id of a message will be
+     generated using the domain in the From field of the message.
 </UL>
 
 <P>

@@ -3138,6 +3138,22 @@ pine_send(ENVELOPE *outgoing, struct mail_bodystruct **body,
 	    outgoing->sender->host    = cpystr(ps_global->hostname);
 	}
 
+	/* To protect the privacy of the user, make sure that the domain
+	 * part in the message id matches the domain in the from, so that
+	 * the user does not disclose more than they are already willing
+	 * to disclose.
+	 */
+
+	if(outgoing->message_id && outgoing->from && !role){
+	   fs_give((void **) &outgoing->message_id);
+	   role = (ACTION_S *) fs_get(sizeof(ACTION_S)); /* create fake role */
+	   memset((void *) role, 0, sizeof(ACTION_S));
+	   role->from = outgoing->from;	/* and fill the from field only */
+	   outgoing->message_id = generate_message_id(role); /* new message id */
+	   role->from = NULL;		/* disconnect the from part */
+	   fs_give((void **) &role);	/* the fake role can be discarded */
+	}
+
 	if(ps_global->newthread){
 	   if(outgoing->in_reply_to) fs_give((void **)&outgoing->in_reply_to);
 	   if(outgoing->references) fs_give((void **)&outgoing->references);
