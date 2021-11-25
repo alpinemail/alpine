@@ -692,7 +692,7 @@ int	    menu_clear_binding(struct key_menu *, UCS);
 int	    menu_binding_index(struct key_menu *, int);
 void	    mark_keymenu_dirty(void);
 void	    blank_keymenu(int, int);
-void	    draw_keymenu(struct key_menu *, bitmap_t, int, int, int, OtherMenu);
+void	    draw_keymenu(struct key_menu *, unsigned char *, int, int, int, OtherMenu);
 void	    redraw_keymenu(void);
 void	    clearfooter(struct pine *);
 

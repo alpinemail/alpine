@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 623 2021-11-23 22:28:10
+Alpine Commit 624 2021-11-24 22:33:48
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -16608,18 +16608,16 @@ source code of this project is located at
 <BODY>
 <H1>Tenant Explained</H1>
 
-The tenant is a way in which a service can either restrict an app to access
-only certain portions of its service. For example, a service may allow
-an app to have access to your work data, or school data, and not every app
-is allowed to access this data, or the access is not allowed for all accounts,
-but only those restructed in the tenant.
+The tenant is a way in which a an app can be restricted. Alpine by default
+has no restrictions, which means that it can be used to access any service;
+however, a system administrator might register their own app and make it
+available only to those in their organization.
 
-<P> When Alpine registers with an email service provider, it does so with the
-intention that you can use Alpine for any of your needs (work, school or
-personal), and the client-id and tenant that it uses would allow you access to
-only your work email, say, and not your personal email, because the app is
-trusted only at work, and so the client-id and tenant are good for that
-organization only.
+<P>
+This setting allows a system administrator to register Alpine with a different
+client-id and client-secret and further restrict access to only authorized
+users.
+
 <P>
 &lt;End of help on this topic&gt;
 </BODY>

@@ -2895,8 +2895,8 @@ INST_KEY_MENU(config_smime_manage_password_file_menu_keymenu, config_smime_manag
 /*
  * Internal prototypes
  */
-void  output_keymenu(struct key_menu *, bitmap_t, int, int);
-void  format_keymenu(struct key_menu *, bitmap_t, int);
+void  output_keymenu(struct key_menu *, unsigned char *, int, int);
+void  format_keymenu(struct key_menu *, unsigned char *, int);
 void  menu_clear_cmd_binding(struct key_menu *, int);
 #ifdef	MOUSE
 void  print_inverted_label(int, MENUITEM *);

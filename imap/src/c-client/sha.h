@@ -200,8 +200,7 @@ extern int SHA256Input(SHA256Context *, const uint8_t *bytes,
                        unsigned int bytecount);
 extern int SHA256FinalBits(SHA256Context *, const uint8_t bits,
                            unsigned int bitcount);
-extern int SHA256Result(SHA256Context *,
-                        uint8_t Message_Digest[SHA256HashSize]);
+extern int SHA256Result(SHA256Context *, uint8_t *);
 
 /* SHA-384 */
 extern int SHA384Reset(SHA384Context *);
@@ -257,7 +256,7 @@ extern int hmacInput(HMACContext *ctx, const unsigned char *text,
 
 extern int hmacFinalBits(HMACContext *ctx, const uint8_t bits,
                          unsigned int bitcount);
-extern int hmacResult(HMACContext *ctx,
-                      uint8_t digest[USHAMaxHashSize]);
+extern int hmacResult(HMACContext *,
+                      uint8_t *);
 
 #endif /* _SHA_H_ */
