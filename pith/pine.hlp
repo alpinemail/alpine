@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 625 2021-11-26 01:15:28
+Alpine Commit 626 2021-11-26 14:43:28
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -226,6 +226,10 @@ new additions to Alpine, please check it periodically.
      the destination folder is large this could significantly slow down
      alpine. Fix based on a patch submitted to the alpine-info list by
      Chris Caputo.
+
+<LI> Add the LOGOUT command to the list of commands that can be
+     automatically interrupted in case the connection becomes unstable
+     during that command and Alpine times out its connection to the server.
 </UL>
 
 <P>
@@ -16614,7 +16618,7 @@ source code of this project is located at
 <BODY>
 <H1>Tenant Explained</H1>
 
-The tenant is a way in which a an app can be restricted. Alpine by default
+The tenant is a way in which an app can be restricted. Alpine by default
 has no restrictions, which means that it can be used to access any service;
 however, a system administrator might register their own app and make it
 available only to those in their organization.

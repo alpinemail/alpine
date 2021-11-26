@@ -2291,8 +2291,8 @@ pine_imap_cmd_happened(MAILSTREAM *stream, char *cmd, long int flags)
 	sp_set_last_activity(stream, now);
 	if(!(flags & SC_EXPUNGEDEFERRED))
 	  sp_set_last_expunged_reaper(stream, now);
-
-	if(cmd && !strucmp(cmd, "NOOP")) /* but can interrupt this one */
+		 /* but can interrupt these ones */
+	if(cmd && (!strucmp(cmd, "NOOP") || !strucmp(cmd, "LOGOUT")))
 	  ps_global->can_interrupt = 1;
     }
 }
