@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 624 2021-11-24 22:33:48
+Alpine Commit 625 2021-11-26 01:15:28
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -220,6 +220,12 @@ new additions to Alpine, please check it periodically.
 
 <LI> To protect the privacy of a user, the message-id of a message will be
      generated using the domain in the From field of the message.
+
+<LI> When saving to a folder in the unix format, Alpine parses the
+     destination folder to assign uids to all messages in the folder. When
+     the destination folder is large this could significantly slow down
+     alpine. Fix based on a patch submitted to the alpine-info list by
+     Chris Caputo.
 </UL>
 
 <P>
