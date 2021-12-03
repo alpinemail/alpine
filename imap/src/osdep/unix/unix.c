@@ -1113,7 +1113,7 @@ long unix_append (MAILSTREAM *stream,char *mailbox,append_t af,void *data)
 
   MM_CRITICAL (stream);		/* go critical */
 				/* try to open readwrite for UIDPLUS */
-  if (au && (tstream = mail_open_work (&unixdriver,NIL,mailbox,
+  if ((tstream = mail_open_work (&unixdriver,NIL,mailbox,
 				 OP_SILENT|OP_NOKOD)) && tstream->rdonly)
     tstream = mail_close (tstream);
   if (au && !tstream) {		/* wanted an APPENDUID? */
