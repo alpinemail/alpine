@@ -33,27 +33,14 @@ typedef struct xoauh2_info_val_s {
 
 /* the order here must match the order in XTYPES above */
 XOAUTH2_INFO_VAL_S x_default[] = {
-   {NULL, 		"/NAME="},
-   {"Client-Id",	"/ID="},
-   {"Client-Secret",	"/SECRET="},
-   {"Tenant",		"/TENANT="},
-   {"Username",		"/USER="},
-   {"Auth Flow",	"/Flow="},
-   {NULL, 		NULL}
+   {NULL, 			XNAME},
+   {XOAUTH2_CLIENT_ID,		XID},
+   {XOAUTH2_CLIENT_SECRET,	XSECRET},
+   {XOAUTH2_TENANT,		XTENANT},
+   {XOAUTH2_USERS,		XUSER},
+   {XOAUTH2_FLOW,		XFLOW},
+   {NULL, 			NULL}
 };
-
-#define XNAME	x_default[Xname].pinerc_name
-#define XID	x_default[Xid].pinerc_name
-#define XSECRET	x_default[Xsecret].pinerc_name
-#define XTENANT	x_default[Xtenant].pinerc_name
-#define XUSER	x_default[Xuser].pinerc_name
-#define XFLOW	x_default[XFlow].pinerc_name
-
-#define XOAUTH2_CLIENT_ID	x_default[Xid].screen_name
-#define XOAUTH2_CLIENT_SECRET	x_default[Xsecret].screen_name
-#define XOAUTH2_TENANT		x_default[Xtenant].screen_name
-#define XOAUTH2_USERS		x_default[Xuser].screen_name
-#define XOAUTH2_FLOW		x_default[XFlow].screen_name
 
 char *list_to_array(char **);
 char **array_to_list(char *);

@@ -5765,6 +5765,15 @@ fix_side_effects(struct pine *ps, struct variable *var, int revert)
     else if(var == &ps->vars[V_FEATURE_LIST]){
 	process_feature_list(ps, var->current_val.l, 0, 0, 0);
     }
+    else if(var && var->name && !strcmp(var->name, XOAUTH2_FLOW)){
+	if(var->current_val.p
+	   && strucmp(var->current_val.p, "Authorize")
+	   && strucmp(var->current_val.p, "Device")){
+	      q_status_message1(SM_ORDER | SM_DING, 3, 3,
+			        _("Invalid value \"%s\". Use \"Authorize\" or \"Device\""),
+				var->current_val.p);
+	}
+    }
     else if(!revert && (var == &ps->vars[V_LAST_TIME_PRUNE_QUESTION] ||
 		        var == &ps->vars[V_REMOTE_ABOOK_HISTORY] ||
 		        var == &ps->vars[V_REMOTE_ABOOK_VALIDITY] ||

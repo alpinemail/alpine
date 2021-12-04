@@ -38,6 +38,20 @@
 #define next_confline(p)  ((p) ? (p)->next : NULL)
 #define prev_confline(p)  ((p) ? (p)->prev : NULL)
 
+/* for xoaut2conf.h */
+#define XNAME   "/NAME="
+#define XID     "/ID="
+#define XSECRET "/SECRET="
+#define XTENANT "/TENANT="
+#define XUSER   "/USER="
+#define XFLOW   "/Flow="
+
+#define XOAUTH2_CLIENT_ID       "Client-Id"
+#define XOAUTH2_CLIENT_SECRET   "Client-Secret"
+#define XOAUTH2_TENANT          "Tenant"
+#define XOAUTH2_USERS           "Username"
+#define XOAUTH2_FLOW            "Auth Flow"
+
 
 extern char *empty_val;
 extern char *empty_val2;
