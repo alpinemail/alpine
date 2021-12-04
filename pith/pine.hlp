@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 628 2021-12-02 21:11:37
+Alpine Commit 629 2021-12-03 21:20:33
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -183,7 +183,8 @@ it for you. Please take some time to read it and understand it.
 Since the Privacy Policy could be amended to take into consideration
 new additions to Alpine, please check it periodically.
 
-<P> Changes since the release of version <!--#echo var="ALPINE_VERSION"--> include:
+<P> Changes since the release of version 2.25 include:
+<!-- Changes since the release of version <!--#echo var="ALPINE_VERSION"--> include: -->
 
 <P> New features include:
 <UL>
@@ -230,6 +231,9 @@ new additions to Alpine, please check it periodically.
 <LI> Add the LOGOUT command to the list of commands that can be
      automatically interrupted in case the connection becomes unstable
      during that command and Alpine times out its connection to the server.
+
+<LI> If new mail has arrived when a user is closing a mailbox, Alpine will
+     also announce how many new messages have arrived. Suggested by Chime Hart.
 </UL>
 
 <P>

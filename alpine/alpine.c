@@ -3234,12 +3234,24 @@ quit_screen(struct pine *pine_state)
 
     if(F_ON(F_CHECK_MAIL_ONQUIT,ps_global)
        && pine_state->mail_stream != NULL
-       && new_mail(1, VeryBadTime, NM_STATUS_MSG | NM_DEFER_SORT) > 0
-       && (quit = want_to(_("Quit even though new mail just arrived"), 'y', 0,
-			  NO_HELP, WT_NORM | WT_DING)) != 'y'){
-	refresh_sort(pine_state->mail_stream, pine_state->msgmap, SRT_VRB);
-        pine_state->next_screen = pine_state->prev_screen;
-        return;
+       && new_mail(1, VeryBadTime, NM_STATUS_MSG | NM_DEFER_SORT) > 0){
+	char *prompt = NULL;
+	if(sp_mail_since_cmd(pine_state->mail_stream) == 1)
+	   prompt = cpystr(_("Quit even though 1 new mail just arrived"));
+	else if(sp_mail_since_cmd(pine_state->mail_stream) > 1){
+	   snprintf(tmp_20k_buf, SIZEOF_20KBUF, _("Quit even though %lu new messages just arrived"), sp_mail_since_cmd(pine_state->mail_stream));
+	   tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+	   prompt = cpystr(tmp_20k_buf);
+	}
+	else prompt = cpystr(_("Quit even though new mail just arrived"));
+	quit = want_to(prompt, 'y', 0, NO_HELP, WT_NORM | WT_DING);
+	if(prompt)
+	   fs_give((void **) &prompt);
+	if(quit != 'y'){
+	   refresh_sort(pine_state->mail_stream, pine_state->msgmap, SRT_VRB);
+           pine_state->next_screen = pine_state->prev_screen;
+	   return;
+	}
     }
 
     if(quit != 'y'
