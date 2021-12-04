@@ -866,7 +866,7 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
 	x = oauth2_get_client_info(oa2list->name, user);
 	if(!x) return;		/* user cancelled, let's get out of here */
 	if(x){
-	    int error = 0;
+	    int error = 0, authorize = 0, device = 0;
 	    if(x->flow){
 	      for(oa2list = alpine_oauth2_list;
 		  oa2list && oa2list->host != NULL && oa2list->host[0] != NULL;
@@ -877,6 +877,8 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
 		  if(i < OAUTH2_TOT_EQUIV && oa2list->host[i] != NULL){
 		     char *flow = oa2list->server_mthd[0].name ? "Authorize"
 			: (oa2list->server_mthd[1].name ? "Device" : NULL);
+		     authorize += oa2list->server_mthd[0].name ? 1 : 0;
+		     device += oa2list->server_mthd[1].name ? 1 : 0;
 		     if(flow && !strucmp(x->flow, flow)) break;	/* found it */
 		  }
 	      }
@@ -885,8 +887,16 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
 	    }
 	    else error++;
 	    if(error){
-		if(x->flow)
-	           q_status_message1(SM_ORDER | SM_DING, 3, 3, _("Unrecognized flow type \"%s\". Use \"Authorize\" or \"Device\""), x->flow);
+		if(x->flow){
+		   snprintf(tmp_20k_buf, SIZEOF_20KBUF, _("%s does not support or recognize flow type \"%s\". Use %s%s%s"),
+			mb->orighost,
+			x->flow,
+			authorize ? "\"Authorize\"" : "",
+			authorize ? (device ? " or " : "") : "",
+			device ? "\"Device\"" : "");
+		   tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
+	           q_status_message(SM_ORDER | SM_DING, 3, 5, tmp_20k_buf);
+		}
 		else
 	           q_status_message(SM_ORDER | SM_DING, 3, 3, _("Configuration does not specify flow type. Use \"Authorize\" or \"Device\""));
 	    }
