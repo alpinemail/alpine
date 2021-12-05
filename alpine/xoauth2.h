@@ -15,6 +15,9 @@
 #ifndef ALPINE_XOAUTH2_INCLUDED
 #define ALPINE_XOAUTH2_INCLUDED
 
+#define AUTHORIZE_FLOW	"Authorize"
+#define DEVICE_FLOW	"Device"
+
 #define GMAIL_NAME (unsigned char *) "Gmail"
 #define GMAIL_ID "624395471329-0qee3goofj7kbl7hsukou3rqq0igntv1.apps.googleusercontent.com"
 #define GMAIL_SECRET "vwnqVJQrJZpR6JilCfAN5nY7"
