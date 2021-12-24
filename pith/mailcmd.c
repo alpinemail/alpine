@@ -831,7 +831,7 @@ do_broach_folder(char *newfolder, CONTEXT_S *new_context, MAILSTREAM **streamp,
         dprint((8, "Old folder: \"%s\"\n",
                old_folder == NULL ? "" : old_folder));
         if(old_folder != NULL){
-            if(strcmp(old_folder, ps_global->inbox_name) == 0){
+            if(strucmp(old_folder, ps_global->inbox_name) == 0){
                 ps_global->mail_stream = sp_inbox_stream();
 		ps_global->msgmap      = sp_msgmap(ps_global->mail_stream);
 

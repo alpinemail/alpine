@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 632 2021-12-04 17:11:12
+Alpine Commit 633 2021-12-24 14:36:46
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -184,7 +184,8 @@ Since the Privacy Policy could be amended to take into consideration
 new additions to Alpine, please check it periodically.
 
 <P> Changes since the release of version 2.25 include:
-<!-- Changes since the release of version <!--#echo var="ALPINE_VERSION"--> include: -->
+<!-- Changes since the release of version <!--#echo var="ALPINE_VERSION"-->
+<!-- include: -->
 
 <P> New features include:
 <UL>
@@ -234,6 +235,9 @@ new additions to Alpine, please check it periodically.
 
 <LI> If new mail has arrived when a user is closing a mailbox, Alpine will
      also announce how many new messages have arrived. Suggested by Chime Hart.
+
+<LI> When an invitation does not have a timezone in the date of the event,
+     but the date is in GMT, adjust the date to local time.
 </UL>
 
 <P>

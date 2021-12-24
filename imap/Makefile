@@ -85,9 +85,9 @@
 #	 (see lnp, sl4, sl5, and slx)
 # lnp	Linux with Pluggable Authentication Modules (PAM)
 # lmd	Mandrake Linux
-# lr5	RedHat Enterprise Linux 5 and later (same as lfd)
-# lrh	RedHat Linux 7.2 and later
-# lsu	SuSE Linux (same as lrh)
+# lr5	Red Hat Enterprise Linux 5 and later (same as lfd)
+# lrh	Red Hat Linux 7.2 and later
+# lsu	SUSE Linux (same as lrh)
 # lyn	LynxOS
 # mct	MachTen
 # mnt	Atari ST Mint (not MacMint)

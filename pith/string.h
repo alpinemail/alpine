@@ -152,5 +152,6 @@ int         read_octal(char **);
 time_t      date_to_local_time_t(char *);
 void	    convert_decimal_to_roman (char *, size_t, long, char);
 void	    convert_decimal_to_alpha (char *, size_t, long, char);
+int	    timezone_offset_to_gmt(int *);
 
 #endif /* PITH_STRING_INCLUDED */

@@ -1059,14 +1059,27 @@ static struct {
     {"CDT", 3, -5, 0},			/* Central Daylight */
     {"EST", 3, -5, 0},			/* Eastern Standard */
     {"EDT", 3, -4, 0},			/* Eastern Daylight */
-    {"JST", 3,  9, 0},			/* Japan Standard */
     {"GMT", 3,  0, 0},			/* Universal Time */
     {"UT",  2,  0, 0},			/* Universal Time */
-#ifdef	IST_MEANS_ISREAL
+    {"WET", 3,  0, 0},			/* Western Europe Standard */
+    {"WEST", 4, 1, 0},			/* Western Europe Daylight */
+    {"CET", 3,  1, 0},			/* Central Europe Standard */
+    {"CEST", 4, 2, 0},			/* Central Europe Daylight */
+    {"EET", 3,  2, 0},			/* Eastern Europe Standard */
+    {"EEST", 4, 3, 0},			/* Eastern Europe Daylight */
+    {"FET", 3,  3, 0},			/* Further Eastern Europe Standard */
+    {"MSK", 3,  3, 0},			/* Moscow Standard Time */
+    {"BST", 3,  1, 0},			/* Brittish Summer Time */
+    {"JST", 3,  9, 0},			/* Japan Standard */
+#ifdef	IST_MEANS_ISRAEL
     {"IST", 3,  2, 0},			/* Israel Standard */
 #else
 #ifdef	IST_MEANS_INDIA
     {"IST", 3,  5, 30},			/* India Standard */
+#else
+#ifdef IST_MEANS_IRISH
+    {"IST", 3,  1, 0},			/* Irish Standard */
+#endif
 #endif
 #endif
     {NULL, 0, 0},
@@ -1324,6 +1337,35 @@ convert_date_to_local(char *date)
 }
 
 
+int
+timezone_offset_to_gmt(int *dst)
+{
+   int julian, offset;
+   struct tm *tm;
+   time_t     now;
+
+   offset = 0;
+   /* find difference between gmtime and localtime, from c-client do_date */
+   now = time((time_t *) 0);
+   if(now != (time_t) -1){
+      tm = gmtime(&now);
+      if(tm != NULL){
+	offset = tm->tm_hour * 60 + tm->tm_min;		/* minutes */
+	julian = tm->tm_yday;
+
+	tm = localtime(&now);
+	*dst = tm->tm_isdst;		/* for converting back to our time */
+
+	offset = tm->tm_hour * 60 + tm->tm_min - offset;
+	if((julian = tm->tm_yday - julian) != 0)
+	   offset += ((julian < 0) == (abs(julian) == 1)) ? -24*60 : 24*60;
+
+	offset *= 60;		/* change to seconds */
+      }
+   }
+   return offset;
+}
+
 time_t
 date_to_local_time_t(char *date)
 {
@@ -1333,31 +1375,8 @@ date_to_local_time_t(char *date)
     static int  zone = 1000000;		/* initialize timezone offset */
     static int  dst;
 
-    if(zone == 1000000){
-      int julian;
-      struct tm *tm;
-      time_t     now;
-
-      zone = 0;
-      /* find difference between gmtime and localtime, from c-client do_date */
-      now = time((time_t *) 0);
-      if(now != (time_t) -1){
-	tm = gmtime(&now);
-	if(tm != NULL){
-	  zone = tm->tm_hour * 60 + tm->tm_min;		/* minutes */
-	  julian = tm->tm_yday;
-
-	  tm = localtime(&now);
-	  dst = tm->tm_isdst;		/* for converting back to our time */
-
-	  zone = tm->tm_hour * 60 + tm->tm_min - zone;
-	  if((julian = tm->tm_yday - julian) != 0)
-	    zone += ((julian < 0) == (abs(julian) == 1)) ? -24*60 : 24*60;
-
-	  zone *= 60;		/* change to seconds */
-        }
-      }
-    }
+    if(zone == 1000000)
+      zone = timezone_offset_to_gmt(&dst);
 
     parse_date(date, &d);
 

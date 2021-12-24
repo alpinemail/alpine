@@ -1,6 +1,7 @@
 #include "../pith/headers.h"
 #include "../pith/mailpart.h"
 #include "../pith/store.h"
+#include "../pith/string.h"
 #include "../pith/ical.h"
 
 typedef struct ical_iana_comp_s {
@@ -2180,8 +2181,14 @@ ical_vevent_summary(VCALENDAR_S *vcal)
   VEVENT_S *vevent;
   GEN_ICLINE_S *gicl;
   ICLINE_S *icl;
+  static int offset = 1000000;	/* impossible value */
+  static int dst;
+  time_t ourtime;
 
   if(vcal == NULL) return NULL;
+
+  if(offset == 1000000)
+    offset = timezone_offset_to_gmt(&dst);
 
   method = vcal->method;
 
@@ -2255,6 +2262,15 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 	tzid = ical_get_tzid(icl->param);
 	if(icd >= 0){
 	  ic_date.tm_wday = ical_day_of_week(ic_date);
+	  if(ic_date.tm_isdst == 1){	/* GMT time */
+	     ic_date.tm_isdst = dst;
+	     ourtime = mktime(&ic_date);
+	     if(ourtime != (time_t) -1){
+		ourtime += offset;
+		ic_date = *localtime(&ourtime);
+	     }
+	  }
+	  ic_date.tm_isdst = dst;
 	  switch(icd){
 	    case 0: /* DATE-TIME */
 		    ical_date_time(tmp, sizeof(tmp), &ic_date);
@@ -2343,7 +2359,16 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 	      tzid = ical_get_tzid(icl->param);
 	      if(icd >= 0){
 	         ic_date.tm_wday = ical_day_of_week(ic_date);
-		 switch(icd){
+		 if(ic_date.tm_isdst == 1){	/* GMT time */
+		    ic_date.tm_isdst = dst;
+		    ourtime = mktime(&ic_date);
+		    if(ourtime != (time_t) -1){
+		       ourtime += offset;
+		       ic_date = *localtime(&ourtime);
+		    }
+	         }
+	         ic_date.tm_isdst = dst;
+	         switch(icd){
 		    case 0: /* DATE-TIME */
 			    ical_date_time(tmp, sizeof(tmp), &ic_date);
 			    break;
@@ -2355,7 +2380,7 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 			    break;
 		    default: alpine_panic("Unhandled ical date format");
 			    break;
-	 	}
+	         }
      	  }
 	  else{
 	     strncpy(tmp, _("Error while parsing event date"), sizeof(tmp));
@@ -2391,6 +2416,15 @@ ical_vevent_summary(VCALENDAR_S *vcal)
        tzid = ical_get_tzid(icl->param);
        if(icd >= 0){
          ic_date.tm_wday = ical_day_of_week(ic_date);
+	 if(ic_date.tm_isdst == 1){	/* GMT time */
+	    ic_date.tm_isdst = dst;
+	    ourtime = mktime(&ic_date);
+	    if(ourtime != (time_t) -1){
+	       ourtime += offset;
+	       ic_date = *localtime(&ourtime);
+	    }
+	 }
+	 ic_date.tm_isdst = dst;
 	 switch(icd){
 	    case 0: /* DATE-TIME */
 		    ical_date_time(tmp, sizeof(tmp), &ic_date);
