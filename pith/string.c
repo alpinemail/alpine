@@ -3012,3 +3012,32 @@ convert_decimal_to_alpha (char *rn, size_t len, long n, char l)
   if(i < len) rn[i] = '\0';
   rn[len-1] = '\0';
 }
+
+void
+remove_quotes(unsigned char *name)
+{
+  unsigned char *s, *bos, *eos;
+  int startquote, endquote;
+
+  startquote = endquote = 0;
+
+  for(s = name; s && *s; s++){
+     endquote = startquote && (*s == '"') ? 1 : 0;
+     if(endquote)
+	eos = s;
+     if(startquote == 0){
+	if(*s == '"')
+	   startquote = 1;
+	if(startquote)
+	   bos = s;
+     }
+     if(startquote && endquote){
+	if(bos == name && eos[1] == '\0'){
+	   for(s = name + 1; *s && s < eos; s++)
+	      *(s-1) = *s;
+	   *(s-1) = '\0';
+	}
+	startquote = endquote = 0;
+     }
+  }
+}

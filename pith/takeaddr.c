@@ -2094,6 +2094,8 @@ fill_in_ta(TA_S **old_current, struct mail_address *addr, int checked, char *pri
 	    new_current->checked  = checked != 0;
 	    new_current->addr     = copyaddr(addr);
 	    decode_addr_names_to_utf8(new_current->addr);
+	    if(new_current->addr && new_current->addr->personal)
+	       remove_quotes(new_current->addr->personal);
 	    if(addr->host[0] == '.')
 	      new_current->strvalue = cpystr("Error in address (ok to try Take anyway)");
 	    else{

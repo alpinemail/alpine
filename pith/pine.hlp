@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 633 2021-12-24 14:36:46
+Alpine Commit 634 2021-12-27 09:44:44
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -256,6 +256,11 @@ Bugs addressed include:
      password file is not unlocked by cancellation, or the authentication
      for an XOAUTH2 server is cancelled, or the password of an account
      is changed.
+
+<LI> When the personal name of an address is encoded, and the personal name
+     is surrounded by quotes, these are not removed by Alpine at the time
+     to offer to take an address from a message to the addressbook. Reported
+     by David Prager Branner.
 </UL>
 
 <P>Version 2.25 adds new features and addresses bugs found in previous
