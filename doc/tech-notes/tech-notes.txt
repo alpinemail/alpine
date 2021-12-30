@@ -285,13 +285,14 @@ SMTP and Sendmail
     1. _sendmail-path_ in /usr/local/lib/pine.conf.fixed
     2. _smtp-server_ in /usr/local/pine.conf.fixed
     3. _sendmail-path_ specified on the command line.
-    4. _smtp-server_ specified on the command line.
-    5. _sendmail-path_ in the user's .pinerc file.
-    6. _smtp-server_ in the user's .pinerc file.
-    7. _sendmail-path_ in /usr/local/lib/pine.conf
-    8. _smtp-server_ in /usr/local/pine.conf
-    9. DF_SENDMAIL_PATH defined at compile time.
-   10. SENDMAIL and SENDMAILFLAGS defined at compile time.
+    4. _smtp-server_ specified in a role being used.
+    5. _smtp-server_ specified on the command line.
+    6. _sendmail-path_ in the user's .pinerc file.
+    7. _smtp-server_ in the user's .pinerc file.
+    8. _sendmail-path_ in /usr/local/lib/pine.conf
+    9. _smtp-server_ in /usr/local/pine.conf
+   10. DF_SENDMAIL_PATH defined at compile time.
+   11. SENDMAIL and SENDMAILFLAGS defined at compile time.
 
    If the _sendmail-path_ form is used, a child process is forked, and the
    specified command is executed with the message passed on standard

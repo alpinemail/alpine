@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 634 2021-12-27 09:44:44
+Alpine Commit 635 2021-12-29 21:56:40
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -261,6 +261,11 @@ Bugs addressed include:
      is surrounded by quotes, these are not removed by Alpine at the time
      to offer to take an address from a message to the addressbook. Reported
      by David Prager Branner.
+
+<LI> If a user configures the sendmail-path variable, and does not use a
+     global smtp-server, then Alpine will use the sendmail-path even when
+     the user configured a smtp-server for a role. Reported by Gregory
+     Heytings.
 </UL>
 
 <P>Version 2.25 adds new features and addresses bugs found in previous

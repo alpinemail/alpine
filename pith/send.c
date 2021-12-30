@@ -112,7 +112,7 @@ int	   pwbh_finish(int, STORE_S *);
 int	   sent_percent(void);
 unsigned short *setup_avoid_table(void);
 #ifndef	_WINDOWS
-int	   mta_handoff(METAENV *, BODY *, char *, size_t, void (*)(char *, int),
+int	   mta_handoff(METAENV *, BODY *, char *, size_t, char **, void (*)(char *, int),
 		       void (*)(PIPE_S *, int, void *));
 char	  *post_handoff(METAENV *, BODY *, char *, size_t, void (*)(char *, int),
 			void (*)(PIPE_S *, int, void *));
@@ -1737,7 +1737,7 @@ call_mailer(METAENV *header, struct mail_bodystruct *body, char **alt_smtp_serve
 #ifndef	_WINDOWS
 
     /* try posting via local "<mta> <-t>" if specified */
-    if(mta_handoff(header, body, error_buf, sizeof(error_buf), bigresult_f, pipecb_f)){
+    if(mta_handoff(header, body, error_buf, sizeof(error_buf), alt_smtp_servers, bigresult_f, pipecb_f)){
 	if(error_buf[0])
 	  error_mess = error_buf;
 
@@ -5503,6 +5503,7 @@ smtp_command(char *errbuf, size_t errbuflen)
 int
 mta_handoff(METAENV *header, struct mail_bodystruct *body,
 	    char *errbuf, size_t len,
+	    char **alt_smtp_servers,
 	    void (*bigresult_f) (char *, int),
 	    void (*pipecb_f)(PIPE_S *, int, void *))
 {
@@ -5535,7 +5536,10 @@ mta_handoff(METAENV *header, struct mail_bodystruct *body,
 	    cmd = ps_global->COM_SENDMAIL_PATH;
 	}
 	else if(!(ps_global->COM_SMTP_SERVER
-		  && ps_global->COM_SMTP_SERVER[0])){
+		  && ps_global->COM_SMTP_SERVER[0])
+		&& !(alt_smtp_servers
+		      && alt_smtp_servers[0]
+		      && alt_smtp_servers[0][0])){
 	    if((ps_global->vars[V_SENDMAIL_PATH].post_user_val.p
 	        && ps_global->vars[V_SENDMAIL_PATH].post_user_val.p[0]) ||
 	       (ps_global->vars[V_SENDMAIL_PATH].main_user_val.p
