@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 635 2021-12-29 21:56:40
+Alpine Commit 636 2022-01-10 23:59:29
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -3173,36 +3173,64 @@ The &quot;NextLink&quot; and &quot;PrevLink&quot; commands
 
 <H2>TABLE OF CONTENTS</H2>
 <OL>
-  <LI> <A HREF="h_mainhelp_intro">Introduction</A>
-  <LI> <A HREF="h_mainhelp_pinehelp">Alpine Help</A>
-<!--chtml if [ -r PINE_INFO_PATH ]-->
-  <LI> <A HREF="h_mainhelp_localsupport">Local Support Contacts</A>
-<!--chtml endif-->
-  <LI> <A HREF="h_mainhelp_cmds">Giving Commands in Alpine</A>
-  <LI> <A HREF="h_mainhelp_config">Alpine Configuration</A>
-  <LI> <A HREF="h_mainhelp_status">Titlebar Line</A>
-  <LI> <A HREF="h_mainhelp_mainmenu">Main Menu</A>
-  <LI> <A HREF="h_mainhelp_index">Index of Messages</A>
-  <LI> <A HREF="h_mainhelp_reading">Reading Messages</A>
-  <LI> <A HREF="h_mainhelp_composing">Composing Messages</A>
-  <LI> <A HREF="h_mainhelp_readingnews">Reading News</A>
-  <LI> <A HREF="h_mainhelp_abooks">Address Books</A>
-  <LI> <A HREF="h_mainhelp_ldap">LDAP Directories</A>
-  <LI> <A HREF="h_mainhelp_folders">Folders</A>
-  <LI> <A HREF="h_mainhelp_collections">Collection Lists</A>
-  <LI> <A HREF="h_mainhelp_aggops">Aggregate Operations</A>
-  <LI> <A HREF="h_mainhelp_color">Color Setup</A>
-  <LI> <A HREF="h_mainhelp_filtering">Filtering</A>
-  <LI> <A HREF="h_mainhelp_roles">Roles</A>
-  <LI> <A HREF="h_mainhelp_patterns">Patterns</A>
-  <LI> <A HREF="h_mainhelp_keywords">Keywords (or Flags, or Labels)</A>
-  <LI> <A HREF="h_mainhelp_mouse">Using a Mouse</A>
-  <LI> <A HREF="h_mainhelp_cmdlineopts">Command Line Options</A>
-  <LI> <A HREF="h_mainhelp_securing">Securing Your Alpine Session</A>
-  <LI> <A HREF="h_mainhelp_smime">S/MIME</A>
-  <LI> <A HREF="h_mainhelp_problems">Reporting Problems</A>
-  <LI> <A HREF="X-Alpine-Config:">Show Supported Options in this Alpine</A>
-  <LI> <A HREF="h_help_index">Index to Alpine's Online Help</A>
+  <LI> The Basics of Alpine
+  <UL>
+     <LI> <A HREF="h_mainhelp_intro">Introduction</A>
+     <LI> <A HREF="h_mainhelp_pinehelp">Alpine Help</A>
+     <LI> <A HREF="h_help_index">Index to Alpine's Online Help</A>
+     <LI> <A HREF="h_mainhelp_cmds">Giving Commands in Alpine</A>
+     <LI> <A HREF="h_mainhelp_config">Alpine Configuration</A>
+     <LI> <A HREF="h_mainhelp_cmdlineopts">Command Line Options</A>
+     <LI> <A HREF="X-Alpine-Config:">Show Supported Options in this Alpine</A>
+     <!--chtml if [ -r PINE_INFO_PATH ]-->
+     <LI> <A HREF="h_mainhelp_localsupport">Local Support Contacts</A>
+     <!--chtml endif-->
+     <LI> <A HREF="h_mainhelp_problems">Reporting Problems</A>
+  </UL>
+
+  <LI> Description of Alpine Screens
+  <UL>
+      <LI> <A HREF="h_mainhelp_mainmenu">Main Menu</A>
+      <LI> <A HREF="h_mainhelp_index">Index of Messages</A>
+      <LI> <A HREF="h_mainhelp_reading">Reading Messages</A>
+      <LI> <A HREF="h_mainhelp_composing">Composing Messages</A>
+      <LI> <A HREF="h_mainhelp_readingnews">Reading News</A>
+      <LI> <A HREF="h_mainhelp_status">Titlebar Line</A>
+  </UL>
+
+  <LI> Email Processing
+  <UL>
+      <LI> <A HREF="h_mainhelp_aggops">Aggregate Operations</A>
+      <LI> <A HREF="h_mainhelp_filtering">Filtering</A>
+      <LI> <A HREF="h_mainhelp_patterns">Patterns</A>
+  </UL>
+
+  <LI> Configuring Additional Accounts
+  <UL>
+      <LI> <A HREF="h_mainhelp_folders">Folders</A>
+      <LI> <A HREF="h_mainhelp_collections">Collection Lists</A>
+      <LI> <A href="h_config_incoming_folders">OPTION: <!--#echo var="VAR_incoming-folders"--></a>
+      <LI> <A HREF="h_mainhelp_roles">Incoming and Outgoing Settings for other Accounts</A> (a.k.a Roles)
+  </UL>
+
+  <LI> Finding and Saving your Contacts
+  <UL>
+       <LI> <A HREF="h_mainhelp_abooks">Address Books</A>
+       <LI> <A HREF="h_mainhelp_ldap">LDAP Directories</A>
+  </UL>
+
+  <LI> Security
+  <UL>
+      <LI> <A HREF="h_mainhelp_securing">Securing Your Alpine Session</A>
+      <LI> <A HREF="h_mainhelp_smime">S/MIME</A>
+  </UL>
+
+  <LI> Miscelaneous Configurations
+  <UL>
+      <LI> <A HREF="h_mainhelp_color">Color Setup</A>
+      <LI> <A HREF="h_mainhelp_keywords">Keywords (or Flags, or Labels)</A>
+      <LI> <A HREF="h_mainhelp_mouse">Using a Mouse</A>
+  </UL>
 </OL>
 
 <P>
@@ -4211,7 +4239,7 @@ get assistance.
 <P>
 
 <ADDRESS>
-   Eduardo Chappa &lt;chappa@gmx.com&gt;
+   Eduardo Chappa &lt;chappa@washington.edu&gt;
 </ADDRESS>
 
 <P>
