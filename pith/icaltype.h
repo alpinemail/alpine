@@ -12,8 +12,12 @@
  * to a different value, ICAL_DST_SET which means we know the date
  * is DST
  */
-#define ICAL_DST_UNKNOWN  (1)
-#define ICAL_DST_SET 	  (ICAL_DST_UNKNOWN + 1)
+#define ICAL_DATE_TIME     (0x00001)
+#define ICAL_DATE          (0x00010)
+#define ICAL_DATE_TIME_GMT (0x00100)
+#define ICAL_DST_UNKNOWN   (0x01000)
+#define ICAL_DST_SET       (0x10000)
+
 
 /* this is the PARAMETER struct from mail.h, but with possibility of
  * extension */

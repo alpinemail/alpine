@@ -1818,9 +1818,9 @@ ical_parse_duration(char *value, ICAL_DURATION_S *ic_d)
 }
 
 /* return -1 if any error,
-           0 if value has the DATE-TIME form
-           1 if value has the DATE form only
-	   2 if value has the DATE-TIME form and is in GMT.
+           ICAL_DATE_TIME if value has the DATE-TIME form
+           ICAL_DATE if value has the DATE form only
+           ICAL_DATE_TIME_GMT if value has the DATE-TIME form and is in GMT.
  */
 int
 ical_parse_date(char *value, struct tm *t)
@@ -1834,32 +1834,32 @@ ical_parse_date(char *value, struct tm *t)
 
    if(value == NULL) return rv;
 
-   rv = 0;	/* assume DATE-TIME format */
+   rv = ICAL_DATE_TIME;	/* assume DATE-TIME format */
    /* a simple check for the format of the string */
    for(i = 0; isdigit(value[i]); i++);
    if (i == 8 && value[i] == '\0')
-       rv = 1;	
+       rv = ICAL_DATE;
    else
       if (i != 8 || value[i++] != 'T') return -1;
-   if(rv == 0) {
+   if(rv == ICAL_DATE_TIME) {
      for(; isdigit(value[i]); i++);
      if(i != 15 || (value[i] != '\0' && (value[i] != 'Z' || value[i+1] != '\0')))
         return -1;
      if(i == 15 && value[i] == 'Z')
-	rv = 2;
+	rv = ICAL_DATE_TIME_GMT;
    }
 
    Tm.tm_year = ical_get_number_value(value, 0, 4) - 1900;
    Tm.tm_mon  = ical_get_number_value(value, 4, 6) - 1;
    Tm.tm_mday = ical_get_number_value(value, 6, 8);
-   if(rv != 1){
+   if(rv != ICAL_DATE){
      Tm.tm_hour = ical_get_number_value(value, 9, 11);
      Tm.tm_min  = ical_get_number_value(value, 11, 13);
      Tm.tm_sec  = ical_get_number_value(value, 13, 15);
-     Tm.tm_isdst = ICAL_DST_UNKNOWN;
+     Tm.tm_isdst = rv | ICAL_DST_UNKNOWN;
    }
    else
-     Tm.tm_isdst = -1;
+     Tm.tm_isdst = rv;
    *t = Tm;
 
    return (t->tm_mon > 11 || t->tm_mon < 0 
@@ -2258,11 +2258,11 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 	int icd;	/* ical date return value */
 
 	memset((void *)&ic_date, 0, sizeof(struct tm));
-	icd = ical_parse_date(icl->value, &ic_date);
+	icd = ical_parse_date(icl->value, &ic_date) & 0x00fff;
 	tzid = ical_get_tzid(icl->param);
 	if(icd >= 0){
 	  ic_date.tm_wday = ical_day_of_week(ic_date);
-	  if(ic_date.tm_isdst == 1){	/* GMT time */
+	  if(ic_date.tm_isdst & ICAL_DATE_TIME_GMT){	/* GMT time */
 	     ic_date.tm_isdst = dst;
 	     ourtime = mktime(&ic_date);
 	     if(ourtime != (time_t) -1){
@@ -2272,13 +2272,13 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 	  }
 	  ic_date.tm_isdst = dst;
 	  switch(icd){
-	    case 0: /* DATE-TIME */
+	    case ICAL_DATE_TIME: /* DATE-TIME */
 		    ical_date_time(tmp, sizeof(tmp), &ic_date);
 		    break;
-	    case 1: /* DATE */
+	    case ICAL_DATE: /* DATE */
 		    our_strftime(tmp, sizeof(tmp), "%a %x", &ic_date);
 		    break;
-	    case 2: /* DATE-TIME in GMT, Bug: add adjust to time zone */
+	    case ICAL_DATE_TIME_GMT: /* DATE-TIME in GMT */
 		    our_strftime(tmp, sizeof(tmp), "%a %x %I:%M %p", &ic_date);
 		    break;
 	    default: alpine_panic("Unhandled ical date format");
@@ -2355,11 +2355,11 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 	      int icd;
 
 	      memset((void *)&ic_date, 0, sizeof(struct tm));
-	      icd = ical_parse_date(icl->value, &ic_date);
+	      icd = ical_parse_date(icl->value, &ic_date) & 0x00fff;
 	      tzid = ical_get_tzid(icl->param);
 	      if(icd >= 0){
 	         ic_date.tm_wday = ical_day_of_week(ic_date);
-		 if(ic_date.tm_isdst == 1){	/* GMT time */
+		 if(ic_date.tm_isdst & ICAL_DATE_TIME_GMT){	/* GMT time */
 		    ic_date.tm_isdst = dst;
 		    ourtime = mktime(&ic_date);
 		    if(ourtime != (time_t) -1){
@@ -2369,13 +2369,13 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 	         }
 	         ic_date.tm_isdst = dst;
 	         switch(icd){
-		    case 0: /* DATE-TIME */
+		    case ICAL_DATE_TIME: /* DATE-TIME */
 			    ical_date_time(tmp, sizeof(tmp), &ic_date);
 			    break;
-		    case 1: /* DATE */
+		    case ICAL_DATE: /* DATE */
 			    our_strftime(tmp, sizeof(tmp), "%a %x", &ic_date);
 			    break;
-		    case 2: /* DATE-TIME in GMT, Bug: add adjust to time zone */
+		    case ICAL_DATE_TIME_GMT: /* DATE-TIME in GMT */
 			    our_strftime(tmp, sizeof(tmp), "%a %x %I:%M %p", &ic_date);
 			    break;
 		    default: alpine_panic("Unhandled ical date format");
@@ -2412,11 +2412,11 @@ ical_vevent_summary(VCALENDAR_S *vcal)
        int icd;
 
        memset((void *)&ic_date, 0, sizeof(struct tm));
-       icd = ical_parse_date(icl->value, &ic_date);
+       icd = ical_parse_date(icl->value, &ic_date) & 0x00fff;
        tzid = ical_get_tzid(icl->param);
        if(icd >= 0){
          ic_date.tm_wday = ical_day_of_week(ic_date);
-	 if(ic_date.tm_isdst == 1){	/* GMT time */
+	 if(ic_date.tm_isdst & ICAL_DATE_TIME_GMT){	/* GMT time */
 	    ic_date.tm_isdst = dst;
 	    ourtime = mktime(&ic_date);
 	    if(ourtime != (time_t) -1){
@@ -2426,13 +2426,13 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 	 }
 	 ic_date.tm_isdst = dst;
 	 switch(icd){
-	    case 0: /* DATE-TIME */
+	    case ICAL_DATE_TIME: /* DATE-TIME */
 		    ical_date_time(tmp, sizeof(tmp), &ic_date);
 		    break;
-	    case 1: /* DATE */
+	    case ICAL_DATE: /* DATE */
 		    our_strftime(tmp, sizeof(tmp), "%a %x", &ic_date);
 		    break;
-	    case 2: /* DATE-TIME in GMT, Bug: add adjust to time zone */
+	    case ICAL_DATE_TIME_GMT: /* DATE-TIME in GMT */
 		    our_strftime(tmp, sizeof(tmp), "%a %x %I:%M %p", &ic_date);
 		    break;
 	    default: alpine_panic("Unhandled ical date format");
