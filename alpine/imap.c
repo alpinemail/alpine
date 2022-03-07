@@ -558,12 +558,14 @@ oauth2_get_access_code(unsigned char *url, char *method, OAUTH2_S *oauth2, int *
 	   so_puts(in_store, _("<UL> "));
 	   so_puts(in_store, _("<LI>First, login to <A HREF=\"https://console.developers.google.com\">https://console.developers.google.com</A> "));
 	   so_puts(in_store, _("and create a project. The name of the project is not important."));
-	   so_puts(in_store, _("<LI> Go to the Consent Screen and make your app INTERNAL, if your account is a G-Suite account, or EXTERNAL if it is a personal gmail.com account."));
+	   so_puts(in_store, _("<LI> Go to the OAuth Consent Screen and make your app INTERNAL, if your account is a G-Suite account, or EXTERNAL if it is a personal gmail.com account."));
+	   so_puts(in_store, _("<LI> This will take you to several screens where you must input the required information. You can always use your email address fror developer and contact information. Do not add scopes when you get to the scopes screen and add your email address to the screen to add Test Users."));
 	   so_puts(in_store, _("<LI> Create OAUTH Credentials."));
 	   so_puts(in_store, _("</UL> "));
 	   so_puts(in_store, _("<P> As a result of this process, you will get a client-id and a client-secret."));
 	   so_puts(in_store, _(" Exit this screen, and from Alpine's Main Screen press S U to save these values permanently."));
 	   so_puts(in_store, _(" Then retry login into Gmail's server, skip these steps, and continue with the steps below."));
+	   so_puts(in_store, _(" More detailed and up to date information on how to configure Alpine for Gmail can be found at the following <A href=\"https://alpine.x10host.com/alpine/alpine-info/misc/RegisteringAlpineinGmail.html\">link</A>."));
 	   so_puts(in_store, _("</P><P> Cancelling this process will lead to an error in authentication that can be ignored."));
 	   so_puts(in_store, _("</P><P> If you completed these steps successfully, you are ready to move to the second part, where you will authorize Gmail to give access to Alpine to access your email."));
 	}
