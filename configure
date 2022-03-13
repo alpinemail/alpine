@@ -19597,7 +19597,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
     if test "x$alpine_SSLTYPE" = "xnone" ; then
-	as_fn_error $? "Install openssl version >= 1.0.0c" "$LINENO" 5
+	as_fn_error $? "Install development/header files for your current version of openssl (minimum required version is 1.0.0c)" "$LINENO" 5
 	exit 1
     fi
 fi

@@ -1532,7 +1532,7 @@ if test "x$alpine_SSLTYPE" != "xnone" -a "x$alpine_SSLPROVIDER" != "xlibressl" ;
 	[ AC_MSG_WARN([cross compiling: not checking])])
 
     if test "x$alpine_SSLTYPE" = "xnone" ; then
-	AC_MSG_ERROR(Install openssl version >= 1.0.0c)
+	AC_MSG_ERROR([Install development/header files for your current version of openssl (minimum required version is 1.0.0c)])
 	exit 1
     fi
 fi
