@@ -314,6 +314,7 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
 	switch(status){
 	   case HTTP_UNAUTHORIZED:
 			mm_log("Client not authorized (wrong client-id?)", ERROR);
+			oauth2->cancel_refresh_token++;
 			break;
 	   case HTTP_OK: if(oauth2->access_token)
 			    fs_give((void **) &oauth2->access_token);

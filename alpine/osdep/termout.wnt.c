@@ -782,8 +782,7 @@ os_login_dialog (NETMBX *mb, char *user_utf8, int userlen,
 
 	tpwd_utf8 = lptstr_to_utf8(dlgpw.pwd);
 	if(tpwd_utf8){
-	    strncpy(*pwd_utf8, tpwd_utf8, pwdlen - 1);
-	    (*pwd_utf8)[pwdlen - 1] = '\0';
+	    *pwd_utf8 = cpystr(tpwd_utf8);
 	    fs_give((void **) &tpwd_utf8);
 	}
 	if(prespass)

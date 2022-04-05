@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 639 2022-03-13 10:52:22
+Alpine Commit 640 2022-04-04 22:47:37
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -266,6 +266,9 @@ Bugs addressed include:
      global smtp-server, then Alpine will use the sendmail-path even when
      the user configured a smtp-server for a role. Reported by Gregory
      Heytings.
+
+<LI> Crash in PC-Alpine when creating a mail collection and no username is
+     indicated in the server path. Reported by Sandy Schuman.
 </UL>
 
 <P>Version 2.25 adds new features and addresses bugs found in previous
