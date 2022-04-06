@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 640 2022-04-04 22:47:37
+Alpine Commit 641 2022-04-05 20:43:24
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -269,6 +269,9 @@ Bugs addressed include:
 
 <LI> Crash in PC-Alpine when creating a mail collection and no username is
      indicated in the server path. Reported by Sandy Schuman.
+
+<LI> Crash in Alpine when running a filter that moves deleted messages the
+     INBOX in a Gmail account. Reported by Jyrki Voutilainen.
 </UL>
 
 <P>Version 2.25 adds new features and addresses bugs found in previous

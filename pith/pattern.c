@@ -7712,7 +7712,7 @@ process_filter_patterns(MAILSTREAM *stream, MSGNO_S *msgmap, long int recent)
 	}
 
 	/* New mail arrival means start over */
-	if(mail_uid(stream, stream->nmsgs) == uid)
+	if(stream->nmsgs && mail_uid(stream, stream->nmsgs) == uid)
 	  break;
 	/* else, go again */
 
