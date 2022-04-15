@@ -397,20 +397,19 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
 
 			    break;
 
-	     case HTTP_BAD :  break;
-
-		default   :  { char tmp[200];
-			       char *err, *err_desc;
-			       jx = json_body_value(json, "error");
-			       err = cpystr(jx && jx->jtype == JString ? (char *) jx->value : "Unknown error");
-			       jx = json_body_value(json, "error_description");
-			       err_desc = cpystr(jx && jx->jtype == JString ? (char *) jx->value : "No description");
-			       sprintf(tmp, "Code %d: %.80s: %.80s", status, err, err_desc);
-			       mm_log (tmp, ERROR);
-			       if(err) fs_give((void **) &err);
-			       if(err_desc) fs_give((void **) &err_desc);
-			       oauth2->cancel_refresh_token++;
-			     }
+	     case HTTP_BAD :
+		default    :  { char tmp[200];
+			        char *err, *err_desc;
+			        jx = json_body_value(json, "error");
+			        err = cpystr(jx && jx->jtype == JString ? (char *) jx->value : "Unknown error");
+			        jx = json_body_value(json, "error_description");
+			        err_desc = cpystr(jx && jx->jtype == JString ? (char *) jx->value : "No description");
+			        sprintf(tmp, "Code %d: %.80s: %.80s", status, err, err_desc);
+			        mm_log (tmp, ERROR);
+			        if(err) fs_give((void **) &err);
+			        if(err_desc) fs_give((void **) &err_desc);
+			        oauth2->cancel_refresh_token++;
+			      }
 	  }
 
 	  json_free(&json);
