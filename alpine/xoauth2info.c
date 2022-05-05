@@ -35,7 +35,7 @@ OAUTH2_S alpine_oauth2_list[] = {
     {"code", NULL},		/* access code from the authorization process */
     {"refresh_token", NULL},
     {"scope", "https://mail.google.com/"},
-    {"redirect_uri", "urn:ietf:wg:oauth:2.0:oob"},
+    {"redirect_uri", "http://localhost"},
     {"grant_type", "authorization_code"},
     {"grant_type", "refresh_token"},
     {"response_type", "code"},

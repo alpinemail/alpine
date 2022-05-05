@@ -140,7 +140,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 643 2022-04-15 17:11:36
+Alpine Commit 644 2022-05-04 22:13:00
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -156,7 +156,7 @@ Version <!--#echo var="ALPINE_VERSION"--> (<!--#echo var="ALPINE_REVISION"-->)
 <!--chtml endif-->
 
 <BR>
-<BR>Copyright 2013-2021 Eduardo Chappa
+<BR>Copyright 2013-2022 Eduardo Chappa
 <BR>Copyright 2006-2008 University of Washington
 </DIV>
 
@@ -198,6 +198,10 @@ new additions to Alpine, please check it periodically.
 <LI> Support for code_verifier and code_challenge when generating a
      refresh token and access token in Gmail and Outlook using the
      S256 method and plain method.
+
+<LI> Change the redirect_uri scheme for Gmail, as Google is deprecating the use
+     of oob. Changed to http://localhost. Users are supposed to enter the URL
+     they see in their browser in place of the code.
 
 <LI> Some servers do not allow the Drafts folder to be removed, even when
      it is empty. Alpine, however, assumes that if the folder exists, it
