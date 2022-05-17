@@ -198,7 +198,6 @@ xoauth2_server(char *server, char *tenant)
 	   }
 	   u = t;
 	}
-
     }
     else
       rv = cpystr(server);
@@ -241,11 +240,15 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
    char *s = NULL;
    JSON_S *json = NULL;
 
+   mm_log("mm_login_oauth2_c_client_method()", (long) NIL);
+
    if(oauth2->param[OA2_Id].value == NULL
 	|| (oauth2->require_secret && oauth2->param[OA2_Secret].value == NULL)){
      XOAUTH2_INFO_S *x;
      oauth2clientinfo_t ogci =
 		(oauth2clientinfo_t) mail_parameters (NIL, GET_OA2CLIENTINFO, NIL);
+
+     mm_log("Setting up for next call. Attempting to ask client for client-id and client-secret.", (long) NIL);
 
      if(ogci && (x = (*ogci)(oauth2->name, user)) != NULL){
 	 oauth2->param[OA2_Id].value = cpystr(x->client_id);
@@ -259,13 +262,17 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
    if(oauth2->param[OA2_Id].value == NULL
 	|| (oauth2->require_secret && oauth2->param[OA2_Secret].value == NULL)){
       *tryanother = 1;
+      mm_log("could not get client-id or client-secret required and empty.", (long) NIL);
       return;
    }
+
+   mm_log("Got a client-id/client-secret to use.", (long) NIL);
 
    /* Do we have a method to execute? */
    if (oauth2->first_time && oauth2->server_mthd[OA2_GetDeviceCode].name){
      oauth2deviceinfo_t ogdi;
 
+     mm_log("Attempting DEVICE method.", (long) NIL);
      json = oauth2_json_reply(oauth2->server_mthd[OA2_GetDeviceCode], oauth2, &status);
 
      if(json != NULL){
@@ -299,6 +306,7 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
 	   ogdi = (oauth2deviceinfo_t) mail_parameters (NIL, GET_OA2DEVICEINFO, NIL);
 	   if(ogdi) (*ogdi)(oauth2, method);
 	}
+	mm_log("Got Json reply. Completed parsing.", (long) NIL);
      }
      return;
    }
@@ -306,6 +314,9 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
    /* else check if we have a refresh token, and in that case use it */
 
    if(oauth2->param[OA2_RefreshToken].value){
+
+     mm_log("Attempting to get access token with known refresh token.", (long) NIL);
+
      json = oauth2_json_reply(oauth2->server_mthd[OA2_GetAccessTokenFromRefreshToken], oauth2, &status);
 
      if(json != NULL){
@@ -328,6 +339,7 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
 				default   : break;
 			 }
 			 oauth2->cancel_refresh_token = 0;	/* do not cancel this token. It is good */
+			 mm_log("Got new refresh token.", (long) NIL);
 			 break;
 
 	     default :  { char tmp[200];
@@ -355,6 +367,8 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
     */
    { OAUTH2_SERVER_METHOD_S RefreshMethod = oauth2->server_mthd[OA2_GetAccessCode];
      HTTP_PARAM_S params[OAUTH2_PARAM_NUMBER];
+
+     mm_log("Starting AUTHORIZE method. No refresh token nor access token found.", (long) NIL);
 
      LOAD_HTTP_PARAMS(RefreshMethod, params);
 
@@ -392,9 +406,8 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
 				    break;
 				default   : break;
 			      }
-
 			    oauth2->cancel_refresh_token = 0;	/* do not cancel this token. It is good */
-
+			    mm_log("Got new refresh and access token.", (long) NIL);
 			    break;
 
 	     case HTTP_BAD :
@@ -411,10 +424,11 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
 			        oauth2->cancel_refresh_token++;
 			      }
 	  }
-
 	  json_free(&json);
 	}
      }
+     else
+        mm_log("Failed to obtain authorization code. Cancelled by user?", (long) NIL);
      return;
    }
 }
@@ -427,6 +441,8 @@ oauth2deviceinfo_get_accesscode(void *inp, void *outp)
   OAUTH2_DEVICECODE_S *dcode = &oauth2->devicecode;
   int done = 0, status, rv;
   JSON_S *json;
+
+  mm_log("oauth2deviceinfo: getting accesscode.", (long) NIL);
 
   if(dcode->device_code && oauth2->param[OA2_DeviceCode].value == NULL)
      oauth2->param[OA2_DeviceCode].value = cpystr(dcode->device_code);
@@ -451,7 +467,8 @@ oauth2deviceinfo_get_accesscode(void *inp, void *outp)
 			   rv = OA2_CODE_FAIL;
 			else	/* keep waiting? */
 			   rv = OA2_CODE_WAIT;
-
+			mm_log(rv == OA2_CODE_FAIL ? error : "waiting for process to end.",
+			       rv == OA2_CODE_FAIL ? ERROR : (long) NIL);
 			break;
 
 	case HTTP_OK :   if(oauth2->param[OA2_RefreshToken].value)
@@ -472,16 +489,15 @@ oauth2deviceinfo_get_accesscode(void *inp, void *outp)
 
 			rv = OA2_CODE_SUCCESS;
 			oauth2->cancel_refresh_token = 0;	/* do not cancel this token. It is good */
-
+			mm_log("Got new refresh and access token.", (long) NIL);
 			break;
 
 	     default :  { char tmp[100];
-			  sprintf(tmp, "Oauth device Received Code %d", status);
+			  sprintf(tmp, "Oauth device Received Code %d.", status);
 			  mm_log (tmp, ERROR);
 			  oauth2->cancel_refresh_token++;
 			}
      }
-
      json_free(&json);
   }
 
@@ -565,6 +581,8 @@ void renew_accesstoken(MAILSTREAM *stream)
     char user[MAILTMPLEN];
     int tryanother;
     unsigned long trial = 0;
+
+    mm_log("renew_accesstoken().", (long) NIL);
 
     memset((void *) &oauth2, 0, sizeof(OAUTH2_S));
     mail_valid_net_parse(stream->original_mailbox, &mb);

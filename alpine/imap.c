@@ -232,6 +232,8 @@ oauth2_select_flow(char *host)
    int i = 0, rv;
    char *method;
 
+   dprint((2, "-- oauth2_select_flow()\n"));
+
    if(ps_global->ttyo){
       CONF_S  *ctmp = NULL, *first_line = NULL;
       OAUTH2_S *x_sel = NULL;

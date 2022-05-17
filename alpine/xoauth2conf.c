@@ -179,6 +179,7 @@ xoauth_info_choice(XOAUTH2_INFO_S **xinfo, char *user)
    int i, n, rv;
    char *extra;
 
+   dprint((9, "xoauth2_info_choice()"));
    if(!ps_global->ttyo){
 	char *s;
 	char prompt[1024];
@@ -218,7 +219,6 @@ xoauth_info_choice(XOAUTH2_INFO_S **xinfo, char *user)
       OPT_SCREEN_S   screen;
       char tmp[1024];
 
-      dprint((9, "xoauth2 select client-id screen"));
       ps_global->next_screen = SCREEN_FUN_NULL;
 
       memset(&screen, 0, sizeof(screen));
