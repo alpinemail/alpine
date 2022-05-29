@@ -179,7 +179,33 @@ xoauth_info_choice(XOAUTH2_INFO_S **xinfo, char *user)
    int i, n, rv;
    char *extra;
 
-   dprint((9, "xoauth2_info_choice()"));
+   dprint((9, "xoauth_info_choice()"));
+
+   for(i = 0; xinfo && xinfo[i]; i++);
+   if(i == 0) return NULL;
+
+   if(strucmp((char *) xinfo[0]->name, (char *) GMAIL_NAME) == 0){
+      for(i = 0; xinfo && xinfo[i] && strcmp(xinfo[i]->client_id, (char *) GMAIL_ID) != 0; i++);
+      if(!xinfo || xinfo[i] != NULL){
+	int j, offset = 0;
+	XOAUTH2_INFO_S *x;
+
+	for(j = 0; xinfo[j] != NULL; j++){
+	   if(j == i){
+	      offset++;
+	      continue;
+	   }
+	   x = xinfo[j] ? copy_xoauth2_info(xinfo[j]) : NULL;
+	   free_xoauth2_info(&xinfo[j - offset]);
+	   xinfo[j - offset] = x;
+	}
+	xinfo[j - offset] = NULL;
+	for(i = 0; xinfo && xinfo[i]; i++);
+      }
+   }
+
+   if(i == 1) return copy_xoauth2_info(xinfo[0]);
+
    if(!ps_global->ttyo){
 	char *s;
 	char prompt[1024];

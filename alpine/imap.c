@@ -143,7 +143,7 @@ cache_method_message(STORE_S  *in_store)
 {
 #ifdef	LOCAL_PASSWD_CACHE
 	if(cache_method_was_setup(ps_global->pinerc)){
-           so_puts(in_store, _("</P><P> Once you have authorized Alpine, you will be asked if you want to preserve the Refresh Token and Access Code. If you do "));
+           so_puts(in_store, _("</P><P> Once you have authorized Alpine, Alpine will ask you if you want to preserve the Refresh Token and Access Code. If you do "));
            so_puts(in_store, _("not wish to repeat this process again, answer \'Y\'es. If you did this process quickly, your connection to the server will still be "));
            so_puts(in_store, _("alive at the end of this process, and your connection will proceed from there."));
         }
@@ -409,7 +409,7 @@ oauth2_set_device_info(OAUTH2_S *oa2, char *method)
 
 	cache_method_message(in_store);
 
-	so_puts(in_store, _(" </P><P>If you do not wish to proceed, cancel at any time by pressing 'E' to exit"));
+	so_puts(in_store, _(" </P><P>If you do not wish to proceed, cancel at any time by pressing 'E' to exit."));
 	so_puts(in_store, _("</P></HTML>"));
 
 	so_seek(in_store, 0L, 0);
@@ -554,42 +554,41 @@ oauth2_get_access_code(unsigned char *url, char *method, OAUTH2_S *oauth2, int *
 	sprintf(tmp, _("<P>Alpine is attempting to log you into your %s account, using the %s method."), oauth2->name, method),
 	so_puts(in_store, tmp);
 
-        if(strucmp((char *) oauth2->name, (char *) GMAIL_NAME) == 0){
+        if(strucmp((char *) oauth2->name, (char *) GMAIL_NAME) == 0 && strstr(url, (char *) GMAIL_ID) != NULL){
 	   so_puts(in_store, _(" If this is your first time setting up this type of authentication, please follow the steps below. "));
-	   so_puts(in_store, _("</P><P> First you must register Alpine with Google and create a client-id and client-secret. If you already did that, then you can skip to the authorization step, and continue with the process outlined below."));
+	   so_puts(in_store, _("</P><P> First you must register Alpine with Google and create a client-id and client-secret.</P>"));
 	   so_puts(in_store, _("<UL> "));
 	   so_puts(in_store, _("<LI>First, login to <A HREF=\"https://console.developers.google.com\">https://console.developers.google.com</A> "));
 	   so_puts(in_store, _("and create a project. The name of the project is not important."));
 	   so_puts(in_store, _("<LI> Go to the OAuth Consent Screen and make your app INTERNAL, if your account is a G-Suite account, or EXTERNAL if it is a personal gmail.com account."));
-	   so_puts(in_store, _("<LI> This will take you to several screens where you must input the required information. You can always use your email address fror developer and contact information. Do not add scopes when you get to the scopes screen and add your email address to the screen to add Test Users."));
+	   so_puts(in_store, _("<LI> This will take you to several screens where you must input the required information. You can always use your email address for developer and contact information. Do not add scopes when you get to the scopes screen and add your email address to the screen to add Test Users."));
 	   so_puts(in_store, _("<LI> Create OAUTH Credentials."));
 	   so_puts(in_store, _("</UL> "));
 	   so_puts(in_store, _("<P> As a result of this process, you will get a client-id and a client-secret."));
-	   so_puts(in_store, _(" Exit this screen, and from Alpine's Main Screen press S U to save these values permanently."));
-	   so_puts(in_store, _(" Then retry login into Gmail's server, skip these steps, and continue with the steps below."));
+	   so_puts(in_store, _(" Exit this screen, and from Alpine's Main Screen press S U to save these values permanently,"));
+	   so_puts(in_store, _(" then retry login into Gmail's server."));
 	   so_puts(in_store, _(" More detailed and up to date information on how to configure Alpine for Gmail can be found at the following <A href=\"https://alpine.x10host.com/alpine/alpine-info/misc/RegisteringAlpineinGmail.html\">link</A>."));
-	   so_puts(in_store, _("</P><P> Cancelling this process will lead to an error in authentication that can be ignored."));
-	   so_puts(in_store, _("</P><P> If you completed these steps successfully, you are ready to move to the second part, where you will authorize Gmail to give access to Alpine to access your email."));
+	}
+	else{
+	   so_puts(in_store, _("</P><P>In order to authorize Alpine to access your email, Alpine needs to open the following URL:"));
+	   so_puts(in_store,"</P><P>");
+	   sprintf(tmp_20k_buf, _("<A HREF=\"%s\">%s</A>"), url, url);
+	   so_puts(in_store, tmp_20k_buf);
+
+	   so_puts(in_store, _("</P><P> Alpine will try to use your URL Viewers setting to find a browser to open this URL."));
+	   sprintf(tmp, _(" When you open this link, you will be sent to %s's servers to complete this process."), oauth2->name);
+	   so_puts(in_store, tmp);
+	   so_puts(in_store, _(" Alternatively, you can copy and paste the previous link and open it with the browser of your choice."));
+
+	   so_puts(in_store, _("</P><P> After you open the previous link, you will be asked to authenticate and later to authorize access to Alpine. "));
+	   so_puts(in_store, _(" At the end of this process, you will be given an access code or redirected to a web page."));
+	   so_puts(in_store, _(" If you see a code, copy it and then press 'C', and enter the code at the prompt."));
+	   so_puts(in_store, _(" If you do not see a code, copy the url of the page you were redirected to and again press 'C' and copy and paste it into the prompt. "));
+
+	   cache_method_message(in_store);
 	}
 
-	so_puts(in_store, _("</P><P>In order to authorize Alpine to access your email, Alpine needs to open the following URL:"));
-	so_puts(in_store,"</P><P>");
-	sprintf(tmp_20k_buf, _("<A HREF=\"%s\">%s</A>"), url, url);
-	so_puts(in_store, tmp_20k_buf);
-
-	so_puts(in_store, _("</P><P> Alpine will try to use your URL Viewers setting to find a browser to open this URL."));
-	sprintf(tmp, _(" When you open this link, you will be sent to %s's servers to complete this process."), oauth2->name);
-	so_puts(in_store, tmp);
-	so_puts(in_store, _(" Alternatively, you can copy and paste the previous link and open it with the browser of your choice."));
-
-        so_puts(in_store, _("</P><P> After you open the previous link, you will be asked to authenticate and later to authorize access to Alpine. "));
-        so_puts(in_store, _(" At the end of this process, you will be given an access code or redirected to a web page."));
-	so_puts(in_store, _(" If you see a code, copy it and then press 'C', and enter the code at the prompt."));
-	so_puts(in_store, _(" If you do not see a code, copy the url of the page you were redirected to and again press 'C' and copy and paste it into the prompt. "));
-
-        cache_method_message(in_store);
-
-	so_puts(in_store, _(" If you do not wish to proceed, cancel by pressing 'E' to exit"));
+	so_puts(in_store, _("</P><P> If you do not wish to proceed, cancel by pressing 'E' to exit."));
 	so_puts(in_store, _("</P></BODY></HTML>"));
 
 	so_seek(in_store, 0L, 0);
