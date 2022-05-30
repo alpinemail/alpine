@@ -71,6 +71,12 @@ screen's text:
 
 WARNING ABOUT CHTML "if-else-endif" CLAUSES: They don't nest.
 
+1d) Other operating systems added to 1c) above are
+
+    os_unix_and_osx means all unices, incluing mac
+    os_unix  means all unices except mac
+    os_osx   means only mac
+
 2a) Several "server side include" commented elements are supported:
 
 <!--#include file="textfile"--> 
@@ -97,6 +103,7 @@ Where "variable" is one of either:
     _BUGS_ADDRESS_
     CURRENT_DIR
     HOME_DIR
+    PASSWORD_FILE
     PINE_CONF_PATH
     PINE_CONF_FIXED_PATH
     PINE_INFO_PATH
@@ -140,7 +147,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 646 2022-05-29 14:01:33
+Alpine Commit 647 2022-05-30 15:31:49
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -189,6 +196,15 @@ new additions to Alpine, please check it periodically.
 
 <P> New features include:
 <UL>
+<!--chtml if pinemode="os_unix"-->
+<LI> Unix version of Alpine (not including OSX). Alpine is built with password
+     file support by default. If Alpine is built with SMIME support and the
+     password file does not exist, then Alpine will create it by default and
+     encrypt it. For this version of Alpine, Alpine saves its passwords in the file
+     &quot;<!--#echo var="PASSWORD_FILE"-->&quot; which is in the same directory that
+     your .pinerc is located.
+<!--chtml endif-->
+
 <LI> In the past Alpine did not recognize images embedded
      in an HTML file, so now it does and a link to open them is
      given. Additionally, Alpine did not pass these images to an

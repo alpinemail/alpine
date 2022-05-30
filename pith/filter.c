@@ -7635,6 +7635,12 @@ html_element_comment(FILTER_S *f, char *s)
 #ifdef	_WINDOWS
 		    else if(!strucmp(s, "os_windows"))
 		      HD(f)->bitbucket = 0;
+#elif OSX_TARGET
+		    else if(!strucmp(s, "os_osx") || !strucmp(s, "os_unix_and_osx"))
+		      HD(f)->bitbucket = 0;
+#else
+		    else if(!strucmp(s, "os_unix") || !strucmp(s, "os_unix_and_osx"))
+		      HD(f)->bitbucket = 0;
 #endif
 		}
 
@@ -7717,6 +7723,11 @@ html_element_comment(FILTER_S *f, char *s)
 		else if(!strcmp(s, "C_CLIENT_VERSION")){
 		    p = CCLIENTVERSION;
 		}
+#ifdef PASSFILE
+		else if(!strcmp(s, "PASSWORD_FILE")){
+		    p = PASSFILE;
+		}
+#endif
 		else if(!strcmp(s, "ALPINE_COMPILE_DATE")){
 		    p = datestamp;
 		}

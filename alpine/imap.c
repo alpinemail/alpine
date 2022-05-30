@@ -3591,7 +3591,7 @@ read_passfile(pinerc, l)
 #else /* PASSFILE */
 
     char  tmp[MAILTMPLEN], *ui[5];
-    int   i, j, n, rv = 0;
+    int   i, j, n, rv = 0, error = 0;
     size_t len = 0;
     char *tmptext = NULL;
     struct stat sbuf;
@@ -3607,11 +3607,28 @@ read_passfile(pinerc, l)
 
     dprint((9, "read_passfile\n"));
 
-    /* if there's no password to read, bag it!! */
+    /* if there's no password to read, create it if we can encrypt it,
+     * or else let the user create it and bail out of here.
+     */
+    tmp[0] = '\0';
     if(!passfile_name(pinerc, tmp, sizeof(tmp)) || !(fp = our_fopen(tmp, "rb"))){
+#ifdef SMIME
+	i = our_creat(tmp, 0600);
+	if(i >= 0){
+	   close(i);
+	   if(!(fp = our_fopen(tmp, "rb")))
+	      error++;
+	}
+	else error++;
+#else
+	error++;
+#endif
+    };
+
+    if(error){
 	using_passfile = 0;
 	return(using_passfile);
-    };
+    }
 
 #ifndef SMIME
     if(our_stat(tmp, &sbuf) == 0)

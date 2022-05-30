@@ -905,9 +905,6 @@ with_smime_public_cert_directory
 with_smime_private_key_directory
 with_smime_cacert_directory
 with_default_printer
-with_passfile
-with_local_password_cache
-with_local_password_cache_method
 with_default_sshpath
 with_default_sshcmd
 with_ssl
@@ -936,6 +933,9 @@ with_pthread
 with_system_mail_directory
 with_c_client_target
 with_bundled_tools
+with_passfile
+with_local_password_cache
+with_local_password_cache_method
 with_ipv6
 with_dlopen
 with_ntlm
@@ -1742,14 +1742,6 @@ Optional Packages:
                           Default Cert Authority Directory (.alpine-smime/ca)
   --with-default-printer=VALUE
                           Default printer (ANSI_PRINTER)
-  --with-passfile=FILENAME
-                          Password cache file (recommended when S/MIME is
-                          enabled and configured)
-  --without-local-password-cache
-                          Disable OS-specific password cache, if supported
-  --with-local-password-cache-method
-                          OS-specific credential cache (OSX=APPLEKEYCHAIN,
-                          Windows=WINCRED)
   --with-default-sshpath=FILENAME
                           set default value of ssh command path (defining
                           should cause ssh to be preferred to rsh)
@@ -1792,6 +1784,14 @@ Optional Packages:
                           IMAP build target (see imap/Makefile)
   --with-bundled-tools    Build additional tools (mtest, imapd, etc.) Default:
                           --with-bundled-tools=no
+  --with-passfile=FILENAME
+                          Password cache file (recommended when S/MIME is
+                          enabled and configured)
+  --without-local-password-cache
+                          Disable OS-specific password cache, if supported
+  --with-local-password-cache-method
+                          OS-specific credential cache (OSX=APPLEKEYCHAIN,
+                          Windows=WINCRED)
   --without-ipv6          Disable IPv6, primarily to work around resolver
                           problems
   --without-dlopen        Do not test for dlopen because this system does not
@@ -18174,59 +18174,6 @@ _ACEOF
 
 
 
-# Check whether --with-passfile was given.
-if test "${with_passfile+set}" = set; then :
-  withval=$with_passfile;
-      case "$withval" in
-	no)
-	  ;;
-	yes)
-	  ;;
-	*)
-	  alpine_PASSFILE=$withval
-	  ;;
-      esac
-
-fi
-
-
-
-
-# Check whether --with-local-password-cache was given.
-if test "${with_local_password_cache+set}" = set; then :
-  withval=$with_local_password_cache;
-     alpine_os_credential_cache=$withval
-
-fi
-
-
-
-# Check whether --with-local-password-cache-method was given.
-if test "${with_local_password_cache_method+set}" = set; then :
-  withval=$with_local_password_cache_method;
-     alpine_os_credential_cache_method=$withval
-
-fi
-
-
-if test -n "$alpine_PASSFILE" ; then
-  case $alpine_os_credential_cache in
-    no)
-      ;;
-    *)
-      alpine_os_credential_cache="no"
-      { $as_echo "$as_me:${as_lineno-$LINENO}: --with-passfile definition overrides OS-Specific password caching" >&5
-$as_echo "$as_me: --with-passfile definition overrides OS-Specific password caching" >&6;}
-      ;;
-  esac
-
-cat >>confdefs.h <<_ACEOF
-#define PASSFILE "$alpine_PASSFILE"
-_ACEOF
-
-fi
-
-
 # Check whether --with-default-sshpath was given.
 if test "${with_default_sshpath+set}" = set; then :
   withval=$with_default_sshpath;
@@ -18814,6 +18761,7 @@ case "$host" in
     if test -f /etc/fedora-release ; then
       systype="LFD"
       alpine_PAM="yes"
+      alpine_SYSTEM_PASSFILE=".alpine.passfile"
       if test -d /etc/pki/tls ; then
 	alpine_c_client_target="lfd"
       else
@@ -18826,6 +18774,7 @@ case "$host" in
     elif test -f /etc/redhat-release -o -f /etc/redhat_version ; then
       systype="LRH"
       alpine_PAM="yes"
+      alpine_SYSTEM_PASSFILE=".alpine.passfile"
       if test -d /etc/pki/tls ; then
 	alpine_c_client_target="lr5"
       else
@@ -18839,11 +18788,13 @@ case "$host" in
         systype="DEB"
         alpine_c_client_target="ldb"
 	alpine_PAM="yes"
+        alpine_SYSTEM_PASSFILE=".pine-passfile"
       fi
-    elif test -f /etc/SuSE-release; then
+    elif test -f /etc/SuSE-release -o -f /etc/SUSE-brand ; then
       systype="LSU"
       alpine_c_client_target="lsu"
       alpine_PAM="yes"
+      alpine_SYSTEM_PASSFILE=".pinepw"
     else
       systype="LNX"
       if test -z "$alpine_c_client_bundled" ; then
@@ -19126,6 +19077,69 @@ $as_echo "#define _WINDOWS 1" >>confdefs.h
     as_fn_error $? "Unrecognized system: $host" "$LINENO" 5
     ;;
 esac
+
+
+# Check whether --with-passfile was given.
+if test "${with_passfile+set}" = set; then :
+  withval=$with_passfile;
+      case "$withval" in
+	no)
+	  ;;
+	yes)
+	  ;;
+	*)
+	  alpine_PASSFILE=$withval
+	  ;;
+      esac
+
+fi
+
+
+
+
+# Check whether --with-local-password-cache was given.
+if test "${with_local_password_cache+set}" = set; then :
+  withval=$with_local_password_cache;
+     alpine_os_credential_cache=$withval
+
+fi
+
+
+
+# Check whether --with-local-password-cache-method was given.
+if test "${with_local_password_cache_method+set}" = set; then :
+  withval=$with_local_password_cache_method;
+     alpine_os_credential_cache_method=$withval
+
+fi
+
+
+if test -z "$alpine_PASSFILE" ; then
+  if test -z "$alpine_SYSTEM_PASSFILE" ; then
+     alpine_PASSFILE=".alpine.pwd"
+  else
+     alpine_PASSFILE="$alpine_SYSTEM_PASSFILE"
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: * * * Setting up $alpine_PASSFILE as default password file" >&5
+$as_echo "$as_me: * * * Setting up $alpine_PASSFILE as default password file" >&6;}
+fi
+
+if test -n "$alpine_PASSFILE" ; then
+  case $alpine_os_credential_cache in
+    no)
+      ;;
+    *)
+      alpine_os_credential_cache="no"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: --with-passfile definition overrides OS-Specific password caching" >&5
+$as_echo "$as_me: --with-passfile definition overrides OS-Specific password caching" >&6;}
+      ;;
+  esac
+
+cat >>confdefs.h <<_ACEOF
+#define PASSFILE "$alpine_PASSFILE"
+_ACEOF
+
+fi
 
 
 # Check whether --with-ipv6 was given.

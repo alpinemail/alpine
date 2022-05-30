@@ -631,48 +631,6 @@ AC_DEFINE_UNQUOTED([DF_CA_CONTAINER], "CAContainer", [Name of default certificat
 AC_DEFINE_UNQUOTED([DEFAULT_SSLUSERCAPATH], ".alpine-certs", [Default directory for user trusted certificates])
 AC_DEFINE_UNQUOTED([DEFAULT_SSLUSERCAFILE], ".alpine-certs/certs.pem", [Name of default container for user trusted certificates])
 
-dnl set PASSFILE?
-AC_ARG_WITH(passfile,
-  AS_HELP_STRING([--with-passfile=FILENAME],[Password cache file (recommended when S/MIME is enabled and configured)]),
-    [
-      case "$withval" in
-	no)
-	  ;;
-	yes)
-	  ;;
-	*)
-	  alpine_PASSFILE=$withval
-	  ;;
-      esac
-    ])
-
-
-dnl os-specific credential cache?
-AC_ARG_WITH(local-password-cache,
- AS_HELP_STRING([--without-local-password-cache],[Disable OS-specific password cache, if supported]),
-   [
-     alpine_os_credential_cache=$withval
-   ])
-
-dnl Particular os-specific credential cache?
-AC_ARG_WITH(local-password-cache-method,
- AS_HELP_STRING([--with-local-password-cache-method],[OS-specific credential cache (OSX=APPLEKEYCHAIN, Windows=WINCRED)]),
-   [
-     alpine_os_credential_cache_method=$withval
-   ])
-
-if test -n "$alpine_PASSFILE" ; then
-  case $alpine_os_credential_cache in
-    no)
-      ;;
-    *)
-      alpine_os_credential_cache="no"
-      AC_MSG_NOTICE([--with-passfile definition overrides OS-Specific password caching])
-      ;;
-  esac
-  AC_DEFINE_UNQUOTED([PASSFILE], "$alpine_PASSFILE", [Password cache file (recommended if S/MIME is enabled and configured)])
-fi
-
 dnl set DF_SSHPATH?
 AC_ARG_WITH(default-sshpath,
   AS_HELP_STRING([--with-default-sshpath=FILENAME],[set default value of ssh command path (defining should cause ssh to be preferred to rsh)]),
@@ -1174,6 +1132,7 @@ case "$host" in
     if test -f /etc/fedora-release ; then  
       systype="LFD"
       alpine_PAM="yes"
+      alpine_SYSTEM_PASSFILE=".alpine.passfile"
       if test -d /etc/pki/tls ; then  
 	alpine_c_client_target="lfd"
       else
@@ -1186,7 +1145,8 @@ case "$host" in
     elif test -f /etc/redhat-release -o -f /etc/redhat_version ; then
       systype="LRH"
       alpine_PAM="yes"
-      if test -d /etc/pki/tls ; then  
+      alpine_SYSTEM_PASSFILE=".alpine.passfile"
+      if test -d /etc/pki/tls ; then
 	alpine_c_client_target="lr5"
       else
 	alpine_c_client_target="lrh"
@@ -1199,11 +1159,13 @@ case "$host" in
         systype="DEB"
         alpine_c_client_target="ldb"
 	alpine_PAM="yes"
+        alpine_SYSTEM_PASSFILE=".pine-passfile"
       fi
-    elif test -f /etc/SuSE-release; then
+    elif test -f /etc/SuSE-release -o -f /etc/SUSE-brand ; then
       systype="LSU"
       alpine_c_client_target="lsu"
       alpine_PAM="yes"
+      alpine_SYSTEM_PASSFILE=".pinepw"
     else
       systype="LNX"
       if test -z "$alpine_c_client_bundled" ; then
@@ -1395,6 +1357,57 @@ case "$host" in
     AC_MSG_ERROR(Unrecognized system: $host)
     ;;
 esac
+
+dnl set PASSFILE?
+AC_ARG_WITH(passfile,
+  AS_HELP_STRING([--with-passfile=FILENAME],[Password cache file (recommended when S/MIME is enabled and configured)]),
+    [
+      case "$withval" in
+	no)
+	  ;;
+	yes)
+	  ;;
+	*)
+	  alpine_PASSFILE=$withval
+	  ;;
+      esac
+    ])
+
+
+dnl os-specific credential cache?
+AC_ARG_WITH(local-password-cache,
+ AS_HELP_STRING([--without-local-password-cache],[Disable OS-specific password cache, if supported]),
+   [
+     alpine_os_credential_cache=$withval
+   ])
+
+dnl Particular os-specific credential cache?
+AC_ARG_WITH(local-password-cache-method,
+ AS_HELP_STRING([--with-local-password-cache-method],[OS-specific credential cache (OSX=APPLEKEYCHAIN, Windows=WINCRED)]),
+   [
+     alpine_os_credential_cache_method=$withval
+   ])
+
+if test -z "$alpine_PASSFILE" ; then
+  if test -z "$alpine_SYSTEM_PASSFILE" ; then
+     alpine_PASSFILE=".alpine.pwd"
+  else
+     alpine_PASSFILE="$alpine_SYSTEM_PASSFILE"
+  fi
+  AC_MSG_NOTICE([* * * Setting up $alpine_PASSFILE as default password file])
+fi
+
+if test -n "$alpine_PASSFILE" ; then
+  case $alpine_os_credential_cache in
+    no)
+      ;;
+    *)
+      alpine_os_credential_cache="no"
+      AC_MSG_NOTICE([--with-passfile definition overrides OS-Specific password caching])
+      ;;
+  esac
+  AC_DEFINE_UNQUOTED([PASSFILE], "$alpine_PASSFILE", [Password cache file (recommended if S/MIME is enabled and configured)])
+fi
 
 dnl Without IPv6?
 AC_ARG_WITH(ipv6,
