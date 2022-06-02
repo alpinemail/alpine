@@ -1948,9 +1948,10 @@ int PFLUSH (void);
 #define OAUTH2_TOT_EQUIV        (OAUTH2_MAX_EQUIV + 2)
 #define OAUTH2_PARAM_NUMBER	(8)
 
-#define OA2_UNKNOWN	0x00	/* We do not know what method this client-id uses */
-#define OA2_DEVICE	0x01	/* Client ID obtained by client uses Device Method */
-#define OA2_AUTHORIZE	0x10	/* Client ID obtained by client uses Authorize Method */
+#define OA2_UNKNOWN	0x000	/* We do not know what method this client-id uses */
+#define OA2_DEVICE	0x001	/* Client ID obtained by client uses Device Method */
+#define OA2_AUTHORIZE	0x010	/* Client ID obtained by client uses Authorize Method */
+#define OA2_OPENSTREAM	0x100	/* We are opening a stream for the first time */
 
 typedef enum {OA2_Id = 0,
 	      OA2_Secret,

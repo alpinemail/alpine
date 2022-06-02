@@ -62,7 +62,7 @@ OAUTH2_S alpine_oauth2_list[] = {
     0, 		/* first time indicator */
     1,		/* client secret required */
     0,		/* Cancel refresh token */
-    GMAIL_FLAGS	/* default flags. For Gmail this should be set to OA2_AUTHORIZE */
+    GMAIL_FLAGS|OA2_OPENSTREAM	/* default flags. For Gmail this should be set to OA2_AUTHORIZE */
   },
   {OUTLOOK_NAME,
    {"outlook.office365.com", "smtp.office365.com", NULL, NULL},
@@ -99,7 +99,7 @@ OAUTH2_S alpine_oauth2_list[] = {
     0, 		/* first time indicator */
     0,		/* client secret required */
     0,		/* Cancel refresh token */
-    OUTLOOK_FLAGS /* default flags. For OUTLOOK this should be set to OA2_DEVICE */
+    OUTLOOK_FLAGS|OA2_OPENSTREAM /* default flags. For OUTLOOK this should be set to OA2_DEVICE */
   },
   {OUTLOOK_NAME,
    {"outlook.office365.com", "smtp.office365.com", NULL, NULL},
@@ -136,7 +136,7 @@ OAUTH2_S alpine_oauth2_list[] = {
     0, 		/* first time indicator */
     1,		/* client secret required */
     0,		/* Cancel refresh token */
-    OUTLOOK_FLAGS /* default flags. For OUTLOOK this should be set to OA2_DEVICE */
+    OUTLOOK_FLAGS|OA2_OPENSTREAM /* default flags. For OUTLOOK this should be set to OA2_DEVICE */
   },
   {YAHOO_NAME,
    {"imap.mail.yahoo.com", "smtp.mail.yahoo.com", NULL, NULL},
@@ -173,7 +173,7 @@ OAUTH2_S alpine_oauth2_list[] = {
     0, 		/* first time indicator */
     1,		/* client secret required */
     0,		/* Cancel refresh token */
-    YAHOO_FLAGS	/* default flags. For YAHOO this should be set to OA2_AUTHORIZE */
+    YAHOO_FLAGS|OA2_OPENSTREAM	/* default flags. For YAHOO this should be set to OA2_AUTHORIZE */
   },
   {YANDEX_NAME,
    {"imap.yandex.com", "smtp.yandex.com", NULL, NULL},
@@ -210,7 +210,7 @@ OAUTH2_S alpine_oauth2_list[] = {
     0, 		/* first time indicator */
     1,		/* client secret required */
     0,		/* Cancel refresh token */
-    YANDEX_FLAGS /* default flags. For YANDEX this should be set to OA2_AUTHORIZE */
+    YANDEX_FLAGS|OA2_OPENSTREAM /* default flags. For YANDEX this should be set to OA2_AUTHORIZE */
   },
   {NULL, 	/* Name, unsigned char * */
    {NULL, NULL, NULL, NULL }, /* host and equivalents */

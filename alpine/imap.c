@@ -814,8 +814,12 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
     ps_global->no_newmail_check_from_optionally_enter = 1;
 
     /* make sure errors are seen */
-    if(ps_global->ttyo && !ps_global->noshow_error)
+    if(ps_global->ttyo && !ps_global->noshow_error
+	&& login && (login->flags & OA2_OPENSTREAM))
       flush_status_messages(0);
+
+    if(login && (login->flags & OA2_OPENSTREAM))
+	login->flags |= ~OA2_OPENSTREAM;
 
     token = NULL;	/* start from scratch */
 
