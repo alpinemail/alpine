@@ -1,5 +1,5 @@
 /* ========================================================================
- * Copyright 2018-2021 Eduardo Chappa
+ * Copyright 2018-2022 Eduardo Chappa
  * Copyright 2015      Imagination Technologies
  * Copyright 1988-2008 University of Washington
  *

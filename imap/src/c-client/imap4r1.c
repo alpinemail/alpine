@@ -1,5 +1,5 @@
 /* 
- * Copyright 2016-2020 Eduardo Chappa
+ * Copyright 2016-2022 Eduardo Chappa
  *
  * Last Edited: Jun 18, 2020 Eduardo Chappa <alpine.chappa@yandex.com>
  *

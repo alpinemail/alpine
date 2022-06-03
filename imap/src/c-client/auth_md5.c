@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 - 2010 Eduardo Chappa
+ * Copyright 2016-2022 Eduardo Chappa
  * Last Modified: August 11, 2016
  */
 /* ========================================================================

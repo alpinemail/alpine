@@ -3,7 +3,7 @@
 #        T H E   A L P I N E    M E S S A G E   S Y S T E M
 #
 #/* ========================================================================
-# * Copyright 2013-2021 Eduardo Chappa
+# * Copyright 2013-2022 Eduardo Chappa
 # * Copyright 2006-2008 University of Washington
 # *
 # * Licensed under the Apache License, Version 2.0 (the "License");
@@ -147,7 +147,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 648 2022-06-02 13:04:59
+Alpine Commit 649 2022-06-02 18:13:05
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -183,14 +183,15 @@ href="h_apache_license">Apache License 2.0</A>.
 
 <P>
 Alpine's privacy policy is a living, online only, document, which can be found at
-<A href="h_privacy_policy">http://alpine.x10host.com/privacy.html</A>.
+<A href="h_privacy_policy">https://alpine.x10host.com/privacy.html</A>.
 By following the previous link,  Alpine
 will connect to an external server, and will download it and display
 it for you. Please take some time to read it and understand it.
 Since the Privacy Policy could be amended to take into consideration
 new additions to Alpine, please check it periodically.
 
-<P> Changes since the release of version 2.25 include:
+<P> Version <!--#echo var="ALPINE_VERSION"--> include new features
+and bug fixes.
 <!-- Changes since the release of version <!--#echo var="ALPINE_VERSION"-->
 <!-- include: -->
 
@@ -2964,7 +2965,7 @@ on Alpine configuration.<P>
   <LI> The main site for Alpine contains information on configuring and solving problems
        with Alpine, it can be found at
 
-<CENTER><A HREF="http://alpine.x10host.com/alpine/">http://alpine.x10host.com/alpine/</A></CENTER>  
+<CENTER><A HREF="https://alpine.x10host.com/alpine/">https://alpine.x10host.com/alpine/</A></CENTER>  
 
   <LI> Archives of the Alpine-info mailing list, at <A 
 href="http://mailman13.u.washington.edu/pipermail/alpine-info/">http://mailman13.u.washington.edu/pipermail/alpine-info/</A>
@@ -3074,7 +3075,7 @@ href="h_apache_license">Apache License 2.0</A>.
 
 <P>
 Alpine's privacy policy is a living, online only, document, which can be found at
-<A href="h_privacy_policy">http://alpine.x10host.com/privacy.html</A>.
+<A href="h_privacy_policy">https://alpine.x10host.com/privacy.html</A>.
 By following the previous link,  Alpine
 will connect to an external server, and will download it and display
 it for you. Please take some time to read it and understand it.
@@ -3109,7 +3110,7 @@ href="h_apache_license">Apache License 2.0</A>.
 
 <P>
 Alpine's privacy policy is a living, online only, document, which can be found at
-<A href="h_privacy_policy">http://alpine.x10host.com/privacy.html</A>.
+<A href="h_privacy_policy">https://alpine.x10host.com/privacy.html</A>.
 By following the previous link,  Alpine
 will connect to an external server, and will download it and display
 it for you. Please take some time to read it and understand it.
@@ -3142,7 +3143,7 @@ href="h_apache_license">Apache License 2.0</A>.
 
 <P>
 Alpine's privacy policy is a living, online only, document, which can be found at
-<A href="h_privacy_policy">http://alpine.x10host.com/privacy.html</A>.
+<A href="h_privacy_policy">https://alpine.x10host.com/privacy.html</A>.
 By following the previous link,  Alpine
 will connect to an external server, and will download it and display
 it for you. Please take some time to read it and understand it.
@@ -38750,7 +38751,7 @@ in size will be selected. Examples: 2176, 1.53K (1530), or 3M (3000000).
 Use 'p' to toggle between preserving or not preserving the original To:
 and Cc: fields of the message. Enter ^C to cancel message.
 ========== h_privacy_policy ==========
-x-alpine-http:http://alpine.x10host.com/legal/privacy.html
+x-alpine-http:https://alpine.x10host.com/legal/privacy.html
 ========== h_apache_license ==========
-x-alpine-http:http://alpine.x10host.com/legal/apache_license.html
+x-alpine-http:https://alpine.x10host.com/legal/apache_license.html
 

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 #
-# Copyright 2020, Eduardo Chappa <eduardo.chappa@gmx.com>
+# Copyright 2020,-2022 Eduardo Chappa <eduardo.chappa@gmx.com>
 # Based on the oauth2.py script Copyright 2012 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
