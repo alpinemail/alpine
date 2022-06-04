@@ -1684,6 +1684,7 @@ AC_SUBST([C_CLIENT_BUNDLED], $alpine_c_client_bundled)
 
 dnl provide KRB5 support?
 if test "x$alpine_GSSTYPE" != "xnone" ; then
+  OLDLIB="$LIBS"
   AC_SEARCH_LIBS(gss_init_sec_context,gss gssapi gssapi_krb5,
     [
       dnl MIT-based?
@@ -1693,6 +1694,7 @@ if test "x$alpine_GSSTYPE" != "xnone" ; then
 	  if test ! -d /usr/kerberos/include ; then
 	    alpine_GSSTYPE="none"
 	    alpine_gss_none_reason="header files not found"
+	    LIBS="$OLDLIBS"
 	  fi
 	])
     ],
