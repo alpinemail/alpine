@@ -147,7 +147,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 650 2022-06-04 01:28:23
+Alpine Commit 651 2022-06-05 13:33:49
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -190,10 +190,14 @@ it for you. Please take some time to read it and understand it.
 Since the Privacy Policy could be amended to take into consideration
 new additions to Alpine, please check it periodically.
 
-<P> Version <!--#echo var="ALPINE_VERSION"--> include new features
-and bug fixes.
+<P> Changes since the release of version 2.26 include:
 <!-- Changes since the release of version <!--#echo var="ALPINE_VERSION"-->
 <!-- include: -->
+
+<P> Bugs addressed include:
+<UL>
+<LI> Crash in PC-Alpine when postponing a message. Reported by Paolo Ienne.
+</UL>
 
 <P> New features include:
 <UL>

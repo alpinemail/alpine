@@ -1065,7 +1065,7 @@ updatelinecolor (int row, CELL vline[], CELL pline[], short *flags, int len)
 		 * are spaces or not.
 		 */
 		cp3 = &vline[0];
-		for(w = 0; w < term.t_ncol; cp3++){
+		for(w = 0; w < term.t_ncol && cp3 < &vline[term.t_ncol]; cp3++){
 		    int ww;
 
 		    ww = wcellwidth((UCS) cp3->c);
