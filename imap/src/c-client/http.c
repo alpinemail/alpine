@@ -87,6 +87,7 @@ typedef struct http_header_data_s {
 /* helper functions */
 HTTP_STATUS_S *http_status_line_get(unsigned char *);
 void http_status_line_free(HTTP_STATUS_S **);
+void http_header_free(HTTP_HEADER_DATA_S **);
 void buffer_add(unsigned char **, unsigned char *);
 unsigned char *hex_escape_url_part(unsigned char *, unsigned char *);
 unsigned char *encode_url_body_part(unsigned char *, unsigned char *);
@@ -990,11 +991,21 @@ http_get(HTTPSTREAM *stream, HTTP_PARAM_S **h)
 }
 
 void
+http_header_free(HTTP_HEADER_DATA_S **hdata)
+{
+   if(hdata == NULL || *hdata == NULL) return;
+
+   fs_give((void **) hdata);
+}
+
+void
 http_close (HTTPSTREAM *stream)
 {
   if(stream){
      if (stream->netstream) net_close (stream->netstream);
      stream->netstream = NIL;
+     if(stream->status)	   http_status_line_free(&stream->status);
+     if(stream->header)	   http_header_free(&stream->header);
      if (stream->url)	   fs_give ((void **) &stream->url);
      if (stream->urlhost)  fs_give ((void **) &stream->urlhost);
      if (stream->urltail)  fs_give ((void **) &stream->urltail);

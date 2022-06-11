@@ -347,11 +347,13 @@ xoauth2_configured_servers(void)
 	for(j = 0; rv[j] && !same_xoauth2_info(*cv[i], *rv[j]); j++);
 	if(!rv[j]) rv[total++] = copy_xoauth2_info(cv[i]);
      }
+     free_xoauth2_info_list(&cv);
 
      for(i = 0; muv && muv[i]; i++){
 	for(j = 0; rv[j] && !same_xoauth2_info(*muv[i], *rv[j]); j++);
 	if(!rv[j]) rv[total++] = copy_xoauth2_info(muv[i]);
      }
+     free_xoauth2_info_list(&muv);
   }
   return rv;
 }

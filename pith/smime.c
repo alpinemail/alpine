@@ -3266,6 +3266,7 @@ decrypt_file(char *fp, int *rv, PERSONAL_CERT *pc)
   long unsigned int len;
   void *ret;
 
+  if(rv) *rv = -1;	/* assume failure */
   if(pc == NULL || (text = read_file(fp, 0)) == NULL || *text == '\0')
     return NULL;
 

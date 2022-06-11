@@ -46,8 +46,6 @@ char *xoauth2_server(char *, char *);
 
 void oauth2_free_extra_values(OAUTH2_S oauth2)
 {
-  OA2_type i;
-
   if(oauth2.param[OA2_Id].value) fs_give((void **) &oauth2.param[OA2_Id].value);
   if(oauth2.param[OA2_Secret].value) fs_give((void **) &oauth2.param[OA2_Secret].value);
   if(oauth2.param[OA2_Tenant].value) fs_give((void **) &oauth2.param[OA2_Tenant].value);
@@ -174,12 +172,11 @@ char *
 xoauth2_server(char *server, char *tenant)
 {
     char *rv = NULL;
-    char *s;
 
     if (server == NULL) return NULL;
 
-    s = cpystr(server);
     if(tenant){
+	char *s = cpystr(server);
 	char *t = s, *u;
 	int i;
 	for(i = 0; t != NULL; i++){
@@ -198,6 +195,7 @@ xoauth2_server(char *server, char *tenant)
 	   }
 	   u = t;
 	}
+	fs_give((void **) &s);
     }
     else
       rv = cpystr(server);
@@ -262,6 +260,7 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
    if(oauth2->param[OA2_Id].value == NULL
 	|| (oauth2->require_secret && oauth2->param[OA2_Secret].value == NULL)){
       *tryanother = 1;
+      oauth2_free_extra_values(*oauth2);
       mm_log("could not get client-id or client-secret required and empty.", (long) NIL);
       return;
    }
@@ -382,6 +381,7 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
 	  oauth2->param[OA2_Code].value = (*ogac)(url, method, oauth2, tryanother);
 
 	if(server) fs_give((void **) &server);
+	if(url) fs_give((void **) &url);
      }
 
      if(oauth2->param[OA2_Code].value){
@@ -560,9 +560,9 @@ free_xoauth2_info_list(XOAUTH2_INFO_S ***xp)
 {
   int i;
 
-  if(xp == NULL || *xp == NULL || **xp) return;
+  if(xp == NULL || *xp == NULL || **xp == NULL) return;
   for(i = 0; (*xp)[i] != NULL; i++) free_xoauth2_info(&(*xp)[i]);
-  fs_give((void **) &xp);
+  fs_give((void **) xp);
 }
 
 
