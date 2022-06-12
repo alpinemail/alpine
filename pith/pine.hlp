@@ -147,7 +147,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 652 2022-06-10 19:41:14
+Alpine Commit 653 2022-06-11 23:21:41
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -183,7 +183,7 @@ href="h_apache_license">Apache License 2.0</A>.
 
 <P>
 Alpine's privacy policy is a living, online only, document, which can be found at
-<A href="h_privacy_policy">https://alpine.x10host.com/privacy.html</A>.
+<A href="h_privacy_policy">https://alpineapp.email/privacy.html</A>.
 By following the previous link,  Alpine
 will connect to an external server, and will download it and display
 it for you. Please take some time to read it and understand it.
@@ -2969,7 +2969,7 @@ on Alpine configuration.<P>
   <LI> The main site for Alpine contains information on configuring and solving problems
        with Alpine, it can be found at
 
-<CENTER><A HREF="https://alpine.x10host.com/alpine/">https://alpine.x10host.com/alpine/</A></CENTER>  
+<CENTER><A HREF="https://alpineapp.email">https://alpineapp.email</A></CENTER>  
 
   <LI> Archives of the Alpine-info mailing list, at <A 
 href="http://mailman13.u.washington.edu/pipermail/alpine-info/">http://mailman13.u.washington.edu/pipermail/alpine-info/</A>
@@ -3079,7 +3079,7 @@ href="h_apache_license">Apache License 2.0</A>.
 
 <P>
 Alpine's privacy policy is a living, online only, document, which can be found at
-<A href="h_privacy_policy">https://alpine.x10host.com/privacy.html</A>.
+<A href="h_privacy_policy">https://alpineapp.email/privacy.html</A>.
 By following the previous link,  Alpine
 will connect to an external server, and will download it and display
 it for you. Please take some time to read it and understand it.
@@ -3114,7 +3114,7 @@ href="h_apache_license">Apache License 2.0</A>.
 
 <P>
 Alpine's privacy policy is a living, online only, document, which can be found at
-<A href="h_privacy_policy">https://alpine.x10host.com/privacy.html</A>.
+<A href="h_privacy_policy">https://alpineapp.email/privacy.html</A>.
 By following the previous link,  Alpine
 will connect to an external server, and will download it and display
 it for you. Please take some time to read it and understand it.
@@ -3147,7 +3147,7 @@ href="h_apache_license">Apache License 2.0</A>.
 
 <P>
 Alpine's privacy policy is a living, online only, document, which can be found at
-<A href="h_privacy_policy">https://alpine.x10host.com/privacy.html</A>.
+<A href="h_privacy_policy">https://alpineapp.email/privacy.html</A>.
 By following the previous link,  Alpine
 will connect to an external server, and will download it and display
 it for you. Please take some time to read it and understand it.
@@ -38755,7 +38755,7 @@ in size will be selected. Examples: 2176, 1.53K (1530), or 3M (3000000).
 Use 'p' to toggle between preserving or not preserving the original To:
 and Cc: fields of the message. Enter ^C to cancel message.
 ========== h_privacy_policy ==========
-x-alpine-http:https://alpine.x10host.com/legal/privacy.html
+x-alpine-http:https://alpineapp.email/legal/privacy.html
 ========== h_apache_license ==========
-x-alpine-http:https://alpine.x10host.com/legal/apache_license.html
+x-alpine-http:https://alpineapp.email/legal/apache_license.html
 
