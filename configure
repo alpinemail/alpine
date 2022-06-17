@@ -20266,7 +20266,7 @@ C_CLIENT_BUNDLED=$alpine_c_client_bundled
 
 
 if test "x$alpine_GSSTYPE" != "xnone" ; then
-  OLDLIB="$LIBS"
+  OLDLIBS="$LIBS"
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing gss_init_sec_context" >&5
 $as_echo_n "checking for library containing gss_init_sec_context... " >&6; }
 if ${ac_cv_search_gss_init_sec_context+:} false; then :
