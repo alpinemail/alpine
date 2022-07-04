@@ -1449,7 +1449,7 @@ write_attachment(int qline, long int msgno, ATTACH_S *a, char *method)
 int
 write_attachment_to_file(MAILSTREAM *stream, long int msgno, ATTACH_S *a, int flags, char *file)
 {
-    char       *l_string, sbuf[256], *err;
+    char       *l_string, sbuf[256], *err, *err2 = NULL;
     int         is_text, we_cancel = 0, dt_flags = 0, so_flags;
     long        len, orig_size;
     gf_io_t     pc;
@@ -1491,9 +1491,9 @@ write_attachment_to_file(MAILSTREAM *stream, long int msgno, ATTACH_S *a, int fl
       cancel_busy_cue(0);
 
     if(so_give(&store))			/* close file */
-      err = error_description(errno);
+      err2 = error_description(errno);
 
-    if(err){
+    if(err || err2){
 	if(!(flags & (GER_APPEND | GER_OVER)))
 	  our_unlink(file);
 	else
@@ -1502,7 +1502,7 @@ write_attachment_to_file(MAILSTREAM *stream, long int msgno, ATTACH_S *a, int fl
 	q_status_message2(SM_ORDER | SM_DING, 3, 5,
 			  /* TRANSLATORS: <error text>: Error writing attachment to <filename> */
 			  _("%s: Error writing attachment to \"%s\""),
-			  err, file);
+			  err ? err : err2, file);
 	return -1;
     }
     else{
@@ -2003,7 +2003,7 @@ display_html_external_attachment(long int msgno, ATTACH_S *a, int flags)
     STORE_S *store;
     gf_io_t  pc;
     char    *err;
-    int      we_cancel = 0, saved, errs;
+    int      we_cancel = 0, errs;
     char    *tool;
     ATTACH_S *att;
     unsigned long rawno;
@@ -2095,15 +2095,14 @@ display_html_external_attachment(long int msgno, ATTACH_S *a, int flags)
     so_give(&store);
 
     /*----- Download all needed inline attachments ------*/
-    saved = errs = 0;
+    errs = 0;
     rawno = mn_m2raw(ps_global->msgmap, msgno);
     for (att = ps_global->atmts; rawno > 0 && att->description != NULL; att++){
         if(att->cid_tmpfile){
 	    if(write_attachment_to_file(ps_global->mail_stream, rawno,
-					att, GER_NONE, att->cid_tmpfile) == 1)
-                  saved++;
-                else
-                  errs++;
+					att, GER_NONE, att->cid_tmpfile) != 1
+		|| name_file_size(att->cid_tmpfile) == 0L)
+		errs++;
 	    fs_give((void **) &att->cid_tmpfile);
 	}
 	if(att->tmpdir)
@@ -2112,13 +2111,24 @@ display_html_external_attachment(long int msgno, ATTACH_S *a, int flags)
 
     if(err){
 	q_status_message2(SM_ORDER | SM_DING, 3, 5,
-		     "%s: Error saving image to temp file %s",
+		     "%s: Error saving message to temp file %s",
 		     err, filename);
 	if(filename){
 	    our_unlink(filename);
 	    fs_give((void **)&filename);
 	}
 	return(1);
+    }
+
+    switch(errs){
+	case 0 : break;
+	case 1 : q_status_message(SM_ORDER | SM_DING, 3, 5,
+			"Failed to download one image. Continuing...");
+		 break;
+	default: q_status_message1(SM_ORDER | SM_DING, 3, 5,
+			"Failed to download %s images. Continuing...",
+			int2string(errs));
+		 break;
     }
 
     tool = get_url_external_handler("http://", 1);
