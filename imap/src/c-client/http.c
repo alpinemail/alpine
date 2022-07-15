@@ -1124,10 +1124,12 @@ http_reply (HTTPSTREAM *stream)
   if(stream->header->content_length){
      size = atol(stream->header->content_length->p->vp->value);
      if (stream->response) fs_give ((void **) &stream->response);
-     stream->response = (unsigned char *) net_getsize (stream->netstream, size);
-     if(stream->response){
-	buffer_add(&stream->reply, stream->response);
-	if(stream->debug) mm_log(stream->response, HTTPDEBUG);
+     if(size > 0L){
+	stream->response = (unsigned char *) net_getsize (stream->netstream, size);
+	if(stream->response){
+	   buffer_add(&stream->reply, stream->response);
+	   if(stream->debug) mm_log(stream->response, HTTPDEBUG);
+	}
      }
   }
   else if (stream->header->transfer_encoding){
