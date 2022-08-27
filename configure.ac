@@ -1118,6 +1118,22 @@ AC_ARG_WITH(bundled-tools,
     fi
   ])
 
+dnl os-specific credential cache?
+AC_ARG_WITH(local-password-cache,
+ AS_HELP_STRING([--without-local-password-cache],[Disable OS-specific password cache, if supported]),
+   [
+     alpine_os_credential_cache=$withval
+   ])
+
+dnl Particular os-specific credential cache?
+AC_ARG_WITH(local-password-cache-method,
+ AS_HELP_STRING([--with-local-password-cache-method],[OS-specific credential cache (OSX=APPLEKEYCHAIN, Windows=WINCRED)]),
+   [
+     alpine_os_credential_cache_method=$withval
+   ])
+
+alpine_cache_os_method="no"
+
 dnl Assume PAM is *not* required and only set the systems that need it.
 alpine_PAM="none"
 
@@ -1203,6 +1219,7 @@ case "$host" in
 	;;
       *)
 	AC_DEFINE([APPLEKEYCHAIN], [1], [Use Apple OS X key chain for credential caching])
+	alpine_cache_os_method="yes"
 	;;
     esac
     if test -z "$alpine_c_client_bundled" ; then
@@ -1374,21 +1391,7 @@ AC_ARG_WITH(passfile,
     ])
 
 
-dnl os-specific credential cache?
-AC_ARG_WITH(local-password-cache,
- AS_HELP_STRING([--without-local-password-cache],[Disable OS-specific password cache, if supported]),
-   [
-     alpine_os_credential_cache=$withval
-   ])
-
-dnl Particular os-specific credential cache?
-AC_ARG_WITH(local-password-cache-method,
- AS_HELP_STRING([--with-local-password-cache-method],[OS-specific credential cache (OSX=APPLEKEYCHAIN, Windows=WINCRED)]),
-   [
-     alpine_os_credential_cache_method=$withval
-   ])
-
-if test -z "$alpine_PASSFILE" ; then
+if test -z "$alpine_PASSFILE" -a "alpine_cache_os_method" = "no" ; then
   if test -z "$alpine_SYSTEM_PASSFILE" ; then
      alpine_PASSFILE=".alpine.pwd"
   else
