@@ -88,7 +88,6 @@ typedef struct http_header_data_s {
 HTTP_STATUS_S *http_status_line_get(unsigned char *);
 void http_status_line_free(HTTP_STATUS_S **);
 void http_header_free(HTTP_HEADER_DATA_S **);
-void buffer_add(unsigned char **, unsigned char *);
 unsigned char *hex_escape_url_part(unsigned char *, unsigned char *);
 unsigned char *encode_url_body_part(unsigned char *, unsigned char *);
 
@@ -768,19 +767,6 @@ http_add_header(HTTP_REQUEST_S **reqp, unsigned char *name, unsigned char *value
   len += hlen;
   fs_resize((void **) &(*reqp)->header, len*sizeof(char));
   sprintf((*reqp)->header + hlen, "%s: %s\015\012", name, value);
-}
-
-void
-buffer_add(unsigned char **bufp, unsigned char *text)
-{
-  int len;
-
-  if(!bufp || !text || !*text) return;
-
-  len = *bufp ? strlen(*bufp) : 0;
-  fs_resize((void **) bufp, (len + strlen(text) + 1)*sizeof(char));
-  (*bufp)[len] = '\0';
-  strcat(*bufp, text);
 }
 
 void

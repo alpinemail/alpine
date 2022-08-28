@@ -47,6 +47,8 @@ JSON_S *json_array_parse_work(unsigned char **);
 JSON_S *json_array_parse(unsigned char **);
 void    json_array_free(JSON_S **);
 
+unsigned char *json_add_array_value(JSON_S *, unsigned char **);
+
 /* we are parsing from the text of the json object, so it is
  * never possible to have a null character, unless something
  * is corrupt, in whose case we return JNumberError.
@@ -210,8 +212,9 @@ void *
 json_value_parse(unsigned char **s, JObjType *jtype)
 {
   void *rv = NIL;
-  unsigned char *u, *w;
+  unsigned char *t, *u, *v, *w;
   unsigned long *l;
+  double d;
 
   w = *s;
   json_skipws(w);
@@ -268,10 +271,16 @@ json_value_parse(unsigned char **s, JObjType *jtype)
 		   json_skipws(w);
 		   break;
 
+	/* in order to make sure we go back and forth we save the
+	 * original value, not the converted value.
+	 */
      case JDecimal :
-     case JExponential: l = fs_get(sizeof(double));
-		     *l = strtod((char *) w, (char **) &w);
-		     rv = (void *) l;
+     case JExponential: t = w;
+		     d = strtod((char *) w, (char **) &w);
+		     u = v = fs_get(w-t);
+		     for(; t < w; t++) *v++ = *t++;
+		     *v = '\0';
+		     rv = (void *) u;
 		     json_skipws(w);
 		     break;
 
@@ -476,4 +485,128 @@ json_by_name_and_type(JSON_S *json, char *name, JObjType jtype)
 	break;
 
   return j && j->jtype == jtype ? j : NIL;
+}
+
+#define JSON_ADD_NAME(X) {			\
+     if((X)){					\
+	unsigned char *buf;			\
+	size_t len;				\
+	len = strlen((X)) + 4;			\
+	buf = fs_get(len);			\
+	sprintf(buf, "\"%s\":", (X));		\
+	buffer_add(rv, buf);			\
+	fs_give((void **) &buf);		\
+     }						\
+}
+
+#define JSON_ADD_STRING_VALUE(X) {		\
+     if((X)){					\
+	unsigned char *buf;			\
+	size_t len;				\
+	len = strlen((X)) + 3;			\
+	buf = fs_get(len);			\
+	sprintf(buf, "\"%s\"", (X));		\
+	buffer_add(rv, buf);			\
+	fs_give((void **) &buf);		\
+     }						\
+}
+
+#define JSON_ADD_LONG_VALUE(X) {		\
+     if((X)){					\
+	unsigned char *buf;			\
+	buf = fs_get(128 + 1);			\
+	sprintf(buf, "%lu", (X));		\
+	buffer_add(rv, buf);			\
+	fs_give((void **) &buf);		\
+     }						\
+}
+
+unsigned char *json2uchar(JSON_S *j, unsigned char **rv)
+{
+  JSON_S *jp;
+  unsigned char *buf = NIL;
+  unsigned long buflen = 0L;
+  size_t len;
+
+  if(!j || j->jtype != JObject) return *rv;
+
+  if(*rv) JSON_ADD_NAME(j->name);
+  buffer_add(rv, "{");
+
+  for(jp = (JSON_S *) j->value; jp; jp = jp->next){
+     switch(jp->jtype){
+	case JObject:	*rv = json2uchar(jp, rv);
+			break;
+
+	case JString:	JSON_ADD_NAME(jp->name);
+			JSON_ADD_STRING_VALUE((unsigned char *) jp->value);
+			break;
+
+	case JExponential:
+	case JDecimal:
+	case JNull:
+	case JBoolean:  JSON_ADD_NAME(jp->name);
+			buffer_add(rv, (unsigned char *) jp->value);
+			break;
+
+	case JLong:	JSON_ADD_NAME(jp->name);
+			JSON_ADD_LONG_VALUE(*(long *) jp->value);
+			break;
+
+	case JArray:	JSON_ADD_NAME(jp->name);
+			*rv = json_add_array_value(jp, rv);
+			break;
+
+	default: break;
+     }
+     if(jp->next) buffer_add(rv, ",");
+  }
+
+  buffer_add(rv, "}");
+  return *rv;
+}
+
+unsigned char *json_add_array_value(JSON_S *j, unsigned char **rv)
+{
+  JSON_S *jp;
+  unsigned char *buf = NIL;
+  unsigned long buflen = 0L;
+  size_t len;
+
+  if(!j || j->jtype != JArray) return *rv;
+
+  if(*rv) JSON_ADD_NAME(j->name);
+  buffer_add(rv, "[");
+
+  for(jp = (JSON_S *) j->value; jp; jp = jp->next){
+     switch(jp->jtype){
+	case JObject:	*rv = json2uchar(jp, rv);
+			break;
+
+	case JString:	JSON_ADD_NAME(jp->name);
+			JSON_ADD_STRING_VALUE((unsigned char *) jp->value);
+			break;
+
+	case JExponential:
+	case JDecimal:
+	case JNull:
+	case JBoolean:  JSON_ADD_NAME(jp->name);
+			buffer_add(rv, (unsigned char *) jp->value);
+			break;
+
+	case JLong:	JSON_ADD_NAME(jp->name);
+			JSON_ADD_LONG_VALUE(*(long *) jp->value);
+			break;
+
+	case JArray:	JSON_ADD_NAME(jp->name);
+			*rv = json_add_array_value(jp, rv);
+			break;
+
+	default: break;
+     }
+     if(jp->next) buffer_add(rv, ",");
+  }
+
+  buffer_add(rv, "]");
+  return *rv;
 }

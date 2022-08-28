@@ -105,3 +105,4 @@ int compare_uchar (unsigned char c1,unsigned char c2);
 int compare_string (unsigned char *s1,unsigned char *s2);
 int compare_cstring (unsigned char *s1,unsigned char *s2);
 int compare_csizedtext (unsigned char *s1,SIZEDTEXT *s2);
+void buffer_add(unsigned char **, unsigned char *);

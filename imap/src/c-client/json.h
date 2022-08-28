@@ -38,5 +38,6 @@ JSON_S *json_by_name_and_type(JSON_S *, char *, JObjType);
 JSON_S *json_parse(unsigned char *);
 JSON_S *json_body_value(JSON_S *, unsigned char *);
 void json_free(JSON_S **);
+unsigned char *json2uchar(JSON_S *, unsigned char **);
 
 #endif /* JSON_H_INCLUDED */

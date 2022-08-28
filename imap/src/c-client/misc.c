@@ -490,3 +490,16 @@ int compare_csizedtext (unsigned char *s1,SIZEDTEXT *s2)
   if (*s1) return 1;		/* first string is longer */
   return j ? -1 : 0;		/* second string longer : strings identical */
 }
+
+void
+buffer_add(unsigned char **bufp, unsigned char *text)
+{
+  size_t len;
+
+  if(!bufp || !text || !*text) return;
+
+  len = *bufp ? strlen(*bufp) : 0;
+  fs_resize((void **) bufp, len + strlen(text) + 1);
+  (*bufp)[len] = '\0';
+  strcat(*bufp, text);
+}
