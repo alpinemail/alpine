@@ -147,7 +147,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 660 2022-08-27 22:08:08
+Alpine Commit 661 2022-09-03 07:46:35
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -193,6 +193,14 @@ new additions to Alpine, please check it periodically.
 <P> Changes since the release of version 2.26 include:
 <!-- Changes since the release of version <!--#echo var="ALPINE_VERSION"-->
 <!-- include: -->
+<P> New features include:
+<UL>
+<LI> Microsoft servers do not deal well with a message that is forwarded
+     as an attachment by Alpine due to the way Alpine constructs the cookie
+     to separate parts of the message due to the presence of a colon. To
+     be safe, remove all non-numeric characters in the cookie. In addition,
+     lowercase values for the charset.
+</UL>
 
 <P> Bugs addressed include:
 <UL>

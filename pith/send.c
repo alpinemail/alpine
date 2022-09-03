@@ -2842,7 +2842,7 @@ pine_encode_body (struct mail_bodystruct *body)
       if(!(freethis=parameter_val(body->parameter, "BOUNDARY"))){
 	  char tmp[MAILTMPLEN];	/* make cookie not in BASE64 or QUOTEPRINT*/
 
-	  snprintf (tmp,sizeof(tmp),"%ld-%ld-%ld=:%ld",gethostid (),random (),(long) time (0),
+	  snprintf (tmp,sizeof(tmp),"%ld%ld%ld%ld",gethostid (),random (),(long) time (0),
 		    (long) getpid ());
 	  tmp[sizeof(tmp)-1] = '\0';
 	  set_parameter(&body->parameter, "boundary", tmp);
@@ -3621,8 +3621,8 @@ posting_characterset(void *data, char *preferred_charset, MsgPart mp)
 {
     unsigned long *charsetmap = NULL;
     unsigned long validbitmap;
-    static char *ascii = "US-ASCII";
-    static char *utf8 = "UTF-8";
+    static char *ascii = "us-ascii";
+    static char *utf8 = "utf-8";
     int notcjk = 0;
 
     if(!ps_global->post_utf8){
