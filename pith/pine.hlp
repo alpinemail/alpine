@@ -147,7 +147,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 661 2022-09-03 07:46:35
+Alpine Commit 662 2022-09-08 22:05:03
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -205,6 +205,9 @@ new additions to Alpine, please check it periodically.
 <P> Bugs addressed include:
 <UL>
 <LI> Crash in PC-Alpine when postponing a message. Reported by Paolo Ienne.
+<LI> Crash in Alpine after a user tried to repaint the screen after failing
+     to select a rule from a menu. Reported by Peter Tirsek. Crash also 
+     reproducible when selecting by keyword or charset.
 </UL>
 
 <P>Version 2.26 adds new features and addresses bugs found in previous

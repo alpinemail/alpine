@@ -8952,6 +8952,7 @@ choose_a_rule(int rflags)
     int        cnt = 0;
     PAT_S     *pat;
     PAT_STATE  pstate;
+    void (*redraw)(void) = ps_global->redrawer;
 
     if(!(nonempty_patterns(rflags, &pstate) && first_pattern(&pstate))){
 	q_status_message(SM_ORDER, 3, 3,
@@ -8985,8 +8986,10 @@ choose_a_rule(int rflags)
 				   _("rules"), h_select_rule_screen,
 				   _("HELP FOR SELECTING A RULE NICKNAME"), NULL);
 
-    if(!choice)
+    if(!choice){
       q_status_message(SM_ORDER, 1, 4, "No choice");
+      ps_global->redrawer = redraw;
+    }
 
     free_list_array(&rule_list);
 
@@ -9169,6 +9172,7 @@ choose_a_keyword(void)
     char     **keyword_list, **lp;
     int        cnt;
     KEYWORD_S *kw;
+    void (*redraw)(void) = ps_global->redrawer;
 
     /*
      * Build a list of keywords to choose from.
@@ -9196,8 +9200,10 @@ choose_a_keyword(void)
 				   _("keywords"), h_select_keyword_screen,
 				   _("HELP FOR SELECTING A KEYWORD"), NULL);
 
-    if(!choice)
+    if(!choice){
       q_status_message(SM_ORDER, 1, 4, "No choice");
+      ps_global->redrawer = redraw;
+    }
 
     free_list_array(&keyword_list);
 
@@ -9276,6 +9282,7 @@ choose_a_charset(int which_charsets)
     char     **charset_list, **lp;
     const CHARSET *cs;
     int        cnt;
+    void (*redraw)(void) = ps_global->redrawer;
 
     /*
      * Build a list of charsets to choose from.
@@ -9319,8 +9326,10 @@ choose_a_charset(int which_charsets)
 				   _("character sets"), h_select_charset_screen,
 				   _("HELP FOR SELECTING A CHARACTER SET"), NULL);
 
-    if(!choice)
+    if(!choice){
       q_status_message(SM_ORDER, 1, 4, "No choice");
+      ps_global->redrawer = redraw;
+    }
 
     free_list_array(&charset_list);
 
