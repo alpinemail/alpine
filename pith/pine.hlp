@@ -147,7 +147,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 662 2022-09-08 22:05:03
+Alpine Commit 664 2022-09-10 10:06:28
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -200,6 +200,10 @@ new additions to Alpine, please check it periodically.
      to separate parts of the message due to the presence of a colon. To
      be safe, remove all non-numeric characters in the cookie. In addition,
      lowercase values for the charset.
+<LI> When selecting messages based on a previously defined rule and the 
+     feature <a href="h_config_enable_tab_complete">FEATURE: <!--#echo var="FEAT_enable-tab-completion"--></a>
+     is enabled, add the ability of using the TAB command to complete
+     a partial match. Contributed by Peter Tirsek.
 </UL>
 
 <P> Bugs addressed include:
