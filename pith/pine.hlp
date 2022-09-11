@@ -147,7 +147,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 664 2022-09-10 10:06:28
+Alpine Commit 665 2022-09-11 12:08:28
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -200,8 +200,9 @@ new additions to Alpine, please check it periodically.
      to separate parts of the message due to the presence of a colon. To
      be safe, remove all non-numeric characters in the cookie. In addition,
      lowercase values for the charset.
-<LI> When selecting messages based on a previously defined rule and the 
-     feature <a href="h_config_enable_tab_complete">FEATURE: <!--#echo var="FEAT_enable-tab-completion"--></a>
+<LI> When selecting messages based on either a previously defined rule or
+     based on a previously configured keyword, and when the feature
+     <a href="h_config_enable_tab_complete"><!--#echo var="FEAT_enable-tab-completion"--></a>
      is enabled, add the ability of using the TAB command to complete
      a partial match. Contributed by Peter Tirsek.
 </UL>
@@ -29187,7 +29188,8 @@ This feature is on by default.
 <P>
 Similarly, this feature also enables TAB completion of address book
 nicknames when at a prompt for a nickname,
-or when typing in an address field in the composer.
+when typing in an address field in the composer,
+or when selecting messages based on <A HREF="h_select_rule">rules</A> or <A HREF="h_mainhelp_keywords">keywords</A>.
 <P>
 &lt;End of help on this topic&gt;
 </BODY>

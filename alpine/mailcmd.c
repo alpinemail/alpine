@@ -110,7 +110,8 @@ int	  select_by_thread(MAILSTREAM *, MSGNO_S *, SEARCHSET **);
 char     *choose_a_rule(int, char *);
 int       rulenick_complete(int, char *, int);
 int	  select_by_keyword(MAILSTREAM *, SEARCHSET **);
-char     *choose_a_keyword(void);
+char     *choose_a_keyword(char *);
+int	  keyword_complete(char *, int);
 int	  select_sort(struct pine *, int, SortOrder *, int *);
 int       print_index(struct pine *, MSGNO_S *, int);
 
@@ -340,7 +341,7 @@ static ESCKEY_S sel_rule_opt[] = {
 static ESCKEY_S sel_key_opt[] = {
     {0, 0, NULL, NULL},
     {ctrl('T'), 14, "^T", N_("To List")},
-    {0, 0, NULL, NULL},
+    {0, 0, NULL, NULL}, /* Reserved for TAB completion */
     {'!', '!', "!", N_("Not")},
     {-1, 0, NULL, NULL}
 };
@@ -9174,7 +9175,7 @@ select_by_thread(MAILSTREAM *stream, MSGNO_S *msgmap, SEARCHSET **limitsrch)
 int
 select_by_keyword(MAILSTREAM *stream, SEARCHSET **limitsrch)
 {
-    int        r, not = 0, we_cancel = 0;
+    int        r, last_r = 0, not = 0, we_cancel = 0;
     char       keyword[MAXUSERFLAG+1], *kword;
     char      *error = NULL, *p, *prompt;
     HelpType   help;
@@ -9182,6 +9183,16 @@ select_by_keyword(MAILSTREAM *stream, SEARCHSET **limitsrch)
 
     keyword[0] = '\0';
     ps_global->mangled_footer = 1;
+
+    if(F_ON(F_ENABLE_TAB_COMPLETE, ps_global)){
+	sel_key_opt[2].ch    = TAB;
+	sel_key_opt[2].rval  = 15;
+	sel_key_opt[2].name  = "TAB";
+	sel_key_opt[2].label = N_("Complete");
+    }
+    else{
+	memset(&sel_key_opt[2], 0, sizeof(sel_key_opt[2]));
+    }
 
     help = NO_HELP;
     do{
@@ -9212,13 +9223,30 @@ select_by_keyword(MAILSTREAM *stream, SEARCHSET **limitsrch)
 
 	if(r == 14){
 	    /* select keyword from a list */
-	    if((kword=choose_a_keyword()) != NULL){
+	    if((kword=choose_a_keyword(NULL)) != NULL){
 		strncpy(keyword, kword, sizeof(keyword)-1);
 		keyword[sizeof(keyword)-1] = '\0';
 		fs_give((void **) &kword);
 	    }
 	    else
 	      r = 4;
+	}
+	else if(r == 15){
+	    int n = keyword_complete(keyword, sizeof(keyword));
+
+	    if(n > 1 && last_r == 15 && !(oe_flags & OE_USER_MODIFIED)){
+		/* double tab with multiple completions: select from list */
+		if((kword=choose_a_keyword(keyword)) != NULL){
+		    strncpy(keyword, kword, sizeof(keyword)-1);
+		    keyword[sizeof(keyword)-1] = '\0';
+		    fs_give((void **) &kword);
+		    r = 0;
+		}
+		else
+		    r = 4;
+	    }
+	    else if(n != 1)
+		Writechar(BELL, 0);
 	}
 	else if(r == '!')
 	  not = !not;
@@ -9231,8 +9259,9 @@ select_by_keyword(MAILSTREAM *stream, SEARCHSET **limitsrch)
 	}
 
 	removing_leading_and_trailing_white_space(keyword);
+	last_r = r;
 
-    }while(r == 3 || r == 4 || r == '!' || keyword_check(keyword, &error));
+    }while(r == 3 || r == 4 || r == 15 || r == '!' || keyword_check(keyword, &error));
 
 
     if(F_ON(F_FLAG_SCREEN_KW_SHORTCUT, ps_global) && ps_global->keywords){
@@ -9288,14 +9317,17 @@ select_by_keyword(MAILSTREAM *stream, SEARCHSET **limitsrch)
 /*
  * Allow user to choose a keyword from their list of keywords.
  *
+ * Args    prefix -- Only list keywords matching the given prefix
+ *
  * Returns an allocated keyword on success, NULL otherwise.
  */
 char *
-choose_a_keyword(void)
+choose_a_keyword(char *prefix)
 {
     char      *choice = NULL;
     char     **keyword_list, **lp;
     int        cnt;
+    int        prefix_length = 0;
     KEYWORD_S *kw;
     void (*redraw)(void) = ps_global->redrawer;
 
@@ -9303,8 +9335,14 @@ choose_a_keyword(void)
      * Build a list of keywords to choose from.
      */
 
-    for(cnt = 0, kw = ps_global->keywords; kw; kw = kw->next)
-      cnt++;
+    if(prefix)
+	prefix_length = strlen(prefix);
+
+    for(cnt = 0, kw = ps_global->keywords; kw; kw = kw->next){
+	char *kw_name = kw->nick ? kw->nick : kw->kw;
+	if(!prefix || kw_name && strncmp(kw_name, prefix, prefix_length) == 0)
+	    cnt++;
+    }
 
     if(cnt <= 0){
 	q_status_message(SM_ORDER, 3, 4,
@@ -9315,8 +9353,13 @@ choose_a_keyword(void)
     lp = keyword_list = (char **) fs_get((cnt + 1) * sizeof(*keyword_list));
     memset(keyword_list, 0, (cnt+1) * sizeof(*keyword_list));
 
-    for(kw = ps_global->keywords; kw; kw = kw->next)
-      *lp++ = cpystr(kw->nick ? kw->nick : kw->kw ? kw->kw : "");
+    for(kw = ps_global->keywords; kw; kw = kw->next){
+	char *kw_name = kw->nick ? kw->nick : kw->kw;
+	if(!kw_name)
+	    continue;
+	if(!prefix || kw_name && strncmp(kw_name, prefix, prefix_length) == 0)
+	    *lp++ = cpystr(kw_name);
+    }
 
     /* TRANSLATORS: SELECT A KEYWORD is a screen title
        TRANSLATORS: Print something1 using something2.
@@ -9333,6 +9376,77 @@ choose_a_keyword(void)
     free_list_array(&keyword_list);
 
     return(choice);
+}
+
+
+/*
+ * Complete a partial keyword name against the user's list of keywords.
+ *
+ * Args    keyword      -- Current keyword to complete
+ *         keyword_size -- Maximum length of the keyword array to store
+ *                         completion in
+ *
+ * Returns the number of valid completions, i.e.:
+ *
+ *  0 if there are no valid completions. The value of the keyword argument has
+ *    not been changed.
+ *  1 if there is only a single valid completion. The value of the keyword
+ *    argument has been replaced with the full text of that completion.
+ * >1 if there is more than one valid completion. The value of the keyword
+ *    argument has been replaced with the longest substring common to all the
+ *    appropriate completions.
+ */
+int
+keyword_complete(char *keyword, int keyword_size)
+{
+    char      *candidate = NULL;
+    int        cnt = 0;
+    int        common_prefix_length = 0;
+    int        keyword_length;
+    KEYWORD_S *kw;
+
+    keyword_length = strlen(keyword);
+
+    for(kw = ps_global->keywords; kw; kw = kw->next){
+	char *kw_name = kw->nick ? kw->nick : kw->kw;
+	if(!kw_name)
+	    continue;
+	if(strncmp(kw_name, keyword, keyword_length) == 0){
+	    /* This is a candidate for completion. */
+	    cnt++;
+	    if(!candidate){
+		/* This is the first candidate. Keep it as a future reference to
+		 * compare against to find the longest common prefix length of
+		 * all the matches. */
+		candidate = kw_name;
+		common_prefix_length = strlen(candidate);
+	    }
+	    else{
+		/* Find the common prefix length between the first candidate and
+		 * this one. */
+		int i;
+		for(i = 0; i < common_prefix_length; i++){
+		    if(kw_name[i] != candidate[i]){
+			/* In the event that we ended up in the middle of a
+			 * UTF-8 code point, backtrack to the byte before the
+			 * start of this code point. */
+			while(i > 0 && (candidate[i] & 0xC0) == 0x80)
+			    i--;
+			common_prefix_length = i;
+			break;
+		    }
+		}
+	    }
+	}
+    }
+
+    if(cnt > 0){
+	int length = MIN(keyword_size, common_prefix_length);
+	strncpy(keyword + keyword_length, candidate + keyword_length, length - keyword_length);
+	keyword[length] = '\0';
+    }
+
+    return cnt;
 }
 
 
