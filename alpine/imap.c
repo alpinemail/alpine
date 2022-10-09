@@ -1841,7 +1841,7 @@ mm_login_work(NETMBX *mb, char *user, char **pwd, long int trial,
 #endif	/* LOCAL_PASSWD_CACHE */
 				 0, 0, &preserve_password);
 	    ps_global->dont_use_init_cmds = save_dont_use;
-	    if(rc == 0 && *user && *pwd)
+	    if(rc == 0 && *user && *pwd && **pwd)
 	      goto nopwpmt;
 #else /* !_WINDOWS */
 	    rc = optionally_enter(user, q_line, 0, NETMAXUSER,

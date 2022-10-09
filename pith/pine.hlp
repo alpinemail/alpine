@@ -147,7 +147,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 665 2022-09-11 12:08:28
+Alpine Commit 666 2022-10-09 10:37:24
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -209,6 +209,8 @@ new additions to Alpine, please check it periodically.
 
 <P> Bugs addressed include:
 <UL>
+<LI> When a user configures a mailbox without specifying the username, PC-Alpine
+does not allow a user to input their password. Reported by Michelle McPeek.
 <LI> Crash in PC-Alpine when postponing a message. Reported by Paolo Ienne.
 <LI> Crash in Alpine after a user tried to repaint the screen after failing
      to select a rule from a menu. Reported by Peter Tirsek. Crash also 
