@@ -147,7 +147,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 667 2022-11-27 17:24:54
+Alpine Commit 668 2022-11-27 17:54:21
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -205,6 +205,9 @@ new additions to Alpine, please check it periodically.
      <a href="h_config_enable_tab_complete"><!--#echo var="FEAT_enable-tab-completion"--></a>
      is enabled, add the ability of using the TAB command to complete
      a partial match. Contributed by Peter Tirsek.
+<LI> For mailing lists, Alpine adds a description of the type of link
+     (web or mail) for each option related to the subscription to the list.
+     Contributed by Daniel Schwarz.
 </UL>
 
 <P> Bugs addressed include:

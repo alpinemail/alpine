@@ -6818,7 +6818,13 @@ list_mgmt_text(RFC2369_S *data, long int msgno)
 		      else{
 			  so_puts(store, "Select <A HREF=\"");
 			  so_puts(store, data[i].data[j].value);
-			  so_puts(store, "\">HERE</A> to ");
+			  so_puts(store, "\">HERE</A> ");
+			  if(!struncmp(data[i].data[j].value, "http", 4)) {
+			    so_puts(store, "(web link) ");
+			  }
+			  else if(!struncmp(data[i].data[j].value, "mailto", 5)) {
+			    so_puts(store, " (email link) ");
+			  }			  so_puts(store, "to ");
 			  so_puts(store, (data[i].field.action)
 					   ? data[i].field.action
 					   : "try it");
