@@ -1391,7 +1391,7 @@ AC_ARG_WITH(passfile,
     ])
 
 
-if test -z "$alpine_PASSFILE" -a "alpine_cache_os_method" = "no" ; then
+if test -z "$alpine_PASSFILE" -a "$alpine_cache_os_method" = "no" ; then
   if test -z "$alpine_SYSTEM_PASSFILE" ; then
      alpine_PASSFILE=".alpine.pwd"
   else
