@@ -3199,32 +3199,30 @@ display_vevent_summary(long int msgno, ATTACH_S *a, int flags, int depth)
          int j, empty;
 
          so_puts(in_store, "\015\012");
+	 so_puts(in_store, _("Description: "));
 
-         for(i = 0; vesy->description[i] != NULL; i++){
-	    so_puts(in_store, _("Description: "));
-	   /* Check if empty description */
-	   empty = 1;
-	   for(j =0; empty == 1 && vesy->description[i][j] != '\0'; j++){
-	      c = vesy->description[i][j];
-	      if(c != '\n' && c != ' ' && c != '\t')
-	        empty = 0;	   
+	 /* Check if empty description */
+	 empty = 1;
+	 for(j = 0; empty == 1 && vesy->description[j] != '\0'; j++){
+	    c = vesy->description[j];
+	    if(c != '\n' && c != ' ' && c != '\t')
+	       empty = 0;	   
+	 }
+	 if(empty){
+	   so_puts(in_store, _("[ No description provided ]"));
+	   so_puts(in_store, "\015\012");
+	 }
+	 else {
+	   for(j =0; vesy->description[j] != '\0'; j++){
+	      c = vesy->description[j];
+	      if(c == '\n'){
+	        so_puts(in_store, "\015\012");
+	        continue;
+	      }
+	      so_writec(c, in_store);
 	   }
-	   if(empty){
-	     so_puts(in_store, _("[ No description provided ]"));
-	     so_puts(in_store, "\015\012");
-	   }
-	   else {
-	     for(j =0; vesy->description[i][j] != '\0'; j++){
-	        c = vesy->description[i][j];
-	        if(c == '\n'){
-	          so_puts(in_store, "\015\012");
-	          continue;
-	        }
-	        so_writec(c, in_store);
-	     }
-	   }
-           so_puts(in_store, "\015\012");
-         }
+	 }
+         so_puts(in_store, "\015\012");
        }
 
        if(vesy->attendee){

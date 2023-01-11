@@ -447,7 +447,7 @@ typedef struct vevent_summary_s {
   char *dtstamp;
   char **duration;
   char **attendee;
-  unsigned char **description;
+  unsigned char *description;
   struct vevent_summary_s *next;
 } VEVENT_SUMMARY_S;
 

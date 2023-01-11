@@ -147,7 +147,7 @@ with help text for the config screen and the composer that didn't have any
 reasonable place to be called from.
 Dummy change to get revision in pine.hlp
 ============= h_revision =================
-Alpine Commit 669 2022-12-13 18:51:11
+Alpine Commit 670 2023-01-11 09:49:34
 ============= h_news =================
 <HTML>
 <HEAD>
@@ -218,6 +218,12 @@ does not allow a user to input their password. Reported by Michelle McPeek.
 <LI> Crash in Alpine after a user tried to repaint the screen after failing
      to select a rule from a menu. Reported by Peter Tirsek. Crash also 
      reproducible when selecting by keyword or charset.
+<LI> Fix a crash in Alpine due to incorrectly formated date in an ical
+     invitation. Reported by Ulf-Dietrich Braumann.
+<LI> Fix parsing of the DURATION field in an ical invitation. Found     
+     in a bug report by Ulf-Dietrich Braumann.
+<LI> Fix display of the DESCRIPTION field in an ical invitation. Found
+     in a bug report by Ulf-Dietrich Braumann.
 </UL>
 
 <P>Version 2.26 adds new features and addresses bugs found in previous

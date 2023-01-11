@@ -1783,19 +1783,19 @@ ical_parse_duration(char *value, ICAL_DURATION_S *ic_d)
       for(j = i; value[j] != '\0' && value[j] != ','; j++){
 	if(!isdigit(value[j]))
 	  switch(value[j]){
-	   case 'W': ic_d->weeks = ical_get_number_value(value, i, j-1);
+	   case 'W': ic_d->weeks = ical_get_number_value(value, i, j);
 		     i = ++j;
 		     break;
-	   case 'D': ic_d->days = ical_get_number_value(value, i, j-1);
+	   case 'D': ic_d->days = ical_get_number_value(value, i, j);
 		     i = ++j;
 		     break;
-	   case 'H': ic_d->hours = ical_get_number_value(value, i, j-1);
+	   case 'H': ic_d->hours = ical_get_number_value(value, i, j);
 		     i = ++j;
 		     break;
-	   case 'M': ic_d->minutes = ical_get_number_value(value, i, j-1);
+	   case 'M': ic_d->minutes = ical_get_number_value(value, i, j);
 		     i = ++j;
 		     break;
-	   case 'S': ic_d->seconds = ical_get_number_value(value, i, j-1);
+	   case 'S': ic_d->seconds = ical_get_number_value(value, i, j);
 		     i = ++j;
 		     break;
 	   case 'T': i = j + 1;
@@ -2258,9 +2258,10 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 	int icd;	/* ical date return value */
 
 	memset((void *)&ic_date, 0, sizeof(struct tm));
-	icd = ical_parse_date(icl->value, &ic_date) & 0x00fff;
+	icd = ical_parse_date(icl->value, &ic_date);
 	tzid = ical_get_tzid(icl->param);
 	if(icd >= 0){
+	  icd &= 0x00fff;
 	  ic_date.tm_wday = ical_day_of_week(ic_date);
 	  if(ic_date.tm_isdst & ICAL_DATE_TIME_GMT){	/* GMT time */
 	     ic_date.tm_isdst = dst;
@@ -2355,9 +2356,10 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 	      int icd;
 
 	      memset((void *)&ic_date, 0, sizeof(struct tm));
-	      icd = ical_parse_date(icl->value, &ic_date) & 0x00fff;
+	      icd = ical_parse_date(icl->value, &ic_date);
 	      tzid = ical_get_tzid(icl->param);
 	      if(icd >= 0){
+		 icd &= 0x00fff;
 	         ic_date.tm_wday = ical_day_of_week(ic_date);
 		 if(ic_date.tm_isdst & ICAL_DATE_TIME_GMT){	/* GMT time */
 		    ic_date.tm_isdst = dst;
@@ -2412,9 +2414,10 @@ ical_vevent_summary(VCALENDAR_S *vcal)
        int icd;
 
        memset((void *)&ic_date, 0, sizeof(struct tm));
-       icd = ical_parse_date(icl->value, &ic_date) & 0x00fff;
+       icd = ical_parse_date(icl->value, &ic_date);
        tzid = ical_get_tzid(icl->param);
        if(icd >= 0){
+         icd &= 0x00fff;
          ic_date.tm_wday = ical_day_of_week(ic_date);
 	 if(ic_date.tm_isdst & ICAL_DATE_TIME_GMT){	/* GMT time */
 	    ic_date.tm_isdst = dst;
@@ -2525,7 +2528,7 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 
      if((icl = (ICLINE_S *) vevent->prop[EvDescription]) != NULL){
 	char *s, *t, *u, *v;
-	int i, escaped;
+	int escaped;
 
 	if(icl->value == NULL){
 	   free_vevent_summary(&rv);
@@ -2534,7 +2537,7 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 
 	v = cpystr(icl->value);	/* process a copy of icl->value */
 
-	for(i = 1, escaped = 0, s = v; s && *s; s++){
+	for(escaped = 0, s = v; s && *s; s++){
 	   if(*s == '\\' && escaped == 0){ escaped = 1; continue; }
 	   if(escaped){
 		if(!(*s == '\\' || *s == ',' || *s == 'n' || *s == 'N' || *s == ';')){
@@ -2545,11 +2548,8 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 		escaped = 0;
 		continue;
 	   }
-	   if(*s == ',') i++;	/* a non-scaped comma is a new value for text */
 	}
 
-	rv->description = fs_get((i+1)*sizeof(unsigned char *));
-	i = 0;
 	for (s = t = u = v, escaped = 0; *t != '\0'; t++){
 	   if(*t == '\\' && escaped == 0){ escaped = 1; continue; }
 	   if(escaped){
@@ -2570,16 +2570,10 @@ ical_vevent_summary(VCALENDAR_S *vcal)
 		escaped = 0;
 		continue;
 	   }
-	   if(*t == ','){
-		*u = '\0';
-		rv->description[i++] = (unsigned char *) cpystr((char *) ical_decode(s, vcal->encoding));
-		s = u = t+1;
-	   } else
-		*u++ = *t;  
+	   *u++ = *t;
 	}
 	*u = '\0';
-	rv->description[i++] = (unsigned char *) cpystr((char *) ical_decode(s, vcal->encoding));
-	rv->description[i] = NULL;
+	rv->description = (unsigned char *) cpystr((char *) ical_decode(s, vcal->encoding));
 	fs_give((void **)&v);
      } /* end of if(description) */
      /* last instruction of the loop */
@@ -2618,11 +2612,8 @@ free_vevent_summary(VEVENT_SUMMARY_S **vesy)
 	fs_give((void **) &(*vesy)->attendee[i]);
      fs_give((void **) &(*vesy)->attendee);
   }
-  if((*vesy)->description){
-     for(i = 0; (*vesy)->description[i] != NULL; i++)
-	fs_give((void **) &(*vesy)->description[i]);
+  if((*vesy)->description)
      fs_give((void **) &(*vesy)->description);
-  }
   if((*vesy)->next) free_vevent_summary(&(*vesy)->next);
   fs_give((void **) vesy);
 }
