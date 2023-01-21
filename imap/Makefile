@@ -706,7 +706,7 @@ rebuild:
 	@$(SH) -c '(test $(BUILDTYPE) = rebuild -o $(BUILDTYPE) = `$(CAT) OSTYPE`) || (echo Already built for `$(CAT) OSTYPE` -- you must do \"make clean\" first && exit 1)'
 	@echo Rebuilding c-client for `$(CAT) OSTYPE`...
 	@$(TOUCH) SPECIALS
-	$(CD) c-client;$(MAKE) all CC=`$(CAT) CCTYPE` \
+	$(CD) c-client;$(MAKE) all CC="`$(CAT) CCTYPE`" \
 	 CFLAGS="`$(CAT) CFLAGS`" `$(CAT) SPECIALS`
 
 rebuildclean:
