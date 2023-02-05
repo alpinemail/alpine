@@ -335,7 +335,6 @@ void nntp_list (MAILSTREAM *stream,char *ref,char *pat)
 {
   MAILSTREAM *st = stream;
   char *s,*t,*lcl,pattern[MAILTMPLEN],name[MAILTMPLEN],wildmat[MAILTMPLEN];
-  int showuppers = pat[strlen (pat) - 1] == '%';
   if (!*pat) {
     if (nntp_canonicalize (ref,"*",pattern,NIL)) {
 				/* tie off name at root */
@@ -351,6 +350,7 @@ void nntp_list (MAILSTREAM *stream,char *ref,char *pat)
 	   ((nntp_send (LOCAL->nntpstream,"LIST ACTIVE",
 			wildmat[0] ? wildmat : NIL) == NNTPGLIST) ||
 	    (nntp_send (LOCAL->nntpstream,"LIST",NIL) == NNTPGLIST))) {
+    int showuppers = pat[strlen (pat) - 1] == '%';
 				/* namespace format name? */
     if (*(lcl = strchr (strcpy (name,pattern),'}') + 1) == '#') lcl += 6;
 				/* process data until we see final dot */
