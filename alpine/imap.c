@@ -567,7 +567,7 @@ oauth2_get_access_code(unsigned char *url, char *method, OAUTH2_S *oauth2, int *
 	   so_puts(in_store, _("<P> As a result of this process, you will get a client-id and a client-secret."));
 	   so_puts(in_store, _(" Exit this screen, and from Alpine's Main Screen press S U to save these values permanently,"));
 	   so_puts(in_store, _(" then retry login into Gmail's server."));
-	   so_puts(in_store, _(" More detailed and up to date information on how to configure Alpine for Gmail can be found at the following <A href=\"https://alpine.x10host.com/alpine/alpine-info/misc/RegisteringAlpineinGmail.html\">link</A>."));
+	   so_puts(in_store, _(" More detailed and up to date information on how to configure Alpine for Gmail can be found at the following <A href=\"https://alpineapp.email/alpine/alpine-info/misc/RegisteringAlpineinGmail.html\">link</A>."));
 	}
 	else{
 	   so_puts(in_store, _("</P><P>In order to authorize Alpine to access your email, Alpine needs to open the following URL:"));
@@ -2992,7 +2992,7 @@ oauth2_auth_answer(int cmd, MSGNO_S *msgmap, SCROLL_S *sparms)
     int q_line, flags;
     /* TRANSLATORS: user needs to input an access code from the server */
     char     *accesscodelabel = _("Copy and Paste Access Code");
-    char token[MAILTMPLEN], prompt[MAILTMPLEN];
+    char token[4*MAILTMPLEN], prompt[4*MAILTMPLEN];
 
     ps_global->next_screen = SCREEN_FUN_NULL;
 
@@ -3003,7 +3003,7 @@ oauth2_auth_answer(int cmd, MSGNO_S *msgmap, SCROLL_S *sparms)
 	flags = OE_APPEND_CURRENT;
 	sprintf(prompt, "%s: ", accesscodelabel);
 	do {
-	   rc = optionally_enter(token, q_line, 0, MAILTMPLEN,
+	   rc = optionally_enter(token, q_line, 0, 4*MAILTMPLEN,
 			   prompt, NULL, NO_HELP, &flags);
 	} while (rc != 0 && rc != 1);
 	user.code = rc == 0 ? cpystr(token) : NULL;
