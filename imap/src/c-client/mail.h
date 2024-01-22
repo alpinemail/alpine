@@ -2031,9 +2031,9 @@ typedef struct xoauth_default_s {
 } XOAUTH2_INFO_S;
 
 /* Supporting external functions for XOAUTH2 and OAUTHBEARER */
-typedef char *(*oauth2getaccesscode_t) (unsigned char *, char *, OAUTH2_S *, int *);
+typedef char *(*oauth2getaccesscode_t) (unsigned char *, char *, OAUTH2_S *, NETMBX *, int *);
 typedef XOAUTH2_INFO_S *(*oauth2clientinfo_t)(unsigned char *name, char *user);
-typedef void (*oauth2deviceinfo_t)(OAUTH2_S *, char *method);
+typedef void (*oauth2deviceinfo_t)(OAUTH2_S *, char *, NETMBX *);
 void mm_login_oauth2_c_client_method (NETMBX *, char *, char *, OAUTH2_S *, unsigned long, int *);
 void oauth2deviceinfo_get_accesscode(void *, void *);
 XOAUTH2_INFO_S *new_xoauth2_info(void);

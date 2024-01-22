@@ -357,7 +357,7 @@ oauth2_elapsed_done(void *aux_valuep)
 }
 
 void
-oauth2_set_device_info(OAUTH2_S *oa2, char *method)
+oauth2_set_device_info(OAUTH2_S *oa2, char *method, NETMBX *mb)
 {
    char tmp[MAILTMPLEN];
    char *name = (char *) oa2->name;
@@ -386,12 +386,12 @@ oauth2_set_device_info(OAUTH2_S *oa2, char *method)
 	so_puts(in_store, "<HTML><P>");
 	sprintf(tmp, _("<CENTER>Authorizing Alpine Access to %s Email Services</CENTER>"), name);
 	so_puts(in_store, tmp);
-	sprintf(tmp, _("<P>Alpine is attempting to log you into your %s account, using the %s method."), name, method),
+	sprintf(tmp, _("<P>Alpine is attempting to log you into your %s account with username <B>%s</B> using the %s method."), name, mb->user, method),
 	so_puts(in_store, tmp);
 
 	if(deviceinfo->verification_uri && deviceinfo->user_code){
 	   sprintf(tmp,
-		_("</P><P>To sign in, use a web browser to open the page  <A HREF=\"%s\">%s</A> and enter the code \"%s\" without the quotes."),
+		_("</P><P>To sign in, use a web browser to open the page  <A HREF=\"%s\">%s</A> and enter the code %s."),
 		deviceinfo->verification_uri, deviceinfo->verification_uri, deviceinfo->user_code);
 	   so_puts(in_store, tmp);
 	}
@@ -470,7 +470,7 @@ try_wantto:
 	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
 
 	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
-		_("Alpine is attempting to log you into your %s account, using the %s method. "), name, method),
+		_("Alpine is attempting to log you into your %s account with username %s using the %s method."), name, mb->user, method);
 	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
 
 	if(deviceinfo->verification_uri && deviceinfo->user_code){
@@ -530,7 +530,7 @@ try_wantto:
 }
 
 char *
-oauth2_get_access_code(unsigned char *url, char *method, OAUTH2_S *oauth2, int *tryanother)
+oauth2_get_access_code(unsigned char *url, char *method, OAUTH2_S *oauth2, NETMBX *mb, int *tryanother)
 {
    char tmp[MAILTMPLEN];
    char *code = NULL;
@@ -551,7 +551,7 @@ oauth2_get_access_code(unsigned char *url, char *method, OAUTH2_S *oauth2, int *
 	so_puts(in_store, "<HTML><BODY><P>");
 	sprintf(tmp, _("<CENTER>Authorizing Alpine Access to %s Email Services</CENTER>"), oauth2->name);
 	so_puts(in_store, tmp);
-	sprintf(tmp, _("<P>Alpine is attempting to log you into your %s account, using the %s method."), oauth2->name, method),
+	sprintf(tmp, _("<P>Alpine is attempting to log you into your %s account with username <B>%s</B> using the %s method."), oauth2->name, mb->user, method),
 	so_puts(in_store, tmp);
 
         if(strucmp((char *) oauth2->name, (char *) GMAIL_NAME) == 0 && strstr(url, (char *) GMAIL_ID) != NULL){
@@ -662,7 +662,7 @@ try_wantto:
 	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
 
 	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf),
-		_("Alpine is attempting to log you into your %s account, using the %s method."), oauth2->name, method),
+		_("Alpine is attempting to log you into your %s account with username %s using the %s method."), oauth2->name, mb->user, method);
 	tmp_20k_buf[SIZEOF_20KBUF-1] = '\0';
 
 	snprintf(tmp_20k_buf+strlen(tmp_20k_buf), SIZEOF_20KBUF-strlen(tmp_20k_buf), 

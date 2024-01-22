@@ -303,7 +303,7 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
 
 	if(oauth2->devicecode.verification_uri && oauth2->devicecode.user_code){
 	   ogdi = (oauth2deviceinfo_t) mail_parameters (NIL, GET_OA2DEVICEINFO, NIL);
-	   if(ogdi) (*ogdi)(oauth2, method);
+	   if(ogdi) (*ogdi)(oauth2, method, mb);
 	}
 	mm_log("Got Json reply. Completed parsing.", (long) NIL);
      }
@@ -378,7 +378,7 @@ mm_login_oauth2_c_client_method (NETMBX *mb, char *user, char *method,
 	(oauth2getaccesscode_t) mail_parameters (NIL, GET_OA2CLIENTGETACCESSCODE, NIL);
 
 	if(ogac)
-	  oauth2->param[OA2_Code].value = (*ogac)(url, method, oauth2, tryanother);
+	  oauth2->param[OA2_Code].value = (*ogac)(url, method, oauth2, mb, tryanother);
 
 	if(server) fs_give((void **) &server);
 	if(url) fs_give((void **) &url);
