@@ -838,7 +838,7 @@ char *tcp_localhost (TCPSTREAM *stream)
  * Returns: client host address
  */
 
-char *tcp_clientaddr ()
+char *tcp_clientaddr (void)
 {
   if (!myClientAddr) {
     char buf[NI_MAXHOST];
@@ -860,7 +860,7 @@ char *tcp_clientaddr ()
  * Returns: client host name
  */
 
-char *tcp_clienthost ()
+char *tcp_clienthost (void)
 {
   if (!myClientHost) {
     char buf[NI_MAXHOST];
@@ -892,7 +892,7 @@ char *tcp_clienthost ()
  * Returns: client port number
  */
 
-long tcp_clientport ()
+long tcp_clientport (void)
 {
   if (!myClientHost && !myClientAddr) tcp_clientaddr ();
   return myClientPort;
@@ -902,7 +902,7 @@ long tcp_clientport ()
  * Returns: server host address
  */
 
-char *tcp_serveraddr ()
+char *tcp_serveraddr (void)
 {
   if (!myServerAddr) {
     char buf[NI_MAXHOST];
@@ -924,7 +924,7 @@ char *tcp_serveraddr ()
  * Returns: server host name
  */
 
-char *tcp_serverhost ()
+char *tcp_serverhost (void)
 {
   if (!myServerHost) {		/* once-only */
     char buf[NI_MAXHOST];
@@ -948,7 +948,7 @@ char *tcp_serverhost ()
  * Returns: server port number
  */
 
-long tcp_serverport ()
+long tcp_serverport (void)
 {
   if (!myServerHost && !myServerAddr) tcp_serveraddr ();
   return myServerPort;

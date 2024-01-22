@@ -30,7 +30,9 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <errno.h>
+#ifndef errno
 extern int errno;		/* just in case */
+#endif
 #include "mail.h"
 #include "osdep.h"
 #include <sys/stat.h>

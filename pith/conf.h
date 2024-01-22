@@ -930,10 +930,10 @@ void	   set_user_certs_container(struct pine *);
 
 /* mandatory to implement prototypes */
 int	   set_input_timeout(int);
-int	   get_input_timeout();
+int	   get_input_timeout(void);
 
 /* decide what to do: return 0 to continue, nonzero to abort pinerc write */
-int	   unexpected_pinerc_change();
+int	   unexpected_pinerc_change(void);
 
 
 #endif /* PITH_CONFIG_INCLUDED */

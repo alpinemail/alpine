@@ -76,22 +76,17 @@ char	peCredentialRequestor[CRED_REQ_SIZE];
 STRLIST_S *peCertHosts;
 
 void
-sml_addmsg(priority, text)
-     int   priority;
-     char *text;
+sml_addmsg(int priority, char *text)
 {
 }
 
 void
-peDestroyUserContext(pps)
-     struct pine **pps;
+peDestroyUserContext(struct pine **pps)
 {
 }
 
 int
-main(argc, argv)
-     int   argc;
-     char *argv[];
+main(int argc, char *argv[])
 {
 #ifdef ENABLE_LDAP
     struct pine *pine_state;

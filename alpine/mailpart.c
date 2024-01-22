@@ -1467,7 +1467,7 @@ write_attachment_to_file(MAILSTREAM *stream, long int msgno, ATTACH_S *a, int fl
     if(flags & GER_BINARY)
       dt_flags |= DT_BINARY;
 
-    so_flags = (is_text & !(flags & GER_BINARY) ? WRITE_TO_LOCALE : 0)
+    so_flags = ((is_text && !(flags & GER_BINARY)) ? WRITE_TO_LOCALE : 0)
 		| WRITE_ACCESS ;
 
     store = so_get(FileStar, file, so_flags);

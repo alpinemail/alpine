@@ -3865,8 +3865,7 @@ peWriteSig(Tcl_Interp *interp, char *file, Tcl_Obj **objv)
 
 
 
-NAMEVAL_S   *sort_key_rules(index)
-     int index;
+NAMEVAL_S   *sort_key_rules(int index)
 {
     static NAMEVAL_S is_rules[] = {
         {"Arrival",		0},
@@ -3893,8 +3892,7 @@ NAMEVAL_S   *sort_key_rules(index)
 	   ? &is_rules[index] : NULL);
 }
 
-NAMEVAL_S   *wp_indexheight_rules(index)
-     int index;
+NAMEVAL_S   *wp_indexheight_rules(int index)
 {
     static NAMEVAL_S is_rules[] = {
 	{"normal font",   "24",   0},
@@ -11017,7 +11015,7 @@ pePrepareForAuthException(void)
  * pePrepareForAuthException - check globals getting feedback from bowels of c-client
  */
 char *
-peAuthException()
+peAuthException(void)
 {
     static char buf[CRED_REQ_SIZE];
 
@@ -11138,11 +11136,7 @@ peMessageBounce(Tcl_Interp *interp, imapuid_t uid, int objc, Tcl_Obj **objv)
 
 
 int
-peMessageSpamNotice(interp, uid, objc, objv)
-    Tcl_Interp	*interp;
-    imapuid_t	 uid;
-    int		 objc;
-    Tcl_Obj    **objv;
+peMessageSpamNotice(Tcl_Interp *interp, imapuid_t uid, int objc, Tcl_Obj **objv)
 {
     char *to, *subj = NULL, errbuf[WP_MAX_POST_ERROR + 1], *rs = NULL;
     long  rawno;

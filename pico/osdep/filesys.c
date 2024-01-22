@@ -783,7 +783,9 @@ copy(char *a, char *b)
     char   *cb;
     struct stat tsb, fsb;
     EML    eml;
+#ifndef errno
     extern int  errno;
+#endif
 
     if(our_stat(a, &fsb) < 0){		/* get source file info */
 	eml.s = errstr(errno);

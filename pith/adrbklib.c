@@ -672,7 +672,7 @@ adrbk_is_in_sort_order(AdrBk *ab, int be_quiet)
 {
     adrbk_cntr_t entry;
     AdrBk_Entry *ae, *ae_prev;
-    int (*cmp_func)();
+    int (*cmp_func)(const qsort_t *, const qsort_t *);
     int we_cancel = 0;
 
     dprint((9, "- adrbk_is_in_sort_order -\n"));
@@ -1975,7 +1975,7 @@ adrbk_add(AdrBk *ab, a_c_arg_t old_entry_num, char *nickname, char *fullname,
     AdrBk_Entry *ae;
     adrbk_cntr_t old_enum;
     adrbk_cntr_t new_enum;
-    int (*cmp_func)();
+    int (*cmp_func)(const qsort_t *, const qsort_t *);
     int retval = 0;
     int need_write = 0;
     int set_mangled = 0;
@@ -2908,7 +2908,7 @@ adrbk_write(AdrBk *ab, a_c_arg_t current_entry_num, adrbk_cntr_t *new_entry_num,
     AdrBk_Entry           *ae = NULL;
     adrbk_cntr_t           entry_num;
 #ifndef	DOS
-    void                  (*save_sighup)();
+    void                  (*save_sighup)(int);
 #endif
     int                   max_nick = 0,
 			  max_full = 0, full_two = 0, full_three = 0,
@@ -3011,7 +3011,7 @@ adrbk_write(AdrBk *ab, a_c_arg_t current_entry_num, adrbk_cntr_t *new_entry_num,
     }
 
 #ifndef	DOS
-    save_sighup = (void (*)())signal(SIGHUP, SIG_IGN);
+    save_sighup = (void (*)(int))signal(SIGHUP, SIG_IGN);
 #endif
 
     /*

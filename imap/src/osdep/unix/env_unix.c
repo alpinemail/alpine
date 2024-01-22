@@ -967,7 +967,7 @@ char *myusername_full (unsigned long *flags)
  * Returns: my local host name
  */
 
-char *mylocalhost ()
+char *mylocalhost (void)
 {
   if (!myLocalHost) {
     char *s,tmp[MAILTMPLEN];
@@ -985,7 +985,7 @@ char *mylocalhost ()
  * Returns: my home directory name
  */
 
-char *myhomedir ()
+char *myhomedir (void)
 {
   if (!myHomeDir) myusername ();/* initialize if first time */
   return myHomeDir ? myHomeDir : "";
@@ -996,7 +996,7 @@ char *myhomedir ()
  * Returns: my home directory name
  */
 
-static char *mymailboxdir ()
+static char *mymailboxdir (void)
 {
   char *home = myhomedir ();
 				/* initialize if first time */
@@ -1016,7 +1016,7 @@ static char *mymailboxdir ()
  * Accepts: buffer string
  */
 
-char *sysinbox ()
+char *sysinbox (void)
 {
   char tmp[MAILTMPLEN];
   if (!sysInbox) {		/* initialize if first time */

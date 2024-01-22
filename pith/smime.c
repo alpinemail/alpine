@@ -2968,7 +2968,7 @@ do_signature_verify(PKCS7 *p7, BIO *in, BIO *out, int silent)
  */
 
 typedef struct smime_filter_s {
-  void (*filter)();
+  void (*filter)(char **, unsigned long *, char **, unsigned long *);
 } SMIME_FILTER_S;
 
 SMIME_FILTER_S sig_filter[] = {

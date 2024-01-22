@@ -32,7 +32,7 @@ static  int cleanup_called_from_sig_handler;
 static	RETSIGTYPE	hup_signal(int);
 static	RETSIGTYPE	term_signal(int);
 static	RETSIGTYPE	auger_in_signal(int);
-int			fast_clean_up();
+int			fast_clean_up(void);
 void			end_signals(int);
 #if	defined(DEBUG) && defined(SIGUSR1) && defined(SIGUSR2)
 static	RETSIGTYPE	usr1_signal(int);

@@ -42,7 +42,7 @@ char *kerberos_login (char *user,char *authuser,int argc,char *argv[]);
  * This is alright since the server is probably still root at this point.
  */
 
-long kerberos_server_valid ()
+long kerberos_server_valid (void)
 {
   krb5_context ctx;
   krb5_keytab kt;

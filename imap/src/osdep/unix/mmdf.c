@@ -28,7 +28,9 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <errno.h>
+#ifndef errno
 extern int errno;		/* just in case */
+#endif
 #include <signal.h>
 #include "mail.h"
 #include "osdep.h"

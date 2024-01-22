@@ -47,7 +47,9 @@
 #ifndef	_WINDOWS
 
 #if	defined(bsd) || defined(lnx)
+#ifndef errno
 extern int errno;
+#endif
 #endif
 
 

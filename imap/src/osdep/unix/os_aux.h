@@ -37,7 +37,9 @@
 #include <syslog.h>
 
 
-extern int errno;
+#ifndef errno
+extern int errno;		/* just in case */
+#endif
 
 char *strerror (int n);
 unsigned long strtoul (char *s,char **endp,int base);

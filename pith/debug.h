@@ -45,7 +45,7 @@ extern int debug;
 /* mandatory to implement stubs */
 void	output_debug_msg(int, char *fmt, ...);
 void	dump_configuration(int);
-void	dump_contexts();
+void	dump_contexts(void);
 
 
 

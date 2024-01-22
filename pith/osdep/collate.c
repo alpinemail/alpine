@@ -20,13 +20,13 @@
 /*
  * global hook 
  */
-int (*pcollator)();
+int (*pcollator)(const char *, const char *);
 
 
 void
 set_collation(int collation, int ctype)
 {
-    extern int collator();  /* set to strcoll if available in system.h */
+    extern int collator(const char *, const char *);  /* set to strcoll if available in system.h */
 
     pcollator = strucmp;
 
@@ -90,7 +90,7 @@ sstrcasecmp(const qsort_t *s1, const qsort_t *s2)
  Result: integer indicating which is greater
   ---*/
 int
-strucmp(register char *o, register char *r)
+strucmp(const char *o, const char *r)
 {
     if(o == NULL){
 	if(r == NULL)
@@ -130,7 +130,7 @@ strucmp(register char *o, register char *r)
    
   ----*/
 int
-struncmp(register char *o, register char *r, register int n)
+struncmp(const char *o, const char *r, int n)
 {
     if(n < 1)
       return 0;

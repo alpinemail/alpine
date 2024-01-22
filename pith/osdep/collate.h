@@ -22,11 +22,11 @@
  * Exported Prototypes
  */
 void	  set_collation(int, int);
-int	  strucmp(char *, char *);
-int	  struncmp(char *, char *, int);
+int	  strucmp(const char *, const char *);
+int	  struncmp(const char *, const char *, int);
 int       sstrcasecmp(const qsort_t *, const qsort_t *);
 
-extern    int	(*pcollator)();
+extern    int	(*pcollator)(const char*, const char *);
 
 
 #endif /* PITH_OSDEP_COLLATE_INCLUDED */

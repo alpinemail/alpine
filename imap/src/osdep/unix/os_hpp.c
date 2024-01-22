@@ -44,7 +44,9 @@
 #include <netdb.h>
 #include <ctype.h>
 #include <errno.h>
+#ifndef errno
 extern int errno;		/* just in case */
+#endif
 extern char *sys_errlist[];
 extern int sys_nerr;
 #include <pwd.h>

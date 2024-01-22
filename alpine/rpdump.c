@@ -42,9 +42,7 @@ int my_timer_period = ((IDLE_TIMEOUT + 1)*1000);
 
 #undef main
 
-app_main (argc, argv)
-    int argc;
-    char argv[];
+app_main (int argc, char argv[])
 {
 }
 
@@ -59,9 +57,7 @@ app_main (argc, argv)
  *   Note: We're not worrying about memory leaks.
  */
 int
-main(argc, argv)
-    int   argc;
-    char *argv[];
+main(int argc, char *argv[])
 {
     MAILSTREAM *stream = NULL;
     FILE       *fp;
@@ -254,8 +250,7 @@ main(argc, argv)
 
 
 RemoteType
-check_for_header_msg(stream)
-    MAILSTREAM *stream;
+check_for_header_msg(MAILSTREAM *stream)
 {
     STRINGLIST *sl;
     int         ret = NotSet;
@@ -324,8 +319,7 @@ check_for_header_msg(stream)
 
 
 char *
-ptype(rtype)
-    RemoteType rtype;
+ptype(RemoteType rtype)
 {
     char *ret = NULL;
 
@@ -351,8 +345,7 @@ ptype(rtype)
 
 
 char *
-spechdr(rtype)
-    RemoteType rtype;
+spechdr(RemoteType rtype)
 {
     char *ret = NULL;
 
@@ -378,11 +371,7 @@ spechdr(rtype)
 
 
 int
-parse_args(argc, argv, force, local, remote)
-    int          argc;
-    char       **argv;
-    int         *force;
-    char       **local, **remote;
+parse_args(int argc, char **argv, int *force, char **local, char **remote)
 {
     int    ac;
     char **av;
@@ -447,64 +436,44 @@ Loop: while(--ac > 0 && **++av == '-'){
 
 
 char *
-err_desc(err)
-    int err;
+err_desc(int err)
 {
     return((char *) strerror(err));
 }
 
 
-void mm_exists(stream, number)
-    MAILSTREAM *stream;
-    unsigned long number;
+void mm_exists(MAILSTREAM *stream, unsigned long number)
 {
 }
 
 
-void mm_expunged(stream, number)
-    MAILSTREAM *stream;
-    unsigned long number;
+void mm_expunged(MAILSTREAM *stream, unsigned long number)
 {
 }
 
 
-void mm_flags(stream, number)
-    MAILSTREAM *stream;
-    unsigned long number;
+void mm_flags(MAILSTREAM *stream, unsigned long number)
 {
 }
 
 
-void mm_list(stream, delim, name, attrib)
-    MAILSTREAM *stream;
-    int   delim;
-    char *name;
-    long attrib;
+void mm_list(MAILSTREAM *stream, int delim, char *name, long attrib)
 {
 }
 
 
-void mm_lsub(stream, delimiter, name, attributes)
-    MAILSTREAM *stream;
-    int delimiter;
-    char *name;
-    long attributes;
+void mm_lsub(MAILSTREAM *stream, int delimiter, char *name, long attributes)
 {
 }
 
 
-void mm_notify(stream, string, errflg)
-    MAILSTREAM *stream;
-    char *string;
-    long errflg;
+void mm_notify(MAILSTREAM *stream, char *string, long errflg)
 {
     mm_log(string, errflg);
 }
 
 
-void mm_log(string, errflg)
-    char *string;
-    long errflg;
+void mm_log(char *string, long errflg)
 {
     if(noshow_error)
       return;
@@ -532,21 +501,12 @@ void mm_log(string, errflg)
     }
 }
 
-void mm_login_method(mb, user, pwd, trial, method)
-    NETMBX *mb;
-    char   *user;
-    void   *pwd;
-    long    trial;
-    char   *method;
+void mm_login_method(NETMBX *mb, char *user, void *pwd, long trial, char *method)
 {
     mm_login(mb, user, (char **) pwd, trial);
 }
 
-void mm_login(mb, user, pwd, trial)
-    NETMBX *mb;
-    char   *user;
-    char   **pwd;
-    long    trial;
+void mm_login(NETMBX *mb, char *user, char **pwd, long trial)
 {
     char prompt[100], *last, tmp[MAILTMPLEN];
     int  i, j, goal, ugoal, len, rc, flags = 0;
@@ -683,60 +643,45 @@ void mm_login(mb, user, pwd, trial)
 }
 
 
-void mm_critical(stream)
-    MAILSTREAM *stream;
+void mm_critical(MAILSTREAM *stream)
 {
 }
 
 
-void mm_nocritical(stream)
-    MAILSTREAM *stream;
+void mm_nocritical(MAILSTREAM *stream)
 {
 }
 
 
-long mm_diskerror(stream, errcode, serious)
-    MAILSTREAM *stream;
-    long errcode;
-    long serious;
+long mm_diskerror(MAILSTREAM *stream, long errcode, long serious)
 {
     return T;
 }
 
 
-void mm_fatal(string)
-    char *string;
+void mm_fatal(char *string)
 {
     fprintf(stderr, "%s\n", string);
 }
 
 
-void mm_searched(stream, msgno)
-    MAILSTREAM *stream;
-    unsigned long msgno;
+void mm_searched(MAILSTREAM *stream, unsigned long msgno)
 {
 }
 
 
-void mm_status(stream, mailbox, status)
-    MAILSTREAM *stream;
-    char *mailbox;
-    MAILSTATUS *status;
+void mm_status(MAILSTREAM *stream, char *mailbox, MAILSTATUS *status)
 {
 }
 
-void mm_dlog(string)
-    char *string;
+void mm_dlog(char *string)
 {
     fprintf(stderr, "%s\n", string);
 }
 
 
 int
-opt_enter(string, field_len, prompt, flags)
-     char       *string, *prompt;
-     int         field_len;
-     int	*flags;
+opt_enter(char *string, int field_len, char *prompt, int *flags)
 {
     char *pw;
     int   return_v = -10;
@@ -776,8 +721,7 @@ opt_enter(string, field_len, prompt, flags)
 }
 
 char *
-last_cmpnt(filename)
-    char *filename;
+last_cmpnt(char *filename)
 {
     register char *p = NULL, *q = filename;
 
@@ -792,9 +736,7 @@ last_cmpnt(filename)
 }
 
 int
-wantto(question, dflt, on_ctrl_C)
-     char    *question;
-     int      dflt, on_ctrl_C;
+wantto(char *question, int dflt, int on_ctrl_C)
 {
     int ret = 0;
     char rep[1000], *p;

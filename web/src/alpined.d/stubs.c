@@ -42,7 +42,7 @@ peMarkInputTime(void)
 
 /********* ../../../pith/newmail.c stub **********/
 time_t
-time_of_last_input()
+time_of_last_input(void)
 {
     return(time_of_input);
 }
@@ -50,8 +50,7 @@ time_of_last_input()
 
 /********* ../../../pith/conf.c stub **********/
 int
-set_input_timeout(t)
-    int t;
+set_input_timeout(int t)
 {
     int	old_t = input_timeout;
 
@@ -61,14 +60,14 @@ set_input_timeout(t)
 
 
 int
-get_input_timeout()
+get_input_timeout(void)
 {
     return(input_timeout);
 }
 
 
 int
-unexpected_pinerc_change()
+unexpected_pinerc_change(void)
 {
     dprint((1, "Unexpected pinerc change"));
     return(0);			/* always overwrite */
@@ -76,8 +75,7 @@ unexpected_pinerc_change()
 
 /********* ../../../pith/mailcap.c stub **********/
 int
-exec_mailcap_test_cmd(cmd)
-    char *cmd;
+exec_mailcap_test_cmd(char *cmd)
 {
     return(-1);			/* never succeeds on web server */
 }
@@ -96,8 +94,7 @@ exec_mailcap_test_cmd(cmd)
   This is also called from imap routines and fs_get and fs_resize.
   ----*/
 void
-alpine_panic(message)
-    char *message;
+alpine_panic(char *message)
 {
     in_panic = 1;
 
@@ -125,7 +122,7 @@ alpine_panic(message)
 
   ----*/
 int
-panicking()
+panicking(void)
 {
     return(in_panic);
 }
@@ -139,9 +136,7 @@ panicking()
 
   ----*/
 void
-exceptional_exit(message, ev)
-    char *message;
-    int   ev;
+exceptional_exit(char *message, int ev)
 {
     syslog(LOG_ALERT, "%s", message);
     exit(ev);
@@ -156,10 +151,7 @@ exceptional_exit(message, ev)
  Result: prints help messages
   ----------------------------------------------------------------------*/
 void
-display_args_err(s, a, err)
-    char  *s;
-    char **a;
-    int    err;
+display_args_err(char *s, char **a, int err)
 {
     syslog(LOG_INFO, "Arg Error: %s", s);
 }

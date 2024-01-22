@@ -36,7 +36,9 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <errno.h>
-extern int errno;
+#ifndef errno
+extern int errno;		/* just in case */
+#endif
 #include <pwd.h>
 #include <sys/socket.h>
 #include <time.h>

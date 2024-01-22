@@ -45,9 +45,7 @@ int my_timer_period = ((IDLE_TIMEOUT + 1)*1000);
 
 #undef main
 
-app_main (argc, argv)
-    int argc;
-    char argv[];
+app_main (int argc, char argv[])
 {
 }
 
@@ -68,9 +66,7 @@ app_main (argc, argv)
  *   Note: We're not worrying about memory leaks.
  */
 int
-main(argc, argv)
-    int   argc;
-    char *argv[];
+main(int argc, char *argv[])
 {
     MAILSTREAM *stream = NULL;
     FILE       *fp;
@@ -241,8 +237,7 @@ main(argc, argv)
 
 
 RemoteType
-check_for_header_msg(stream)
-    MAILSTREAM *stream;
+check_for_header_msg(MAILSTREAM *stream)
 {
     STRINGLIST *sl;
     int         ret = NotSet;
@@ -311,8 +306,7 @@ check_for_header_msg(stream)
 
 
 char *
-ptype(rtype)
-    RemoteType rtype;
+ptype(RemoteType rtype)
 {
     char *ret = NULL;
 
@@ -338,8 +332,7 @@ ptype(rtype)
 
 
 char *
-spechdr(rtype)
-    RemoteType rtype;
+spechdr(RemoteType rtype)
 {
     char *ret = NULL;
 
@@ -365,12 +358,7 @@ spechdr(rtype)
 
 
 int
-parse_args(argc, argv, force, trimsize, local, remote, type)
-    int          argc;
-    char       **argv;
-    int         *force, *trimsize;
-    char       **local, **remote;
-    RemoteType  *type;
+parse_args(int argc, char **argv, int *force, int *trimsize, char **local, char **remote, RemoteType *type)
 {
     int    ac;
     char **av;
@@ -467,9 +455,7 @@ Loop: while(--ac > 0 && **++av == '-'){
 
 
 long
-dummy_soutr(stream, string)
-    void *stream;
-    char *string;
+dummy_soutr(void *stream, char *string)
 {
     return LONGT;
 }
@@ -480,10 +466,7 @@ dummy_soutr(stream, string)
  * special sort of folder.
  */
 int
-add_initial_msg(stream, mailbox, special_hdr)
-    MAILSTREAM *stream;
-    char       *mailbox;
-    char       *special_hdr;
+add_initial_msg(MAILSTREAM *stream, char *mailbox, char *special_hdr)
 {
     STRING        msg;
     char          buf[20000];
@@ -545,11 +528,7 @@ add_initial_msg(stream, mailbox, special_hdr)
  * in it.
  */
 int
-append_data(stream, mailbox, special_hdr, fp)
-    MAILSTREAM *stream;
-    char       *mailbox;
-    char       *special_hdr;
-    FILE       *fp;
+append_data(MAILSTREAM *stream, char *mailbox, char *special_hdr, FILE *fp)
 {
     STRING        msg;
     char          buf[20000], *sto, *p;
@@ -631,9 +610,7 @@ append_data(stream, mailbox, special_hdr, fp)
  * such a message or not.
  */
 void
-trim_data(stream, trimsize)
-    MAILSTREAM *stream;
-    int         trimsize;
+trim_data(MAILSTREAM *stream, int trimsize)
 {
     if(stream->nmsgs > trimsize + 1){
 	char sequence[20];
@@ -647,11 +624,7 @@ trim_data(stream, trimsize)
 
 
 void
-write_fake_headers(where, subject, subtype, special_hdr)
-    RFC822BUFFER *where;
-    char *subject;
-    char *subtype;
-    char *special_hdr;
+write_fake_headers(RFC822BUFFER *where, char *subject, char *subtype, char *special_hdr)
 {
     ENVELOPE *fake_env;
     BODY     *fake_body;
@@ -686,64 +659,44 @@ write_fake_headers(where, subject, subtype, special_hdr)
 
 
 char *
-err_desc(err)
-    int err;
+err_desc(int err)
 {
     return((char *) strerror(err));
 }
 
 
-void mm_exists(stream, number)
-    MAILSTREAM *stream;
-    unsigned long number;
+void mm_exists(MAILSTREAM *stream, unsigned long number)
 {
 }
 
 
-void mm_expunged(stream, number)
-    MAILSTREAM *stream;
-    unsigned long number;
+void mm_expunged(MAILSTREAM *stream, unsigned long number)
 {
 }
 
 
-void mm_flags(stream, number)
-    MAILSTREAM *stream;
-    unsigned long number;
+void mm_flags(MAILSTREAM *stream, unsigned long number)
 {
 }
 
 
-void mm_list(stream, delim, name, attrib)
-    MAILSTREAM *stream;
-    int   delim;
-    char *name;
-    long attrib;
+void mm_list(MAILSTREAM *stream, int delim, char *name, long attrib)
 {
 }
 
 
-void mm_lsub(stream, delimiter, name, attributes)
-    MAILSTREAM *stream;
-    int delimiter;
-    char *name;
-    long attributes;
+void mm_lsub(MAILSTREAM *stream, int delimiter, char *name, long attributes)
 {
 }
 
 
-void mm_notify(stream, string, errflg)
-    MAILSTREAM *stream;
-    char *string;
-    long errflg;
+void mm_notify(MAILSTREAM *stream, char *string, long errflg)
 {
     mm_log(string, errflg);
 }
 
 
-void mm_log(string, errflg)
-    char *string;
-    long errflg;
+void mm_log(char *string, long errflg)
 {
     if(noshow_error)
       return;
@@ -771,21 +724,12 @@ void mm_log(string, errflg)
     }
 }
 
-void mm_login_method(mb, user, pwd, trial, method)
-    NETMBX *mb;
-    char   *user;
-    void   *pwd;
-    long    trial;
-    char   *method;
+void mm_login_method(NETMBX *mb, char *user, void *pwd, long trial, char *method)
 {
     mm_login(mb, user, (char **) pwd, trial);
 }
 
-void mm_login(mb, user, pwd, trial)
-    NETMBX *mb;
-    char   *user;
-    char   **pwd;
-    long    trial;
+void mm_login(NETMBX *mb, char *user, char **pwd, long trial)
 {
     char prompt[100], *last, tmp[MAILTMPLEN];
     int  i, j, goal, ugoal, len, rc, flags = 0;
@@ -921,60 +865,45 @@ void mm_login(mb, user, pwd, trial)
 }
 
 
-void mm_critical(stream)
-    MAILSTREAM *stream;
+void mm_critical(MAILSTREAM *stream)
 {
 }
 
 
-void mm_nocritical(stream)
-    MAILSTREAM *stream;
+void mm_nocritical(MAILSTREAM *stream)
 {
 }
 
 
-long mm_diskerror(stream, errcode, serious)
-    MAILSTREAM *stream;
-    long errcode;
-    long serious;
+long mm_diskerror(MAILSTREAM *stream, long errcode, long serious)
 {
     return T;
 }
 
 
-void mm_fatal(string)
-    char *string;
+void mm_fatal(char *string)
 {
     fprintf(stderr, "%s\n", string);
 }
 
 
-void mm_searched(stream, msgno)
-    MAILSTREAM *stream;
-    unsigned long msgno;
+void mm_searched(MAILSTREAM *stream, unsigned long msgno)
 {
 }
 
 
-void mm_status(stream, mailbox, status)
-    MAILSTREAM *stream;
-    char *mailbox;
-    MAILSTATUS *status;
+void mm_status(MAILSTREAM *stream, char *mailbox, MAILSTATUS *status)
 {
 }
 
-void mm_dlog(string)
-    char *string;
+void mm_dlog(char *string)
 {
     fprintf(stderr, "%s\n", string);
 }
 
 
 int
-opt_enter(string, field_len, prompt, flags)
-     char       *string, *prompt;
-     int         field_len;
-     int	*flags;
+opt_enter(char *string, int field_len, char *prompt, int *flags)
 {
     char *pw;
     int   return_v = -10;

@@ -37,7 +37,9 @@
 #include <netdb.h>
 #include <ctype.h>
 #include <errno.h>
+#ifndef errno
 extern int errno;		/* just in case */
+#endif
 #include "tcp_os2.h"		/* must be before osdep includes tcp.h */
 #include "mail.h"
 #include "osdep.h"

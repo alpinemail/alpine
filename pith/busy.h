@@ -18,7 +18,7 @@
 #define PITH_BUSY_INCLUDED
 
 
-typedef int (*percent_done_t)();    /* returns %done for progress status msg */
+typedef int (*percent_done_t)(void);    /* returns %done for progress status msg */
 
 
 /* used to tweak busy without it */
