@@ -44,7 +44,7 @@ int            is_pkcs7_body(BODY *b);
 int            fiddle_smime_message(BODY *b, long msgno);
 int            encrypt_outgoing_message(METAENV *header, BODY **bodyP);
 int            sign_outgoing_message(METAENV *header, BODY **bodyP, int dont_detach, BODY **bp);
-void           gf_puts_uline(char *txt, gf_io_t pc);
+void           gf_puts_uline(char *txt, gf_o_t pc);
 PERSONAL_CERT *find_certificate_matching_recip_info(PKCS7_RECIP_INFO *ri);
 PERSONAL_CERT *get_personal_certs(char *path);
 void           smime_init(void);

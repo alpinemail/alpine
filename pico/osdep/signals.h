@@ -55,7 +55,7 @@ RETSIGTYPE	winch_handler(int);
 #endif
 
 #ifdef POSIX_SIGNALS
-void		(*posix_signal(int, RETSIGTYPE (*)()))(int);
+void		(*posix_signal(int, RETSIGTYPE (*)(int)))(int);
 int		posix_sigunblock(int);
 #endif
 

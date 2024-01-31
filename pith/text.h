@@ -50,7 +50,7 @@ typedef struct del_q_s {
 
 
 /* exported prototypes */
-int	decode_text(ATTACH_S *, long, gf_io_t, HANDLE_S **, DetachErrStyle, int);
+int	decode_text(ATTACH_S *, long, gf_o_t, HANDLE_S **, DetachErrStyle, int);
 int	translate_utf8_to_2022_jp(long, char *, LT_INS_S **, void *);
 int	delete_quotes(long, char *, LT_INS_S **, void *);
 

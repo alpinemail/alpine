@@ -68,47 +68,6 @@ struct hdr_line {
 /* must be the same as HelpType in pith/helptext.h */
 #define	HELP_T	char **
 
- 
-/* 
- *  This structure controls the header line items on the screen.  An
- * instance of this should be created and passed in as an argument when
- * pico is called. The list is terminated by an entry with the name
- * element NULL.
- */
- 
-struct headerentry {
-        char     *prompt;
-	char	 *name;
-	HELP_T	  help;
-        int	  prwid;              /* prompt width on screen             */
-        int	  maxlen;
-        char    **realaddr;
-        int     (*builder)();        /* Function to verify/canonicalize val */
-	struct headerentry        *affected_entry, *next_affected;
-				     /* entry builder's 4th arg affects     */
-        char   *(*selector)();       /* Browser for possible values         */
-        char     *key_label;         /* Key label for key to call browser   */
-        char   *(*fileedit)();       /* Editor for file named in header     */
-        int     (*nickcmpl)();       /* routine that helps with nickname completion */
-        unsigned  display_it:1;	     /* field is to be displayed by default */
-        unsigned  break_on_comma:1;  /* Field breaks on commas              */
-        unsigned  is_attach:1;       /* Special case field for attachments  */
-        unsigned  rich_header:1;     /* Field is part of rich header        */
-        unsigned  only_file_chars:1; /* Field is a file name                */
-        unsigned  single_space:1;    /* Crush multiple spaces into one      */
-        unsigned  sticky:1;          /* Can't change this via affected_entry*/
-        unsigned  dirty:1;           /* We've changed this entry            */
-	unsigned  start_here:1;	     /* begin composer on first on lit      */
-	unsigned  blank:1;	     /* blank line separator                */
-	unsigned  sticky_special:1;  /* special treatment                   */
-#ifdef	KS_OSDATAVAR
-	KS_OSDATAVAR		     /* Port-Specific keymenu data */
-#endif
-	void     *bldr_private;      /* Data managed by builders            */
-        struct    hdr_line        *hd_text;
-};
-
-
 /*
  * Structure to pass as arg to builders.
  *
@@ -127,7 +86,48 @@ typedef struct bld_arg {
     void          **aff;
     struct bld_arg *next;
 } BUILDER_ARG;
-
+ 
+/* 
+ *  This structure controls the header line items on the screen.  An
+ * instance of this should be created and passed in as an argument when
+ * pico is called. The list is terminated by an entry with the name
+ * element NULL.
+ */
+ 
+struct headerentry {
+        char     *prompt;
+	char	 *name;
+	HELP_T	  help;
+        int	  prwid;              /* prompt width on screen             */
+        int	  maxlen;
+        char    **realaddr;
+			             /* Function to verify/canonicalize val */
+        int     (*builder)(char *, char **, char **, BUILDER_ARG *, int *);
+	struct headerentry        *affected_entry, *next_affected;
+				     /* entry builder's 4th arg affects     */
+				     /* Browser for possible values         */
+        char   *(*selector)(char **);
+        char     *key_label;         /* Key label for key to call browser   */
+        char   *(*fileedit)(char *); /* Editor for file named in header     */
+				     /* routine that helps with nickname completion */
+        int     (*nickcmpl)(char *, char **, int, unsigned int);
+        unsigned  display_it:1;	     /* field is to be displayed by default */
+        unsigned  break_on_comma:1;  /* Field breaks on commas              */
+        unsigned  is_attach:1;       /* Special case field for attachments  */
+        unsigned  rich_header:1;     /* Field is part of rich header        */
+        unsigned  only_file_chars:1; /* Field is a file name                */
+        unsigned  single_space:1;    /* Crush multiple spaces into one      */
+        unsigned  sticky:1;          /* Can't change this via affected_entry*/
+        unsigned  dirty:1;           /* We've changed this entry            */
+	unsigned  start_here:1;	     /* begin composer on first on lit      */
+	unsigned  blank:1;	     /* blank line separator                */
+	unsigned  sticky_special:1;  /* special treatment                   */
+#ifdef	KS_OSDATAVAR
+	KS_OSDATAVAR		     /* Port-Specific keymenu data */
+#endif
+	void     *bldr_private;      /* Data managed by builders            */
+        struct    hdr_line        *hd_text;
+};
 
 /*
  * structure to keep track of header display
@@ -213,24 +213,33 @@ typedef struct pico_struct {
     /* If we had this to do over, it would probably be one giant bitmap */
     unsigned always_spell_check:1;      /* always spell-checking upon quit */
     unsigned strip_ws_before_send:1;    /* don't default strip bc of flowed */
-    unsigned allow_flowed_text:1;    /* clean text when done to keep flowed */
-    int   (*helper)();			/* Pine's help function  */
-    int   (*showmsg)();			/* Pine's display_message */
-    UCS   (*suspend)();			/* Pine's suspend */
-    void  (*keybinput)();		/* Pine's keyboard input indicator */
-    int   (*tty_fix)();			/* Let Pine fix tty state */
-    long  (*newmail)();			/* Pine's report_new_mail */
-    long  (*msgntext)();		/* callback to get msg n's text */
-    int   (*upload)();			/* callback to rcv uploaded text */
-    char *(*ckptdir)();			/* callback for checkpoint file dir */
-    int   (*exittest)();		/* callback to verify exit request */
-    char *(*canceltest)();		/* callback to verify cancel request */
-    int   (*mimetype)();		/* callback to display mime type */
-    int   (*expander)();		/* callback to expand address lists */
-    int   (*user_says_noflow)();	/* callback to tell us we're not flowing */
-    void  (*resize)();			/* callback handling screen resize */
-    void  (*winch_cleanup)();		/* callback handling screen resize */
-    void  (*newthread)();		/* callback to create new thread   */
+    unsigned allow_flowed_text:1;	/* clean text when done to keep flowed */
+					/* Pine's help function  */
+    int   (*helper)(HELP_T, char *, int);
+    int   (*showmsg)(UCS);		/* Pine's display_message */
+    UCS   (*suspend)(void);		/* Pine's suspend */
+    void  (*keybinput)(void);		/* Pine's keyboard input indicator */
+    int   (*tty_fix)(int);		/* Let Pine fix tty state */
+    long  (*newmail)(int, int);		/* Pine's report_new_mail */
+					/* callback to get msg n's text */
+    long  (*msgntext)(long, int (*)(int));
+					/* callback to rcv uploaded text */
+    int   (*upload)(char *, size_t, long *);
+					/* callback for checkpoint file dir */
+    char *(*ckptdir)(char *, size_t);
+					/* callback to verify exit request */
+    int   (*exittest)(struct headerentry *, void (*)(void), int, char **);
+					/* callback to verify cancel request */
+    char *(*canceltest)(void(*)(void));
+    int   (*mimetype)(char *);		/* callback to display mime type */
+					/* callback to expand address lists */
+    int   (*expander)(struct headerentry *, char ***);
+    int   (*user_says_noflow)(void);	/* callback to tell us we're not flowing */
+					/* callback handling screen resize */
+    void  (*resize)(void);
+					/* callback handling screen resize */
+    void  (*winch_cleanup)(void);
+    void  (*newthread)(void);		/* callback to create new thread   */
     int    arm_winch_cleanup;		/* do the winch_cleanup if resized */
     HELP_T search_help;
     HELP_T ins_help;
@@ -336,7 +345,7 @@ typedef struct menuitem {
     MPOINT	     br;	/* bottom-right corner of active area	*/
     MPOINT	     lbl;	/* where the label starts		*/
     char	    *label;
-    void            (*label_hiliter)();
+    void            (*label_hiliter)(int, struct menuitem *);
     COLOR_PAIR      *kncp;      /* key name color pair                  */
     COLOR_PAIR      *klcp;      /* key label color pair                 */ 
     struct menuitem *next;
@@ -453,7 +462,7 @@ void  clear_mfunc(mousehandler_t);
 unsigned long mouse_in_content(unsigned long, int, int, int, int);
 unsigned long mouse_in_pico(unsigned long, int, int, int, int);
 void  mouse_get_last(mousehandler_t *, MOUSEPRESS *);
-void  register_key(int, unsigned, char *, void (*)(),
+void  register_key(int, unsigned, char *, void (*)(int, MENUITEM *),
 		   int, int, int, COLOR_PAIR *, COLOR_PAIR *);
 int   mouse_on_key(int, int);
 #endif	/* MOUSE */

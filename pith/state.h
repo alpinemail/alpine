@@ -360,7 +360,7 @@ struct pine {
      * Optional tools Pine Data Engine caller might provide
      */
     struct {
-        char	*(*display_filter)(char *, STORE_S *, gf_io_t, FILTLIST_S *);
+        char	*(*display_filter)(char *, STORE_S *, gf_o_t, FILTLIST_S *);
         char	*(*display_filter_trigger)(BODY *, char *, size_t);
     } tools;
 

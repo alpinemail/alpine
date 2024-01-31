@@ -25,6 +25,6 @@
 /* exported prototypes */
 int	 raw_pipe_getc(unsigned char *);
 void	 prime_raw_pipe_getc(MAILSTREAM *, long, long, long);
-PIPE_S	*cmd_pipe_open(char *, char **, int, gf_io_t *);
+PIPE_S	*cmd_pipe_open(char *, char **, int, gf_o_t *);
 
 #endif /* ALPINE_PIPE_INCLUDED */

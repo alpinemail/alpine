@@ -764,7 +764,7 @@ Args: number -- A string with the part number i.e. "3.2.1"
 Result: formatted description written to object ref'd by "pc"
  ----*/
 char *
-part_desc(char *number, BODY *body, int type, int width, int flags, gf_io_t pc)
+part_desc(char *number, BODY *body, int type, int width, int flags, gf_o_t pc)
 {
     char *t;
     char buftmp[MAILTMPLEN], sizebuf[256];

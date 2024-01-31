@@ -398,7 +398,7 @@ static void
 moveabsolute(int col, int row)
 {
 
-	char *stuff, *tgoto();
+	char *stuff, *tgoto(char *, int, int);
 
 	stuff = tgoto(_moveto, col, row);
 	tputs(stuff, 1, outchar);

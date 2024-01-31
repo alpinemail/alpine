@@ -171,14 +171,14 @@ int	    fl_val_gen(FOLDER_S *, FSTATE_S *);
 int	    fl_val_writable(FOLDER_S *, FSTATE_S *);
 int	    fl_val_subscribe(FOLDER_S *, FSTATE_S *);
 STRLIST_S  *folder_lister(struct pine *, FSTATE_S *);
-int	    folder_list_text(struct pine *, FPROC_S *, gf_io_t, HANDLE_S **, int);
-int         folder_list_write(gf_io_t, HANDLE_S **, CONTEXT_S *, int, char *, int);
-int	    folder_list_write_prefix(FOLDER_S *, int, gf_io_t);
-int         folder_list_write_middle(FOLDER_S *fp, CONTEXT_S *ctxt, gf_io_t pc, HANDLE_S *);
-int	    folder_list_write_suffix(FOLDER_S *, int, gf_io_t);
+int	    folder_list_text(struct pine *, FPROC_S *, gf_o_t, HANDLE_S **, int);
+int         folder_list_write(gf_o_t, HANDLE_S **, CONTEXT_S *, int, char *, int);
+int	    folder_list_write_prefix(FOLDER_S *, int, gf_o_t);
+int         folder_list_write_middle(FOLDER_S *fp, CONTEXT_S *ctxt, gf_o_t pc, HANDLE_S *);
+int	    folder_list_write_suffix(FOLDER_S *, int, gf_o_t);
 int         color_monitored(FOLDER_S *, int, int);
 int         color_test_for_folder(char *, char *);
-int         color_write_for_folder(gf_io_t pc, int testtype);
+int         color_write_for_folder(gf_o_t pc, int testtype);
 int         use_color_for_folder(FOLDER_S *fp);
 int	    folder_list_ith(int, CONTEXT_S *);
 char	   *folder_list_center_space(char *, int);
@@ -994,7 +994,7 @@ context_edit_screen(struct pine *ps, char *func, char *def_nick,
     editor_result = pico(&pbf);
 
     if(editor_result & COMP_GOTHUP){
-	hup_signal();
+	hup_signal(0);
     }
     else{
 	fix_windsize(ps_global);
@@ -1421,7 +1421,7 @@ folder_lister(struct pine *ps, FSTATE_S *fs)
     HANDLE_S   *handles = NULL;
     STORE_S    *screen_text = NULL;
     FPROC_S	folder_proc_data;
-    gf_io_t	pc;
+    gf_o_t	pc;
 
     dprint((1, "\n\n    ---- FOLDER LISTER ----\n"));
 
@@ -1571,7 +1571,7 @@ folder_lister(struct pine *ps, FSTATE_S *fs)
  * folder_list_text - format collection's contents for display
  */
 int
-folder_list_text(struct pine *ps, FPROC_S *fp, gf_io_t pc, HANDLE_S **handlesp, int cols)
+folder_list_text(struct pine *ps, FPROC_S *fp, gf_o_t pc, HANDLE_S **handlesp, int cols)
 {
     int	       rv = 1, i, j, ftotal, fcount, slot_width, slot_rows,
 	       slot_cols, index, findex, width, shown, selected;
@@ -1933,7 +1933,7 @@ folder_list_text(struct pine *ps, FPROC_S *fp, gf_io_t pc, HANDLE_S **handlesp, 
 
 
 int
-folder_list_write(gf_io_t pc, HANDLE_S **handlesp, CONTEXT_S *ctxt, int fnum, char *alt_name, int flags)
+folder_list_write(gf_o_t pc, HANDLE_S **handlesp, CONTEXT_S *ctxt, int fnum, char *alt_name, int flags)
 {
     char      buf[256];
     int	      width = 0, lprefix = 0, lmiddle = 0, lsuffix = 0;
@@ -2004,7 +2004,7 @@ folder_list_write(gf_io_t pc, HANDLE_S **handlesp, CONTEXT_S *ctxt, int fnum, ch
 
 
 int
-folder_list_write_prefix(FOLDER_S *f, int flags, gf_io_t pc)
+folder_list_write_prefix(FOLDER_S *f, int flags, gf_o_t pc)
 {
     int rv = 0;
 
@@ -2032,7 +2032,7 @@ folder_list_write_prefix(FOLDER_S *f, int flags, gf_io_t pc)
 }
 
 int
-folder_list_write_middle(FOLDER_S *fp, CONTEXT_S *ctxt, gf_io_t pc, HANDLE_S *h2)
+folder_list_write_middle(FOLDER_S *fp, CONTEXT_S *ctxt, gf_o_t pc, HANDLE_S *h2)
 {
     int rv = -1, use_color;
     char buf[256];
@@ -2074,7 +2074,7 @@ folder_list_write_middle(FOLDER_S *fp, CONTEXT_S *ctxt, gf_io_t pc, HANDLE_S *h2
 
 
 int
-folder_list_write_suffix(FOLDER_S *f, int flags, gf_io_t pc)
+folder_list_write_suffix(FOLDER_S *f, int flags, gf_o_t pc)
 {
     int rv = 0;
 
@@ -2115,7 +2115,7 @@ folder_list_write_suffix(FOLDER_S *f, int flags, gf_io_t pc)
 }
 
 int
-color_write_for_folder(gf_io_t pc, int testtype)
+color_write_for_folder(gf_o_t pc, int testtype)
 {
   int rv;
   if(!pico_usingcolor())

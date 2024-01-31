@@ -80,7 +80,7 @@ static unsigned long gets_bytes;
  */
 void     convert_args_to_utf8(struct pine *, ARGDATA_S *);
 void	 preopen_stayopen_folders(void);
-int	 read_stdin_char(char *);
+int	 read_stdin_char(unsigned char *);
 void	 main_redrawer(void);
 void     show_main_screen(struct pine *, int, OtherMenu, struct key_menu *, int, Pos *);
 void	 do_menu(int, Pos *, struct key_menu *);
@@ -147,7 +147,7 @@ main(int argc, char **argv)
     int		 rv;
     long	 rvl;
     struct pine *pine_state;
-    gf_io_t	 stdin_getc = NULL;
+    gf_i_t	 stdin_getc = NULL;
     char        *args_for_debug = NULL, *init_pinerc_debugging = NULL;
 
     /*----------------------------------------------------------------------
@@ -947,7 +947,7 @@ main(int argc, char **argv)
 		redir++;
 		src = CharStar;
 		if(isatty(0) && (store = so_get(src, NULL, EDIT_ACCESS))){
-		    gf_io_t pc;
+		    gf_o_t pc;
 
 		    gf_set_so_writec(&pc, store);
 		    gf_filter_init();
@@ -1550,7 +1550,7 @@ preopen_stayopen_folders(void)
  *		     redirected stdin
  */
 int
-read_stdin_char(char *c)
+read_stdin_char(unsigned char *c)
 {
     int rv;
     

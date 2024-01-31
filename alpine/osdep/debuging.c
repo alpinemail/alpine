@@ -372,7 +372,7 @@ output_debug_msg(int dlevel, char *fmt, ...)
 void
 dump_configuration(int brief)
 {
-    gf_io_t pc;
+    gf_o_t pc;
 
     if(!do_debug(debugfile))
       return;
@@ -384,7 +384,7 @@ dump_configuration(int brief)
 
 
 void
-dump_config(struct pine *ps, gf_io_t pc, int brief)
+dump_config(struct pine *ps, gf_o_t pc, int brief)
 {
     int	       i;
     char       quotes[3], tmp[MAILTMPLEN];
@@ -479,7 +479,7 @@ dump_config(struct pine *ps, gf_io_t pc, int brief)
 
  ----*/ 
 void
-dump_pine_struct(struct pine *ps, gf_io_t pc)
+dump_pine_struct(struct pine *ps, gf_o_t pc)
 {
     char *p;
     extern char term_name[];

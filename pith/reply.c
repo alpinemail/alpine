@@ -937,7 +937,7 @@ reply_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
     char     *p, *sig = NULL, *section, sect_buf[SECTBUFLEN];
     BODY     *body = NULL, *tmp_body = NULL;
     PART     *part;
-    gf_io_t   pc;
+    gf_o_t   pc;
     int       impl, template_len = 0, leave_cursor_at_top = 0, reply_raw_body = 0;
 
     if(sect_prefix)					/* SECTBUFLEN = sizeof(sect_buf) */
@@ -2036,7 +2036,7 @@ get_reply_data(ENVELOPE *env, ACTION_S *role, IndexColType type, char *buf, size
  *		     with supplied character writing function.
  */
 void
-reply_delimiter(ENVELOPE *env, ACTION_S *role, gf_io_t pc)
+reply_delimiter(ENVELOPE *env, ACTION_S *role, gf_o_t pc)
 {
 #define MAX_DELIM 2000
     char           buf[MAX_DELIM+1];
@@ -2223,7 +2223,7 @@ forward_mime_msg(MAILSTREAM *stream, long int msgno, char *section, ENVELOPE *en
  * forward_delimiter - return delimiter for forwarded text
  */
 void
-forward_delimiter(gf_io_t pc)
+forward_delimiter(gf_o_t pc)
 {
     gf_puts(NEWLINE, pc);
     /* TRANSLATORS: When a message is forwarded by the user this is the
@@ -2247,7 +2247,7 @@ forward_delimiter(gf_io_t pc)
   ----------------------------------------------------------------------*/
 void
 reply_forward_header(MAILSTREAM *stream, long int msgno, char *part, ENVELOPE *env,
-		     gf_io_t pc, char *prefix)
+		     gf_o_t pc, char *prefix)
 {
     int      rv;
     HEADER_S h;
@@ -2363,7 +2363,7 @@ forward_body(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_bod
 {
     BODY    *body = NULL, *text_body, *tmp_body;
     PART    *part;
-    gf_io_t  pc;
+    gf_o_t  pc;
     char    *tmp_text, *section, sect_buf[256];
     int      forward_raw_body = 0;
 
@@ -2589,7 +2589,7 @@ bounce_msg_body(MAILSTREAM *stream,
     char     *h, *p, *errstr = NULL;
     int	      i;
     STORE_S  *msgtext;
-    gf_io_t   pc;
+    gf_o_t   pc;
 
     *outgoingp		 = mail_newenvelope();
     (*outgoingp)->subject    = cpystr(subject ? subject : "Resent mail....");
@@ -2729,7 +2729,7 @@ DOESN'T sanity check the prefix given!!!
   ----*/
 int
 get_body_part_text(MAILSTREAM *stream, struct mail_bodystruct *body,
-		   long int msg_no, char *part_no, long partial, gf_io_t pc,
+		   long int msg_no, char *part_no, long partial, gf_o_t pc,
 		   char *prefix, char **ret_charset, unsigned flags)
 {
     int		we_cancel = 0, dashdata, wrapflags = GFW_FORCOMPOSE, flow_res = 0;
@@ -2752,7 +2752,7 @@ get_body_part_text(MAILSTREAM *stream, struct mail_bodystruct *body,
      */
     if(body == NULL){
 	char         *text, *decode_error;
-	gf_io_t       gc;
+	gf_i_t       gc;
 	SourceType    src = CharStar;
 	int           rv = 0;
 
@@ -3691,7 +3691,7 @@ bail_out:
  */
 BODY *
 forward_multi_alt_mixed(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
-		long int msgno, char *sect_prefix, void *msgtext, gf_io_t pc, int flags)
+		long int msgno, char *sect_prefix, void *msgtext, gf_o_t pc, int flags)
 {
 #define FWDTMPLEN 256
     BODY *body = NULL, *text_body = NULL;
@@ -3784,7 +3784,7 @@ forward_multi_alt_mixed(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruc
   ----------------------------------------------------------------------*/
 BODY *
 forward_multi_alt(MAILSTREAM *stream, ENVELOPE *env, struct mail_bodystruct *orig_body,
-		  long int msgno, char *sect_prefix, void *msgtext, gf_io_t pc, int flags)
+		  long int msgno, char *sect_prefix, void *msgtext, gf_o_t pc, int flags)
 {
 #define FWDTMPLEN 256
     BODY *body = NULL;

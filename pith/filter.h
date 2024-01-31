@@ -161,21 +161,21 @@ int	    generic_readc_locale(unsigned char *c,
 				 int (*get_a_char)(unsigned char *, void *),
 				 void *extraarg,
 				 CBUF_S *cb);
-int	    pc_is_picotext(gf_io_t);
-void	    gf_set_readc(gf_io_t *, void *, unsigned long, SourceType, int);
-void	    gf_set_writec(gf_io_t *, void *, unsigned long, SourceType, int);
-void	    gf_set_so_readc(gf_io_t *, STORE_S *);
+int	    pc_is_picotext(gf_o_t);
+void	    gf_set_readc(gf_i_t *, void *, unsigned long, SourceType, int);
+void	    gf_set_writec(gf_o_t *, void *, unsigned long, SourceType, int);
+void	    gf_set_so_readc(gf_i_t *, STORE_S *);
 void	    gf_clear_so_readc(STORE_S *);
-void	    gf_set_so_writec(gf_io_t *, STORE_S *);
+void	    gf_set_so_writec(gf_o_t *, STORE_S *);
 void	    gf_clear_so_writec(STORE_S *);
-int	    gf_puts(char *, gf_io_t);
-int	    gf_nputs(char *, long, gf_io_t);
+int	    gf_puts(char *, gf_o_t);
+int	    gf_nputs(char *, long, gf_o_t);
 void	    gf_filter_init(void);
 void	    gf_link_filter(filter_t, void *);
-void	    gf_set_terminal(gf_io_t);
-char	   *gf_pipe(gf_io_t, gf_io_t);
+void	    gf_set_terminal(gf_o_t);
+char	   *gf_pipe(gf_i_t, gf_o_t);
 long	    gf_bytes_piped(void);
-char	   *gf_filter(char *, char *, STORE_S *, gf_io_t, FILTLIST_S *, int,
+char	   *gf_filter(char *, char *, STORE_S *, gf_o_t, FILTLIST_S *, int,
 		      int, void (*)(PIPE_S *, int, void *));
 void	    gf_binary_b64(FILTER_S *, int);
 void	    gf_b64_binary(FILTER_S *, int);

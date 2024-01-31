@@ -79,7 +79,7 @@ int            do_the_shuffle(int *, int, int, char **);
 void           ab_compose_internal(BuildTo, int);
 int            ab_export(struct pine *, long, int, int);
 VCARD_INFO_S  *prepare_abe_for_vcard(struct pine *, AdrBk_Entry *, int);
-void           write_single_tab_entry(gf_io_t, VCARD_INFO_S *);
+void           write_single_tab_entry(gf_o_t, VCARD_INFO_S *);
 int            percent_done_copying(void);
 int            cmp_action_list(const qsort_t *, const qsort_t *);
 void           set_act_list_member(ACTION_LIST_S *, a_c_arg_t, PerAddrBook *, PerAddrBook *, char *);
@@ -131,7 +131,8 @@ view_abook_entry(struct pine *ps, long int cur_line)
     SCROLL_S	sargs;
     HANDLE_S   *handles = NULL;
     URL_HILITE_S uh;
-    gf_io_t	pc, gc;
+    gf_o_t	pc;
+    gf_i_t	gc;
     int         cmd, abook_indent;
     long	offset = 0L;
     char        b[500];
@@ -785,7 +786,7 @@ char *
 view_message_for_pico(char **error)
 {
     STORE_S     *store;
-    gf_io_t      pc;
+    gf_o_t      pc;
     void       (*redraw)(void) = ps_global->redrawer;
     SourceType   src = CharStar;
     SCROLL_S	 sargs;
@@ -1132,7 +1133,7 @@ _("\n to use single quotation marks; for example: George 'Husky' Washington."));
     standard_picobuf_teardown(&pbf);
 
     if(editor_result & COMP_GOTHUP)
-      hup_signal();
+      hup_signal(0);
     else{
 	fix_windsize(ps_global);
 	init_signals();
@@ -1872,7 +1873,7 @@ _(" To exit and save the configuration, press ^X. To cancel, press ^C.");
 
     if(editor_result & COMP_GOTHUP){
 	ret = -1;
-	hup_signal();
+	hup_signal(0);
     }
     else{
 	fix_windsize(ps_global);
@@ -4162,7 +4163,7 @@ ab_export(struct pine *ps, long int cur_line, int command_line, int agg)
     struct variable *vars = ps->vars;
     char     filename[MAXPATH+1], full_filename[MAXPATH+1];
     STORE_S *store;
-    gf_io_t  pc;
+    gf_o_t  pc;
     long     start_of_append;
     char    *addr = NULL, *error = NULL;
     BuildTo  bldto;
@@ -4505,7 +4506,7 @@ ab_forward(struct pine *ps, long int cur_line, int agg)
     BODY          *pb, *body = NULL;
     PART         **pp;
     char          *sig;
-    gf_io_t        pc;
+    gf_o_t        pc;
     int            i, ret = 0;
     VCARD_INFO_S  *vinfo;
     ACTION_S      *role = NULL;
@@ -4945,7 +4946,7 @@ free_vcard_info(VCARD_INFO_S **vinfo)
  * 
  */
 void
-write_single_vcard_entry(struct pine *ps, gf_io_t pc, VCARD_INFO_S *vinfo)
+write_single_vcard_entry(struct pine *ps, gf_o_t pc, VCARD_INFO_S *vinfo)
 {
     char  *decoded, *tmp2, *tmp = NULL, *hdr;
     char **ll;
@@ -5111,7 +5112,7 @@ write_single_vcard_entry(struct pine *ps, gf_io_t pc, VCARD_INFO_S *vinfo)
  * 
  */
 void
-write_single_tab_entry(gf_io_t pc, VCARD_INFO_S *vinfo)
+write_single_tab_entry(gf_o_t pc, VCARD_INFO_S *vinfo)
 {
     char  *decoded, *tmp = NULL;
     char **ll;
@@ -6704,7 +6705,7 @@ _("\n \"^G\" for help specific to each item. \"^X\" to make the query, or \"^C\"
 	standard_picobuf_teardown(&pbf);
 
 	if(editor_result & COMP_GOTHUP)
-	  hup_signal();
+	  hup_signal(0);
 	else{
 	    fix_windsize(ps_global);
 	    init_signals();

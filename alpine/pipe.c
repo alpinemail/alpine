@@ -129,7 +129,7 @@ prime_raw_pipe_getc(MAILSTREAM *stream, long int msgno, long int char_limit, lon
 
   ----*/
 PIPE_S *
-cmd_pipe_open(char *cmd, char **result, int flags, gf_io_t *pc)
+cmd_pipe_open(char *cmd, char **result, int flags, gf_o_t *pc)
 {
     char    err[200];
     PIPE_S *pipe;

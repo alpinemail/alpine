@@ -29,7 +29,7 @@
 
 
 /* exported prototypes */
-RETSIGTYPE  hup_signal(void);
+RETSIGTYPE  hup_signal(int);
 RETSIGTYPE  child_signal(int);
 void	    user_input_timeout_exit(int);
 void	    init_signals(void);

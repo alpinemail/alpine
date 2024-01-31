@@ -3733,7 +3733,7 @@ fetch_firsttext(INDEXDATA_S *idata, int delete_quotes)
     BODY *body = NULL, *new_body = NULL;
     char *firsttext = NULL;
     STORE_S *so;
-    gf_io_t pc;
+    gf_o_t pc;
     long partial_fetch_len = 0L;
     SEARCHSET *ss, **sset;
     MESSAGECACHE *mc;

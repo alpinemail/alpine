@@ -89,7 +89,7 @@ static struct envelope_s {
 /*
  * Hook for optional display of rfc2369 content
  */
-int  (*pith_opt_rfc2369_editorial)(long, HANDLE_S **, int, int, gf_io_t);
+int  (*pith_opt_rfc2369_editorial)(long, HANDLE_S **, int, int, gf_o_t);
 
 
 
@@ -101,28 +101,28 @@ int	    format_blip_seen(long);
 int	    is_an_env_hdr(char *);
 int         is_an_addr_hdr(char *);
 void	    format_env_hdr(MAILSTREAM *, long, char *, ENVELOPE *,
-			   fmt_env_t, gf_io_t, char *, char *, int);
+			   fmt_env_t, gf_o_t, char *, char *, int);
 int	    delineate_this_header(char *, char *, char **, char **);
 char	   *url_embed(int);
 int         color_headers(long, char *, LT_INS_S **, void *);
 int	    url_hilite_hdr(long, char *, LT_INS_S **, void *);
 int	    pad_to_right_edge(long, char *, LT_INS_S **, void *);
 int	    url_bogus_imap(char **, char *, char *);
-int	    format_raw_header(MAILSTREAM *, long, char *, gf_io_t);
+int	    format_raw_header(MAILSTREAM *, long, char *, gf_o_t);
 void	    format_envelope(MAILSTREAM *, long, char *, ENVELOPE *,
-			    gf_io_t, long, char *, int);
+			    gf_o_t, long, char *, int);
 int         any_hdr_color(char *);
 void	    format_addr_string(MAILSTREAM *, long, char *, char *,
-			       ADDRESS *, int, char *, gf_io_t);
-void        pine_rfc822_write_address_noquote(ADDRESS *, gf_io_t, int *);
-void	    format_newsgroup_string(char *, char *, int, gf_io_t);
-int	    format_raw_hdr_string(char *, char *, gf_io_t, char *, int);
-int	    format_env_puts(char *, gf_io_t);
+			       ADDRESS *, int, char *, gf_o_t);
+void        pine_rfc822_write_address_noquote(ADDRESS *, gf_o_t, int *);
+void	    format_newsgroup_string(char *, char *, int, gf_o_t);
+int	    format_raw_hdr_string(char *, char *, gf_o_t, char *, int);
+int	    format_env_puts(char *, gf_o_t);
 int	    find_field(char **, char *, size_t);
-int	    embed_color(COLOR_PAIR *, gf_io_t);
+int	    embed_color(COLOR_PAIR *, gf_o_t);
 COLOR_PAIR *get_cur_embedded_color(void);
 void        clear_cur_embedded_color(void);
-void	    format_calendar_vevent(VCALENDAR_S *, ATTACH_S *, HANDLE_S **, int, int, gf_io_t, int);
+void	    format_calendar_vevent(VCALENDAR_S *, ATTACH_S *, HANDLE_S **, int, int, gf_o_t, int);
 
 
 
@@ -148,7 +148,7 @@ parts that are not displayed or can't be displayed.
  ----*/    
 int
 format_message(long int msgno, ENVELOPE *env, struct mail_bodystruct *body,
-	       HANDLE_S **handlesp, int flgs, gf_io_t pc)
+	       HANDLE_S **handlesp, int flgs, gf_o_t pc)
 {
     char     *decode_err = NULL;
     HEADER_S  h;
@@ -217,7 +217,7 @@ format_message(long int msgno, ENVELOPE *env, struct mail_bodystruct *body,
 }
 
 void
-format_calendar_vevent(VCALENDAR_S *vcal, ATTACH_S *a, HANDLE_S **handlesp, int flgs, int width, gf_io_t pc, int cflags)
+format_calendar_vevent(VCALENDAR_S *vcal, ATTACH_S *a, HANDLE_S **handlesp, int flgs, int width, gf_o_t pc, int cflags)
 {
   int avail, m1, m2, hwid, i, partwid, padwid;
   int s1, s2, dwid, minkey;
@@ -487,7 +487,7 @@ format_calendar_vevent(VCALENDAR_S *vcal, ATTACH_S *a, HANDLE_S **handlesp, int 
 }
 
 int
-format_calendar(long int msgno, BODY *body, HANDLE_S **handlesp, int flgs, int width, gf_io_t pc)
+format_calendar(long int msgno, BODY *body, HANDLE_S **handlesp, int flgs, int width, gf_o_t pc)
 {
   char *rawtext, *caltext;
   unsigned long callen;
@@ -561,14 +561,14 @@ format_calendar(long int msgno, BODY *body, HANDLE_S **handlesp, int flgs, int w
 
 
 char *
-format_body(long int msgno, BODY *body, HANDLE_S **handlesp, HEADER_S *hp, int flgs, int width, gf_io_t pc)
+format_body(long int msgno, BODY *body, HANDLE_S **handlesp, HEADER_S *hp, int flgs, int width, gf_o_t pc)
 {
     int		  filt_only_c0 = 0, wrapflags, error_found = 0;
     int		  is_in_sig = OUT_SIG_BLOCK;
     char	 *charset, *decode_err = NULL, *tmp1, *description;
     ATTACH_S	 *a;
     URL_HILITE_S  uh;
-    gf_io_t	  gc;
+    gf_i_t	  gc;
 
     if(body == NULL 
        || (ps_global->full_header == 2
@@ -883,7 +883,7 @@ format_body(long int msgno, BODY *body, HANDLE_S **handlesp, HEADER_S *hp, int f
 
 
 int
-format_attachment_list(long int msgno, BODY *body, HANDLE_S **handlesp, int flgs, int width, gf_io_t pc)
+format_attachment_list(long int msgno, BODY *body, HANDLE_S **handlesp, int flgs, int width, gf_o_t pc)
 {
     ATTACH_S *a;
 
@@ -1263,7 +1263,7 @@ is_an_addr_hdr(char *fieldname)
  */
 void
 format_env_hdr(MAILSTREAM *stream, long int msgno, char *section, ENVELOPE *env,
-	       fmt_env_t fmt_env, gf_io_t pc, char *field, char *oacs, int flags)
+	       fmt_env_t fmt_env, gf_o_t pc, char *field, char *oacs, int flags)
 {
     register int i;
 
@@ -2307,7 +2307,7 @@ url_bogus(char *url, char *reason)
 int
 format_header(MAILSTREAM *stream, long int msgno, char *section, ENVELOPE *env,
 	      HEADER_S *hdrs, char *prefix, HANDLE_S **handlesp, int flags,
-	      fmt_env_t fmt_env, gf_io_t final_pc)
+	      fmt_env_t fmt_env, gf_o_t final_pc)
 {
     int	     rv = FHT_OK;
     int	     nfields, i;
@@ -2315,7 +2315,8 @@ format_header(MAILSTREAM *stream, long int msgno, char *section, ENVELOPE *env,
 	    *finish, *current;
     STORE_S *tmp_store;
     URL_HILITE_S uh;
-    gf_io_t  tmp_pc, tmp_gc;
+    gf_o_t  tmp_pc;
+    gf_i_t  tmp_gc;
     struct variable *vars = ps_global->vars;
 
     if((tmp_store = so_get(CharStar, NULL, EDIT_ACCESS)) != NULL)
@@ -2646,7 +2647,7 @@ format_header(MAILSTREAM *stream, long int msgno, char *section, ENVELOPE *env,
 
  ----*/
 int
-format_raw_header(MAILSTREAM *stream, long int msgno, char *section, gf_io_t pc)
+format_raw_header(MAILSTREAM *stream, long int msgno, char *section, gf_o_t pc)
 {
     char *h = mail_fetch_header(stream, msgno, section, NULL, NULL, FT_PEEK);
     unsigned char c;
@@ -2699,7 +2700,7 @@ format_raw_header(MAILSTREAM *stream, long int msgno, char *section, gf_io_t pc)
 
  ----*/
 void
-format_envelope(MAILSTREAM *s, long int n, char *sect, ENVELOPE *e, gf_io_t pc,
+format_envelope(MAILSTREAM *s, long int n, char *sect, ENVELOPE *e, gf_o_t pc,
 		long int which, char *oacs, int flags)
 {
     char *q, *p2, buftmp[MAILTMPLEN];
@@ -2905,7 +2906,7 @@ any_hdr_color(char *fieldname)
   ----------------------------------------------------------------------*/
 void
 format_addr_string(MAILSTREAM *stream, long int msgno, char *section, char *field_name,
-		   struct mail_address *addr, int flags, char *oacs, gf_io_t pc)
+		   struct mail_address *addr, int flags, char *oacs, gf_o_t pc)
 {
     char    *ptmp, *mtmp = NULL;
     int	     trailing = 0, group = 0;
@@ -3026,7 +3027,7 @@ const char *rspecials_minus_quote_and_dot = "()<>@,;:\\[]";
  * doesn't usually break anything.
  */
 void
-pine_rfc822_write_address_noquote(struct mail_address *adr, gf_io_t pc, int *group)
+pine_rfc822_write_address_noquote(struct mail_address *adr, gf_o_t pc, int *group)
 {
   extern const char *rspecials;
 
@@ -3064,7 +3065,7 @@ pine_rfc822_write_address_noquote(struct mail_address *adr, gf_io_t pc, int *gro
  */
 
 void
-pine_rfc822_address(struct mail_address *adr, gf_io_t pc)
+pine_rfc822_address(struct mail_address *adr, gf_o_t pc)
 {
   extern char *wspecials;
 
@@ -3090,7 +3091,7 @@ pine_rfc822_address(struct mail_address *adr, gf_io_t pc)
  */
 
 void
-pine_rfc822_cat(char *src, const char *specials, gf_io_t pc)
+pine_rfc822_cat(char *src, const char *specials, gf_o_t pc)
 {
   char *s;
 
@@ -3128,7 +3129,7 @@ pine_rfc822_cat(char *src, const char *specials, gf_io_t pc)
 The resulting lines formatted are 80 columns wide.
   ----------------------------------------------------------------------*/
 void
-format_newsgroup_string(char *field_name, char *newsgrps, int flags, gf_io_t pc)
+format_newsgroup_string(char *field_name, char *newsgrps, int flags, gf_o_t pc)
 {
     char     buf[MAILTMPLEN];
     int	     trailing = 0, llen, alen;
@@ -3208,7 +3209,7 @@ format_newsgroup_string(char *field_name, char *newsgrps, int flags, gf_io_t pc)
 
   ----------------------------------------------------------------------*/
 int
-format_raw_hdr_string(char *start, char *finish, gf_io_t pc, char *oacs, int flags)
+format_raw_hdr_string(char *start, char *finish, gf_o_t pc, char *oacs, int flags)
 {
     register char *current;
     unsigned char *p, *tmp = NULL, c;
@@ -3272,7 +3273,7 @@ format_raw_hdr_string(char *start, char *finish, gf_io_t pc, char *oacs, int fla
 
   ----------------------------------------------------------------------*/
 int
-format_env_puts(char *s, gf_io_t pc)
+format_env_puts(char *s, gf_o_t pc)
 {
     if(ps_global->pass_ctrl_chars)
       return(gf_puts(s, pc));
@@ -3454,7 +3455,7 @@ static char *_last_embedded_fg_color, *_last_embedded_bg_color;
 
 
 int
-embed_color(COLOR_PAIR *cp, gf_io_t pc)
+embed_color(COLOR_PAIR *cp, gf_o_t pc)
 {
     if(cp && cp->fg){
 	if(_last_embedded_fg_color)

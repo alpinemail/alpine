@@ -37,7 +37,7 @@
 /* exported prototypes */
 void	    compose_screen(struct pine *); 
 void	    alt_compose_screen(struct pine *);
-void	    compose_mail(char *, char *, ACTION_S *, PATMT *, gf_io_t);
+void	    compose_mail(char *, char *, ACTION_S *, PATMT *, gf_i_t);
 int	    pine_simple_send(ENVELOPE *, BODY **, ACTION_S **, char *, char *, char **, int);
 void	    pine_send(ENVELOPE *, BODY **, char *, ACTION_S *, char *, REPLY_S *,
 		      REDRAFT_POS_S *, char *, PINEFIELD *, int);

@@ -1622,7 +1622,8 @@ imgdata_open(HANDLE_S *handle)
 int
 do_imgdata_open(char *toolp, char *data)
 {
-    gf_io_t  pc, writec, readc;
+    gf_o_t   pc, writec;
+    gf_i_t   readc;
     STORE_S  *so, *img;
     char     *tmpfile = NULL, *err = NULL, *imgdata, *encoding;
 
@@ -2448,7 +2449,7 @@ ical_send_reply(char *url)
  * List-* header supplied commands
  */
 int
-rfc2369_editorial(long int msgno, HANDLE_S **handlesp, int flags, int width, gf_io_t pc)
+rfc2369_editorial(long int msgno, HANDLE_S **handlesp, int flags, int width, gf_o_t pc)
 {
     char     *p, *hdrp, *hdrs[MLCMD_COUNT + 1],
 	      color[64], buf[2048];
@@ -5326,7 +5327,8 @@ display_output_file(char *filename, char *title, char *alt_msg, int mode)
 	 */
 	if(in_file){
 	    char *errstr;
-	    gf_io_t gc, pc;
+	    gf_i_t gc;
+	    gf_o_t pc;
 
 	    if(!(out_store = so_get(CharStar, NULL, EDIT_ACCESS))){
 		so_give(&in_file);

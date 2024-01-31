@@ -75,7 +75,7 @@ static void     setup_dflt_esc_seq(void);
 static void     tinfoinsert(UCS);
 static void     tinfodelete(void);
 
-extern int      tput();
+extern int      tput(char);
 extern int      tputs(char *, int, int (*)(int));
 extern char    *tgoto(char *, int, int);
 extern char    *tigetstr (char *);

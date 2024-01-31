@@ -3602,7 +3602,7 @@ cmd_export(struct pine *state, MSGNO_S *msgmap, int qline, int aopt)
     MESSAGECACHE *mc;
     BODY     *b;
     long      i, count = 0L, start_of_append = 0, rawno;
-    gf_io_t   pc;
+    gf_o_t    pc;
     STORE_S  *store;
     struct variable *vars = state ? ps_global->vars : NULL;
     ESCKEY_S export_opts[5];
@@ -3711,7 +3711,7 @@ cmd_export(struct pine *state, MSGNO_S *msgmap, int qline, int aopt)
 	int	     next = 0;
 	PIPE_S  *syspipe;
 	STORE_S *so;
-	gf_io_t  pc;
+	gf_o_t   pc;
 
 	if(ps_global->restricted){
 	    q_status_message(SM_ORDER | SM_DING, 3, 3,
@@ -4110,7 +4110,8 @@ simple_export(struct pine *ps, void *srctext, SourceType srctype, char *prompt_m
 
     if((store = so_get(FileStar, full_filename, WRITE_ACCESS|WRITE_TO_LOCALE)) != NULL){
 	char *pipe_err;
-	gf_io_t pc, gc;
+	gf_o_t pc;
+	gf_i_t gc;
 
 	gf_set_so_writec(&pc, store);
 	gf_set_readc(&gc, srctext, (srctype == CharStar)
@@ -5103,7 +5104,7 @@ build_updown_cmd(char *cmd, size_t cmdlen, char *prefix, char *cfg_str, char *fn
     NOTE: follows delimiter with OS-dependent newline
  ----*/
 int
-bezerk_delimiter(ENVELOPE *env, MESSAGECACHE *mc, gf_io_t pc, int leading_newline)
+bezerk_delimiter(ENVELOPE *env, MESSAGECACHE *mc, gf_o_t pc, int leading_newline)
 {
     MESSAGECACHE telt;
     time_t       when;
@@ -6387,7 +6388,7 @@ cmd_pipe(struct pine *state, MSGNO_S *msgmap, int aopt)
     PIPE_S	  *syspipe;
     char          *resultfilename = NULL, prompt[80], *p;
     int            done = 0, rv = 0;
-    gf_io_t	   pc;
+    gf_o_t	   pc;
     int		   fourlabel = -1, j = 0, next = 0, ku;
     int            pipe_rv; /* rv of proc to separate from close_system_pipe rv */
     long           i, rawno;
@@ -6870,7 +6871,8 @@ list_mgmt_screen(STORE_S *html)
     char	   *error = NULL;
     STORE_S	   *store;
     HANDLE_S	   *handles = NULL;
-    gf_io_t	    gc, pc;
+    gf_i_t	    gc;
+    gf_o_t	    pc;
 
     do{
 	so_seek(html, 0L, 0);

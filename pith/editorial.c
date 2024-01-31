@@ -48,9 +48,9 @@ typedef struct _editorial_s {
 
 
 char *
-format_editorial(char *s, int width, int flags, HANDLE_S **handlesp, gf_io_t pc)
+format_editorial(char *s, int width, int flags, HANDLE_S **handlesp, gf_o_t pc)
 {
-    gf_io_t	 gc;
+    gf_i_t	 gc;
     int		*margin;
     EDITORIAL_S  es;
     URL_HILITE_S uh;

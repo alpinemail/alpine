@@ -23,7 +23,7 @@
 
 
 /* exported prototypes */
-char	*format_editorial(char *, int, int, HANDLE_S **, gf_io_t);
+char	*format_editorial(char *, int, int, HANDLE_S **, gf_o_t);
 
 
 #endif /* PITH_EDITORIAL_INCLUDED */

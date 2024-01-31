@@ -173,7 +173,7 @@ test_message_with_cmd(MAILSTREAM *stream, long int msgno, char *cmd,
 		      int *exitval)
 {
     PIPE_S  *tpipe;
-    gf_io_t  pc;
+    gf_o_t   pc;
     int      status = 0, flags, err = 0;
     char    *resultfile = NULL, *pipe_err;
 

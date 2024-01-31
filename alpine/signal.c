@@ -50,7 +50,7 @@
 static RETSIGTYPE auger_in_signal(int);
 void		  init_sighup(void);
 void		  end_sighup(void);
-RETSIGTYPE	  term_signal(void);
+RETSIGTYPE	  term_signal(int);
 void		  fast_clean_up(void);
 static RETSIGTYPE usr2_signal(int);
 static RETSIGTYPE winch_signal(int);
@@ -232,7 +232,7 @@ end_sighup(void)
 Not much to do. Rely on periodic mail file check pointing.
   ----------------------------------------------------------------------*/
 RETSIGTYPE
-hup_signal(void)
+hup_signal(int s)
 {
     if(ps_global)
       ps_global->signal_in_progress = 1;
@@ -286,7 +286,7 @@ user_input_timeout_exit(int to_hours)
 Not much to do. Rely on periodic mail file check pointing.
   ----------------------------------------------------------------------*/
 RETSIGTYPE
-term_signal(void)
+term_signal(int c)
 {
 #if !defined(DOS) && !defined(OS2)
     end_signals(1);			/* don't catch any more signals */
@@ -607,7 +607,7 @@ pipe_callback(PIPE_S *syspipe, int flags, void *data)
 	 * pipe to complete.  When we're in the background for
 	 * a shell, the the side effect is pinging
 	 */
-	RETSIGTYPE (*alarm_sig)();
+	RETSIGTYPE (*alarm_sig)(int);
 	int	old_cue = F_ON(F_SHOW_DELAY_CUE, ps_global);
 
 	/*

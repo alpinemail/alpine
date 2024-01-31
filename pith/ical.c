@@ -16,7 +16,7 @@ typedef struct ical_iana_prop_s {
   char *prop;			/* component PROPerty name */
   size_t len;			/* size of component name (strlen(x->prop)) */
   int pos;			/* location of this component in the prop array */
-  void *(*parse)();		/* parser */
+  void *(*parse)(void **);	/* parser */
   void (*give)(void **);	/* free memory	  */
 } ICAL_PROP_S;
 
@@ -58,19 +58,22 @@ void ical_free_valarm(void **);
 void ical_free_unknown_comp(ICAL_S **);
 
 /* parse properties */
-void  *ical_cline_from_token(void *, char **, char *);
-void  *ical_gencline_from_token(void *, char **, char *);
+/* argument of type void *, char **, char * */
+void  *ical_cline_from_token(void **);
+void  *ical_gencline_from_token(void **);
 
-void  *ical_parse_rrule(void *, char **, char *);
-void  *ical_parse_time(void *, char **, char *);
-void  *ical_parse_offset(void *, char **, char *);
+/* argument of type void *, char **, char * */
+void  *ical_parse_rrule(void **);
+void  *ical_parse_time(void **);
+void  *ical_parse_offset(void **);
 
-void  *ical_parse_freq(void *, char *);
-void  *ical_parse_until(void *, char *);
-void  *ical_parse_count(void *, char *);
-void  *ical_parse_interval(void *, char *);
-void  *ical_parse_weekday_list(void *, char *);
-void  *ical_parse_number_list(void *, char *);
+/* argument of type (void *, char *) */
+void  *ical_parse_freq(void **);
+void  *ical_parse_until(void **);
+void  *ical_parse_count(void **);
+void  *ical_parse_interval(void **);
+void  *ical_parse_weekday_list(void **);
+void  *ical_parse_number_list(void **);
 
 int  ical_get_number_value(char *, int, int);
 void ical_set_date(ICLINE_S *, VTIMEZONE_S *);
@@ -695,10 +698,17 @@ ical_parse_text(char *text)
 }
 
 void *
-ical_parse_time(void *ic_datep, char **text, char *token)
+ical_parse_time(void **arg)
 {
+  void *ic_datep;
+  char **text;
+  char *token;
   struct tm *datep;
   ICLINE_S *icl; 
+
+  ic_datep = arg[0];
+  text = (char **) arg[1];
+  token = (char *) arg[2];
 
   datep = fs_get(sizeof(struct tm));
   icl = ical_parse_line(text, token);
@@ -710,10 +720,15 @@ ical_parse_time(void *ic_datep, char **text, char *token)
 }
 
 void *
-ical_parse_interval(void *longvp, char *value)
+ical_parse_interval(void **arg)
 
 {
+  void *longvp;
+  char *value;
   unsigned long *longp;
+
+  longvp = arg[0];
+  value  = (char *) arg[1];
 
   longp  = fs_get(sizeof(unsigned long));
   *longp = atoi(value);
@@ -724,12 +739,18 @@ ical_parse_interval(void *longvp, char *value)
 
 
 void *
-ical_parse_offset(void *offsetv, char **text, char *token)
+ical_parse_offset(void **arg)
 {
+  void *offsetv;
+  char **text;
+  char *token;
   ICLINE_S *icl;
   char *value;
   int h, m, *offset;
 
+  offsetv = arg[0];
+  text = (char **) arg[1];
+  token = (char *) arg[2];
   offset = fs_get(sizeof(int));
 
   icl = ical_parse_line(text, token);
@@ -760,9 +781,16 @@ ical_parse_offset(void *offsetv, char **text, char *token)
  *    rv = (cast here *) ical_cline_from_token((void *)rv, &text, token);
  */
 void *
-ical_cline_from_token(void *iclp, char **text, char *token)
+ical_cline_from_token(void **arg)
 {
+   void *iclp;
+   char **text;
+   char *token;
    ICLINE_S *icl;
+
+   iclp = arg[0];
+   text = (char **) arg[1];
+   token = (char *) arg[2];
 
    ical_debug("ical_cline_from_token", *text);
 
@@ -777,16 +805,28 @@ ical_cline_from_token(void *iclp, char **text, char *token)
 }
 
 void *
-ical_gencline_from_token(void *giclv, char **text, char *token)
+ical_gencline_from_token(void **arg)
 {
+  void *giclv;
+  char **text;
+  char *token;
+  void *a[3];
   GEN_ICLINE_S *gicl= NULL;
+
+  giclv = arg[0];
+  text  = (char **) arg[1];
+  token = (char *) arg[2];
 
   if(!struncmp(*text, token, strlen(token))){
      gicl = fs_get(sizeof(GEN_ICLINE_S));
      memset((void *) gicl, 0, sizeof(GEN_ICLINE_S));
      gicl->cline = ical_parse_line(text, token);
 //     gicl->line = (ICLINE_S *) ical_cline_from_token((void *) gicl->cline, text, token);
-     gicl->next = (GEN_ICLINE_S *) ical_gencline_from_token((void *) gicl->next, text, token);
+     a[0] = (void *) gicl->next;
+     a[1] = (void *) text;
+     a[2] = (void *) token;
+     gicl->next = (GEN_ICLINE_S *) ical_gencline_from_token((void **)a);
+     arg[1] = (void *) text;
   }
 
   if(giclv != NULL)
@@ -873,9 +913,11 @@ ical_parse_vcalendar(char **text)
 
 	   case 'C':
 	   case 'c': if(!struncmp(s+1, "ALSCALE", 7)){
-			v = (void *) vcal->calscale;
-			v = ical_cline_from_token(v, &s, "CALSCALE");
-			vcal->calscale = (ICLINE_S *) v;
+			void *a[3];
+			a[0] = (void *) vcal->calscale;
+			a[1] = (void *) &s;
+			a[2] = (char *) "CALSCALE";
+			vcal->calscale = (ICLINE_S *) ical_cline_from_token((void **) a);
 		     }
 		     else ukn++;
 		     break;
@@ -894,27 +936,33 @@ ical_parse_vcalendar(char **text)
 
 	   case 'M':
 	   case 'm': if(!struncmp(s+1, "ETHOD", 5)){
-			v = (void *) vcal->method;
-			v = ical_cline_from_token(v, &s, "METHOD");
-			vcal->method = (ICLINE_S *) v;
+			void *a[3];
+			a[0] = (void *) vcal->method;
+			a[1] = (void *) &s;
+			a[2] = (char *) "METHOD";
+			vcal->method = (ICLINE_S *) ical_cline_from_token((void **) a);
 		     }
 		     else ukn++;
 		     break;
 
 	   case 'P':
 	   case 'p': if(!struncmp(s+1, "RODID", 5)){
-			v = (void *) vcal->prodid;
-			v = ical_cline_from_token(v, &s, "PRODID");
-			vcal->prodid = (ICLINE_S *) v;
+			void *a[3];
+			a[0] = (void *) vcal->prodid;
+			a[1] = (void *) &s;
+			a[2] = (char *) "PRODID";
+			vcal->prodid = (ICLINE_S *) ical_cline_from_token((void **) a);
 		     }
 		     else ukn++;
 		     break;
 
 	   case 'V':
 	   case 'v': if(!struncmp(s+1, "ERSION", 6)){
-			v = (void *) vcal->version;
-			v = ical_cline_from_token(v, &s, "VERSION");
-			vcal->version = (ICLINE_S *) v;
+			void *a[3];
+			a[0] = (void *) vcal->version;
+			a[1] = (void *) &s;
+			a[2] = (char *) "VERSION";
+			vcal->version = (ICLINE_S *) ical_cline_from_token((void **) a);
 		     } else ukn++;
 		     break;
 
@@ -1004,14 +1052,15 @@ ical_parse_vevent(char **text)
 		   if(!struncmp(s, event_prop[i].prop, t-s))
 		      break;
 		if(event_prop[i].parse){
-		   void *v;
+		   void *a[3];
 		   if(vevent->prop == NULL){
 		     vevent->prop = fs_get((EvUnknown+1)*sizeof(void *));
 		     memset((void *)vevent->prop, 0, (EvUnknown+1)*sizeof(void *));
 		   }
-		   v = vevent->prop[event_prop[i].pos];
-		   v = (event_prop[i].parse)(v , &s, event_prop[i].prop);
-		   vevent->prop[event_prop[i].pos] = v;
+		   a[0] = vevent->prop[event_prop[i].pos];
+		   a[1] = (void *) &s;
+		   a[2] = (void *) event_prop[i].prop;
+		   vevent->prop[event_prop[i].pos] = (event_prop[i].parse)((void **) a);
 		}
 		else
 		  ukn++;
@@ -1107,14 +1156,15 @@ ical_parse_vtimezone(char **text)
 		   if(!struncmp(s, tz_comp[i].prop, t-s))
 		      break;
 		if(tz_comp[i].parse){
-		   void *v;
+		   void *a[3];
 		   if(vtz->prop == NULL){
 		     vtz->prop = fs_get(TZCUnknown*sizeof(void *));
 		     memset((void *)vtz->prop, 0, TZCUnknown*sizeof(void *));
 		   }
-		   v = vtz->prop[tz_comp[i].pos];
-		   v = (tz_comp[i].parse)(v, &s, tz_comp[i].prop);
-		   vtz->prop[tz_comp[i].pos] = v;
+		   a[0] = vtz->prop[tz_comp[i].pos];
+		   a[1] = (void *) &s;
+		   a[2] = (void *) tz_comp[i].prop;
+		   vtz->prop[tz_comp[i].pos] = (tz_comp[i].parse)((void **) a);
 		}
 		else
 		  ukn++;
@@ -1189,14 +1239,15 @@ ical_parse_timezone(char **text)
 		   if(!struncmp(s, tz_prop[i].prop, t-s))
 		      break;
 		if(tz_prop[i].parse){
-		   void *v;
+		   void *a[3];
 		   if(tzprop->prop == NULL){
 		     tzprop->prop = fs_get(TZPUnknown*sizeof(void *));
 		     memset((void *)tzprop->prop, 0, TZPUnknown*sizeof(void *));
 		   }
-		   v = tzprop->prop[tz_prop[i].pos];
-		   v = (tz_prop[i].parse)(v, &s, tz_prop[i].prop);
-		   tzprop->prop[tz_prop[i].pos] = v;
+		   a[0] = tzprop->prop[tz_prop[i].pos];
+		   a[1] = (void *) &s;
+		   a[2] = (void *) tz_prop[i].prop;
+		   tzprop->prop[tz_prop[i].pos] = (tz_prop[i].parse)((void **) a);
 		}
 		else
 		  ukn++;
@@ -1270,14 +1321,15 @@ ical_parse_valarm(char **text)
 		   if(!struncmp(s, alarm_prop[i].prop, t-s))
 		      break;
 		if(alarm_prop[i].parse){
-		   void *v;
+		   void *a[3];
 		   if(valarm->prop == NULL){
 		     valarm->prop = fs_get((AlUnknown+1)*sizeof(void *));
 		     memset((void *)valarm->prop, 0, (AlUnknown+1)*sizeof(void *));
 		   }
-		   v = valarm->prop[alarm_prop[i].pos];
-		   v = (alarm_prop[i].parse)(v, &s, alarm_prop[i].prop);
-		   valarm->prop[alarm_prop[i].pos] = v;
+		   a[0] = valarm->prop[alarm_prop[i].pos];
+		   a[1] = (void *) &s;
+		   a[2] = (void *) alarm_prop[i].prop;
+		   valarm->prop[alarm_prop[i].pos] = (alarm_prop[i].parse)((void **) a);
 		}
 		else
 		  ukn++;
@@ -1476,10 +1528,14 @@ ical_parse_line(char **text, char *name)
  ***/
 
 void *
-ical_parse_freq(void *fvalp, char *text)
+ical_parse_freq(void **arg)
 {
+  void *fvalp;
+  char *text;
   Freq_value *fval;
 
+  fvalp = arg[0];
+  text = (char *) arg[1];
   fval = fs_get(sizeof(Freq_value));
 
   *fval = FUnknown;
@@ -1500,10 +1556,14 @@ ical_parse_freq(void *fvalp, char *text)
 }
 
 void *
-ical_parse_until(void *Tmp, char *text)
+ical_parse_until(void **arg)
 {
+   void *Tmp;
+   char *text;
    struct tm *Tm;
 
+   Tmp = arg[0];
+   text = (char *) arg[1];
    if(text != NULL){
      Tm = fs_get(sizeof(struct tm));
      ical_parse_date(text, Tm);
@@ -1514,10 +1574,14 @@ ical_parse_until(void *Tmp, char *text)
 }
 
 void *
-ical_parse_count(void *countp, char *text)
+ical_parse_count(void **arg)
 {
+  void *countp;
+  char *text;
   int *count;
 
+  countp = arg[0];
+  text = (char *) arg[1];
   if(text != NULL){
     count = fs_get(sizeof(int));
     *count = atoi(text);
@@ -1528,12 +1592,17 @@ ical_parse_count(void *countp, char *text)
 }
 
 void *
-ical_parse_weekday_list(void *bywkdyp, char *wklist)
+ical_parse_weekday_list(void **arg)
 {
+  void *bywkdyp;
+  char *wklist;
   BYWKDY_S *bywkdy, *w;
   char *s, *t, c;
   int done;
   size_t len;
+
+  bywkdyp = arg[0];
+  wklist = (char *) arg[1];
 
   bywkdy = NULL;
   bywkdyp = (void *) bywkdy;
@@ -1581,14 +1650,17 @@ ical_parse_weekday_list(void *bywkdyp, char *wklist)
 }
 
 void *
-ical_parse_number_list(void *bynop, char *nolist)
+ical_parse_number_list(void **arg)
 {
+  void *bynop;
+  char *nolist;
   BYWKDY_S *byno, *n;
   char *s, *t, c;
   int done = 0;
 
   byno = NULL;
-  bynop = (void *) byno;
+  bynop = arg[0];
+  nolist = (char *) arg[1];
 
   if(nolist == NULL) return bynop;
 
@@ -1621,13 +1693,20 @@ ical_parse_number_list(void *bynop, char *nolist)
 }
 
 void *
-ical_parse_rrule(void *rrulep, char **text, char *token)
+ical_parse_rrule(void **arg)
 {
+  void *rrulep;
+  char **text;
+  char *token;
   RRULE_S *rrule;
   ICLINE_S *icl;
   char *s;
   ICAL_PARAMETER_S *param, *p;
   int i;
+
+  rrulep = arg[0];
+  text   = (char **) arg[1];
+  token  = (char *) arg[2];
 
   if(text == NULL || *text == NULL || struncmp(*text, "RRULE", 5))
     return rrulep;
@@ -1652,9 +1731,10 @@ ical_parse_rrule(void *rrulep, char **text, char *token)
   for(p = param; p != NULL; p = p->next){
      for(i = 0; rrule_prop[i].prop != NULL && strucmp(p->name, rrule_prop[i].prop); i++);
      if(rrule_prop[i].parse){
-	void *v = rrule->prop[rrule_prop[i].pos];
-	v = (rrule_prop[i].parse)(v, p->value);
-        rrule->prop[rrule_prop[i].pos] = v;
+	void *a[2];
+	a[0] = rrule->prop[rrule_prop[i].pos];
+	a[1] = (void *) p->value;
+        rrule->prop[rrule_prop[i].pos] = (rrule_prop[i].parse)((void **) a);
      }
   }
   rrule->prop[RRUnknown] = NULL;

@@ -91,7 +91,8 @@ rd_prompt_about_forged_remote_data(int reason, REMDATA_S *rd, char *extra)
     if(ps_global->ttyo){
 	SCROLL_S  sargs;
 	STORE_S  *in_store, *out_store;
-	gf_io_t   pc, gc;
+	gf_o_t    pc;
+	gf_i_t    gc;
 	HANDLE_S *handles = NULL;
 	int       the_answer = 'n';
 

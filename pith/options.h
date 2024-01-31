@@ -62,7 +62,7 @@ extern void (*pith_opt_paint_index_hline)(MAILSTREAM *, long, ICE_S *);
  * [editorial comment] in message text to indicate the message contains
  * list-management pointers
  */
-extern int  (*pith_opt_rfc2369_editorial)(long, HANDLE_S **, int, int, gf_io_t);
+extern int  (*pith_opt_rfc2369_editorial)(long, HANDLE_S **, int, int, gf_o_t);
 
 #ifdef	ENABLE_LDAP
 /*

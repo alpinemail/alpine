@@ -128,7 +128,7 @@ int         ng_scroll_edit(CONTEXT_S *, int);
 int         folder_select_update(CONTEXT_S *, int);
 int         scroll_add_listmode(CONTEXT_S *, int);
 void	    display_output_file(char *, char *, char *, int);
-int	    rfc2369_editorial(long, HANDLE_S **, int, int, gf_io_t);
+int	    rfc2369_editorial(long, HANDLE_S **, int, int, gf_o_t);
 void	    view_writec_init(STORE_S *, HANDLE_S **, int, int);
 void	    view_writec_destroy(void);
 int	    view_writec(int);

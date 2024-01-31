@@ -35,7 +35,7 @@
 int	    url_local_helper(char *);
 int	    url_local_config(char *);
 void	    init_helper_getc(char **);
-int	    helper_getc(char *);
+int	    helper_getc(unsigned char *);
 int	    helper(HelpType, char *, int);
 void	    review_messages(void);
 void	    print_help(char **);
@@ -43,8 +43,8 @@ void	    print_help(char **);
 char	   *pcpine_help(HelpType);
 #endif
 #ifdef	DEBUG
-void	    dump_config(struct pine *, gf_io_t, int);
-void	    dump_pine_struct(struct pine *, gf_io_t);
+void	    dump_config(struct pine *, gf_o_t, int);
+void	    dump_pine_struct(struct pine *, gf_o_t);
 #endif
 
 

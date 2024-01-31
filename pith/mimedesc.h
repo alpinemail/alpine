@@ -28,7 +28,7 @@ void	    zero_atmts(ATTACH_S *);
 char	   *body_type_names(int);
 char	   *type_desc(int, char *, PARAMETER *, PARAMETER *, int);
 long        fcc_size_guess(BODY *);
-char	   *part_desc(char *, BODY *, int, int, int, gf_io_t);
+char	   *part_desc(char *, BODY *, int, int, int, gf_o_t);
 char	   *parameter_val(PARAMETER *, char *);
 int	    mime_can_display(int, char *, BODY *);
 char	   *get_filename_parameter(char *, size_t, BODY *, char **);

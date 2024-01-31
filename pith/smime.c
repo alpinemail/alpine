@@ -2669,7 +2669,7 @@ static STORE_S*
 get_part_contents(long msgno, const char *section)
 {
     long len;
-    gf_io_t     pc;
+    gf_o_t      pc;
     STORE_S *store = NULL;
     char	*err;
 
@@ -3651,7 +3651,7 @@ fiddle_smime_message(BODY *b, long msgno)
  *  Output a string in a distinctive style
  */
 void
-gf_puts_uline(char *txt, gf_io_t pc)
+gf_puts_uline(char *txt, gf_o_t pc)
 {
     pc(TAG_EMBED); pc(TAG_BOLDON);
     gf_puts(txt, pc);

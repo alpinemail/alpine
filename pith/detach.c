@@ -65,14 +65,47 @@ FETCH_READC_S *g_fr_desc;
 /*
  * Internal Prototypes
  */
-/*
+/* HISTORICAL COMMENT
  * This function is intentionally declared without an argument type so
  * that warnings will go away in Windows. We're using gf_io_t for both
  * input and output functions and the arguments aren't actually the
  * same in the two cases. We should really have a read version and
  * a write version of gf_io_t. That's why this is like this for now.
+ *
+ * EXPANDED VERSION
+ * The previous paragraph refers to the definition of the detach_writec
+ * function. It used to be that that function was defined as
+ * detach_writec();
+ * without any internal prototype. The reason why this was defined like
+ * that was because a function of type gf_io_t could be used to read
+ * data from or write data to a store object. In the case that a function
+ * of type gf_io_t is used to read data its internal prototype is of
+ * type (unsigned char *), and in the case that it is used to write
+ * data its internal prototype is of type (int).
+ *
+ * One way to deal with this is to make functions of type gf_io_t
+ * with internal prototype of type (void *) and to cast this to (int)
+ * and (unsigned char *) as needed, but then we get to into casting
+ * of different size warnings that will never lose information, but
+ * are not nice to read, so the solution is to really eliminate the
+ * type gf_io_t and split it into two types:
+ * One type is gf_i_t with internal prototype (unsigned char *) and
+ * another is gf_o_t with internal prototype (int).
+ *
+ * In the source code of Alpine the functions of this type are typically
+ * called gc for functions of the type gf_i_t, where gc stands for getchar,
+ * and pc for functions of the type gf_o_t, where pc stands for putchar.
+ * So a pc function writes data, and a gc function reads data. The gf_io_t
+ * type is gone. I have left some comments that refer to this type in the
+ * source code for historical reasons, now they must be interpreted as
+ * a gf_i_t or gf_o_t as appropiate, depending on if we need to read or
+ * write to a store object.
+ *
+ * One last thing, the gf_ prefix is for generic filter. Most of the gf_
+ * functions live in the file pith/filter.c, but there is a chance one can
+ * a function outside there. Have fun searching for them. ECh, 01/30/2024.
  */
-int	    detach_writec();
+int	    detach_writec(int);
 TRGR_S	   *build_trigger_list(void);
 void	    blast_trigger_list(TRGR_S **);
 int	    df_trigger_cmp(long, char *, LT_INS_S **, void *);
@@ -96,7 +129,7 @@ char *
 detach_raw(MAILSTREAM *stream,	/* c-client stream to use         */
 	   long int msg_no,	/* message number to deal with	  */
 	   char *part_no,	/* part number of message 	  */
-	   gf_io_t pc,		/* where to put it		  */
+	   gf_o_t  pc,		/* where to put it		  */
 	   int flags)
 {
     FETCH_READC_S  *frd = (FETCH_READC_S *)fs_get(sizeof(FETCH_READC_S));
@@ -137,7 +170,7 @@ detach(MAILSTREAM *stream,		/* c-client stream to use         */
        char *part_no,			/* part number of message 	  */
        long int partial,		/* if >0, limit read to this many bytes */
        long int *len,			/* returns bytes read in this arg */
-       gf_io_t pc,			/* where to put it		  */
+       gf_o_t  pc,			/* where to put it		  */
        FILTLIST_S *aux_filters,		/* null terminated array of filts */
        long flags)
 {
@@ -337,7 +370,7 @@ detach(MAILSTREAM *stream,		/* c-client stream to use         */
 	      fs_give((void **)&aux);
 	}
 	else{					/*  just copy it, then */
-	    gf_io_t	   gc;
+	    gf_i_t	   gc;
 
 	    gf_set_so_readc(&gc, detach_so);
 	    so_seek(detach_so, 0L, 0);

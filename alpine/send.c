@@ -256,7 +256,7 @@ alt_compose_screen(struct pine *pine_state)
  ----*/
 void 
 compose_mail(char *given_to, char *fcc_arg, ACTION_S *role_arg,
-	     PATMT *attach, gf_io_t inc_text_getc)
+	     PATMT *attach, gf_i_t inc_text_getc)
 {
     BODY	  *body = NULL;
     ENVELOPE	  *outgoing = NULL;
@@ -3583,7 +3583,8 @@ pine_send(ENVELOPE *outgoing, struct mail_bodystruct **body,
 		    if(editor_result & (COMP_GOTHUP | COMP_CANCEL)){
 			char	*err;
 			STORE_S *hup_so;
-			gf_io_t	 gc, pc;
+			gf_i_t	 gc;
+			gf_o_t	 pc;
 			int      we_cancel = 0;
 
 			if(editor_result & COMP_CANCEL){
@@ -3641,7 +3642,7 @@ pine_send(ENVELOPE *outgoing, struct mail_bodystruct **body,
 
 		dprint((1, "Save composition on HUP %sED\n",
 			   fcc_result ? "SUCCEED" : "FAIL"));
-		hup_signal();		/* Do what we normally do on SIGHUP */
+		hup_signal(0);		/* Do what we normally do on SIGHUP */
 	    }
 	    else if((editor_result & COMP_SUSPEND) && fcc_result){
 		if(ps_global->VAR_FORM_FOLDER
@@ -5296,7 +5297,8 @@ filter_message_text(char *fcmd, ENVELOPE *outgoing, struct mail_bodystruct *body
 {
     char     *cmd, *tmpf = NULL, *resultf = NULL, *errstr = NULL, *mtf = NULL;
     int	      key = 0, include_hdrs = 0;
-    gf_io_t   gc, pc;
+    gf_i_t    gc;
+    gf_o_t    pc;
     STORE_S **so = (STORE_S **)((body->type == TYPEMULTIPART)
 				? &body->nested.part->body.contents.text.data
 				: &body->contents.text.data),

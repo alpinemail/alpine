@@ -28,10 +28,7 @@
  */
 
 int
-rd_prompt_about_forged_remote_data(reason, rd, extra)
-    int        reason;
-    REMDATA_S *rd;
-    char      *extra;
+rd_prompt_about_forged_remote_data(int reason, REMDATA_S *rd, char *extra)
 {
     char  tmp[2000];
     char *unknown = "<unknown>";

@@ -80,7 +80,7 @@
 /*
  * Function to format 
  */
-typedef void (*fmt_env_t)(MAILSTREAM *, long int, char *, ENVELOPE *, gf_io_t, long int, char *, int);
+typedef void (*fmt_env_t)(MAILSTREAM *, long int, char *, ENVELOPE *, gf_o_t, long int, char *, int);
 
 /*
  * Structure and macros to help control format_header_text
@@ -123,10 +123,10 @@ typedef struct header_s {
 
 
 /* exported prototypes */
-int	 format_message(long, ENVELOPE *, BODY *, HANDLE_S **, int, gf_io_t);
-int	 format_attachment_list(long int, BODY *, HANDLE_S **, int, int, gf_io_t);
-char	*format_body(long int, BODY *, HANDLE_S **, HEADER_S *, int, int, gf_io_t);
-int	 format_calendar(long int, BODY *, HANDLE_S **, int, int, gf_io_t);
+int	 format_message(long, ENVELOPE *, BODY *, HANDLE_S **, int, gf_o_t);
+int	 format_attachment_list(long int, BODY *, HANDLE_S **, int, int, gf_o_t);
+char	*format_body(long int, BODY *, HANDLE_S **, HEADER_S *, int, int, gf_o_t);
+int	 format_calendar(long int, BODY *, HANDLE_S **, int, int, gf_o_t);
 int	 url_hilite(long, char *, LT_INS_S **, void *);
 int	 handle_start_color(char *, size_t, int *, int);
 int	 handle_end_color(char *, size_t, int *);
@@ -138,10 +138,10 @@ int	 handle_end_color(char *, size_t, int *);
 int	    url_external_specific_handler(char *, int);
 int	    url_imap_folder(char *, char **, imapuid_t *, imapuid_t *, char **, int);
 int	    url_bogus(char *, char *);
-void        pine_rfc822_address(ADDRESS *, gf_io_t);
-void        pine_rfc822_cat(char *, const char *, gf_io_t);
+void        pine_rfc822_address(ADDRESS *, gf_o_t);
+void        pine_rfc822_cat(char *, const char *, gf_o_t);
 int	    format_header(MAILSTREAM *, long, char *, ENVELOPE *, HEADER_S *,
-			  char *, HANDLE_S **, int,  fmt_env_t, gf_io_t);
+			  char *, HANDLE_S **, int,  fmt_env_t, gf_o_t);
 COLOR_PAIR *hdr_color(char *, char *, SPEC_COLOR_S *);
 char	   *display_parameters(PARAMETER *);
 char	   *pine_fetch_header(MAILSTREAM *, long, char *, char **, long);

@@ -1855,7 +1855,7 @@ rd_update_local(REMDATA_S *rd)
 {
     char     *error;
     STORE_S  *store;
-    gf_io_t   pc;
+    gf_o_t   pc;
     int       i, we_cancel = 0;
     BODY     *body = NULL;
     ENVELOPE *env;

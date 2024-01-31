@@ -37,7 +37,7 @@
 
 
 /* internal prototypes */
-int	 charset_editorial(char *, long, HANDLE_S **, int, int, int, gf_io_t);
+int	 charset_editorial(char *, long, HANDLE_S **, int, int, int, gf_o_t);
 int	 replace_quotes(long, char *, LT_INS_S **, void *);
 void     mark_handles_in_line(char *, HANDLE_S **, int);
 void	 clear_html_risk(void);
@@ -79,7 +79,7 @@ Returns: 1 if errors encountered, 0 if everything went A-OK
 int
 decode_text(ATTACH_S	    *att,
 	    long int	     msgno,
-	    gf_io_t	     pc,
+	    gf_o_t	     pc,
 	    HANDLE_S	   **handlesp,
 	    DetachErrStyle   style,
 	    int		     flags)
@@ -229,7 +229,7 @@ decode_text(ATTACH_S	    *att,
 	clear_html_risk();
 
 	if(flags & FM_DISPLAY){
-	    gf_io_t	 warn_pc;
+	    gf_o_t	 warn_pc;
 
 	    if(handlesp){		/* pass on handles awareness */
 		opts |= GFHP_HANDLES;
@@ -465,7 +465,7 @@ decode_text(ATTACH_S	    *att,
  */
 int
 charset_editorial(char *charset, long int msgno, HANDLE_S **handlesp, int flags,
-		  int quality, int width, gf_io_t pc)
+		  int quality, int width, gf_o_t pc)
 {
     char     *p, color[64], buf[2048];
     int	      i, n;

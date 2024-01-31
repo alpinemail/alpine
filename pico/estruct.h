@@ -317,7 +317,7 @@ typedef struct  {
 
 typedef struct  {
         UCS	k_code;                 /* Key code                     */
-        int     (*k_fp)();              /* Routine to handle it         */
+        int     (*k_fp)(int, int);      /* Routine to handle it         */
 }       KEYTAB;
 
 /*      structure used for key menu painting         */

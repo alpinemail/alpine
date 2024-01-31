@@ -38,13 +38,13 @@
 /*
  * Internal prototypes
  */
-int	  save_ex_replace_body(char *, unsigned long *,BODY *,gf_io_t);
-int	  save_ex_output_body(MAILSTREAM *, long, char *, BODY *, unsigned long *, gf_io_t);
-int	  save_ex_mask_types(char *, unsigned long *, gf_io_t);
-int	  save_ex_explain_body(BODY *, unsigned long *, gf_io_t);
-int	  save_ex_explain_parts(BODY *, int, unsigned long *, gf_io_t);
-int	  save_ex_output_line(char *, unsigned long *, gf_io_t);
-int	  save_ex_output_text(char *, int, unsigned long *, gf_io_t);
+int	  save_ex_replace_body(char *, unsigned long *,BODY *,gf_o_t);
+int	  save_ex_output_body(MAILSTREAM *, long, char *, BODY *, unsigned long *, gf_o_t);
+int	  save_ex_mask_types(char *, unsigned long *, gf_o_t);
+int	  save_ex_explain_body(BODY *, unsigned long *, gf_o_t);
+int	  save_ex_explain_parts(BODY *, int, unsigned long *, gf_o_t);
+int	  save_ex_output_line(char *, unsigned long *, gf_o_t);
+int	  save_ex_output_text(char *, int, unsigned long *, gf_o_t);
 
 
 /*
@@ -1092,7 +1092,7 @@ long save_fetch_append_cb(MAILSTREAM *stream, void *data, char **flags,
 	    char  section[64];
 	    int	 failure = 0;
 	    BODY *body;
-	    gf_io_t  pc;
+	    gf_o_t   pc;
 
 	    size = 0;			/* all bets off, abort sanity test  */
 	    gf_set_so_writec(&pc, pkg->so);
@@ -1225,7 +1225,7 @@ save_fetch_append(MAILSTREAM *stream, long int raw, char *sect,
 	char	 section[64];
 	int	 failure = 0;
 	BODY	*body;
-	gf_io_t  pc;
+	gf_o_t   pc;
 
 	size = 0;			/* all bets off, abort sanity test  */
 	gf_set_so_writec(&pc, so);
@@ -1393,7 +1393,7 @@ save_fetch_append(MAILSTREAM *stream, long int raw, char *sect,
  *	  *BUT* which is to contain the count of written bytes on exit
  */
 int
-save_ex_replace_body(char *hdr, long unsigned int *hlen, struct mail_bodystruct *body, gf_io_t pc)
+save_ex_replace_body(char *hdr, long unsigned int *hlen, struct mail_bodystruct *body, gf_o_t pc)
 {
     unsigned long len;
 
@@ -1453,7 +1453,7 @@ save_ex_replace_body(char *hdr, long unsigned int *hlen, struct mail_bodystruct 
 
 int
 save_ex_output_body(MAILSTREAM *stream, long int raw, char *section,
-		    struct mail_bodystruct *body, long unsigned int *len, gf_io_t pc)
+		    struct mail_bodystruct *body, long unsigned int *len, gf_o_t pc)
 {
     char	  *txtp, newsect[128];
     unsigned long  ilen;
@@ -1565,7 +1565,7 @@ Args:  hdr -- pointer to start of a header line
 
   ----*/
 int
-save_ex_mask_types(char *hdr, long unsigned int *len, gf_io_t pc)
+save_ex_mask_types(char *hdr, long unsigned int *len, gf_o_t pc)
 {
     char *s = NULL;
 
@@ -1582,7 +1582,7 @@ save_ex_mask_types(char *hdr, long unsigned int *len, gf_io_t pc)
 
 
 int
-save_ex_explain_body(struct mail_bodystruct *body, long unsigned int *len, gf_io_t pc)
+save_ex_explain_body(struct mail_bodystruct *body, long unsigned int *len, gf_o_t pc)
 {
     unsigned long   ilen;
     char	  **blurbp;
@@ -1608,7 +1608,7 @@ save_ex_explain_body(struct mail_bodystruct *body, long unsigned int *len, gf_io
 
 
 int
-save_ex_explain_parts(struct mail_bodystruct *body, int depth, long unsigned int *len, gf_io_t pc)
+save_ex_explain_parts(struct mail_bodystruct *body, int depth, long unsigned int *len, gf_o_t pc)
 {
     char	  *tmp, namebuf[MAILTMPLEN], descbuf[MAILTMPLEN];
     unsigned long ilen, tmplen;
@@ -1715,7 +1715,7 @@ save_ex_explain_parts(struct mail_bodystruct *body, int depth, long unsigned int
  * line.
  */
 int
-save_ex_output_text(char *text, int depth, unsigned long *len, gf_io_t pc)
+save_ex_output_text(char *text, int depth, unsigned long *len, gf_o_t pc)
 {
    int starti, i, startpos, pos, rv;
    char tmp[100];	/* a number bigger than 68, we justify text here. */
@@ -1751,7 +1751,7 @@ save_ex_output_text(char *text, int depth, unsigned long *len, gf_io_t pc)
 }
 
 int
-save_ex_output_line(char *line, long unsigned int *len, gf_io_t pc)
+save_ex_output_line(char *line, long unsigned int *len, gf_o_t pc)
 {
     snprintf(tmp_20k_buf, SIZEOF_20KBUF, "  [ %-*.*s ]\015\012", 68, 68, line);
     *len = strlen(tmp_20k_buf);

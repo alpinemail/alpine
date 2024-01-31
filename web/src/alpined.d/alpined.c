@@ -379,9 +379,9 @@ char	    *peSendSpamReport(long, char *, char *, char *);
 int	     peMsgnoFromUID(Tcl_Interp *, imapuid_t, int, Tcl_Obj **);
 int	     peMessageText(Tcl_Interp *, imapuid_t, int, Tcl_Obj **);
 int	     peMessageHeader(Tcl_Interp *, imapuid_t, int, Tcl_Obj **);
-void	     peFormatEnvelope(MAILSTREAM *, long, char *, ENVELOPE *, gf_io_t, long, char *, int);
-void	     peFormatEnvelopeAddress(MAILSTREAM *, long, char *, char *, ADDRESS *, int, char *, gf_io_t);
-void	     peFormatEnvelopeNewsgroups(char *, char *, int, gf_io_t);
+void	     peFormatEnvelope(MAILSTREAM *, long, char *, ENVELOPE *, gf_o_t, long, char *, int);
+void	     peFormatEnvelopeAddress(MAILSTREAM *, long, char *, char *, ADDRESS *, int, char *, gf_o_t);
+void	     peFormatEnvelopeNewsgroups(char *, char *, int, gf_o_t);
 void	     peFormatEnvelopeText(char *, char *);
 int	     peMessageAttachments(Tcl_Interp *, imapuid_t, int, Tcl_Obj **);
 int	     peMessageBody(Tcl_Interp *, imapuid_t, int, Tcl_Obj **);
@@ -8563,7 +8563,7 @@ peMessageHeader(Tcl_Interp *interp, imapuid_t uid, int objc, Tcl_Obj **objv)
 }
 
 void
-peFormatEnvelope(MAILSTREAM *s, long int n, char *sect, ENVELOPE *e, gf_io_t pc, long int which, char *oacs, int flags)
+peFormatEnvelope(MAILSTREAM *s, long int n, char *sect, ENVELOPE *e, gf_o_t pc, long int which, char *oacs, int flags)
 {
     char *p2, buftmp[MAILTMPLEN];
     Tcl_Obj *objHdr;
@@ -8667,14 +8667,14 @@ peFormatEnvelopeText(char *field_name, char *field_value)
  */
 void
 peFormatEnvelopeAddress(MAILSTREAM *stream, long int msgno, char *section, char *field_name,
-			struct mail_address *addr, int flags, char *oacs, gf_io_t pc)
+			struct mail_address *addr, int flags, char *oacs, gf_o_t pc)
 {
     char    *ptmp, *mtmp, *atype = "addr";
     int	     group = 0;
     ADDRESS *atmp;
     Tcl_Obj *objAddrList = NULL;
     STORE_S *tso;
-    gf_io_t  tpc;
+    gf_o_t   tpc;
     extern const char *rspecials;
     extern const char *rspecials_minus_quote_and_dot;
 
@@ -8803,7 +8803,7 @@ peFormatEnvelopeAddress(MAILSTREAM *stream, long int msgno, char *section, char 
  * appends caller's result with: {"news" field_name {{newsgroup1} {newsgroup2} ... }}
  */
 void
-peFormatEnvelopeNewsgroups(char *field_name, char *newsgrps, int flags, gf_io_t pc)
+peFormatEnvelopeNewsgroups(char *field_name, char *newsgrps, int flags, gf_o_t pc)
 {
     char     buf[MAILTMPLEN];
     int	     llen;
@@ -9973,7 +9973,7 @@ peDetach(Tcl_Interp *interp, imapuid_t uid, int objc, Tcl_Obj **objv)
 {
     char	 *part, *err, *tfd, *tfn = NULL, *filename;
     long	  raw;
-    gf_io_t	  pc;
+    gf_o_t	  pc;
     BODY	 *body;
     STORE_S	 *store;
     Tcl_Obj	 *rvobj, *tObj, *stObj, *fnObj;
@@ -16368,7 +16368,8 @@ peRssFetch(Tcl_Interp *interp, char *link)
 		    RSS_FEED_S *feed;
 		    char       *err;
 		    STORE_S    *bucket;
-		    gf_io_t	gc, pc;
+		    gf_i_t	gc;
+		    gf_o_t	pc;
 
 		    /* grok response */
 		    bucket = so_get(CharStar, NULL, EDIT_ACCESS);

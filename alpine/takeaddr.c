@@ -3316,7 +3316,7 @@ save_ldap_entry(struct pine *ps, LDAP_CHOOSE_S *e, int save)
 	    if(!(srcstore = so_get(srctype, NULL, EDIT_ACCESS)))
 	      q_status_message(SM_ORDER,0,2, _("Error allocating space"));
 	    else{
-		gf_io_t       pc;
+		gf_o_t        pc;
 		VCARD_INFO_S *vinfo;
 
 		vinfo = (VCARD_INFO_S *)fs_get(sizeof(VCARD_INFO_S));

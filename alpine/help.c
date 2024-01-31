@@ -123,7 +123,7 @@ helper_internal(HelpType text, char *frag, char *title, int flags)
     STORE_S	   *store;
     HANDLE_S	   *handles = NULL, *htmp;
     HELP_SCROLL_S   hscroll;
-    gf_io_t	    pc;
+    gf_o_t	    pc;
 
     dprint((1, "\n\n    ---- HELPER ----\n"));
 
@@ -404,7 +404,7 @@ init_helper_getc(char **help_txt)
 
 
 int
-helper_getc(char *c)
+helper_getc(unsigned char *c)
 {
     if(g_h_text.crlf){
 	*c = '\012';
@@ -704,7 +704,8 @@ review_messages(void)
 {
     SCROLL_S	    sargs;
     STORE_S        *in_store = NULL, *out_store = NULL;
-    gf_io_t         gc, pc;
+    gf_i_t	     gc;
+    gf_o_t	     pc;
     int             jo, lo, hi, donejo, donelo, donehi;
     RMCat           rmcat;
     int             cmd, timestamps=0, show_level=-1;
@@ -960,8 +961,7 @@ journal_processor(int cmd, MSGNO_S *msgmap, SCROLL_S *sparms)
 
 
 int
-gripe_gripe_to(url)
-    char *url;
+gripe_gripe_to(char *url)
 {
     char      *composer_title, *url_copy, *optstr, *p;
     int	       opts = 0;
@@ -1037,16 +1037,12 @@ gripe_gripe_to(url)
 
 
 int
-gripe_newbody(ps, body, msgno, flags)
-    struct pine *ps;
-    BODY       **body;
-    long         msgno;
-    int          flags;
+gripe_newbody(struct pine *ps, BODY **body, long msgno, int flags)
 {
     BODY        *pb;
     PART       **pp;
     STORE_S	*store;
-    gf_io_t      pc;
+    gf_o_t       pc;
     static char *err = "Problem creating space for message text.";
     int          i;
     char         tmp[MAILTMPLEN], *p;
@@ -1163,7 +1159,7 @@ gripe_newbody(ps, body, msgno, flags)
 
 	    if((store = so_get(CharStar, NULL, EDIT_ACCESS)) != NULL){
 		PIPE_S  *syspipe;		
-		gf_io_t  gc;
+		gf_i_t   gc;
 		
 		pb->contents.text.data = (void *) store;
 		gf_set_so_writec(&pc, store);
@@ -1255,8 +1251,7 @@ gripe_newbody(ps, body, msgno, flags)
 
 
 ADDRESS *
-gripe_token_addr(token)
-    char *token;
+gripe_token_addr(char *token)
 {
     char    *p;
     ADDRESS *a = NULL;
@@ -1290,8 +1285,7 @@ gripe_token_addr(token)
 
 
 char *
-gripe_id(key)
-    char *key;
+gripe_id(char *key)
 {
     int i,j,k,l;
     
@@ -1354,7 +1348,7 @@ pcpine_help(HelpType section)
 {
     char    **help_lines, *help_text = NULL;
     STORE_S  *store;
-    gf_io_t   pc;
+    gf_o_t   pc;
 
     /* assumption here is that HelpType is char **  */
     help_lines = section;

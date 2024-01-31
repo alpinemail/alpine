@@ -49,7 +49,7 @@ int        ab_agg_delete(struct pine *, int);
 int        single_entry_delete(AdrBk *, long, int *);
 char      *query_server(struct pine *, int, int *, int, char **);
 void	   free_headents(struct headerentry **);
-void       write_single_vcard_entry(struct pine *, gf_io_t, VCARD_INFO_S *);
+void       write_single_vcard_entry(struct pine *, gf_o_t, VCARD_INFO_S *);
 void       free_vcard_info(VCARD_INFO_S **);
 #ifdef	ENABLE_LDAP
 void       view_ldap_entry(struct pine *, LDAP_CHOOSE_S *);

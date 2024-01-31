@@ -1817,7 +1817,7 @@ grab_addrs_from_body(MAILSTREAM *stream, long int msgno,
 #define MAXLINESZ 2000
     char       line[MAXLINESZ + 1];
     STORE_S   *so;
-    gf_io_t    pc;
+    gf_o_t    pc;
     SourceType src = CharStar;
     int        added = 0, failure;
     char      *partno = "1";

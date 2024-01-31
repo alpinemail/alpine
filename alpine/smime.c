@@ -43,11 +43,11 @@
 #include "smime.h"
 
 /* internal prototypes */
-void     format_smime_info(int pass, BODY *body, long msgno, gf_io_t pc);
-void     print_separator_line(int percent, int ch, gf_io_t pc);
-void     output_cert_info(X509 *cert, gf_io_t pc);
-void     output_X509_NAME(X509_NAME *name, gf_io_t pc);
-void     side_by_side(STORE_S *left, STORE_S *right, gf_io_t pc);
+void     format_smime_info(int pass, BODY *body, long msgno, gf_o_t pc);
+void     print_separator_line(int percent, int ch, gf_o_t pc);
+void     output_cert_info(X509 *cert, gf_o_t pc);
+void     output_X509_NAME(X509_NAME *name, gf_o_t pc);
+void     side_by_side(STORE_S *left, STORE_S *right, gf_o_t pc);
 STORE_S *wrap_store(STORE_S *in, int width);
 void     smime_config_init_display(struct pine *, CONF_S **, CONF_S **);
 void     revert_to_saved_smime_config(struct pine *ps, SAVED_CONFIG_S *vsave);
@@ -223,7 +223,7 @@ smime_info_screen(struct pine *ps)
 
 
 void
-format_smime_info(int pass, BODY *body, long msgno, gf_io_t pc)
+format_smime_info(int pass, BODY *body, long msgno, gf_o_t pc)
 {
     PKCS7 *p7 = NULL;
     int    i;
@@ -347,7 +347,7 @@ format_smime_info(int pass, BODY *body, long msgno, gf_io_t pc)
 
 
 void
-print_separator_line(int percent, int ch, gf_io_t pc)
+print_separator_line(int percent, int ch, gf_o_t pc)
 {
     int i, start, len;
     
@@ -365,11 +365,11 @@ print_separator_line(int percent, int ch, gf_io_t pc)
 
 
 void
-output_cert_info(X509 *cert, gf_io_t pc)
+output_cert_info(X509 *cert, gf_o_t pc)
 {
     char    buf[256];
     STORE_S *left,*right;
-    gf_io_t spc;
+    gf_o_t spc;
     int len, error;
     STACK_OF(X509) *chain;
         
@@ -544,7 +544,7 @@ output_cert_info(X509 *cert, gf_io_t pc)
 
 
 void
-output_X509_NAME(X509_NAME *name, gf_io_t pc)
+output_X509_NAME(X509_NAME *name, gf_o_t pc)
 {
     int i, c;
     char buf[256];
@@ -574,7 +574,7 @@ output_X509_NAME(X509_NAME *name, gf_io_t pc)
  * and merged.
  */
 void
-side_by_side(STORE_S *left, STORE_S *right, gf_io_t pc)
+side_by_side(STORE_S *left, STORE_S *right, gf_o_t pc)
 {
     STORE_S *left_wrapped;
     STORE_S *right_wrapped;
@@ -635,7 +635,8 @@ wrap_store(STORE_S *in, int width)
 {
     STORE_S *result;
     void  *ws;
-    gf_io_t ipc,opc;
+    gf_i_t ipc;
+    gf_o_t opc;
     
     if(width<10)
       width = 10;

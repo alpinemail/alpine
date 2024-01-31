@@ -3390,7 +3390,7 @@ index_gettext_callback(title, titlelen, text, l, style)
     ENVELOPE *env;
     BODY     *body;
     STORE_S  *so;
-    gf_io_t   pc;
+    gf_o_t   pc;
 
     if(mn_get_total(ps_global->msgmap) > 0L
        && (so = so_get(CharStar, NULL, WRITE_ACCESS))){

@@ -370,7 +370,8 @@ oauth2_set_device_info(OAUTH2_S *oa2, char *method, NETMBX *mb)
    if(ps_global->ttyo){
 	SCROLL_S  sargs;
 	STORE_S  *in_store, *out_store;
-	gf_io_t   pc, gc;
+	gf_o_t    pc;
+	gf_i_t    gc;
 	HANDLE_S *handles = NULL;
 	AUTH_CODE_S user_input;
 
@@ -540,7 +541,8 @@ oauth2_get_access_code(unsigned char *url, char *method, OAUTH2_S *oauth2, NETMB
    if(ps_global->ttyo){
 	SCROLL_S  sargs;
 	STORE_S  *in_store, *out_store;
-	gf_io_t   pc, gc;
+	gf_o_t    pc;
+	gf_i_t    gc;
 	HANDLE_S *handles = NULL;
 	AUTH_CODE_S user_input;
 
@@ -2514,7 +2516,8 @@ pine_sslcertquery(char *reason, char *host, char *cert)
     if(ps_global->ttyo){
 	SCROLL_S  sargs;
 	STORE_S  *in_store, *out_store;
-	gf_io_t   pc, gc;
+	gf_o_t    pc;
+	gf_i_t    gc;
 	HANDLE_S *handles = NULL;
 	int       the_answer = 'n';
 
@@ -3240,9 +3243,7 @@ typedef struct pwd_s {
  * the existing code and so that orighost data could be easily used.
  */
 int
-read_passfile(pinerc, l)
-    char       *pinerc;
-    MMLOGIN_S **l;
+read_passfile(char *pinerc, MMLOGIN_S **l)
 {
 #ifdef	WINCRED
 # if	(WINCRED > 0)
@@ -3792,9 +3793,7 @@ read_passfile(pinerc, l)
 
 
 void
-write_passfile(pinerc, l)
-    char      *pinerc;
-    MMLOGIN_S *l;
+write_passfile(char *pinerc, MMLOGIN_S *l)
 {
    char *authend, *authtype;
 #ifdef	WINCRED
@@ -4081,10 +4080,7 @@ ask_erase_credentials(void)
 
 #ifdef	LOCAL_PASSWD_CACHE
 int
-get_passfile_passwd(pinerc, passwd, user, hostlist, altflag)
-    char      *pinerc, **passwd, *user;
-    STRLIST_S *hostlist;
-    int	       altflag;
+get_passfile_passwd(char *pinerc, char **passwd, char *user, STRLIST_S *hostlist, int altflag)
 {
     return get_passfile_passwd_auth(pinerc, passwd, user, hostlist, altflag, NULL);
 }
@@ -4095,11 +4091,7 @@ get_passfile_passwd(pinerc, passwd, user, hostlist, altflag)
  *            as the pinerc with the name defined above.
  */
 int
-get_passfile_passwd_auth(pinerc, passwd, user, hostlist, altflag, authtype)
-    char      *pinerc, **passwd, *user;
-    STRLIST_S *hostlist;
-    int	       altflag;
-    char      *authtype;
+get_passfile_passwd_auth(char *pinerc, char **passwd, char *user, STRLIST_S *hostlist, int altflag, char *authtype)
 {
     dprint((10, "get_passfile_passwd_auth\n"));
     return((mm_login_list || read_passfile(pinerc, &mm_login_list))
@@ -4119,9 +4111,7 @@ is_using_passfile(void)
  * host, the user will confirm.
  */
 char *
-get_passfile_user(pinerc, hostlist)
-    char      *pinerc;
-    STRLIST_S *hostlist;
+get_passfile_user(char *pinerc, STRLIST_S *hostlist)
 {
     return((mm_login_list || read_passfile(pinerc, &mm_login_list))
 	     ? imap_get_user(mm_login_list, hostlist)
@@ -4335,10 +4325,7 @@ macos_erase_keychain(void)
 #ifdef	LOCAL_PASSWD_CACHE
 
 void
-set_passfile_passwd(pinerc, passwd, user, hostlist, altflag, already_prompted)
-    char      *pinerc, *passwd, *user;
-    STRLIST_S *hostlist;
-    int	       altflag, already_prompted;
+set_passfile_passwd(char *pinerc, char **passwd, char *user, STRLIST_S *hostlist, int altflag, int already_prompted)
 {
    set_passfile_passwd_auth(pinerc, passwd, user, hostlist, altflag, already_prompted, NULL);
 }
@@ -4351,11 +4338,7 @@ set_passfile_passwd(pinerc, passwd, user, hostlist, altflag, already_prompted)
  *                              2 prompted, answered no
  */
 void
-set_passfile_passwd_auth(pinerc, passwd, user, hostlist, altflag, already_prompted, authtype)
-    char      *pinerc, *passwd, *user;
-    STRLIST_S *hostlist;
-    int	       altflag, already_prompted;
-    char      *authtype;
+set_passfile_passwd_auth(char *pinerc, char **passwd, char *user, STRLIST_S *hostlist, int altflag, int already_prompted, char *authtype)
 {
     dprint((10, "set_passfile_passwd_auth\n"));
     if(((already_prompted == 0 && preserve_prompt_auth(pinerc, authtype))
@@ -4368,11 +4351,7 @@ set_passfile_passwd_auth(pinerc, passwd, user, hostlist, altflag, already_prompt
 }
 
 void
-update_passfile_hostlist(pinerc, user, hostlist, altflag)
-    char      *pinerc;
-    char      *user;
-    STRLIST_S *hostlist;
-    int        altflag;
+update_passfile_hostlist(char *pinerc, char *user, STRLIST_S *hostlist, int altflag)
 {
   update_passfile_hostlist_auth(pinerc, user, hostlist, altflag, NULL);
 }
@@ -4386,12 +4365,7 @@ update_passfile_hostlist(pinerc, user, hostlist, altflag)
  * This routine attempts to repair that.
  */
 void
-update_passfile_hostlist_auth(pinerc, user, hostlist, altflag, authtype)
-    char      *pinerc;
-    char      *user;
-    STRLIST_S *hostlist;
-    int        altflag;
-    char      *authtype;
+update_passfile_hostlist_auth(char *pinerc, char *user, STRLIST_S *hostlist, int altflag, char *authtype)
 {
 #ifdef	 WINCRED
     return;

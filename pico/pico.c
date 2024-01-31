@@ -1456,7 +1456,7 @@ mouse_get_last(mousehandler_t *f, MOUSEPRESS *mp)
  * register_key - register the given keystroke to accept mouse events
  */
 void
-register_key(int i, unsigned rval, char *label, void (*label_printer)(),
+register_key(int i, unsigned rval, char *label, void (*label_printer)(int, MENUITEM *),
 	     int row, int col, int len, COLOR_PAIR *kn, COLOR_PAIR *kl)
 {
     if(i > 11)

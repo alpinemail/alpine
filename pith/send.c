@@ -319,7 +319,7 @@ redraft_work(MAILSTREAM **streamp, long int cont_msg, ENVELOPE **outgoing,
     BODY	*b;
     PART        *part;
     PINEFIELD   *pf;
-    gf_io_t	 pc;
+    gf_o_t	 pc;
     char	*extras, **fields, **values, *p;
     char        *hdrs[2], *h, *charset;
     char       **smtp_servers = NULL, **nntp_servers = NULL;
@@ -4242,7 +4242,7 @@ pine_rfc822_output_body(struct mail_bodystruct *body, soutr_t f, void *s)
     char tmp[MAILTMPLEN];
     int                add_trailing_crlf;
     LOC_2022_JP ljp;
-    gf_io_t            gc;
+    gf_i_t             gc;
 
     dprint((4, "-- pine_rfc822_output_body: %d\n",
 	       body ? body->type : 0));

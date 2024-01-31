@@ -139,7 +139,7 @@ int	    display_msg_att(long, ATTACH_S *, int);
 void	    display_digest_att(long, ATTACH_S *, int);
 int	    scroll_attachment(char *, STORE_S *, SourceType, HANDLE_S *, ATTACH_S *, int);
 int	    process_attachment_cmd(int, MSGNO_S *, SCROLL_S *);
-int	    format_msg_att(long, ATTACH_S **, HANDLE_S **, gf_io_t, int);
+int	    format_msg_att(long, ATTACH_S **, HANDLE_S **, gf_o_t, int);
 void	    display_vcard_att(long, ATTACH_S *, int);
 void	    display_vcalendar_att(long, ATTACH_S *, int);
 void	    display_attach_info(long, ATTACH_S *);
@@ -1363,7 +1363,7 @@ write_attachment(int qline, long int msgno, ATTACH_S *a, char *method)
     else if(r == 12){			/* Download */
 	char     cmd[MAXPATH], *tfp = NULL;
 	PIPE_S  *syspipe;
-	gf_io_t  pc;
+	gf_o_t   pc;
 	long     len;
 	STORE_S *store;
 	char     prompt_buf[256];
@@ -1452,7 +1452,7 @@ write_attachment_to_file(MAILSTREAM *stream, long int msgno, ATTACH_S *a, int fl
     char       *l_string, sbuf[256], *err, *err2 = NULL;
     int         is_text, we_cancel = 0, dt_flags = 0, so_flags;
     long        len, orig_size;
-    gf_io_t     pc;
+    gf_o_t      pc;
     STORE_S    *store;
 
     if(!(a && a->body && a->number && a->number[0] && file && file[0]
@@ -1534,7 +1534,7 @@ write_attached_msg(long int msgno, ATTACH_S **ap, STORE_S *store, int newfile)
 {
     char      *err = NULL;
     long      start_of_append;
-    gf_io_t   pc;
+    gf_o_t    pc;
     MESSAGECACHE *mc;
 
     if(ap && *ap && (*ap)->body && (*ap)->body->nested.msg
@@ -2001,7 +2001,7 @@ display_html_external_attachment(long int msgno, ATTACH_S *a, int flags)
     char    *filename = NULL;
     char    *file_path;		/* file:///some/path/ */
     STORE_S *store;
-    gf_io_t  pc;
+    gf_o_t   pc;
     char    *err;
     int      we_cancel = 0, errs;
     char    *tool;
@@ -2172,7 +2172,7 @@ display_attachment(long int msgno, ATTACH_S *a, int flags)
     char     sender_filename[1000];
     char    *extp = NULL;
     STORE_S *store;
-    gf_io_t  pc;
+    gf_o_t   pc;
     char    *err;
     int      we_cancel = 0, rv;
     char     prefix[70 + 1000];	/* 1000 = sizeof(sender_filename) */
@@ -2462,7 +2462,7 @@ STORE_S *
 format_text_att(long int msgno, ATTACH_S *a, HANDLE_S **handlesp)
 {
     STORE_S	*store;
-    gf_io_t	 pc;
+    gf_o_t	 pc;
 
     if((store = so_get(CharStar, NULL, EDIT_ACCESS)) != NULL){
 	if(handlesp)
@@ -2520,7 +2520,7 @@ int
 display_msg_att(long int msgno, ATTACH_S *a, int flags)
 {
     STORE_S	*store;
-    gf_io_t	 pc;
+    gf_o_t	 pc;
     ATTACH_S	*ap = a;
     HANDLE_S *handles = NULL;
     int          rv = 0;
@@ -2573,7 +2573,7 @@ display_digest_att(long int msgno, ATTACH_S *a, int flags)
     STORE_S     *store;
     ATTACH_S	*ap;
     HANDLE_S	*handles = NULL;
-    gf_io_t      pc;
+    gf_o_t       pc;
     SourceType	 src = CharStar;
     int		 bad_news = 0;
 
@@ -2864,7 +2864,7 @@ process_attachment_cmd(int cmd, MSGNO_S *msgmap, SCROLL_S *sparms)
  * Returns 1 on success, 0 on error.
  */
 int
-format_msg_att(long int msgno, ATTACH_S **a, HANDLE_S **handlesp, gf_io_t pc, int flags)
+format_msg_att(long int msgno, ATTACH_S **a, HANDLE_S **handlesp, gf_o_t pc, int flags)
 {
     int rv = 1;
 
@@ -2968,7 +2968,8 @@ display_vcard_att(long int msgno, ATTACH_S *a, int flags)
     STORE_S   *in_store, *out_store = NULL;
     HANDLE_S  *handles = NULL;
     URL_HILITE_S uh;
-    gf_io_t    gc, pc;
+    gf_i_t     gc;
+    gf_o_t     pc;
     char     **lines, **ll, *errstr = NULL, tmp[MAILTMPLEN], *p;
     int	       cmd = MC_RESIZE, indent, begins = 0;
 
@@ -3087,7 +3088,8 @@ display_vevent_summary(long int msgno, ATTACH_S *a, int flags, int depth)
     STORE_S   *in_store, *out_store = NULL;
     HANDLE_S  *handles = NULL;
     URL_HILITE_S uh;
-    gf_io_t    gc, pc;
+    gf_i_t     gc;
+    gf_o_t     pc;
     char   *errstr = NULL;
     int	   cmd, i, k;
 
@@ -4174,7 +4176,7 @@ pipe_attachment(long int msgno, ATTACH_S *a)
 				   (flags&PIPE_RESET) ? NULL : &resultfilename,
 				   NULL, flags, 0, pipe_callback, pipe_report_error)) != NULL){
 		int is_text = 0;
-		gf_io_t  pc;		/* wire up a generic putchar */
+		gf_o_t  pc;		/* wire up a generic putchar */
 
 		is_text = (a && a->body && a->body->type == TYPETEXT);
 
@@ -4432,7 +4434,7 @@ display_msg_att_window(a)
     ATTACH_S *a;
 {
     STORE_S  *store;
-    gf_io_t   pc;
+    gf_o_t    pc;
     ATTACH_S *ap = a;
     long      msgno;
 

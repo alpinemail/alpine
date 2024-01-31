@@ -62,7 +62,7 @@ fexist(char *file,
 #ifndef _WINDOWS
     struct stat	sbuf;
     int rv;
-    int		(*stat_f)() = (m && *m == 't') ? our_lstat : our_stat;
+    int		(*stat_f)(char *, struct stat *) = (m && *m == 't') ? our_lstat : our_stat;
 
     if(l)
       *l = (off_t)0;

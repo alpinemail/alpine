@@ -227,7 +227,7 @@ sort_folder(MAILSTREAM *stream, MSGNO_S *msgmap, SortOrder new_sort,
 	clear_index_cache(stream, 0);
 
 	if(flags & SRT_VRB){
-	    int (*sort_func)() = NULL;
+	    int (*sort_func)(void) = NULL;
 
 	    /*
 	     * IMAP sort doesn't give us any way to get progress,

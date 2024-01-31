@@ -43,8 +43,8 @@ UCS	oauth2device_decode_reply(void *, void *);
 int     get_passfile_passwd(char *, char **, char *, STRLIST_S *, int);
 int     get_passfile_passwd_auth(char *, char **, char *, STRLIST_S *, int, char *);
 int     is_using_passfile(void);
-void    set_passfile_passwd(char *, char *, char *, STRLIST_S *, int, int);
-void    set_passfile_passwd_auth(char *, char *, char *, STRLIST_S *, int, int, char *);
+void    set_passfile_passwd(char *, char **, char *, STRLIST_S *, int, int);
+void    set_passfile_passwd_auth(char *, char **, char *, STRLIST_S *, int, int, char *);
 char   *get_passfile_user(char *, STRLIST_S *);
 #endif	/* LOCAL_PASSWD_CACHE */
 

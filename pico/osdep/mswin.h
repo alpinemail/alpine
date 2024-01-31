@@ -318,8 +318,6 @@ int             mswin_caninput(void);
 void            mswin_beginupdate(void);
 void            mswin_endupdate(void);
 int             mswin_sethelptextcallback(cbstr_t);
-int             strucmp(char *, char *);
-int             struncmp(char *, char *, int);
 
 #ifdef	MSC_MALLOC
 /*

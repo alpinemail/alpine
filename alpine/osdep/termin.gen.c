@@ -181,7 +181,7 @@ read_command(char **utf8str)
 
 
 int
-read_command_prep()
+read_command_prep(void)
 {
     int		i;
     char       *fname;

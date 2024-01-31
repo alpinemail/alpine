@@ -20,7 +20,7 @@
 
 
 /* exported prototypes */
-char	*dfilter(char *, STORE_S *, gf_io_t, FILTLIST_S *);
+char	*dfilter(char *, STORE_S *, gf_o_t, FILTLIST_S *);
 char	*dfilter_trigger(BODY *, char *, size_t);
 char	*expand_filter_tokens(char *, ENVELOPE *, char **, char **, char **, int *, int *, int *);
 char	*filter_session_key(void);

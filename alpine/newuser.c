@@ -47,7 +47,7 @@ new_user_or_version(struct pine *ps)
     SCROLL_S	    sargs;
     STORE_S	   *store;
     HANDLE_S	   *handles = NULL, *htmp;
-    gf_io_t	    pc;
+    gf_o_t	    pc;
     char           *vers = ps->vers_internal;
 
     first_time_alpine_user = (ps->first_time_user

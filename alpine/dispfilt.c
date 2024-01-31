@@ -50,7 +50,7 @@ int	df_valid_test(BODY *, char *);
  *	     That's converted back to UTF-8 and passed through aux_filters.
  */
 char *
-dfilter(char *rawcmd, STORE_S *input_so, gf_io_t output_pc, FILTLIST_S *aux_filters)
+dfilter(char *rawcmd, STORE_S *input_so, gf_o_t output_pc, FILTLIST_S *aux_filters)
 {
     char *status = NULL, *cmd, *resultf = NULL, *tmpfile = NULL;
     int   key = 0, silent = 0;
@@ -75,7 +75,8 @@ dfilter(char *rawcmd, STORE_S *input_so, gf_io_t output_pc, FILTLIST_S *aux_filt
 	if(tmpfile){
 	    PIPE_S	  *filter_pipe;
 	    FILE          *fp;
-	    gf_io_t	   gc, pc;
+	    gf_i_t	   gc;
+	    gf_o_t	   pc;
 	    STORE_S       *tmpf_so;
 
 	    /* write the tmp file */

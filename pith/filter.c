@@ -68,7 +68,7 @@ int	gf_freadc_getchar(unsigned char *, void *);
 int	gf_fwritec(int);
 int	gf_fwritec_locale(int);
 #ifdef _WINDOWS
-int	gf_freadc_windows(unsigned char *);
+int	gf_freadc_windows(void *); /* of type unsigned char * */
 #endif /* _WINDOWS */
 int	gf_preadc(unsigned char *);
 int	gf_preadc_locale(unsigned char *);
@@ -108,7 +108,7 @@ char *(*pith_opt_pretty_feature_name)(char *, int);
  * pointer to first function in a pipe, and pointer to last filter
  */
 FILTER_S         *gf_master = NULL;
-static	gf_io_t   last_filter;
+static	gf_o_t    last_filter;
 static	char     *gf_error_string;
 static	long	  gf_byte_count;
 static	jmp_buf   gf_error_state;
@@ -252,7 +252,7 @@ static GF_SO_STACK {
  * unprotected malloc/free/realloc, which can't be interrupted.
  */
 int
-pc_is_picotext(gf_io_t pc)
+pc_is_picotext(gf_o_t pc)
 {
     return(pc == gf_so_writec && gf_so_out && gf_so_out->so &&
 	   gf_so_out->so->src == ExternalText);
@@ -265,7 +265,7 @@ pc_is_picotext(gf_io_t pc)
  * getc function
  */
 void
-gf_set_readc(gf_io_t *gc, void *txt, long unsigned int len, SourceType src, int flags)
+gf_set_readc(gf_i_t *gc, void *txt, long unsigned int len, SourceType src, int flags)
 {
     gf_in.n = len;
     gf_in.flags = flags;
@@ -303,7 +303,7 @@ gf_set_readc(gf_io_t *gc, void *txt, long unsigned int len, SourceType src, int 
  * putc function
  */
 void
-gf_set_writec(gf_io_t *pc, void *txt, long unsigned int len, SourceType src, int flags)
+gf_set_writec(gf_o_t *pc, void *txt, long unsigned int len, SourceType src, int flags)
 {
     gf_out.n = len;
     gf_out.flags = flags;
@@ -338,7 +338,7 @@ gf_set_writec(gf_io_t *pc, void *txt, long unsigned int len, SourceType src, int
  * getc function
  */
 void
-gf_set_so_readc(gf_io_t *gc, STORE_S *so)
+gf_set_so_readc(gf_i_t *gc, STORE_S *so)
 {
     GF_SO_STACK *sp = (GF_SO_STACK *) fs_get(sizeof(GF_SO_STACK));
 
@@ -372,7 +372,7 @@ gf_clear_so_readc(STORE_S *so)
  * putc function
  */
 void
-gf_set_so_writec(gf_io_t *pc, STORE_S *so)
+gf_set_so_writec(gf_o_t *pc, STORE_S *so)
 {
     GF_SO_STACK *sp = (GF_SO_STACK *) fs_get(sizeof(GF_SO_STACK));
 
@@ -695,7 +695,7 @@ gf_swritec_locale(int c)
  * output the given string with the given function
  */
 int
-gf_puts(register char *s, gf_io_t pc)
+gf_puts(register char *s, gf_o_t pc)
 {
     while(*s != '\0')
       if(!(*pc)((unsigned char)*s++))
@@ -709,7 +709,7 @@ gf_puts(register char *s, gf_io_t pc)
  * output the given string with the given function
  */
 int
-gf_nputs(register char *s, long int n, gf_io_t pc)
+gf_nputs(register char *s, long int n, gf_o_t pc)
 {
     while(n--)
       if(!(*pc)((unsigned char)*s++))
@@ -905,7 +905,7 @@ gf_terminal(FILTER_S *f, int flg)
  * for example: a function to write a char to a file or into a buffer
  */
 void
-gf_set_terminal(gf_io_t f)			/* function to set generic filter */
+gf_set_terminal(gf_o_t f)			/* function to set generic filter */
               
 {
     last_filter = f;
@@ -932,7 +932,7 @@ gf_error(char *s)
  * it on to the first filter in the chain.
  */
 char *
-gf_pipe(gf_io_t gc, gf_io_t pc)
+gf_pipe(gf_i_t gc, gf_o_t pc)
                    			/* how to get a character */
 {
     unsigned char c;
@@ -1016,7 +1016,7 @@ gf_bytes_piped(void)
  *  Returns: NULL on success, reason for failure (not alloc'd!) on error
  */
 char *
-gf_filter(char *cmd, char *prepend, STORE_S *source_so, gf_io_t pc,
+gf_filter(char *cmd, char *prepend, STORE_S *source_so, gf_o_t pc,
 	  FILTLIST_S *aux_filters, int silent, int disable_reset,
 	  void (*pipecb_f)(PIPE_S *, int, void *))
 {

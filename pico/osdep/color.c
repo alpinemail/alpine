@@ -88,7 +88,7 @@ void     free_color_name_list(struct color_name_list **nl);
 #if	HAS_TERMINFO
 extern char    *tparm(char *, ...);
 #endif
-extern char    *tgoto();
+extern char    *tgoto(char *, int, int);
 void	tinitcolor(void);
 int	tfgcolor(int);
 int	tbgcolor(int);

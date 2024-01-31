@@ -26,13 +26,8 @@
 #ifdef ENABLE_LDAP
 
 int
-ldap_addr_select(ps, ac, result, style, wp_err, srchstr)
-    struct pine           *ps;
-    ADDR_CHOOSE_S         *ac;
-    LDAP_CHOOSE_S        **result;
-    LDAPLookupStyle        style;
-    WP_ERR_S              *wp_err;
-    char                  *srchstr;
+ldap_addr_select(struct pine *ps, ADDR_CHOOSE_S *ac, LDAP_CHOOSE_S **result,
+		LDAPLookupStyle style, WP_ERR_S *wp_err, char *srchstr)
 {
     LDAP_SERV_RES_S *res_list, *tmp_rl;
     LDAPMessage     *e, *tmp_e;
@@ -83,9 +78,7 @@ ldap_addr_select(ps, ac, result, style, wp_err, srchstr)
 
 
 char *
-peLdapPname(mailbox, host)
-     char *mailbox;
-     char *host;
+peLdapPname(char *mailbox, char *host)
 {
     char *retstr = NULL;
     char  adrstr[1024];
@@ -132,16 +125,10 @@ peLdapPname(mailbox, host)
 }
 
 int
-peLdapEntryParse(trl, e, ret_cn, ret_org, ret_unit, 
-		 ret_title, ret_mail, ret_sn)
-     LDAP_SERV_RES_S *trl;
-     LDAPMessage     *e;
-     struct berval ***ret_cn;
-     struct berval ***ret_org;
-     struct berval ***ret_unit;
-     struct berval ***ret_title;
-     struct berval ***ret_mail;
-     struct berval ***ret_sn;
+peLdapEntryParse(LDAP_SERV_RES_S *trl, LDAPMessage *e, struct berval ***ret_cn,
+		 struct berval ***ret_org, struct berval ***ret_unit,
+		 struct berval ***ret_title, struct berval ***ret_mail,
+		 struct berval ***ret_sn)
 {
     char       *a;
     struct berval **cn, **org, **unit, **title, **mail, **sn;
@@ -222,8 +209,7 @@ peLdapEntryParse(trl, e, ret_cn, ret_org, ret_unit,
 }
 
 WPLDAPRES_S *
-free_wpldapres(wpldapr)
-     WPLDAPRES_S *wpldapr;
+free_wpldapres(WPLDAPRES_S *wpldapr)
 {
     WPLDAPRES_S *tmp1, *tmp2;
 

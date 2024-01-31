@@ -51,7 +51,8 @@ typedef struct filter_insert_s {
 } LT_INS_S;
 
 
-typedef int  (*gf_io_t)();	/* type of get and put char function     */
+typedef int  (*gf_i_t)(unsigned char *);
+typedef int  (*gf_o_t)(int);
 typedef void (*filter_t)(FILTER_S *, int);
 typedef	int  (*linetest_t)(long, char *, LT_INS_S **, void *);
 typedef void (*htmlrisk_t)(void);

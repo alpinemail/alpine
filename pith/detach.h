@@ -41,7 +41,7 @@ typedef struct _fetch_read {
 		   allocsize;		/* allocated size of chunk block */
     long	   flags,		/* flags to use fetching block */
 		   fetchtime;		/* usecs avg per chunk fetch */
-    gf_io_t	   readc;
+    gf_i_t	   readc;
     STORE_S	  *cache;
 } FETCH_READC_S;
 
@@ -62,8 +62,8 @@ extern FETCH_READC_S *g_fr_desc;
 #define DT_ALLIMAGES   (long) 0x100000
 
 /* exported prototypes */
-char	   *detach_raw(MAILSTREAM *, long, char *, gf_io_t, int);
-char	   *detach(MAILSTREAM *, long, char *, long, long *, gf_io_t, FILTLIST_S *, long);
+char	   *detach_raw(MAILSTREAM *, long, char *, gf_o_t, int);
+char	   *detach(MAILSTREAM *, long, char *, long, long *, gf_o_t, FILTLIST_S *, long);
 int	    valid_filter_command(char **);
 void	    fetch_readc_init(FETCH_READC_S *, MAILSTREAM *, long, char *,
 			     unsigned long, long, long);

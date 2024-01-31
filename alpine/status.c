@@ -64,8 +64,8 @@ void      delay_cmd_cue(int);
 int       modal_bogus_input(UCS);
 int	  messages_in_queue(void);
 int       status_message_remaining_nolock(void);
-void      set_saw_it_to_zero();
-void      mark_modals_done();
+void      set_saw_it_to_zero(void);
+void      mark_modals_done(void);
 SMQ_T    *copy_status_queue(SMQ_T *);
 
 
@@ -728,7 +728,7 @@ start_over2:
 
 
 void
-set_saw_it_to_zero()
+set_saw_it_to_zero(void)
 {
     SMQ_T *q;
 
@@ -743,7 +743,7 @@ set_saw_it_to_zero()
 
 
 void
-mark_modals_done()
+mark_modals_done(void)
 {
     SMQ_T *q;
 
