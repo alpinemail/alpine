@@ -1137,7 +1137,7 @@ mm_login_oauth2(NETMBX *mb, char *user, char *method,
 #ifdef	LOCAL_PASSWD_CACHE
     /* if requested, remember it on disk for next session */
     if(save_password && F_OFF(F_DISABLE_PASSWORD_FILE_SAVING,ps_global))
-	    set_passfile_passwd_auth(ps_global->pinerc, token,
+	    set_passfile_passwd_auth(ps_global->pinerc, &token,
 		        altuserforcache ? altuserforcache : user, hostlist,
 			(mb->sslflag||mb->tlsflag),
 			(preserve_password == -1 ? 0
@@ -2135,7 +2135,7 @@ mm_login_work(NETMBX *mb, char *user, char **pwd, long int trial,
 #ifdef	LOCAL_PASSWD_CACHE
     /* if requested, remember it on disk for next session */
       if(save_password && F_OFF(F_DISABLE_PASSWORD_FILE_SAVING,ps_global))
-      set_passfile_passwd(ps_global->pinerc, *pwd,
+      set_passfile_passwd(ps_global->pinerc, pwd,
 		        altuserforcache ? altuserforcache : user, hostlist,
 			(mb->sslflag||mb->tlsflag),
 			(preserve_password == -1 ? 0
@@ -4345,7 +4345,7 @@ set_passfile_passwd_auth(char *pinerc, char **passwd, char *user, STRLIST_S *hos
 	   || already_prompted == 1)
        && !ps_global->nowrite_password_cache
        && (mm_login_list || read_passfile(pinerc, &mm_login_list))){
-	imap_set_passwd_auth(&mm_login_list, passwd, user, hostlist, altflag, 0, 0, authtype);
+	imap_set_passwd_auth(&mm_login_list, *passwd, user, hostlist, altflag, 0, 0, authtype);
 	write_passfile(pinerc, mm_login_list);
     }
 }
