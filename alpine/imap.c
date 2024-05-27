@@ -3814,6 +3814,7 @@ write_passfile(char *pinerc, MMLOGIN_S *l)
     erase_windows_credentials();	/* erase all passwords from credentials		  */
 					/* start writing them back to credentials manager */
     for(uid = 1; l; l = l->next, uid++){	/* enforce that uid >= 1 */
+	if (l->ignore_this) continue;
 	/* determine how many parts to create first */
 	len = (l->passwd ? strlen(l->passwd)  : 0)
 		+  ((l->hosts && l->hosts->next && l->hosts->next->name) ? 1 : 0)
@@ -3888,6 +3889,7 @@ write_passfile(char *pinerc, MMLOGIN_S *l)
     dprint((9, "write_passfile\n"));
 
     for(; l; l = l->next){
+	if (l->ignore_this) continue;
 	authtype = l->passwd;
 	authend = strchr(l->passwd, PWDAUTHSEP);
 	if(authend != NULL){
@@ -3972,6 +3974,7 @@ write_passfile(char *pinerc, MMLOGIN_S *l)
 #endif /* SMIME */
 
     for(n = 0; l; l = l->next, n++){
+	if (l->ignore_this) continue;
 	authtype = l->passwd;
 	authend = strchr(l->passwd, PWDAUTHSEP);
 	if(authend != NULL){

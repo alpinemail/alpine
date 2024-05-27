@@ -38,6 +38,7 @@ typedef struct _mmlogin_s {
     unsigned	    altflag:1;
     unsigned	    ok_novalidate:1;
     unsigned	    warned:1;
+    unsigned	    ignore_this:1;	/* internal flag */
     STRLIST_S	   *hosts;
     struct _mmlogin_s *next;
 } MMLOGIN_S;

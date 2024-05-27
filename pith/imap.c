@@ -1001,7 +1001,8 @@ imap_get_passwd_auth(MMLOGIN_S *m_list, char **passwd, char *user, STRLIST_S *ho
     len = authtype ? strlen(authtype) : 0;
     offset = authtype ? 1 : 0;
     for(l = m_list; l; l = l->next)
-      if(imap_same_host_auth(l->hosts, hostlist, authtype)
+      if(!l->ignore_this
+	 && imap_same_host_auth(l->hosts, hostlist, authtype)
 	 && *user
 	 && (len == 0 || (!struncmp(l->user, authtype, len)
 		    	   && l->user[len] == PWDAUTHSEP))
@@ -1058,6 +1059,8 @@ imap_set_passwd_auth(MMLOGIN_S **l, char *passwd, char *user, STRLIST_S *hostlis
 	*l = (MMLOGIN_S *)fs_get(sizeof(MMLOGIN_S));
 	memset(*l, 0, sizeof(MMLOGIN_S));
     }
+    else
+       (*l)->ignore_this = 0;
 
     len = strlen(passwd);
     (*l)->passwd = ps_get(len + authlen + offset + 1);
@@ -1184,25 +1187,7 @@ imap_delete_passwd_auth(MMLOGIN_S **m_list, char *user,
 
    if(!p) return;
 
-   /* relink *mlist */
-   if(p == *m_list)
-      q = (*m_list)->next;
-   else{
-      q = *m_list;
-      for(l = *m_list; l && l->next != p; l = l->next);
-      l->next = p->next;
-   }
-   /* so now p is out of the list. Free it */
-   p->next = NULL;
-   if(p->user) fs_give((void **) &p->user);
-
-   if(!(p->passwd >= (char *) private_store
-	&& p->passwd <= (char *) private_store + sizeof(private_store)))
-     fs_give((void **) &p->passwd);
-
-   free_strlist(&p->hosts);
-   fs_give((void **) &p);
-   *m_list = q;
+   p->ignore_this++;
    dprint((9, "imap_delete_password: done with deletion."));
 }
 
